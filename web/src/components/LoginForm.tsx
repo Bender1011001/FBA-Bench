@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createAuthClient } from '../../frontend/src/api/authClient'
+import { createAuthClient } from '@fba-enterprise/auth-client/authClient'
 
 // Simple email validation
 const isValidEmail = (email: string): boolean => {

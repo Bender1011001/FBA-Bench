@@ -2,10 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import RegisterForm from './RegisterForm';
-import { createAuthClient } from '../../../frontend/dist/api/authClient.js';
+import { createAuthClient } from '@fba-enterprise/auth-client/authClient';
 
 // Mock the auth client
-vi.mock('../../../frontend/dist/api/authClient.js', () => ({
+vi.mock('@fba-enterprise/auth-client/authClient', () => ({
   createAuthClient: vi.fn(() => ({
     register: vi.fn(),
   })),

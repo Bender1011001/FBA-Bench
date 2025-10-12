@@ -1,4 +1,15 @@
+import fs from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const distAuthClientPath = resolve(__dirname, '../frontend/dist/api')
+const srcAuthClientPath = resolve(__dirname, '../frontend/src/api')
+const authClientBase = fs.existsSync(distAuthClientPath) ? distAuthClientPath : srcAuthClientPath
+const fsAllow = Array.from(new Set([authClientBase, distAuthClientPath, srcAuthClientPath]))
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
@@ -7,7 +18,12 @@ export default defineConfig(async () => {
     plugins: [react()],
     resolve: {
       alias: {
-        // Optional: alias for auth client if needed, but relative import should suffice
+        '@fba-enterprise/auth-client': authClientBase,
+      }
+    },
+    server: {
+      fs: {
+        allow: fsAllow,
       }
     },
     define: {
