@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AccountPage from './AccountPage';
-import type { UserPublic, ApiError } from '../../../frontend/src/api/http';
+import type { UserPublic, ApiError } from '@fba-enterprise/auth-client/http';
 
 const mockUser: UserPublic = {
   id: '123',
@@ -16,21 +16,21 @@ const mockUser: UserPublic = {
 const mockOnUnauthorized = vi.fn();
 const mockOnSignOut = vi.fn();
 
-vi.mock('../../../frontend/src/api/authClient', () => ({
+vi.mock('@fba-enterprise/auth-client/authClient', () => ({
   createAuthClient: vi.fn(() => ({
     me: vi.fn(),
   })),
 }));
 
-vi.mock('../../../frontend/src/api/tokenStorage', () => ({
+vi.mock('@fba-enterprise/auth-client/tokenStorage', () => ({
   createTokenStorage: vi.fn(() => ({
     clearToken: vi.fn(),
     isAuthenticated: vi.fn(() => true),
   })),
 }));
 
-const mockedCreateAuthClient = vi.mocked(require('../../../frontend/src/api/authClient').createAuthClient);
-const mockedCreateTokenStorage = vi.mocked(require('../../../frontend/src/api/tokenStorage').createTokenStorage);
+const mockedCreateAuthClient = vi.mocked(require('@fba-enterprise/auth-client/authClient').createAuthClient);
+const mockedCreateTokenStorage = vi.mocked(require('@fba-enterprise/auth-client/tokenStorage').createTokenStorage);
 
 describe('AccountPage', () => {
   const mockClient = {

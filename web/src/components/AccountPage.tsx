@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { createAuthClient } from '../../../frontend/src/api/authClient';
-import { createTokenStorage } from '../../../frontend/src/api/tokenStorage';
-import type { UserPublic } from '../../../frontend/src/api/http';
+import { createAuthClient } from '@fba-enterprise/auth-client/authClient';
+import { createTokenStorage } from '@fba-enterprise/auth-client/tokenStorage';
+import type { UserPublic } from '@fba-enterprise/auth-client/http';
 
 interface AccountPageProps {
   onUnauthorized?: () => void;

@@ -3,8 +3,7 @@ import logging
 import os
 from typing import Dict, Optional, Any
 
-import aiohttp
-from aiohttp import ClientTimeout
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +25,10 @@ class OpenRouterClient:
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
-        self.timeout = ClientTimeout(total=timeout_seconds)
+        self.timeout = httpx.Timeout(timeout_seconds)
         self.max_retries = max_retries
         self.initial_backoff_ms = initial_backoff_ms
-        self.session: Optional[aiohttp.ClientSession] = None
+        self.session: Optional[httpx.AsyncClient] = None
 
     async def __aenter__(self):
         headers = {
@@ -38,14 +37,16 @@ class OpenRouterClient:
             "HTTP-Referer": os.getenv("OPENROUTER_REFERER", ""),  # Optional
             "X-Title": os.getenv("OPENROUTER_TITLE", "FBA-Bench"),  # Optional
         }
-        self.session = aiohttp.ClientSession(
-            headers=headers, timeout=self.timeout, connector=aiohttp.TCPConnector(limit=10)
+        self.session = httpx.AsyncClient(
+            base_url=self.base_url,
+            headers=headers,
+            timeout=self.timeout,
         )
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
-            await self.session.close()
+            await self.session.aclose()
 
     async def chat_completions(
         self,
@@ -83,66 +84,62 @@ class OpenRouterClient:
         backoff_ms = self.initial_backoff_ms
         for attempt in range(self.max_retries + 1):
             try:
-                async with self.session.post(
-                    f"{self.base_url}/chat/completions",
-                    json=payload,
-                ) as response:
-                    response.raise_for_status()
+                response = await self.session.post("/chat/completions", json=payload)
+                response.raise_for_status()
 
-                    data = await response.json()
+                data = response.json()
 
-                    # Extract response
-                    choice = data["choices"][0]
-                    content = choice["message"]["content"]
+                # Extract response
+                choice = data["choices"][0]
+                content = choice["message"]["content"]
 
-                    # Capture usage if present
-                    usage = data.get("usage", {})
-                    prompt_tokens = usage.get("prompt_tokens", 0)
-                    completion_tokens = usage.get("completion_tokens", 0)
-                    total_tokens = usage.get("total_tokens", prompt_tokens + completion_tokens)
+                # Capture usage if present
+                usage = data.get("usage", {})
+                prompt_tokens = usage.get("prompt_tokens", 0)
+                completion_tokens = usage.get("completion_tokens", 0)
+                total_tokens = usage.get("total_tokens", prompt_tokens + completion_tokens)
 
-                    # Estimate cost (OpenRouter provides this in some responses, fallback to model-specific)
-                    cost = data.get("cost", 0.0)  # If provided
-                    if not cost:
-                        # Rough estimate: $0.002 / 1k tokens (adjust per model if needed)
-                        cost = (total_tokens / 1000.0) * 0.002
+                # Estimate cost (OpenRouter provides this in some responses, fallback to model-specific)
+                cost = data.get("cost", 0.0)  # If provided
+                if not cost:
+                    # Rough estimate: $0.002 / 1k tokens (adjust per model if needed)
+                    cost = (total_tokens / 1000.0) * 0.002
 
-                    logger.info(
-                        f"OpenRouter call succeeded: model={model}, tokens={total_tokens}, "
-                        f"cost=${cost:.6f}"
-                    )
+                logger.info(
+                    f"OpenRouter call succeeded: model={model}, tokens={total_tokens}, "
+                    f"cost=${cost:.6f}"
+                )
 
-                    return {
-                        "content": content,
-                        "usage": {
-                            "prompt_tokens": prompt_tokens,
-                            "completion_tokens": completion_tokens,
-                            "total_tokens": total_tokens,
-                        },
-                        "cost": cost,
-                    }
+                return {
+                    "content": content,
+                    "usage": {
+                        "prompt_tokens": prompt_tokens,
+                        "completion_tokens": completion_tokens,
+                        "total_tokens": total_tokens,
+                    },
+                    "cost": cost,
+                }
 
-            except aiohttp.ClientResponseError as e:
-                if e.status == 429 and attempt < self.max_retries:  # Rate limit
+            except httpx.HTTPStatusError as e:
+                status = e.response.status_code
+                if status == 429 and attempt < self.max_retries:
                     wait_time = backoff_ms / 1000.0
                     logger.warning(
-                        f"Rate limit (429) on attempt {attempt + 1}/{self.max_retries}, "
-                        f"waiting {wait_time:.2f}s"
-                    )
-                    await asyncio.sleep(wait_time)
-                    backoff_ms *= 2  # Exponential backoff
-                    continue
-                elif e.status >= 500 and attempt < self.max_retries:  # Server error
-                    wait_time = backoff_ms / 1000.0
-                    logger.warning(
-                        f"Server error ({e.status}) on attempt {attempt + 1}, waiting {wait_time:.2f}s"
+                        f"Rate limit (429) on attempt {attempt + 1}/{self.max_retries}, waiting {wait_time:.2f}s"
                     )
                     await asyncio.sleep(wait_time)
                     backoff_ms *= 2
                     continue
-                else:
-                    logger.error(f"OpenRouter API error: {e.status} - {e.message}")
-                    raise
+                if status >= 500 and attempt < self.max_retries:
+                    wait_time = backoff_ms / 1000.0
+                    logger.warning(
+                        f"Server error ({status}) on attempt {attempt + 1}, waiting {wait_time:.2f}s"
+                    )
+                    await asyncio.sleep(wait_time)
+                    backoff_ms *= 2
+                    continue
+                logger.error(f"OpenRouter API error: {status} - {e}")
+                raise
 
             except Exception as e:
                 logger.error(f"Unexpected error in OpenRouter call: {e}")
