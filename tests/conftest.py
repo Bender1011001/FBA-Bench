@@ -1,11 +1,53 @@
 import os
-import pytest
+import sys
+import types
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from pathlib import Path
+
+import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
+from pydantic import BaseModel, ConfigDict, Field
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+
+if "fba_bench_core" not in sys.modules:
+    core_module = types.ModuleType("fba_bench_core")
+    benchmarking_module = types.ModuleType("fba_bench_core.benchmarking")
+    engine_module = types.ModuleType("fba_bench_core.benchmarking.engine")
+
+    class EngineConfig(BaseModel):
+        """Lightweight test double for the core EngineConfig model."""
+
+        model_config = ConfigDict(extra="allow")
+
+    class EngineReport(BaseModel):
+        """Lightweight test double for the core EngineReport model."""
+
+        status: str = "completed"
+        details: dict[str, object] = Field(default_factory=dict)
+        model_config = ConfigDict(extra="allow")
+
+    async def run_benchmark(config: EngineConfig) -> EngineReport:  # pragma: no cover - simple stub
+        """Fallback async benchmark stub for tests when the core package is unavailable."""
+
+        return EngineReport(details={"config": config.model_dump()})
+
+    engine_module.EngineConfig = EngineConfig
+    engine_module.EngineReport = EngineReport
+    engine_module.run_benchmark = run_benchmark
+
+    benchmarking_module.engine = engine_module
+    core_module.benchmarking = benchmarking_module
+    sys.modules["fba_bench_core"] = core_module
+    sys.modules["fba_bench_core.benchmarking"] = benchmarking_module
+    sys.modules["fba_bench_core.benchmarking.engine"] = engine_module
+
 from api.db import Base, get_db
 from api.models import User
 from api.security.passwords import hash_password
@@ -19,19 +61,19 @@ if db_path.exists():
     db_path.unlink()
 
 os.environ["DATABASE_URL"] = f"sqlite:///./{TEST_DB}"
-engine = create_engine(os.environ["DATABASE_URL"], poolclass=StaticPool)
+engine = create_engine(
+    os.environ["DATABASE_URL"], poolclass=StaticPool, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def override_get_db():
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
+    session = TestingSessionLocal()
     try:
         yield session
     finally:
+        session.rollback()
         session.close()
-        transaction.rollback()
-        connection.close()
 
 app.dependency_overrides[get_db] = override_get_db
 
@@ -50,7 +92,7 @@ def setup_shared_db():
 @pytest.fixture(autouse=True)
 def clean_db():
     """Clean users table before each test."""
-    db = next(override_get_db())
+    db = TestingSessionLocal()
     try:
         db.execute(text("DELETE FROM users"))
         db.commit()
@@ -66,7 +108,7 @@ def client():
 @pytest.fixture
 def test_user():
     """Create a test user."""
-    db = next(override_get_db())
+    db = TestingSessionLocal()
     try:
         user = User(
             id="test-uuid-123",

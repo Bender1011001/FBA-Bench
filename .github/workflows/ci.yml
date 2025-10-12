@@ -34,6 +34,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
+        pip install "fba-bench-core>=1.0.0"
         pip install pytest pytest-cov
 
     - name: Run Python tests with coverage

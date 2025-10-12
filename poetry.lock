@@ -489,19 +489,13 @@ standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "htt
 
 [[package]]
 name = "fba-bench-core"
-version = "0.1.0"
+version = "1.0.0"
 description = "Core library for FBA-Bench"
 optional = false
-python-versions = "^3.9,<3.13"
+python-versions = ">=3.9,<3.13"
 groups = ["main"]
 files = []
 develop = false
-
-[package.source]
-type = "git"
-url = "https://github.com/Bender1011001/FBA-Bench-core.git"
-reference = "main"
-resolved_reference = "530771b4afe6d03f2ca1e0b8cb54142942d45289"
 
 [[package]]
 name = "greenlet"
