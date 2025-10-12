@@ -7,6 +7,41 @@ interface ApiResponse<T> {
   status: number;
 }
 
+export interface EngineScenarioConfig {
+  key: string;
+  params?: Record<string, unknown>;
+  repetitions?: number;
+}
+
+export interface EngineRunnerConfig {
+  key: string;
+  config?: Record<string, unknown>;
+}
+
+export interface EngineConfig {
+  scenarios: EngineScenarioConfig[];
+  runners: EngineRunnerConfig[];
+  metrics?: string[];
+  validators?: string[];
+  parallelism?: number;
+}
+
+export interface EngineReportTotals {
+  runs: number;
+  success: number;
+  failed: number;
+}
+
+export interface EngineReport {
+  status?: string;
+  totals?: EngineReportTotals;
+  details?: Record<string, unknown>;
+  started_at?: string;
+  completed_at?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 class ApiService {
   private api: AxiosInstance;
   private ws: WebSocket | null = null;
@@ -238,6 +273,26 @@ class ApiService {
       },
     };
     return this.post('/api/v1/experiments', payload as unknown as Record<string, unknown>);
+  }
+
+  async runBenchmark(config: EngineConfig): Promise<EngineReport> {
+    try {
+      const response: AxiosResponse<EngineReport> = await this.api.post(
+        '/protected/run-benchmark',
+        config,
+      );
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      console.error('Benchmark execution failed:', {
+        url: axiosError.config?.url,
+        code: axiosError.code,
+        message: axiosError.message,
+        response: axiosError.response?.data,
+      });
+      toast.error('Benchmark run failed');
+      throw axiosError;
+    }
   }
 
   async cloneExperiment(id: string, name: string): Promise<ApiResponse<Experiment>> {
@@ -633,4 +688,18 @@ interface LeaderboardEntry {
 export const apiService = new ApiService();
 export const wsService = apiService;
 
-export type { ApiResponse, Experiment, ExperimentCreateData, SystemStats, WebSocketMessage, EnvCheckResponse, ConfigUpdateResponse, ConfigUpdateRequest, LeaderboardEntry };
+export type {
+  ApiResponse,
+  EngineConfig,
+  EngineReport,
+  EngineRunnerConfig,
+  EngineScenarioConfig,
+  Experiment,
+  ExperimentCreateData,
+  SystemStats,
+  WebSocketMessage,
+  EnvCheckResponse,
+  ConfigUpdateResponse,
+  ConfigUpdateRequest,
+  LeaderboardEntry,
+};
