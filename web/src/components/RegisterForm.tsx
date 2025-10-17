@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createAuthClient } from '../../../frontend/dist/api/authClient.js';
+import { createAuthClient } from '@fba-enterprise/auth-client/authClient';
 import type { UserPublic } from '../types';
 
 interface RegisterFormProps {

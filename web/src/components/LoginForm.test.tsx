@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event'
 import LoginForm from './LoginForm'
 
 // Mock createAuthClient to avoid real API calls
-const mockedCreateAuthClient = vi.fn()
-vi.mock('../../frontend/src/api/authClient', () => ({
+const mockedCreateAuthClient = vi.hoisted(() => vi.fn())
+vi.mock('@fba-enterprise/auth-client/authClient', () => ({
   createAuthClient: mockedCreateAuthClient
 }))
 

@@ -13,7 +13,13 @@ import {
   RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { apiService, wsService, type ExperimentCreateData } from '../services/api';
+import {
+  apiService,
+  wsService,
+  type EngineConfig as BenchmarkEngineConfig,
+  type EngineReport as BenchmarkEngineReport,
+  type ExperimentCreateData,
+} from '../services/api';
 import { useAppStore } from '../store/appStore';
 import { toast } from 'react-hot-toast';
 import LaunchModal from '../components/launch/LaunchModal';
@@ -85,6 +91,16 @@ const QuickAction: React.FC<QuickActionProps> = ({ title, description, icon: Ico
   );
 };
 
+interface BenchmarkFormState {
+  scenarioKey: string;
+  scenarioParams: string;
+  runnerKey: string;
+  repetitions: number;
+  parallelism: number;
+  metrics: string;
+  validators: string;
+}
+
 const Dashboard: React.FC = () => {
   const {
     experiments,
@@ -103,6 +119,17 @@ const Dashboard: React.FC = () => {
     satisfaction: number;
   }>>([]);
   const [showLaunchModal, setShowLaunchModal] = useState(false);
+  const [benchmarkForm, setBenchmarkForm] = useState<BenchmarkFormState>({
+    scenarioKey: 'enterprise.default',
+    scenarioParams: '{"region":"us-east-1"}',
+    runnerKey: 'async-runner',
+    repetitions: 1,
+    parallelism: 1,
+    metrics: 'throughput,success_rate',
+    validators: 'result_consistency',
+  });
+  const [isRunningBenchmark, setIsRunningBenchmark] = useState(false);
+  const [benchmarkReport, setBenchmarkReport] = useState<BenchmarkEngineReport | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -151,6 +178,88 @@ const Dashboard: React.FC = () => {
       });
     } finally {
       setLoading('experiments', false);
+    }
+  };
+
+  const handleBenchmarkFieldChange = <K extends keyof BenchmarkFormState>(
+    field: K,
+    value: BenchmarkFormState[K],
+  ) => {
+    setBenchmarkForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleRunBenchmark = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const scenarioKey = benchmarkForm.scenarioKey.trim();
+    const runnerKey = benchmarkForm.runnerKey.trim();
+
+    if (!scenarioKey || !runnerKey) {
+      toast.error('Scenario key and runner key are required.');
+      return;
+    }
+
+    let parsedScenarioParams: Record<string, unknown> | undefined;
+    if (benchmarkForm.scenarioParams.trim()) {
+      try {
+        parsedScenarioParams = JSON.parse(benchmarkForm.scenarioParams);
+      } catch (error) {
+        console.error('Invalid scenario params JSON:', error);
+        toast.error('Scenario parameters must be valid JSON.');
+        return;
+      }
+    }
+
+    const scenarioConfig = {
+      key: scenarioKey,
+      ...(parsedScenarioParams ? { params: parsedScenarioParams } : {}),
+      ...(benchmarkForm.repetitions > 0 ? { repetitions: benchmarkForm.repetitions } : {}),
+    };
+
+    const config: BenchmarkEngineConfig = {
+      scenarios: [scenarioConfig],
+      runners: [
+        {
+          key: runnerKey,
+        },
+      ],
+    };
+
+    if (benchmarkForm.parallelism > 0) {
+      config.parallelism = benchmarkForm.parallelism;
+    }
+
+    const metricList = benchmarkForm.metrics
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    if (metricList.length > 0) {
+      config.metrics = metricList;
+    }
+
+    const validatorList = benchmarkForm.validators
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    if (validatorList.length > 0) {
+      config.validators = validatorList;
+    }
+
+    setIsRunningBenchmark(true);
+    toast.loading('Running benchmark...', { id: 'run-benchmark' });
+
+    try {
+      const report: BenchmarkEngineReport = await apiService.runBenchmark(config);
+      setBenchmarkReport(report);
+      toast.success('Benchmark completed successfully.', { id: 'run-benchmark' });
+    } catch (error) {
+      console.error('Benchmark run failed:', error);
+      toast.error('Benchmark run failed.', { id: 'run-benchmark' });
+    } finally {
+      setIsRunningBenchmark(false);
     }
   };
 
@@ -374,6 +483,145 @@ const Dashboard: React.FC = () => {
           </ResponsiveContainer>
         </motion.div>
       </div>
+
+      {/* Benchmark Runner */}
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Benchmark Runner</h2>
+              <p className="text-gray-600 text-sm">Configure the core engine and execute a benchmark run.</p>
+            </div>
+            <RocketLaunchIcon className="h-6 w-6 text-violet-500" />
+          </div>
+
+          <form onSubmit={handleRunBenchmark} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="flex flex-col text-sm font-medium text-gray-700">
+                Scenario Key
+                <input
+                  type="text"
+                  className="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-violet-500 focus:ring-violet-500"
+                  value={benchmarkForm.scenarioKey}
+                  onChange={(event) => handleBenchmarkFieldChange('scenarioKey', event.target.value)}
+                  placeholder="enterprise.default"
+                  required
+                />
+              </label>
+              <label className="flex flex-col text-sm font-medium text-gray-700">
+                Runner Key
+                <input
+                  type="text"
+                  className="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-violet-500 focus:ring-violet-500"
+                  value={benchmarkForm.runnerKey}
+                  onChange={(event) => handleBenchmarkFieldChange('runnerKey', event.target.value)}
+                  placeholder="async-runner"
+                  required
+                />
+              </label>
+            </div>
+
+            <label className="flex flex-col text-sm font-medium text-gray-700">
+              Scenario Parameters (JSON)
+              <textarea
+                className="mt-1 rounded-md border border-gray-300 px-3 py-2 h-24 focus:border-violet-500 focus:ring-violet-500"
+                value={benchmarkForm.scenarioParams}
+                onChange={(event) => handleBenchmarkFieldChange('scenarioParams', event.target.value)}
+                placeholder='{"region":"us-east-1"}'
+              />
+            </label>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="flex flex-col text-sm font-medium text-gray-700">
+                Repetitions
+                <input
+                  type="number"
+                  min={0}
+                  className="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-violet-500 focus:ring-violet-500"
+                  value={benchmarkForm.repetitions}
+                  onChange={(event) => handleBenchmarkFieldChange('repetitions', Number(event.target.value))}
+                />
+              </label>
+              <label className="flex flex-col text-sm font-medium text-gray-700">
+                Parallelism
+                <input
+                  type="number"
+                  min={0}
+                  className="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-violet-500 focus:ring-violet-500"
+                  value={benchmarkForm.parallelism}
+                  onChange={(event) => handleBenchmarkFieldChange('parallelism', Number(event.target.value))}
+                />
+              </label>
+              <label className="flex flex-col text-sm font-medium text-gray-700">
+                Metrics (comma separated)
+                <input
+                  type="text"
+                  className="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-violet-500 focus:ring-violet-500"
+                  value={benchmarkForm.metrics}
+                  onChange={(event) => handleBenchmarkFieldChange('metrics', event.target.value)}
+                  placeholder="throughput,success_rate"
+                />
+              </label>
+            </div>
+
+            <label className="flex flex-col text-sm font-medium text-gray-700">
+              Validators (comma separated)
+              <input
+                type="text"
+                className="mt-1 rounded-md border border-gray-300 px-3 py-2 focus:border-violet-500 focus:ring-violet-500"
+                value={benchmarkForm.validators}
+                onChange={(event) => handleBenchmarkFieldChange('validators', event.target.value)}
+                placeholder="result_consistency"
+              />
+            </label>
+
+            <div className="flex items-center justify-between">
+              <button
+                type="submit"
+                disabled={isRunningBenchmark}
+                className="inline-flex items-center justify-center rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+              >
+                {isRunningBenchmark ? 'Running…' : 'Run Benchmark'}
+              </button>
+              {benchmarkReport?.status && (
+                <span className="text-sm font-medium text-gray-600">Status: {benchmarkReport.status}</span>
+              )}
+            </div>
+          </form>
+
+          <div className="mt-6">
+            {benchmarkReport ? (
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                <h3 className="text-sm font-semibold text-gray-800 mb-2">Latest Benchmark Report</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div className="bg-white rounded-lg border border-gray-200 p-3">
+                    <p className="text-xs text-gray-500 uppercase">Runs</p>
+                    <p className="text-lg font-semibold text-gray-900">{benchmarkReport.totals?.runs ?? '—'}</p>
+                  </div>
+                  <div className="bg-white rounded-lg border border-gray-200 p-3">
+                    <p className="text-xs text-gray-500 uppercase">Success</p>
+                    <p className="text-lg font-semibold text-green-600">{benchmarkReport.totals?.success ?? '—'}</p>
+                  </div>
+                  <div className="bg-white rounded-lg border border-gray-200 p-3">
+                    <p className="text-xs text-gray-500 uppercase">Failed</p>
+                    <p className="text-lg font-semibold text-red-600">{benchmarkReport.totals?.failed ?? '—'}</p>
+                  </div>
+                </div>
+                <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700 bg-white border border-gray-200 rounded-md p-3">
+{JSON.stringify(benchmarkReport, null, 2)}
+                </pre>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Run a benchmark to see execution details from the core engine.</p>
+            )}
+          </div>
+        </div>
+      </motion.div>
 
       {/* Quick Actions */}
       <motion.div

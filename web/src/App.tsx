@@ -5,7 +5,7 @@ import AccountPage from './components/AccountPage'
 import OnboardingOverlay from './components/OnboardingOverlay'
 import HelpButton from './components/HelpButton'
 import HelpModal from './components/HelpModal'
-import { createTokenStorage } from '../../frontend/src/api/tokenStorage'
+import { createTokenStorage } from '@fba-enterprise/auth-client/tokenStorage'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)

@@ -739,6 +739,19 @@ all = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>
 standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "jinja2 (>=3.1.5)", "python-multipart (>=0.0.18)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+name = "fba-bench-core"
+version = "1.0.0"
+description = "Core library for FBA-Bench"
+optional = false
+python-versions = ">=3.9,<3.13"
+groups = ["main"]
+files = []
+develop = false
+
+[[package]]
+>>>>>>> 9a6313da3bf53dcbc517cbc3450293242ae0c7bd
 name = "greenlet"
 version = "3.2.4"
 description = "Lightweight in-process concurrent programming"

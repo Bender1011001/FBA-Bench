@@ -35,6 +35,7 @@ packages = [
     {include = "fba_events", from = "src"},
 ]
 
+<<<<<<< HEAD
 [tool.poetry.dependencies]
 python = "^3.9"
 aiosqlite = "^0.20.0"
@@ -133,6 +134,71 @@ ignore = ["E501","E402","F811","F401","F841","F821","E722","E741","E721","E712"]
   "F841",  # assigned but unused (mocks, placeholders)
   "E712",  # True/False comparisons in tests
   "F821",  # undefined names for test doubles/stubs
+=======
+dependencies = [
+  "anyio==4.6.0",
+  "argon2-cffi==23.1.0",
+  "certifi==2024.8.30",
+  "click==8.1.7",
+  "colorama==0.4.6",
+  "cryptography==43.0.3",
+  "dnspython==2.7.0",
+  "email-validator==2.2.0",
+  "exceptiongroup==1.2.2",
+  "fastapi==0.115.0",
+  "greenlet==3.1.1",
+  "h11==0.14.0",
+  "idna==3.10",
+  "Jinja2==3.1.4",
+  "MarkupSafe==3.0.1",
+  "mypy-extensions==1.0.0",
+  "packaging==24.1",
+  "passlib==1.7.4",
+  "pydantic==2.9.2",
+  "pydantic-core==2.23.4",
+  "python-dotenv==1.0.1",
+  "python-jose==3.3.0",
+  "python-multipart==0.0.9",
+  "PyYAML==6.0.2",
+  "requests==2.32.3",
+  "ruff==0.7.0",
+  "six==1.16.0",
+  "sniffio==1.3.1",
+  "sortedcontainers==2.4.0",
+  "SQLAlchemy==2.0.32",
+  "starlette==0.38.4",
+  "typing_extensions==4.12.2",
+  "urllib3==2.2.3",
+  "uvicorn[standard]==0.32.0",
+  "stripe<5,>=4.0",
+  "pytest-cov>=4.1.0",
+  "httpx>=0.27",
+  "tzdata>=2023.3",
+  "alembic>=1.13",
+  "bcrypt>=4.0",
+  "fba-bench-core>=1.0.0",
+]
+
+[tool.setuptools.packages.find]
+# Discover packages from both the repo root and the src/ directory
+where = [".", "src"]
+include = [
+  "api*",
+  "constraints*",
+  "metrics*",
+  "baseline_bots*",
+  "dashboard*",
+  "infrastructure*",
+  "leaderboard*",
+  "fba_events*",
+  "redteam_scripts*",
+  "services*",
+  "redteam*",
+  "agents*",
+  "money*",
+  "fba_bench*",
+  "event_bus*",
+>>>>>>> 9a6313da3bf53dcbc517cbc3450293242ae0c7bd
 ]
 "alembic/**" = [
   "E402",  # imports placement in env.py

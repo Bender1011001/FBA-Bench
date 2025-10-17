@@ -4,8 +4,12 @@ import os
 import random
 from typing import Any, Dict, List, Optional, Union
 
+<<<<<<< HEAD
 import aiohttp
 from aiohttp import ClientResponseError, ClientTimeout
+=======
+import httpx
+>>>>>>> 9a6313da3bf53dcbc517cbc3450293242ae0c7bd
 
 logger = logging.getLogger(__name__)
 
@@ -108,19 +112,37 @@ class OpenRouterClient:
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
-        self.timeout = ClientTimeout(total=timeout_seconds)
+        self.timeout = httpx.Timeout(timeout_seconds)
         self.max_retries = max_retries
         self.initial_backoff_ms = initial_backoff_ms
+<<<<<<< HEAD
         self.session: Optional[aiohttp.ClientSession] = None
         self._connector = aiohttp.TCPConnector(limit=max_connections, enable_cleanup_closed=True)
 
     async def __aenter__(self):
         headers = _build_default_headers(self.api_key)
         self.session = aiohttp.ClientSession(headers=headers, timeout=self.timeout, connector=self._connector)
+=======
+        self.session: Optional[httpx.AsyncClient] = None
+
+    async def __aenter__(self):
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": os.getenv("OPENROUTER_REFERER", ""),  # Optional
+            "X-Title": os.getenv("OPENROUTER_TITLE", "FBA-Bench"),  # Optional
+        }
+        self.session = httpx.AsyncClient(
+            base_url=self.base_url,
+            headers=headers,
+            timeout=self.timeout,
+        )
+>>>>>>> 9a6313da3bf53dcbc517cbc3450293242ae0c7bd
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
+<<<<<<< HEAD
             await self.session.close()
             self.session = None
 
@@ -185,6 +207,9 @@ class OpenRouterClient:
         if last_exc:
             raise last_exc
         raise RuntimeError("OpenRouter request failed with unknown error")
+=======
+            await self.session.aclose()
+>>>>>>> 9a6313da3bf53dcbc517cbc3450293242ae0c7bd
 
     async def chat_completions(
         self,
@@ -237,6 +262,7 @@ class OpenRouterClient:
         if extra:
             payload.update(extra)
 
+<<<<<<< HEAD
         url = f"{self.base_url}/chat/completions"
         resp = await self._request_with_retries("POST", url, json=payload)
 
@@ -290,3 +316,75 @@ class OpenRouterClient:
             "cost": float(merged["cost"]),
             "raw": data,
         }
+=======
+        backoff_ms = self.initial_backoff_ms
+        for attempt in range(self.max_retries + 1):
+            try:
+                response = await self.session.post("/chat/completions", json=payload)
+                response.raise_for_status()
+
+                data = response.json()
+
+                # Extract response
+                choice = data["choices"][0]
+                content = choice["message"]["content"]
+
+                # Capture usage if present
+                usage = data.get("usage", {})
+                prompt_tokens = usage.get("prompt_tokens", 0)
+                completion_tokens = usage.get("completion_tokens", 0)
+                total_tokens = usage.get("total_tokens", prompt_tokens + completion_tokens)
+
+                # Estimate cost (OpenRouter provides this in some responses, fallback to model-specific)
+                cost = data.get("cost", 0.0)  # If provided
+                if not cost:
+                    # Rough estimate: $0.002 / 1k tokens (adjust per model if needed)
+                    cost = (total_tokens / 1000.0) * 0.002
+
+                logger.info(
+                    f"OpenRouter call succeeded: model={model}, tokens={total_tokens}, "
+                    f"cost=${cost:.6f}"
+                )
+
+                return {
+                    "content": content,
+                    "usage": {
+                        "prompt_tokens": prompt_tokens,
+                        "completion_tokens": completion_tokens,
+                        "total_tokens": total_tokens,
+                    },
+                    "cost": cost,
+                }
+
+            except httpx.HTTPStatusError as e:
+                status = e.response.status_code
+                if status == 429 and attempt < self.max_retries:
+                    wait_time = backoff_ms / 1000.0
+                    logger.warning(
+                        f"Rate limit (429) on attempt {attempt + 1}/{self.max_retries}, waiting {wait_time:.2f}s"
+                    )
+                    await asyncio.sleep(wait_time)
+                    backoff_ms *= 2
+                    continue
+                if status >= 500 and attempt < self.max_retries:
+                    wait_time = backoff_ms / 1000.0
+                    logger.warning(
+                        f"Server error ({status}) on attempt {attempt + 1}, waiting {wait_time:.2f}s"
+                    )
+                    await asyncio.sleep(wait_time)
+                    backoff_ms *= 2
+                    continue
+                logger.error(f"OpenRouter API error: {status} - {e}")
+                raise
+
+            except Exception as e:
+                logger.error(f"Unexpected error in OpenRouter call: {e}")
+                if attempt < self.max_retries:
+                    wait_time = backoff_ms / 1000.0
+                    await asyncio.sleep(wait_time)
+                    backoff_ms *= 2
+                    continue
+                raise
+
+        raise RuntimeError("Max retries exceeded for OpenRouter call")
+>>>>>>> 9a6313da3bf53dcbc517cbc3450293242ae0c7bd
