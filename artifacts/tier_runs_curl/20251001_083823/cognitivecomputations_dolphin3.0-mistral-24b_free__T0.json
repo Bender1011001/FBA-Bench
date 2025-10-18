@@ -1,9 +1,0 @@
-﻿{
-    "model":  "cognitivecomputations/dolphin3.0-mistral-24b:free",
-    "tier":  "T0",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

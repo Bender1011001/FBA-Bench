@@ -1,9 +1,0 @@
-﻿{
-    "model":  "moonshotai/kimi-k2:free",
-    "tier":  "T2",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

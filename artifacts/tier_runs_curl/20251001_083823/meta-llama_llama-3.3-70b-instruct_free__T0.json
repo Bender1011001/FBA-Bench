@@ -1,9 +1,0 @@
-﻿{
-    "model":  "meta-llama/llama-3.3-70b-instruct:free",
-    "tier":  "T0",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

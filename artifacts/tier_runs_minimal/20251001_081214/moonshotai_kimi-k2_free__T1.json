@@ -1,6 +1,0 @@
-{
-  "status": "error",
-  "model": "moonshotai/kimi-k2:free",
-  "tier": "T1",
-  "error": "401, message='Unauthorized', url=URL('https://openrouter.ai/api/v1/chat/completions')"
-}

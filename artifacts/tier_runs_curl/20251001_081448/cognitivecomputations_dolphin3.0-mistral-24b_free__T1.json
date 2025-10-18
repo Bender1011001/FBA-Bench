@@ -1,6 +1,0 @@
-﻿{
-    "model":  "cognitivecomputations/dolphin3.0-mistral-24b:free",
-    "tier":  "T1",
-    "status":  "error",
-    "error":  "The remote server returned an error: (401) Unauthorized."
-}

@@ -1,9 +1,0 @@
-﻿{
-    "model":  "deepseek/deepseek-chat-v3.1:free",
-    "tier":  "T0",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

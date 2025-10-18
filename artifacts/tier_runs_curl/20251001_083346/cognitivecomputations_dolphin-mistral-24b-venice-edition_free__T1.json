@@ -1,6 +1,0 @@
-﻿{
-    "model":  "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-    "tier":  "T1",
-    "status":  "error",
-    "error":  "The remote server returned an error: (401) Unauthorized."
-}

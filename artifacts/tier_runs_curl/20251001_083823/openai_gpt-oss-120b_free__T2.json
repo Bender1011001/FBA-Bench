@@ -1,9 +1,0 @@
-﻿{
-    "model":  "openai/gpt-oss-120b:free",
-    "tier":  "T2",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

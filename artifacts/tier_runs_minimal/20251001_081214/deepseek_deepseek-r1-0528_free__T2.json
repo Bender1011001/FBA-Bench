@@ -1,6 +1,0 @@
-{
-  "status": "error",
-  "model": "deepseek/deepseek-r1-0528:free",
-  "tier": "T2",
-  "error": "401, message='Unauthorized', url=URL('https://openrouter.ai/api/v1/chat/completions')"
-}

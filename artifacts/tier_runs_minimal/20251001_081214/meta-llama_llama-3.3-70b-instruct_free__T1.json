@@ -1,6 +1,0 @@
-{
-  "status": "error",
-  "model": "meta-llama/llama-3.3-70b-instruct:free",
-  "tier": "T1",
-  "error": "401, message='Unauthorized', url=URL('https://openrouter.ai/api/v1/chat/completions')"
-}

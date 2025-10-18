@@ -1,9 +1,0 @@
-﻿{
-    "model":  "google/gemini-2.0-flash-exp:free",
-    "tier":  "T1",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

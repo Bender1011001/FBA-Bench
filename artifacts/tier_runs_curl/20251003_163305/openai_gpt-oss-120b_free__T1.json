@@ -1,6 +1,0 @@
-﻿{
-    "model":  "openai/gpt-oss-120b:free",
-    "tier":  "T1",
-    "status":  "error",
-    "error":  "The remote server returned an error: (404) Not Found. | body: {\"error\":{\"message\":\"No endpoints found for openai/gpt-oss-120b:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}"
-}

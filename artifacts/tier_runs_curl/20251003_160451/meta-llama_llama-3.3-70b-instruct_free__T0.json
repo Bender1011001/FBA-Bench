@@ -1,6 +1,0 @@
-﻿{
-    "model":  "meta-llama/llama-3.3-70b-instruct:free",
-    "tier":  "T0",
-    "status":  "error",
-    "error":  "The remote server returned an error: (400) Bad Request. | body: {\"error\":{\"message\":\"Provider returned error\",\"code\":400,\"metadata\":{\"raw\":\"{\\\"details\\\":{\\\"_errors\\\":[],\\\"response_format\\\":{\\\"_errors\\\":[],\\\"type\\\":{\\\"_errors\\\":[\\\"Invalid discriminator value. Expected \u0027json_schema\u0027 | \u0027json_object\u0027\\\"]}}},\\\"issues\\\":[{\\\"code\\\":\\\"invalid_union_discriminator\\\",\\\"options\\\":[\\\"json_schema\\\",\\\"json_object\\\"],\\\"path\\\":[\\\"response_format\\\",\\\"type\\\"],\\\"message\\\":\\\"Invalid discriminator value. Expected \u0027json_schema\u0027 | \u0027json_object\u0027\\\"}]}\",\"provider_name\":\"Venice\"}},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}"
-}

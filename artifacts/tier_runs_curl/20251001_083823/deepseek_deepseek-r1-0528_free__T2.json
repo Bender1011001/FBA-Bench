@@ -1,9 +1,0 @@
-﻿{
-    "model":  "deepseek/deepseek-r1-0528:free",
-    "tier":  "T2",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

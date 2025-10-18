@@ -1,6 +1,0 @@
-﻿{
-    "model":  "deepseek/deepseek-chat-v3.1:free",
-    "tier":  "T0",
-    "status":  "error",
-    "error":  "The remote server returned an error: (401) Unauthorized."
-}

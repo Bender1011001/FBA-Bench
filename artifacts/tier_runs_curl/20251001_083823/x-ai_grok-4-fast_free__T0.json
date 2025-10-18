@@ -1,9 +1,0 @@
-﻿{
-    "model":  "x-ai/grok-4-fast:free",
-    "tier":  "T0",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}

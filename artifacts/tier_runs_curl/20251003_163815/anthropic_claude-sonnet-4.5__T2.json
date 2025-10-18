@@ -1,6 +1,0 @@
-﻿{
-    "model":  "anthropic/claude-sonnet-4.5",
-    "tier":  "T2",
-    "status":  "error",
-    "error":  "The remote server returned an error: (403) Forbidden. | body: {\"error\":{\"message\":\"Key limit exceeded. Manage it using https://openrouter.ai/settings/keys\",\"code\":403}}"
-}

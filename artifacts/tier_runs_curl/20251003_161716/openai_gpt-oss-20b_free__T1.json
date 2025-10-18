@@ -1,6 +1,0 @@
-﻿{
-    "model":  "openai/gpt-oss-20b:free",
-    "tier":  "T1",
-    "status":  "error",
-    "error":  "The remote server returned an error: (429) Too Many Requests. | body: {\"error\":{\"message\":\"Rate limit exceeded: free-models-per-min. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"16\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"1759533480000\"},\"provider_name\":null}},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}"
-}

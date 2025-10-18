@@ -1,9 +1,0 @@
-﻿{
-    "model":  "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-    "tier":  "T1",
-    "status":  "mismatch",
-    "content":  "",
-    "provider":  null,
-    "model_used":  null,
-    "usage":  null
-}
