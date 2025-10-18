@@ -2871,3 +2871,6 @@ htmlcov/
 .vscode/extensions.json
 .vscode-test/
 .vscode
+# Generated benchmark artifacts and result data
+artifacts/
+results/
