@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+    volumes:
+      # TRICK: Mount the local 'core' repo directly into the container
+      # This allows you to edit Core code and see changes in Enterprise immediately
+      - ../FBA-Bench-core/src/fba_bench_core:/usr/local/lib/python3.11/site-packages/fba_bench_core
+    environment:
+      - PYTHONPATH=/app:/usr/local/lib/python3.11/site-packages
+    depends_on:
+      - redis
+      - postgres
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    volumes:
+      # Same mount for the worker node
+      - ../FBA-Bench-core/src/fba_bench_core:/usr/local/lib/python3.11/site-packages/fba_bench_core
