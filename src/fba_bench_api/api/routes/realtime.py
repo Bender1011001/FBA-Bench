@@ -55,7 +55,7 @@ from fastapi import (
     WebSocketDisconnect,
 )
 
-from fba_bench_api.core.redis_client import get_pubsub, get_redis
+from fba_bench_api.core.redis_client import RedisClient
 from fba_bench_api.core.state import dashboard_service
 from fba_bench_api.models.api import RecentEventsResponse, SimulationSnapshot
 
@@ -331,6 +331,7 @@ async def websocket_realtime(
     # Prepare per-connection state
     subscribed_topics: Set[str] = set()
     stop_event = asyncio.Event()
+    redis_client = RedisClient()
     pubsub = None
 
     async def _send_safe(payload: Dict[str, Any]) -> None:
@@ -401,13 +402,15 @@ async def websocket_realtime(
                 pass
         finally:
             try:
-                await pubsub.close()
+                if pubsub:
+                    await pubsub.close()
             except Exception:
                 pass
 
     # Initialize Redis pubsub
     try:
-        pubsub = await get_pubsub()
+        await redis_client.connect()
+        pubsub = redis_client._redis.pubsub()
     except Exception as exc:
         # Degraded mode: keep WS open for ping/pong and protocol-level acks, but no realtime forwarding
         logger.warning("Redis unavailable, running WS in degraded mode: %s", exc)
@@ -542,8 +545,7 @@ async def websocket_realtime(
                     await _send_safe({"type": "error", "error": "redis_unavailable"})
                     continue
                 try:
-                    r = await get_redis()
-                    await r.publish(topic, json.dumps(data))
+                    await redis_client.publish(topic, json.dumps(data))
                 except Exception as exc:
                     logger.error("Publish failed topic=%s: %s", topic, exc)
                     await _send_safe({"type": "error", "error": "redis_error"})
@@ -560,16 +562,18 @@ async def websocket_realtime(
         except Exception:
             pass
         try:
-            await pubsub.close()
+            if pubsub:
+                await pubsub.close()
+        except Exception:
+            pass
+        try:
+            await redis_client.close()
         except Exception:
             pass
         try:
             await websocket.close()
         except Exception:
             pass
-    # Note: Single canonical implementation lives above using Redis pub/sub.
-    # Keep this docstring placeholder removed to avoid double-accept behavior.
-    # ConnectionManager-based alternative has been removed to prevent duplication.
 
 
 # Back-compat alias: keep /ws/events endpoint working by delegating to /ws/realtime

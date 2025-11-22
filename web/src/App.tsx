@@ -5,6 +5,7 @@ import AccountPage from './components/AccountPage'
 import OnboardingOverlay from './components/OnboardingOverlay'
 import HelpButton from './components/HelpButton'
 import HelpModal from './components/HelpModal'
+import Dashboard from './components/Dashboard'
 import { createTokenStorage } from '@fba-enterprise/auth-client/tokenStorage'
 
 function App() {
@@ -105,6 +106,7 @@ function App() {
       <>
         <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
           <h1 style={{ textAlign: 'center' }}>FBA Enterprise</h1>
+          <Dashboard token={storage.getToken()} />
           <AccountPage onUnauthorized={handleUnauthorized} onSignOut={handleSignOut} />
           <HelpButton onClick={handleHelpClick} />
         </div>
