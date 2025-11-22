@@ -123,3 +123,8 @@ clearml-data/
 
 # Temporary directories
 .tmp/
+# Node modules
+node_modules/
+
+# Corrupt learning data
+learning_data/*.corrupt
