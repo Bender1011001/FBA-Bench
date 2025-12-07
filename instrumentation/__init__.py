@@ -1,6 +1,16 @@
-"""
-Lightweight instrumentation package shim.
-"""
-from .tracer import setup_tracing
+from src.instrumentation.agent_tracer import AgentTracer
+from src.instrumentation.simulation_tracer import SimulationTracer
 
-__all__ = ["setup_tracing"]
+try:
+    from src.instrumentation.clearml_tracking import ClearMLTracker
+except ImportError:
+    # Fallback or mock if ClearML is not available or fails to import
+    class ClearMLTracker:
+        def __init__(self, *args, **kwargs):
+            pass
+
+__all__ = [
+    "AgentTracer",
+    "ClearMLTracker",
+    "SimulationTracer",
+]

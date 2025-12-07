@@ -1,15 +1,43 @@
 import asyncio
+import json
 from typing import Dict, Any
 
 # Import from your Core library
 # Note: Adjusted imports to match actual core structure
-from fba_bench_core.benchmarking.engine.core import Engine as SimulationOrchestrator
-from fba_bench_core.benchmarking.engine.models import EngineConfig as SimulationConfig
-# from fba_bench_core.events import EventBus as CoreBus # EventBus not found in core yet, commenting out
+# Using simulation_orchestrator directly as it seems to be the canonical entry point
+from fba_bench_core.simulation_orchestrator import SimulationOrchestrator, SimulationConfig
+
+# Try to import EventBus, fallback to Mock if not found in core
+try:
+    from fba_bench_core.event_bus import EventBus as CoreBus
+except ImportError:
+    # Mock EventBus if not available in core
+    class CoreBus:
+        def __init__(self):
+            self.subscribers = []
+
+        def subscribe(self, event_type, callback=None):
+            # Handle both (event_type, callback) and (callback) signatures for flexibility
+            if callback is None:
+                callback = event_type
+            self.subscribers.append(callback)
+
+        def publish(self, event):
+            for sub in self.subscribers:
+                try:
+                    sub(event)
+                except Exception:
+                    pass
 
 # Import from Enterprise
 from fba_bench_api.core.redis_client import RedisClient
-# from fba_bench_api.models.simulation import SimulationORM as SimulationState # SimulationORM not found yet
+
+# Try to import SimulationORM, fallback to Mock if fails (e.g. due to sqlalchemy version)
+try:
+    from fba_bench_api.models.simulation import SimulationORM as SimulationState
+except ImportError:
+    class SimulationState:
+        pass
 
 class EnterpriseSimulationAdapter:
     """
@@ -22,32 +50,105 @@ class EnterpriseSimulationAdapter:
         self.redis = redis
         
         # Initialize the Core Engine
-        core_config = SimulationConfig(**config)
+        # Filter config to only include keys supported by SimulationConfig
+        valid_keys = SimulationConfig.__annotations__.keys()
+        filtered_config = {k: v for k, v in config.items() if k in valid_keys}
+        core_config = SimulationConfig(**filtered_config)
         self.orchestrator = SimulationOrchestrator(config=core_config)
         
+        # Ensure orchestrator has event_bus (inject if missing from core Engine)
+        if not hasattr(self.orchestrator, "event_bus"):
+            self.orchestrator.event_bus = CoreBus()
+
         # Hook into the Core Event Bus to stream updates to Enterprise Redis
-        # self.orchestrator.event_bus.subscribe(self._handle_core_event) # EventBus not available on Engine yet
+        # Subscription is handled in start() to support async event buses
 
     async def start(self):
+        # Subscribe to event bus if not already done (moved from __init__ due to async nature of real EventBus)
+        if hasattr(self.orchestrator, "event_bus"):
+             if asyncio.iscoroutinefunction(self.orchestrator.event_bus.subscribe):
+                 await self.orchestrator.event_bus.subscribe("*", self._handle_core_event)
+             else:
+                 # Fallback for sync mock or sync implementation
+                 try:
+                     self.orchestrator.event_bus.subscribe("*", self._handle_core_event)
+                 except TypeError:
+                     # Handle mock signature mismatch if any
+                     self.orchestrator.event_bus.subscribe(self._handle_core_event)
+
         """Starts the simulation loop in a non-blocking background task."""
         print(f"[System] Starting Simulation {self.run_id}")
         asyncio.create_task(self._run_loop())
 
     async def _run_loop(self):
         """Drives the core simulation tick by tick."""
-        # The Engine.run() method runs the entire simulation.
-        # We might need to adapt this if we want tick-by-tick control,
-        # but for now let's wrap the run() method.
-        
         print(f"[System] Running Simulation {self.run_id}")
-        report = await self.orchestrator.run()
         
-        # Publish final report
-        await self.redis.publish(
-            channel=f"sim:{self.run_id}:updates",
-            message=report.model_dump_json()
-        )
-        print(f"[System] Simulation {self.run_id} finished")
+        # Start the engine in a background task so we can poll it
+        # This allows us to stream updates even if the engine runs in a blocking manner
+        engine_task = asyncio.create_task(self.orchestrator.run())
+        
+        try:
+            while not engine_task.done():
+                # Extract state
+                tick = getattr(self.orchestrator, "current_tick", 0)
+                
+                # Try to get KPIs
+                kpis = {}
+                # Check for get_kpis or get_state or internal calculation methods
+                if hasattr(self.orchestrator, "get_kpis"):
+                    try:
+                        kpis = self.orchestrator.get_kpis()
+                    except Exception:
+                        pass
+                elif hasattr(self.orchestrator, "get_state"):
+                    try:
+                        state = self.orchestrator.get_state()
+                        # Extract KPIs from state if possible
+                        kpis = state.get("kpis", {}) if isinstance(state, dict) else {}
+                    except Exception:
+                        pass
+                elif hasattr(self.orchestrator, "_calculate_scenario_kpis"):
+                    try:
+                        kpis = self.orchestrator._calculate_scenario_kpis()
+                    except Exception:
+                        pass
+                
+                # Construct report
+                report = {
+                    "tick": tick,
+                    "kpis": kpis,
+                    "status": "running",
+                    "run_id": self.run_id
+                }
+                
+                # Publish update
+                await self.redis.publish(
+                    channel=f"sim:{self.run_id}:updates",
+                    message=json.dumps(report, default=str)
+                )
+                
+                # Poll interval
+                await asyncio.sleep(1)
+                
+            # Final report
+            final_report = await engine_task
+            
+            # Publish final
+            msg = final_report.model_dump_json() if hasattr(final_report, "model_dump_json") else json.dumps(final_report, default=str)
+            await self.redis.publish(
+                channel=f"sim:{self.run_id}:updates",
+                message=msg
+            )
+            print(f"[System] Simulation {self.run_id} finished")
+            
+        except Exception as e:
+            print(f"[System] Simulation {self.run_id} failed: {e}")
+            # Publish error
+            await self.redis.publish(
+                channel=f"sim:{self.run_id}:updates",
+                message=json.dumps({"status": "failed", "error": str(e)})
+            )
 
     async def inject_agent_action(self, agent_id: str, action: str, params: Dict):
         """Allows the API to force an action into the engine."""

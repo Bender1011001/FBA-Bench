@@ -44,3 +44,8 @@ tzdata>=2023.3
 alembic>=1.13
 bcrypt>=4.0
 fba-bench-core>=1.0.0
+tiktoken
+websockets
+aiosqlite
+kubernetes
+gymnasium

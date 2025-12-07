@@ -7,6 +7,7 @@ benchmark executions in the FBA Benchmark system.
 
 import asyncio
 import logging
+import os
 import random
 from datetime import datetime, timezone
 from typing import Any, Dict, List

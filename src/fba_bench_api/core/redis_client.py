@@ -50,3 +50,12 @@ class RedisClient:
             value = json.dumps(value)
             
         await self._redis.lpush(key, value)
+
+# Singleton instance
+_redis_client = RedisClient()
+
+async def get_redis() -> RedisClient:
+    """Dependency to get the Redis client instance."""
+    if not _redis_client._redis:
+        await _redis_client.connect()
+    return _redis_client

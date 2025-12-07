@@ -135,14 +135,20 @@ const Dashboard: React.FC = () => {
     loadDashboardData();
     
     // Set up real-time data updates
-    if (connectionStatus.wsConnected) {
-      wsService.subscribe('experiment_update');
+    if (connectionStatus.wsConnected && experiments.length > 0) {
+      // Subscribe to updates for all running experiments
+      const runningExperiments = experiments.filter(e => e.status === 'running');
+      runningExperiments.forEach(exp => {
+        wsService.subscribe(`sim:${exp.id}:updates`);
+      });
+      
+      return () => {
+        runningExperiments.forEach(exp => {
+          wsService.unsubscribe(`sim:${exp.id}:updates`);
+        });
+      };
     }
-    
-    return () => {
-      wsService.unsubscribe('experiment_update');
-    };
-  }, [connectionStatus.wsConnected]);
+  }, [connectionStatus.wsConnected, experiments]);
 
   const loadDashboardData = async () => {
     try {

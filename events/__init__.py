@@ -15,6 +15,14 @@ from typing import Any, Callable, Optional
 
 from event_bus import EventBus, get_event_bus
 from fba_events.adversarial import AdversarialResponse
+from fba_events.compat import (
+    BaseEvent,
+    CompetitorPricesUpdated,
+    CompetitorState,
+    ProductPriceUpdated,
+    SaleOccurred,
+    SetPriceCommand,
+)
 
 __all__ = [
     "EventBus",
@@ -26,6 +34,12 @@ __all__ = [
     "TickEvent",
     "BudgetWarning",
     "BudgetExceeded",
+    "BaseEvent",
+    "CompetitorPricesUpdated",
+    "CompetitorState",
+    "ProductPriceUpdated",
+    "SaleOccurred",
+    "SetPriceCommand",
 ]
 
 

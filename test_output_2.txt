@@ -1,0 +1,45 @@
+C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\pytest_asyncio\plugin.py:252: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-8.3.4, pluggy-1.5.0 -- C:\ProgramData\anaconda3\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests
+configfile: pytest.ini
+plugins: anyio-4.11.0, Faker-37.11.0, asyncio-1.2.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 4 items
+
+tests\unit\test_dependencies.py::test_get_tenant_context_valid_token PASSED [ 25%]
+tests\unit\test_dependencies.py::test_get_tenant_context_missing_claims FAILED [ 50%]
+tests\unit\test_dependencies.py::test_get_tenant_context_invalid_token PASSED [ 75%]
+tests\unit\test_dependencies.py::test_get_tenant_context_missing_credentials PASSED [100%]
+
+================================== FAILURES ===================================
+___________________ test_get_tenant_context_missing_claims ____________________
+
+    @pytest.mark.asyncio
+    async def test_get_tenant_context_missing_claims():
+        """Test that a token missing required claims raises 401."""
+        # Missing tenant_id
+        payload = {
+            "sub": "user-456",
+            "roles": ["admin"]
+        }
+        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+    
+        with pytest.raises(HTTPException) as exc_info:
+            await get_tenant_context(credentials)
+    
+        assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+>       assert "Token missing required tenant or user claims" in exc_info.value.detail
+E       AssertionError: assert 'Token missing required tenant or user claims' in 'Authentication failed'
+E        +  where 'Authentication failed' = HTTPException(status_code=401, detail='Authentication failed').detail
+E        +    where HTTPException(status_code=401, detail='Authentication failed') = <ExceptionInfo HTTPException(status_code=401, detail='Authentication failed') tblen=2>.value
+
+tests\unit\test_dependencies.py:41: AssertionError
+=========================== short test summary info ===========================
+FAILED tests\unit\test_dependencies.py::test_get_tenant_context_missing_claims
+========================= 1 failed, 3 passed in 0.29s =========================

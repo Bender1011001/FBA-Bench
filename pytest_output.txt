@@ -1,0 +1,2389 @@
+C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\pytest_asyncio\plugin.py:252: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-8.3.4, pluggy-1.5.0
+rootdir: C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise
+configfile: pytest.ini
+plugins: anyio-4.11.0, Faker-37.11.0, asyncio-1.2.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1008 items / 68 errors / 1 skipped
+
+<Dir FBA-Bench-Enterprise>
+  <Package integration_tests>
+    <Module test_performance_benchmarks.py>
+      <Class TestPerformanceIntegration>
+        <Coroutine test_complete_performance_validation>
+    <Module test_scientific_reproducibility.py>
+      <Class TestReproducibilityIntegration>
+        <Coroutine test_complete_reproducibility_validation>
+    <Module test_tier1_requirements.py>
+      <Class TestTier1Integration>
+        <Coroutine test_complete_tier1_benchmark_run>
+  <Dir medusa_experiments>
+    <Module test_medusa.py>
+      <UnitTestCase TestMedusaEvolution>
+        <TestCaseFunction test_analyzer_integration>
+        <TestCaseFunction test_benchmark_integration>
+        <TestCaseFunction test_budget_exceeded>
+        <TestCaseFunction test_dry_run_simulation>
+        <TestCaseFunction test_error_handling_missing_api_key>
+        <TestCaseFunction test_file_structure>
+        <TestCaseFunction test_generation_detection>
+        <TestCaseFunction test_genesis_validation>
+        <TestCaseFunction test_single_evolution_cycle>
+        <TestCaseFunction test_trainer_init>
+  <Module test_api_server.py>
+    <Class TestAPIServerBasic>
+      <Function test_server_starts_successfully>
+      <Coroutine test_health_endpoint>
+      <Coroutine test_root_endpoint>
+  <Package tests>
+    <Dir benchmarking>
+      <Module test_advanced_metrics.py>
+        <UnitTestCase TestAdvancedCognitiveMetrics>
+          <TestCaseFunction test_calculate_abstract_reasoning>
+          <TestCaseFunction test_calculate_causal_reasoning>
+          <TestCaseFunction test_calculate_learning_adaptation>
+          <TestCaseFunction test_calculate_logical_consistency>
+          <TestCaseFunction test_calculate_memory_efficiency>
+          <TestCaseFunction test_calculate_metacognition>
+          <TestCaseFunction test_calculate_multi_step_planning>
+          <TestCaseFunction test_calculate_overall>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestBusinessIntelligenceMetrics>
+          <TestCaseFunction test_calculate_business_outcome_prediction>
+          <TestCaseFunction test_calculate_competitive_intelligence>
+          <TestCaseFunction test_calculate_market_trend_analysis>
+          <TestCaseFunction test_calculate_overall>
+          <TestCaseFunction test_calculate_resource_allocation>
+          <TestCaseFunction test_calculate_risk_assessment>
+          <TestCaseFunction test_calculate_roi_optimization>
+          <TestCaseFunction test_calculate_strategic_decision_making>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestTechnicalPerformanceMetrics>
+          <TestCaseFunction test_calculate_error_handling>
+          <TestCaseFunction test_calculate_latency_throughput>
+          <TestCaseFunction test_calculate_optimization_effectiveness>
+          <TestCaseFunction test_calculate_overall>
+          <TestCaseFunction test_calculate_performance_degradation>
+          <TestCaseFunction test_calculate_resource_utilization>
+          <TestCaseFunction test_calculate_scalability>
+          <TestCaseFunction test_calculate_system_resilience>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestEthicalSafetyMetrics>
+          <TestCaseFunction test_calculate_bias_detection>
+          <TestCaseFunction test_calculate_content_safety>
+          <TestCaseFunction test_calculate_ethical_decision_making>
+          <TestCaseFunction test_calculate_fairness_assessment>
+          <TestCaseFunction test_calculate_overall>
+          <TestCaseFunction test_calculate_privacy_protection>
+          <TestCaseFunction test_calculate_safety_protocol>
+          <TestCaseFunction test_calculate_transparency_explainability>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestCrossDomainMetrics>
+          <TestCaseFunction test_calculate_cross_domain_consistency>
+          <TestCaseFunction test_calculate_cross_domain_evaluation>
+          <TestCaseFunction test_calculate_domain_adaptation>
+          <TestCaseFunction test_calculate_generalization_ability>
+          <TestCaseFunction test_calculate_knowledge_transfer>
+          <TestCaseFunction test_calculate_overall>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestStatisticalAnalysisFramework>
+          <TestCaseFunction test_calculate_anomaly_detection>
+          <TestCaseFunction test_calculate_confidence_interval>
+          <TestCaseFunction test_calculate_correlation_analysis>
+          <TestCaseFunction test_calculate_effect_size>
+          <TestCaseFunction test_calculate_overall>
+          <TestCaseFunction test_calculate_predictive_modeling>
+          <TestCaseFunction test_calculate_statistical_significance>
+          <TestCaseFunction test_calculate_trend_analysis>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestComparativeAnalysisEngine>
+          <TestCaseFunction test_calculate_benchmark_standardization>
+          <TestCaseFunction test_calculate_head_to_head_comparison>
+          <TestCaseFunction test_calculate_improvement_tracking>
+          <TestCaseFunction test_calculate_normalization_methods>
+          <TestCaseFunction test_calculate_overall>
+          <TestCaseFunction test_calculate_performance_gap_analysis>
+          <TestCaseFunction test_calculate_performance_ranking>
+          <TestCaseFunction test_calculate_strength_weakness_profiling>
+          <TestCaseFunction test_init>
+      <Module test_engine.py>
+        <UnitTestCase TestBenchmarkEngine>
+          <TestCaseFunction test_aggregate_results>
+          <TestCaseFunction test_cleanup_completed_runs>
+          <TestCaseFunction test_collect_metrics>
+          <TestCaseFunction test_create_benchmark_run>
+          <TestCaseFunction test_execute_scenario_failure>
+          <TestCaseFunction test_execute_scenario_success>
+          <TestCaseFunction test_get_benchmark_status>
+          <TestCaseFunction test_get_benchmark_status_not_found>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_list_benchmarks>
+          <TestCaseFunction test_run_benchmark_already_running>
+          <TestCaseFunction test_run_benchmark_invalid_config>
+          <TestCaseFunction test_run_benchmark_success>
+          <TestCaseFunction test_stop_benchmark>
+          <TestCaseFunction test_stop_benchmark_not_found>
+          <TestCaseFunction test_validate_configuration_invalid>
+          <TestCaseFunction test_validate_configuration_missing_required_fields>
+          <TestCaseFunction test_validate_configuration_valid>
+        <UnitTestCase TestBenchmarkResult>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_to_dict>
+        <UnitTestCase TestBenchmarkRun>
+          <TestCaseFunction test_add_run_result>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_to_dict>
+      <Module test_engine_unit.py>
+        <Function test_config_validation_parallelism_and_empty_scenarios>
+        <Coroutine test_timeout_handling>
+        <Coroutine test_retries_flaky_scenario>
+        <Coroutine test_metrics_application_mean_aggregates>
+        <Coroutine test_validator_injection>
+      <Module test_metrics.py>
+        <UnitTestCase TestBaseMetric>
+          <TestCaseFunction test_calculate>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_validate_context>
+        <UnitTestCase TestMetricResult>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_is_valid>
+          <TestCaseFunction test_to_dict>
+        <UnitTestCase TestCognitiveMetrics>
+          <TestCaseFunction test_calculate>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestBusinessMetrics>
+          <TestCaseFunction test_calculate>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestTechnicalMetrics>
+          <TestCaseFunction test_calculate>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestEthicalMetrics>
+          <TestCaseFunction test_calculate>
+          <TestCaseFunction test_init>
+        <UnitTestCase TestStatisticalValidator>
+          <TestCaseFunction test_calculate_confidence_interval>
+          <TestCaseFunction test_calculate_confidence_interval_empty_data>
+          <TestCaseFunction test_detect_outliers>
+          <TestCaseFunction test_detect_outliers_no_outliers>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_perform_significance_test>
+        <UnitTestCase TestConfidenceInterval>
+          <TestCaseFunction test_contains>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_to_dict>
+          <TestCaseFunction test_width>
+        <UnitTestCase TestSignificanceTest>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_to_dict>
+        <UnitTestCase TestOutlierDetector>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_to_dict>
+        <UnitTestCase TestMetricsRegistry>
+          <TestCaseFunction test_clear>
+          <TestCaseFunction test_get_all_metrics>
+          <TestCaseFunction test_get_metric>
+          <TestCaseFunction test_get_metric_not_found>
+          <TestCaseFunction test_init>
+          <TestCaseFunction test_list_metrics>
+          <TestCaseFunction test_register_metric>
+          <TestCaseFunction test_register_metric_duplicate>
+          <TestCaseFunction test_unregister_metric>
+          <TestCaseFunction test_unregister_metric_not_found>
+      <Module test_metrics_unit.py>
+        <Function test_registry_contains_expected_keys>
+        <Function test_get_metric_unknown_raises_keyerror>
+        <Function test_technical_performance_basic>
+        <Function test_accuracy_exact_and_overlap>
+        <Function test_keyword_coverage_unique_and_freq>
+        <Function test_policy_compliance_counts_variants>
+        <Function test_robustness_modes>
+        <Function test_cost_efficiency_supported_and_na>
+        <Function test_completeness_top_level_and_nested>
+        <Function test_custom_scriptable_safe_eval_and_blocking>
+        <Function test_aggregation_numeric_boolean_and_by_field>
+      <Module test_scenarios_unit.py>
+        <Function test_complex_marketplace_generate_input_determinism>
+        <Function test_research_summarization_generate_input_determinism>
+        <Function test_multiturn_tool_use_generate_input_determinism>
+        <Function test_complex_marketplace_config_validation_errors>
+        <Function test_research_summarization_config_validation_errors>
+        <Function test_multiturn_tool_use_config_validation_errors>
+        <Function test_complex_marketplace_postprocess_rounding_normalization>
+        <Function test_complex_marketplace_generate_input_schema[params0]>
+        <Function test_complex_marketplace_generate_input_schema[params1]>
+      <Module test_validators_unit.py>
+        <Function test_registry_register_and_get_and_list>
+        <Function test_structural_consistency_malformed_runs>
+        <Function test_determinism_check_detects_inconsistency_and_tolerance>
+        <Function test_schema_adherence_minimal_contract_missing_and_type>
+        <Function test_outlier_detection_mad_flags_outlier_configurable_k>
+        <Function test_fairness_balance_detects_imbalance>
+        <Function test_reproducibility_metadata_warning_and_error_paths>
+    <Dir contracts>
+      <Module test_event_contracts.py>
+        <Function test_sale_processed_event_contract>
+        <Function test_trust_score_calculation_requested_event_contract>
+    <Package integration>
+      <Dir runners>
+        <Module test_crewai_runner.py>
+          <Function test_crewai_runner_not_installed>
+          <Coroutine test_crewai_runner_success_with_fake_lib>
+          <Function test_crewai_runner_config_validation_error>
+        <Module test_langchain_runner.py>
+          <Function test_langchain_runner_not_installed>
+          <Coroutine test_langchain_runner_success_with_fake_lib>
+        <Module test_runner_registry.py>
+          <Function test_supported_runners_contains_expected_keys>
+          <Function test_create_runner_unknown_key_raises_value_error>
+          <Function test_deprecated_runner_factory_import_raises_runtimeerror>
+          <Function test_crewai_runner_instantiation_path>
+          <Function test_langchain_runner_instantiation_path>
+      <Dir skills>
+        <Module test_calculator_skill.py>
+          <Function test_calculator_valid_expressions[2+2*3-8.0]>
+          <Function test_calculator_valid_expressions[(2+2)*3-12.0]>
+          <Function test_calculator_valid_expressions[2**3-8.0]>
+          <Function test_calculator_valid_expressions[12*(3+4)-84.0]>
+          <Function test_calculator_valid_expressions[10/4-2.5]>
+          <Function test_calculator_valid_expressions[10//4-2.0]>
+          <Function test_calculator_valid_expressions[10%4-2.0]>
+          <Function test_calculator_valid_expressions[-5 + 2--3.0]>
+          <Function test_calculator_valid_expressions[--5-5.0]>
+          <Function test_calculator_invalid_expressions[import os]>
+          <Function test_calculator_invalid_expressions[__import__('os')]>
+          <Function test_calculator_invalid_expressions[os.system('echo hi')]>
+          <Function test_calculator_invalid_expressions[lambda x: x]>
+          <Function test_calculator_invalid_expressions[a + 1]>
+          <Function test_calculator_invalid_expressions[2**(1000)]>
+          <Function test_calculator_invalid_expressions[1/0]>
+        <Module test_extract_fields_skill.py>
+          <Function test_extract_fields_basic_kv_lines>
+          <Function test_extract_fields_json_like_block_and_missing_fields>
+        <Module test_lookup_skill.py>
+          <Function test_lookup_hit_and_miss_case_sensitive>
+        <Module test_skill_registry.py>
+          <Function test_list_skills_includes_expected>
+          <Function test_create_known_and_unknown_skill>
+          <Function test_list_skills_metadata_has_schemas>
+        <Module test_summarize_skill.py>
+          <Function test_summarize_truncates_under_token_budget>
+          <Function test_summarize_edge_cases[Just one sentence here.-100-Just one sentence here.]>
+          <Function test_summarize_edge_cases[A. B. C.-2-A.]>
+          <Function test_summarize_invalid_input>
+        <Module test_transform_text_skill.py>
+          <Function test_transform_text_operations_apply_in_order>
+          <Function test_transform_text_unknown_operation_raises>
+      <Module test_agent_integration.py>
+        <Class TestAgentIntegration>
+          <Coroutine test_agent_initialization>
+          <Coroutine test_agent_input_processing>
+          <Coroutine test_agent_action_execution>
+          <Coroutine test_agent_metrics_collection>
+          <Coroutine test_scenario_initialization>
+          <Coroutine test_scenario_agent_setup>
+          <Coroutine test_scenario_tick_update>
+          <Coroutine test_scenario_performance_evaluation>
+          <Coroutine test_benchmark_engine_initialization>
+          <Coroutine test_benchmark_engine_agent_registration>
+          <Coroutine test_benchmark_engine_scenario_registration>
+          <Coroutine test_benchmark_engine_metric_registration>
+          <Coroutine test_benchmark_engine_execution>
+          <Coroutine test_benchmark_engine_multiple_agents>
+          <Coroutine test_benchmark_engine_multiple_scenarios>
+          <Coroutine test_benchmark_engine_multiple_metrics>
+          <Coroutine test_benchmark_engine_error_handling>
+          <Coroutine test_benchmark_engine_persistence>
+          <Coroutine test_benchmark_engine_concurrent_execution>
+      <Module test_alembic_migrations.py>
+        <Function test_alembic_upgrade_and_downgrade_cycle>
+      <Module test_baseline_agent.py>
+        <Function test_planning_rule_generates_steps[Plan how to research, summarize, and present Q3 results under 200 tokens]>
+        <Function test_planning_rule_generates_steps[objective1]>
+        <Function test_summarization_rule_truncates_under_limit>
+        <Function test_extraction_rule_returns_json_fields>
+        <Function test_compute_with_calculator_tool>
+        <Function test_lookup_rule_uses_context_table>
+        <Function test_constraints_enforcer_applies_truncation>
+        <Function test_safety_redacts_blocklisted_terms>
+        <Function test_memory_hint_is_used_on_second_call>
+        <Function test_error_path_faulty_tool_graceful_failure>
+        <Coroutine test_async_wrapper_works>
+      <Module test_database_api_integration.py>
+        <Class TestDatabaseAPIIntegration>
+          <Function test_database_service_save_and_get_scenario>
+          <Function test_database_service_get_scenarios>
+          <Function test_database_service_save_and_get_agent>
+          <Function test_database_service_get_agents>
+          <Function test_database_service_save_and_get_metric>
+          <Function test_database_service_get_metrics>
+          <Function test_database_service_save_and_get_benchmark>
+          <Function test_database_service_get_benchmarks>
+          <Function test_database_service_get_benchmarks_with_pagination>
+          <Function test_api_service_health_check>
+          <Function test_api_service_create_and_get_scenario>
+          <Function test_api_service_get_scenarios>
+          <Function test_api_service_get_nonexistent_scenario>
+          <Function test_api_service_create_and_get_agent>
+          <Function test_api_service_get_agents>
+          <Function test_api_service_get_nonexistent_agent>
+          <Function test_api_service_create_and_get_metric>
+          <Function test_api_service_get_metrics>
+      <Module test_engine_integration.py>
+        <Coroutine test_engine_integration_end_to_end>
+      <Module test_metrics_integration.py>
+        <Coroutine test_engine_with_function_metrics_and_aggregation>
+      <Module test_metrics_workflows.py>
+        <Class TestMetricsWorkflows>
+          <Coroutine test_agent_metrics_collection>
+          <Coroutine test_scenario_metrics_collection>
+          <Coroutine test_advanced_cognitive_metrics_workflow>
+          <Coroutine test_business_intelligence_metrics_workflow>
+          <Coroutine test_technical_performance_metrics_workflow>
+          <Coroutine test_ethical_safety_metrics_workflow>
+          <Coroutine test_cross_domain_metrics_workflow>
+          <Coroutine test_statistical_analysis_workflow>
+          <Coroutine test_comparative_analysis_workflow>
+          <Coroutine test_metrics_aggregation_workflow>
+          <Coroutine test_metrics_validation_workflow>
+          <Coroutine test_metrics_persistence_workflow>
+          <Coroutine test_real_time_metrics_collection>
+          <Coroutine test_metrics_correlation_analysis>
+      <Module test_scenario_execution.py>
+        <Class TestScenarioExecution>
+          <Coroutine test_scenario_initialization>
+          <Coroutine test_scenario_agent_setup>
+          <Coroutine test_scenario_tick_execution>
+          <Coroutine test_scenario_performance_evaluation>
+          <Coroutine test_scenario_validation_summary>
+          <Coroutine test_scenario_execution_summary>
+          <Coroutine test_scenario_domain_parameter_validation>
+          <Coroutine test_scenario_template_execution>
+          <Coroutine test_scenario_with_benchmark_engine>
+          <Coroutine test_scenario_error_handling>
+          <Coroutine test_scenario_concurrent_execution>
+          <Coroutine test_scenario_validation_integration>
+          <Coroutine test_scenario_result_persistence>
+      <Module test_scenarios_integration.py>
+        <Coroutine test_complex_marketplace_run_integration>
+        <Coroutine test_research_summarization_run_integration>
+        <Coroutine test_multiturn_tool_use_run_integration_variants>
+      <Module test_state_manager.py>
+        <Coroutine test_set_get_round_trip_basic_types>
+        <Coroutine test_set_get_round_trip_special_types_datetime_uuid>
+        <Coroutine test_ttl_expiration_behavior>
+        <Coroutine test_keys_and_clear_and_pattern_filtering>
+        <Coroutine test_incr_atomic_and_ttl_on_first_creation>
+        <Coroutine test_exists_and_delete_semantics>
+        <Coroutine test_notify_publish_channel>
+      <Module test_validators_integration.py>
+        <Coroutine test_validators_integration_with_engine>
+    <Module test_conftest_integrity.py>
+      <Function test_db_session_fixture>
+      <Function test_test_user_fixture>
+      <Function test_client_fixture>
+    <Module test_experiment_cli.py>
+      <Function test_config_parsing>
+      <Function test_parameter_combinations>
+      <Function test_simulation_runner_setup>
+      <Function test_experiment_manager>
+    <Module test_experiment_cli_production.py>
+      <Function test_experiment_cli_sequential_run>
+    <Module test_experiment_cli_standalone.py>
+      <Function test_config_parsing>
+      <Function test_parameter_combinations>
+      <Function test_output_directory_creation>
+      <Function test_parameter_formatting>
+      <Function test_configuration_validation>
+    <Module test_infrastructure_scalability.py>
+      <Coroutine test_llm_batcher_add_request>
+      <Coroutine test_llm_batcher_processing>
+      <Coroutine test_llm_batcher_cost_estimation>
+      <Coroutine test_llm_batcher_deduplication>
+      <Coroutine test_distributed_event_bus_publish_subscribe>
+      <Coroutine test_distributed_event_bus_partitioning>
+      <Coroutine test_resource_manager_token_allocation>
+      <Coroutine test_resource_manager_cost_tracking>
+      <Coroutine test_resource_manager_memory_monitoring>
+      <Coroutine test_fast_forward_engine_detect_idle>
+      <Coroutine test_fast_forward_engine_fast_forward_to_tick>
+      <Coroutine test_distributed_coordinator_spawn_worker>
+      <Coroutine test_distributed_coordinator_tick_progression>
+      <Coroutine test_performance_monitor_resource_tracking>
+      <Coroutine test_performance_monitor_bottleneck_detection>
+      <Coroutine test_performance_monitor_generate_report>
+      <Coroutine test_event_bus_distributed_backend_integration>
+    <Module test_invariants.py>
+      <Function test_accounting_identity_every_tick[0-30]>
+      <Function test_accounting_identity_every_tick[42-365]>
+      <Function test_no_negative_inventory_units>
+      <Function test_fee_engine_closure>
+      <Function test_rng_isolation>
+    <Module test_observability_enhancements.py>
+      <UnitTestCase TestObservabilityEnhancements>
+        <TestCaseFunction test_agent_error_handler>
+        <TestCaseFunction test_llm_friendly_tool_wrapper>
+        <TestCaseFunction test_observability_alert_system>
+        <TestCaseFunction test_observability_config>
+        <TestCaseFunction test_smart_command_processor>
+        <TestCaseFunction test_trace_analyzer>
+    <Module test_personas_simple.py>
+      <Coroutine test_irrational_slasher>
+      <Coroutine test_slow_follower>
+      <Coroutine test_persona_diversity>
+    <Module test_reproducibility.py>
+      <Function test_golden_run_matches_snapshot>
+      <Function test_golden_run_365_days_snapshot>
+      <Function test_different_seeds_produce_different_results[0]>
+      <Function test_different_seeds_produce_different_results[1337]>
+      <Function test_different_seeds_produce_different_results[42]>
+      <Function test_different_seeds_produce_different_results[12345]>
+      <Function test_hash_stability_across_runs>
+      <Function test_configuration_change_detection>
+      <Function test_minimal_run_snapshot>
+      <Function test_golden_event_stream_matches_snapshot[42]>
+      <Function test_ci_reproducibility_check[42]>
+    <Module test_reproducibility_enhancements.py>
+      <Class TestLLMCache>
+        <Function test_cache_initialization>
+        <Function test_prompt_hash_generation>
+        <Function test_cache_storage_and_retrieval>
+        <Function test_cache_miss>
+        <Function test_deterministic_mode>
+        <Function test_cache_validation>
+        <Function test_cache_statistics>
+      <Class TestDeterministicLLMClient>
+        <Coroutine test_deterministic_mode_caching>
+        <Coroutine test_mode_switching>
+        <Coroutine test_response_validation>
+        <Function test_statistics_tracking>
+      <Class TestSimSeed>
+        <Function test_master_seed_setting>
+        <Function test_component_seed_isolation>
+        <Function test_seed_derivation>
+        <Function test_rng_source_registration>
+        <Function test_determinism_validation>
+        <Function test_audit_trail>
+        <Function test_component_context>
+      <Class TestGoldenMaster>
+        <Function test_golden_master_recording>
+        <Function test_golden_master_comparison>
+        <Function test_tolerance_configuration>
+        <Function test_reproducibility_report_generation>
+      <Class TestSimulationModeController>
+        <Function test_mode_controller_initialization>
+        <Function test_mode_switching>
+        <Function test_component_registration>
+        <Function test_mode_status_reporting>
+        <Function test_temporary_mode_context>
+        <Function test_health_check>
+      <Class TestReproducibilityConfig>
+        <Function test_config_creation>
+        <Function test_config_validation>
+        <Function test_config_serialization>
+        <Function test_predefined_configs>
+        <Function test_global_config_management>
+      <Class TestEventSnapshots>
+        <Function test_llm_interaction_logging>
+        <Function test_enhanced_snapshot_creation>
+        <Function test_snapshot_reproducibility_validation>
+      <Class TestIntegration>
+        <Function test_end_to_end_deterministic_simulation>
+        <Coroutine test_llm_deterministic_workflow>
+        <Function test_mode_switching_integration>
+      <Class TestPerformance>
+        <Function test_cache_performance>
+        <Function test_seed_generation_performance>
+        <Function test_golden_master_comparison_performance>
+    <Dir unit>
+      <Dir constraints>
+        <Module test_token_counter.py>
+          <Function test_estimate_ratio_uses_substring_model_matching>
+          <Function test_ratio_overrides_from_env_file>
+          <Function test_tiktoken_exact_with_alias_and_fallback>
+          <Function test_provider_hint_guides_alias_resolution_tiktoken>
+          <Function test_unknown_model_falls_back_to_cl100k_in_tiktoken>
+          <Function test_estimate_ratios_for_multiple_providers>
+      <Module test_advanced_agent.py>
+        <Coroutine test_decide_basic_returns_toolcall>
+        <Coroutine test_respects_cost_floor_even_with_smoothing>
+        <Coroutine test_undercuts_competitor_when_safe>
+        <Coroutine test_smoothing_limits_per_tick_change>
+        <Coroutine test_inventory_pressure_adjusts_price_down_when_high_inventory>
+        <Coroutine test_demand_signal_adjusts_price_up_when_strong>
+        <Coroutine test_decide_when_no_competitor_data_available>
+        <Coroutine test_handles_nonpositive_cost>
+        <Coroutine test_handles_zero_or_negative_inventory>
+        <Coroutine test_missing_product_data_resilient>
+      <Module test_advanced_agent_metering.py>
+        <Coroutine test_advanced_agent_forwarding_and_usage>
+        <Coroutine test_advanced_agent_hard_exceed_raises_and_records>
+      <Module test_budget_metering.py>
+        <Coroutine test_warning_threshold_tokens_per_tick>
+        <Coroutine test_hard_exceed_total_tokens_per_tick>
+        <Coroutine test_per_tool_calls_limit_tick>
+        <Coroutine test_tick_reset_preserves_run_totals>
+      <Module test_customer_reputation_service.py>
+        <Function test_update_reputation_score[event_input0-52.0]>
+        <Function test_update_reputation_score[event_input1-86.0]>
+        <Function test_update_reputation_score[event_input2-4.0]>
+        <Function test_update_reputation_score[event_input3-75.3]>
+        <Function test_update_reputation_score[event_input4-61.0]>
+        <Function test_update_reputation_score[event_input5-58.5]>
+        <Function test_update_reputation_score[event_input6-80.5]>
+        <Function test_update_reputation_score[event_input7-78.0]>
+        <Function test_update_reputation_score[event_input8-79.0]>
+        <Function test_update_reputation_score[event_input9-69.5]>
+        <Function test_update_reputation_score[event_input10-69.0]>
+        <Function test_update_reputation_score[event_input11-69.5]>
+        <Function test_update_reputation_score[event_input12-69.3]>
+        <Function test_update_reputation_score[event_input13-70.0]>
+        <Function test_update_reputation_score[event_input14-0.0]>
+        <Function test_update_reputation_score[event_input15-100.0]>
+        <Function test_update_reputation_score[event_input16-50.3]>
+      <Module test_dependencies.py>
+        <Coroutine test_get_tenant_context_valid_token>
+        <Coroutine test_get_tenant_context_missing_claims>
+        <Coroutine test_get_tenant_context_invalid_token>
+        <Coroutine test_get_tenant_context_missing_credentials>
+      <Module test_deployment_manager.py>
+        <Coroutine test_deployment_lifecycle>
+        <Coroutine test_deploy_multiple_and_query_status>
+      <Module test_distributed_coordinator_timeout.py>
+        <Coroutine test_tick_ack_timeout_removes_missing_worker_and_advances_tick>
+        <Coroutine test_tick_ack_timeout_uses_env_override>
+      <Module test_dual_memory_manager.py>
+        <Class TestDualMemoryManager>
+          <Coroutine test_initialization_with_default_config>
+          <Coroutine test_initialization_with_custom_store_types>
+          <Coroutine test_create_memory_store_with_in_memory_type>
+          <Coroutine test_create_memory_store_with_unsupported_type>
+          <Coroutine test_store_event_with_memory_enabled>
+          <Coroutine test_store_event_with_memory_disabled>
+          <Coroutine test_retrieve_memories_with_memory_enabled>
+          <Coroutine test_retrieve_memories_with_memory_disabled>
+          <Coroutine test_get_memory_summary>
+          <Coroutine test_clear_memories>
+          <Coroutine test_update_tick>
+          <Coroutine test_should_reflect>
+          <Coroutine test_get_memories_for_promotion>
+          <Coroutine test_promote_memories>
+      <Module test_error_handler.py>
+        <Class TestErrorHandler>
+          <Function test_handle_common_errors_for_agent_with_value_error>
+          <Function test_handle_common_errors_for_agent_with_key_error>
+          <Function test_handle_common_errors_for_agent_with_type_error>
+          <Function test_handle_common_errors_for_agent_with_attribute_error>
+          <Function test_handle_common_errors_for_agent_with_runtime_error>
+          <Function test_handle_common_errors_for_agent_with_unexpected_error>
+          <Function test_handle_common_errors_for_agent_without_agent>
+          <Function test_handle_common_errors_for_agent_with_complex_error_message>
+      <Module test_eventbus_logging.py>
+        <Coroutine test_log_event_emits_info>
+        <Coroutine test_log_event_can_be_disabled>
+        <Coroutine test_log_event_redacts_sensitive_fields>
+      <Module test_eventbus_recording.py>
+        <Coroutine test_recording_cap_and_truncation>
+        <Coroutine test_redaction_policy_for_sensitive_fields>
+      <Module test_experiment_model_validation.py>
+        <Function test_experiment_model_validation>
+        <Function test_config_template_save>
+        <Function test_benchmark_config_request>
+        <Function test_experiment_create_request>
+        <Function test_experiment_status_response>
+        <Function test_experiment_results_response>
+        <Function test_experiment_participant>
+        <Function test_experiment_run_create>
+        <Function test_experiment_run>
+        <Function test_run_status>
+        <Function test_run_progress>
+        <Function test_experiment_run_response>
+      <Module test_fee_calculation_service_2025.py>
+        <Function test_money_math_referral_minimum_enforced_decimal_safe>
+        <Function test_fee_percentage_and_profit_margin_percent_do_not_divide_money>
+        <Function test_billable_weight_large_standard_uses_dim_weight_and_additional_pounds>
+        <Function test_storage_fee_decimal_daily_prorating_uses_30_days_and_returns_money>
+        <Function test_surcharges_peak_remote_hazmat>
+        <Function test_penalties_ltsf_and_low_price_penalty>
+        <Function test_summary_by_type_totals_and_averages>
+      <Module test_infrastructure.py>
+        <UnitTestCase TestDistributedEventBus>
+          <TestCaseFunction test_create_partition>
+          <TestCaseFunction test_event_bus_initialization>
+          <TestCaseFunction test_event_bus_start_stop>
+          <TestCaseFunction test_publish_and_subscribe>
+          <TestCaseFunction test_register_worker>
+        <UnitTestCase TestDistributedCoordinator>
+          <TestCaseFunction test_coordinate_tick_progression>
+          <TestCaseFunction test_coordinator_initialization>
+          <TestCaseFunction test_coordinator_start_stop>
+          <TestCaseFunction test_spawn_worker>
+      <Module test_infrastructure_complete.py>
+        <UnitTestCase TestDistributedEventBus>
+          <TestCaseFunction test_create_partition>
+          <TestCaseFunction test_event_bus_initialization>
+          <TestCaseFunction test_event_bus_start_stop>
+          <TestCaseFunction test_publish_and_subscribe>
+          <TestCaseFunction test_register_worker>
+        <UnitTestCase TestDistributedCoordinator>
+          <TestCaseFunction test_aggregate_simulation_results>
+          <TestCaseFunction test_coordinate_tick_progression>
+          <TestCaseFunction test_coordinator_initialization>
+          <TestCaseFunction test_coordinator_start_stop>
+          <TestCaseFunction test_spawn_worker>
+        <UnitTestCase TestFastForwardEngine>
+          <TestCaseFunction test_engine_initialization>
+          <TestCaseFunction test_engine_start_stop>
+          <TestCaseFunction test_fast_forward_to_tick>
+        <UnitTestCase TestLLMBatcher>
+          <TestCaseFunction test_add_request>
+          <TestCaseFunction test_batcher_initialization>
+          <TestCaseFunction test_batcher_start_stop>
+          <TestCaseFunction test_set_batch_parameters>
+        <UnitTestCase TestPerformanceMonitor>
+          <TestCaseFunction test_detect_bottlenecks>
+          <TestCaseFunction test_monitor_initialization>
+          <TestCaseFunction test_monitor_start_stop>
+          <TestCaseFunction test_monitor_system_resources>
+          <TestCaseFunction test_suggest_optimizations>
+        <UnitTestCase TestResourceManager>
+          <TestCaseFunction test_allocate_tokens>
+          <TestCaseFunction test_enforce_cost_limits>
+          <TestCaseFunction test_get_current_token_usage>
+          <TestCaseFunction test_record_llm_cost>
+          <TestCaseFunction test_resource_manager_initialization>
+          <TestCaseFunction test_set_global_token_cap>
+          <TestCaseFunction test_set_token_budget>
+        <UnitTestCase TestDeploymentManager>
+          <TestCaseFunction test_deploy_docker_compose>
+          <TestCaseFunction test_deploy_kubernetes>
+          <TestCaseFunction test_deploy_local>
+          <TestCaseFunction test_deployment_manager_initialization>
+          <TestCaseFunction test_set_default_resources>
+          <TestCaseFunction test_status_docker_compose>
+      <Module test_integration.py>
+        <Class TestIntegrationStatus>
+          <Function test_integration_status_creation>
+          <Function test_integration_status_defaults>
+          <Function test_integration_status_to_dict>
+        <Class TestIntegrationConfig>
+          <Function test_integration_config_creation>
+          <Function test_integration_config_defaults>
+          <Function test_integration_config_to_dict>
+        <Class TestSimpleEventBus>
+          <Coroutine test_event_bus_publish>
+          <Coroutine test_event_bus_subscribe_and_publish>
+          <Coroutine test_event_bus_multiple_subscribers>
+          <Coroutine test_event_bus_handler_exception>
+          <Function test_event_bus_get_event_history_filtered>
+        <Class TestIntegrationManager>
+          <Function test_integration_manager_initialization>
+          <Coroutine test_integration_manager_initialize>
+          <Coroutine test_integration_manager_initialize_already_initialized>
+          <Coroutine test_integration_manager_initialize_agent_runners_success>
+          <Coroutine test_integration_manager_initialize_agent_runners_unavailable>
+          <Coroutine test_integration_manager_initialize_agent_runners_exception>
+          <Coroutine test_integration_manager_initialize_legacy_metrics_success>
+          <Coroutine test_integration_manager_initialize_legacy_metrics_unavailable>
+          <Coroutine test_integration_manager_initialize_infrastructure_success>
+          <Coroutine test_integration_manager_initialize_event_bus_success>
+          <Coroutine test_integration_manager_initialize_memory_systems_success>
+          <Coroutine test_integration_manager_initialize_memory_systems_unavailable>
+          <Coroutine test_integration_manager_initialize_custom_integrations_success>
+          <Coroutine test_integration_manager_initialize_custom_integrations_missing_function>
+          <Function test_integration_manager_get_integration_status>
+          <Function test_integration_manager_is_integration_available>
+          <Function test_integration_manager_get_integration_capabilities>
+          <Coroutine test_integration_manager_create_agent_runner_success>
+          <Coroutine test_integration_manager_create_agent_runner_unavailable>
+          <Coroutine test_integration_manager_create_agent_runner_exception>
+          <Coroutine test_integration_manager_run_legacy_metrics_success>
+          <Coroutine test_integration_manager_run_legacy_metrics_unavailable>
+          <Coroutine test_integration_manager_run_legacy_metrics_exception>
+          <Coroutine test_integration_manager_deploy_benchmark_success>
+          <Coroutine test_integration_manager_deploy_benchmark_unavailable>
+          <Coroutine test_integration_manager_deploy_benchmark_exception>
+          <Coroutine test_integration_manager_publish_event_success>
+          <Coroutine test_integration_manager_publish_event_unavailable>
+          <Coroutine test_integration_manager_subscribe_to_event_success>
+          <Coroutine test_integration_manager_subscribe_to_event_unavailable>
+          <Function test_integration_manager_set_benchmark_engine>
+          <Function test_integration_manager_set_config_manager>
+          <Coroutine test_integration_manager_run_integrated_benchmark_success>
+          <Coroutine test_integration_manager_run_integrated_benchmark_not_initialized>
+          <Coroutine test_integration_manager_run_integrated_benchmark_no_engine>
+          <Coroutine test_integration_manager_run_integrated_benchmark_exception>
+        <Class TestAgentAdapterConfig>
+          <Function test_agent_adapter_config_creation>
+          <Function test_agent_adapter_config_defaults>
+          <Function test_agent_adapter_config_to_dict>
+        <Class TestAgentExecutionResult>
+          <Function test_agent_execution_result_creation>
+          <Function test_agent_execution_result_defaults>
+          <Function test_agent_execution_result_to_dict>
+        <Class TestAgentAdapter>
+          <Function test_agent_adapter_initialization>
+          <Coroutine test_agent_adapter_initialize_success>
+          <Coroutine test_agent_adapter_initialize_already_initialized>
+          <Coroutine test_agent_adapter_initialize_agent_runners_unavailable>
+          <Coroutine test_agent_adapter_initialize_create_runner_failure>
+          <Coroutine test_agent_adapter_initialize_runner_init_failure>
+          <Coroutine test_agent_adapter_execute_decision_success>
+          <Coroutine test_agent_adapter_execute_decision_not_initialized>
+          <Coroutine test_agent_adapter_execute_decision_exception>
+          <Coroutine test_agent_adapter_execute_decision_timeout>
+          <Coroutine test_agent_adapter_execute_decision_retry_success>
+          <Function test_agent_adapter_convert_to_simulation_state_without_models>
+          <Function test_agent_adapter_convert_to_simulation_state_with_models>
+          <Function test_agent_adapter_collect_metrics_disabled>
+          <Function test_agent_adapter_collect_metrics_enabled_no_history>
+          <Function test_agent_adapter_collect_metrics_enabled_with_history>
+          <Function test_agent_adapter_start_trace_disabled>
+          <Function test_agent_adapter_start_trace_enabled>
+          <Function test_agent_adapter_end_trace_disabled>
+          <Function test_agent_adapter_end_trace_enabled>
+          <Function test_agent_adapter_end_trace_with_error>
+          <Function test_agent_adapter_get_execution_history>
+          <Function test_agent_adapter_get_metrics>
+          <Coroutine test_agent_adapter_health_check_not_initialized>
+          <Coroutine test_agent_adapter_health_check_no_runner>
+          <Coroutine test_agent_adapter_health_check_healthy>
+          <Coroutine test_agent_adapter_health_check_high_failure_rate>
+          <Coroutine test_agent_adapter_health_check_exception>
+          <Coroutine test_agent_adapter_cleanup_success>
+          <Coroutine test_agent_adapter_cleanup_exception>
+        <Class TestAgentAdapterFactory>
+          <Function test_agent_adapter_factory_create_adapter>
+          <Coroutine test_agent_adapter_factory_create_and_initialize_adapter_success>
+          <Coroutine test_agent_adapter_factory_create_and_initialize_adapter_failure>
+        <Class TestMetricsAdapterConfig>
+          <Function test_metrics_adapter_config_creation>
+          <Function test_metrics_adapter_config_defaults>
+          <Function test_metrics_adapter_config_to_dict>
+        <Class TestMetricsAdapterResult>
+          <Function test_metrics_adapter_result_creation>
+          <Function test_metrics_adapter_result_defaults>
+          <Function test_metrics_adapter_result_to_dict>
+        <Class TestMetricsAdapter>
+          <Function test_metrics_adapter_initialization>
+          <Coroutine test_metrics_adapter_initialize_success>
+          <Coroutine test_metrics_adapter_initialize_already_initialized>
+          <Coroutine test_metrics_adapter_initialize_legacy_metrics_unavailable>
+          <Coroutine test_metrics_adapter_initialize_exception>
+          <Coroutine test_metrics_adapter_calculate_metrics_success>
+          <Coroutine test_metrics_adapter_calculate_metrics_not_initialized>
+          <Coroutine test_metrics_adapter_calculate_metrics_legacy_disabled>
+          <Coroutine test_metrics_adapter_calculate_metrics_new_disabled>
+          <Coroutine test_metrics_adapter_calculate_metrics_merge_disabled>
+          <Coroutine test_metrics_adapter_calculate_metrics_exception>
+          <Coroutine test_metrics_adapter_calculate_legacy_metrics_success>
+          <Coroutine test_metrics_adapter_calculate_legacy_metrics_no_suite>
+          <Coroutine test_metrics_adapter_calculate_legacy_metrics_exception>
+          <Coroutine test_metrics_adapter_calculate_new_metrics_success>
+          <Coroutine test_metrics_adapter_calculate_new_metrics_with_transformer>
+          <Coroutine test_metrics_adapter_calculate_new_metrics_metric_exception>
+          <Coroutine test_metrics_adapter_calculate_new_metrics_transformer_exception>
+          <Coroutine test_metrics_adapter_calculate_new_metrics_exception>
+          <Function test_metrics_adapter_merge_metrics_both_empty>
+          <Function test_metrics_adapter_merge_metrics_legacy_only>
+          <Function test_metrics_adapter_merge_metrics_new_only>
+          <Function test_metrics_adapter_merge_metrics_both_with_scores>
+          <Function test_metrics_adapter_merge_metrics_new_without_scores>
+          <Function test_metrics_adapter_get_transformer_normalize>
+      <Module test_llm_cache.py>
+        <Class TestLLMCache>
+          <Function test_initialization>
+          <Coroutine test_close_success>
+          <Coroutine test_close_with_exception>
+          <Coroutine test_context_manager_success>
+          <Coroutine test_context_manager_with_exception_in_close>
+          <Coroutine test_context_manager_with_exception_in_body>
+          <Coroutine test_multiple_close_calls>
+          <Coroutine test_close_with_complex_exception>
+      <Module test_market_simulator.py>
+        <Coroutine test_market_simulator_demand_and_sale_and_inventory_update>
+      <Module test_memory_experiments.py>
+        <UnitTestCase TestDualMemoryManager>
+          <TestCaseFunction test_consolidate_memory>
+          <TestCaseFunction test_dual_memory_manager_initialization>
+          <TestCaseFunction test_forget_working_memory>
+          <TestCaseFunction test_get_memory_statistics>
+          <TestCaseFunction test_retrieve_long_term_memory>
+          <TestCaseFunction test_retrieve_working_memory>
+          <TestCaseFunction test_search_long_term_memory>
+          <TestCaseFunction test_search_working_memory>
+          <TestCaseFunction test_store_long_term_memory>
+          <TestCaseFunction test_store_working_memory>
+        <UnitTestCase TestExperimentProtocols>
+          <TestCaseFunction test_define_protocol>
+          <TestCaseFunction test_experiment_protocols_initialization>
+          <TestCaseFunction test_get_experiment>
+          <TestCaseFunction test_get_experiment_results>
+          <TestCaseFunction test_get_protocol>
+          <TestCaseFunction test_list_experiments>
+          <TestCaseFunction test_list_protocols>
+          <TestCaseFunction test_run_experiment>
+        <UnitTestCase TestMemoryMetrics>
+          <TestCaseFunction test_calculate_memory_age_distribution>
+          <TestCaseFunction test_calculate_memory_capacity>
+          <TestCaseFunction test_calculate_memory_efficiency>
+          <TestCaseFunction test_calculate_memory_importance_distribution>
+          <TestCaseFunction test_calculate_memory_tag_distribution>
+          <TestCaseFunction test_calculate_recall_accuracy>
+          <TestCaseFunction test_calculate_retention_rate>
+          <TestCaseFunction test_calculate_retrieval_time>
+          <TestCaseFunction test_generate_memory_report>
+          <TestCaseFunction test_memory_metrics_initialization>
+      <Module test_models.py>
+        <UnitTestCase TestCompetitor>
+          <TestCaseFunction test_competitor_add_product>
+          <TestCaseFunction test_competitor_add_recent_activity>
+          <TestCaseFunction test_competitor_add_strength>
+          <TestCaseFunction test_competitor_add_weakness>
+          <TestCaseFunction test_competitor_calculate_threat_level>
+          <TestCaseFunction test_competitor_from_dict>
+          <TestCaseFunction test_competitor_get_competitive_advantage>
+          <TestCaseFunction test_competitor_initialization>
+          <TestCaseFunction test_competitor_to_dict>
+          <TestCaseFunction test_competitor_update_market_share>
+        <UnitTestCase TestProduct>
+          <TestCaseFunction test_product_add_competitor>
+          <TestCaseFunction test_product_add_customer_review>
+          <TestCaseFunction test_product_add_feature>
+          <TestCaseFunction test_product_add_sale>
+          <TestCaseFunction test_product_calculate_average_rating>
+          <TestCaseFunction test_product_calculate_profit_margin>
+          <TestCaseFunction test_product_calculate_total_revenue>
+          <TestCaseFunction test_product_calculate_total_sales>
+          <TestCaseFunction test_product_from_dict>
+          <TestCaseFunction test_product_get_best_selling_period>
+          <TestCaseFunction test_product_initialization>
+          <TestCaseFunction test_product_to_dict>
+          <TestCaseFunction test_product_update_inventory>
+          <TestCaseFunction test_product_update_price>
+        <UnitTestCase TestSalesResult>
+          <TestCaseFunction test_sales_result_add_customer_feedback>
+          <TestCaseFunction test_sales_result_apply_discount>
+          <TestCaseFunction test_sales_result_calculate_commission>
+          <TestCaseFunction test_sales_result_calculate_delivery_time>
+          <TestCaseFunction test_sales_result_calculate_profit>
+          <TestCaseFunction test_sales_result_from_dict>
+          <TestCaseFunction test_sales_result_initialization>
+          <TestCaseFunction test_sales_result_to_dict>
+          <TestCaseFunction test_sales_result_update_delivery_date>
+          <TestCaseFunction test_sales_result_update_order_status>
+          <TestCaseFunction test_sales_result_update_quantity>
+          <TestCaseFunction test_sales_result_update_unit_price>
+      <Module test_models_and_configs.py>
+        <Function test_yaml_overlay_merge>
+        <Function test_advanced_agent_uses_central_params>
+        <Coroutine test_financial_forecast_ma_fallback>
+        <Coroutine test_financial_analyst_skill_params>
+        <Function test_dynamic_pricing_elasticity_and_history>
+        <Coroutine test_planner_strategy_and_cleanup>
+      <Module test_money_negative.py>
+        <Function test_negative_constructor_allows_negative_cents>
+        <Function test_from_dollars_negative_string_and_decimal>
+        <Function test_negation_and_arithmetic_with_negative_values>
+        <Function test_overflow_protection_on_large_negative_values>
+      <Module test_observability.py>
+        <UnitTestCase TestAlertSystem>
+          <TestCaseFunction test_alert_system_initialization>
+          <TestCaseFunction test_create_alert_rule>
+          <TestCaseFunction test_delete_alert_rule>
+          <TestCaseFunction test_evaluate_alert_rules>
+          <TestCaseFunction test_get_alert_history>
+          <TestCaseFunction test_notify_subscribers>
+          <TestCaseFunction test_subscribe_to_alerts>
+          <TestCaseFunction test_unsubscribe_from_alerts>
+          <TestCaseFunction test_update_alert_rule>
+        <UnitTestCase TestObservabilityConfig>
+          <TestCaseFunction test_get_alerts_config>
+          <TestCaseFunction test_get_config>
+          <TestCaseFunction test_get_logging_config>
+          <TestCaseFunction test_get_metrics_config>
+          <TestCaseFunction test_get_tracing_config>
+          <TestCaseFunction test_load_config_from_file>
+          <TestCaseFunction test_observability_config_initialization>
+          <TestCaseFunction test_save_config_to_file>
+          <TestCaseFunction test_set_alerts_config>
+          <TestCaseFunction test_set_config>
+          <TestCaseFunction test_set_logging_config>
+          <TestCaseFunction test_set_metrics_config>
+          <TestCaseFunction test_set_tracing_config>
+        <UnitTestCase TestTraceAnalyzer>
+          <TestCaseFunction test_add_trace>
+          <TestCaseFunction test_calculate_average_duration>
+          <TestCaseFunction test_detect_anomalies>
+          <TestCaseFunction test_find_traces_by_operation>
+          <TestCaseFunction test_find_traces_by_tag>
+          <TestCaseFunction test_find_traces_by_time_range>
+          <TestCaseFunction test_generate_trace_report>
+          <TestCaseFunction test_get_trace>
+          <TestCaseFunction test_identify_patterns>
+          <TestCaseFunction test_trace_analyzer_initialization>
+      <Module test_observability_config.py>
+        <Function test_from_env_defaults_and_types>
+        <Function test_from_env_with_values>
+        <Function test_from_yaml_success_and_validation>
+        <Function test_from_yaml_invalid_file_raises>
+        <Function test_from_yaml_invalid_values_raise>
+      <Module test_packaging_imports.py>
+        <Function test_import_top_level_packages>
+        <Function test_import_representative_submodules>
+      <Module test_plugins.py>
+        <UnitTestCase TestPluginFramework>
+          <TestCaseFunction test_execute_plugin>
+          <TestCaseFunction test_get_plugin>
+          <TestCaseFunction test_get_plugin_status>
+          <TestCaseFunction test_get_plugins_by_type>
+          <TestCaseFunction test_load_plugin>
+          <TestCaseFunction test_plugin_framework_initialization>
+          <TestCaseFunction test_register_plugin>
+          <TestCaseFunction test_register_plugin_type>
+          <TestCaseFunction test_resolve_plugin_dependencies>
+          <TestCaseFunction test_unload_plugin>
+          <TestCaseFunction test_unregister_plugin>
+        <UnitTestCase TestBaseAgentPlugin>
+          <TestCaseFunction test_base_agent_plugin_cleanup>
+          <TestCaseFunction test_base_agent_plugin_execute>
+          <TestCaseFunction test_base_agent_plugin_execute_without_initialization>
+          <TestCaseFunction test_base_agent_plugin_get_info>
+          <TestCaseFunction test_base_agent_plugin_initialization>
+          <TestCaseFunction test_base_agent_plugin_initialize>
+        <UnitTestCase TestBaseScenarioPlugin>
+          <TestCaseFunction test_base_scenario_plugin_cleanup>
+          <TestCaseFunction test_base_scenario_plugin_execute>
+          <TestCaseFunction test_base_scenario_plugin_execute_without_initialization>
+          <TestCaseFunction test_base_scenario_plugin_get_info>
+          <TestCaseFunction test_base_scenario_plugin_get_scenario_config>
+          <TestCaseFunction test_base_scenario_plugin_initialization>
+          <TestCaseFunction test_base_scenario_plugin_initialize>
+      <Module test_product_model.py>
+        <Function test_product_accepts_money_price_and_cost>
+        <Function test_product_accepts_numeric_price_and_cost>
+        <Function test_product_to_dict_preserves_money_objects>
+      <Module test_scenarios.py>
+        <UnitTestCase TestCurriculumValidator>
+          <TestCaseFunction test_add_curriculum_template>
+          <TestCaseFunction test_add_validation_rule>
+          <TestCaseFunction test_curriculum_validator_initialization>
+          <TestCaseFunction test_delete_curriculum_template>
+          <TestCaseFunction test_delete_validation_rule>
+          <TestCaseFunction test_get_all_curriculum_templates>
+          <TestCaseFunction test_get_curriculum_template>
+          <TestCaseFunction test_update_curriculum_template>
+          <TestCaseFunction test_update_validation_rule>
+          <TestCaseFunction test_validate_curriculum>
+          <TestCaseFunction test_validate_curriculum_with_errors>
+        <UnitTestCase TestScenarioFramework>
+          <TestCaseFunction test_create_scenario>
+          <TestCaseFunction test_create_scenario_category>
+          <TestCaseFunction test_create_scenario_from_template>
+          <TestCaseFunction test_create_scenario_template>
+          <TestCaseFunction test_delete_scenario>
+          <TestCaseFunction test_execute_scenario>
+          <TestCaseFunction test_generate_scenario_report>
+          <TestCaseFunction test_get_scenario>
+          <TestCaseFunction test_get_scenario_execution_history>
+          <TestCaseFunction test_get_scenarios_by_category>
+          <TestCaseFunction test_scenario_framework_initialization>
+          <TestCaseFunction test_update_scenario>
+          <TestCaseFunction test_validate_scenario>
+          <TestCaseFunction test_validate_scenario_with_errors>
+      <Module test_settings.py>
+        <Function test_defaults_and_env_precedence>
+        <Function test_yaml_overlay_precedence>
+        <Function test_protected_env_defaults[production-True-True-True-False]>
+        <Function test_protected_env_defaults[prod-True-True-True-False]>
+        <Function test_protected_env_defaults[staging-True-True-True-False]>
+        <Function test_protected_env_defaults[development-False-False-False-True]>
+        <Function test_protected_env_defaults[dev-False-False-False-True]>
+        <Function test_protected_env_defaults[-False-False-False-True]>
+        <Function test_db_url_preference>
+        <Function test_redis_url_preference>
+        <Function test_logging_settings>
+        <Function test_cors_defaults_and_override>
+      <Module test_supply_chain_service.py>
+        <Coroutine test_supply_chain_schedules_and_delivers_inventory>
+        <Coroutine test_supply_chain_disruption_delays_and_reduces_fulfillment>
+      <Module test_trust_score_service.py>
+        <Function test_get_current_trust_score_deprecated_and_raises>
+        <Function test_calculate_trust_score_within_bounds[0-feedback0-30]>
+        <Function test_calculate_trust_score_within_bounds[3-feedback1-10]>
+        <Function test_calculate_trust_score_within_bounds[10-feedback2-90]>
+        <Function test_calculate_trust_score_within_bounds[0-feedback3-1]>
+      <Module test_validators.py>
+        <Class TestEnvironmentState>
+          <Function test_initialization>
+          <Function test_hash_calculation>
+        <Class TestDeterministicEnvironment>
+          <Function test_initialization>
+          <Function test_initialization_with_random_seed>
+          <Function test_activate>
+          <Function test_deactivate>
+          <Function test_context_manager>
+          <Function test_generate_derived_seeds>
+          <Function test_validate_reproducibility>
+          <Function test_create_reproducible_config>
+          <Function test_load_reproducible_config>
+          <Function test_load_reproducible_config_missing_info>
+          <Function test_get_environment_report>
+        <Class TestDeterministicContext>
+          <Function test_initialization>
+          <Function test_initialization_with_random_seed>
+          <Function test_push_context>
+          <Function test_push_context_with_seed>
+          <Function test_pop_context>
+          <Function test_pop_empty_context>
+          <Function test_context_manager>
+          <Function test_get_current_context>
+          <Function test_generate_context_seed>
+        <Class TestStatisticalSummary>
+          <Function test_initialization>
+          <Function test_confidence_interval_calculation>
+          <Function test_small_sample_confidence_interval>
+          <Function test_to_dict>
+        <Class TestHypothesisTestResult>
+          <Function test_initialization>
+          <Function test_is_significant>
+          <Function test_to_dict>
+        <Class TestStatisticalValidator>
+          <Function test_initialization>
+          <Function test_calculate_summary>
+          <Function test_calculate_summary_empty_data>
+          <Function test_calculate_confidence_interval>
+          <Function test_calculate_confidence_interval_small_sample>
+          <Function test_t_test_one_sample>
+          <Function test_t_test_one_sample_insufficient_data>
+          <Function test_t_test_two_samples>
+          <Function test_t_test_two_samples_insufficient_data>
+          <Function test_paired_t_test>
+          <Function test_paired_t_test_different_lengths>
+          <Function test_anova_test>
+          <Function test_anova_test_insufficient_groups>
+          <Function test_chi_square_test>
+          <Function test_chi_square_test_different_lengths>
+          <Function test_correlation_test>
+          <Function test_correlation_test_different_lengths>
+          <Function test_correlation_test_insufficient_data>
+          <Function test_correlation_test_unknown_method>
+          <Function test_normality_test>
+          <Function test_normality_test_insufficient_data>
+          <Function test_normality_test_large_sample_shapiro>
+          <Function test_normality_test_unknown_method>
+          <Function test_power_analysis_t_test>
+          <Function test_power_analysis_anova>
+          <Function test_power_analysis_correlation>
+          <Function test_power_analysis_unknown_test>
+          <Function test_validate_results>
+          <Function test_validate_results_high_variability>
+          <Function test_validate_results_small_sample>
+        <Class TestComponentVersion>
+          <Function test_initialization>
+          <Function test_to_dict>
+          <Function test_from_dict>
+        <Class TestVersionManifest>
+          <Function test_initialization>
+          <Function test_to_dict>
+          <Function test_from_dict>
+        <Class TestVersionControlManager>
+          <Function test_initialization>
+          <Function test_create_manifest>
+          <Function test_add_component>
+          <Function test_add_component_no_manifest>
+          <Function test_add_python_module>
+          <Function test_add_python_module_not_found>
+          <Function test_add_model>
+          <Function test_add_dataset>
+          <Function test_add_configuration>
+          <Function test_save_manifest>
+          <Function test_save_manifest_no_manifest>
+          <Function test_load_manifest>
+          <Function test_list_manifests>
+          <Function test_compare_manifests>
+          <Function test_verify_reproducibility>
+          <Function test_verify_reproducibility_modified_file>
+          <Function test_verify_reproducibility_missing_file>
+          <Function test_calculate_component_hash_file>
+          <Function test_calculate_component_hash_directory>
+          <Function test_calculate_component_hash_nonexistent>
+          <Function test_capture_environment_info>
+          <Function test_capture_git_info>
+          <Function test_capture_git_info_no_git>
+        <Class TestAuditEvent>
+          <Function test_initialization>
+          <Function test_to_dict>
+          <Function test_from_dict>
+        <Class TestAuditTrail>
+          <Function test_initialization>
+          <Function test_add_event>
+          <Function test_add_event_wrong_run_id>
+          <Function test_end>
+          <Function test_to_dict>
+          <Function test_from_dict>
+          <Function test_calculate_checksum>
+        <Class TestAuditTrailManager>
+          <Function test_initialization>
+          <Function test_start_trail>
+          <Function test_start_trail_existing>
+          <Function test_end_trail>
+          <Function test_end_trail_nonexistent>
+          <Function test_log_event>
+          <Function test_log_event_no_trail>
+          <Function test_log_event_with_buffer>
+          <Function test_get_trail>
+          <Function test_get_trail_nonexistent>
+          <Function test_save_trail>
+          <Function test_load_trail>
+          <Function test_list_trails>
+          <Function test_get_trail_report>
+          <Function test_verify_trail_integrity>
+          <Function test_verify_trail_integrity_checksum_mismatch>
+          <Function test_verify_trail_integrity_timestamp_out_of_order>
+          <Function test_verify_trail_integrity_wrong_run_id>
+          <Function test_export_trail_json>
+          <Function test_export_trail_csv>
+          <Function test_export_trail_unknown_format>
+          <Function test_export_trail_nonexistent>
+          <Function test_audit_context_success>
+          <Function test_audit_context_error>
+        <Class TestReproducibilityValidator>
+          <Function test_initialization>
+          <Function test_validate_reproducibility>
+          <Function test_validate_reproducibility_with_ids>
+          <Function test_validate_reproducibility_not_reproducible>
+          <Function test_validate_reproducibility_missing_metric>
+          <Function test_validate_reproducibility_extra_metric>
+          <Function test_validate_reproducibility_different_lengths>
+          <Function test_validate_reproducibility_empty_results>
+          <Function test_validate_reproducibility_invalid_tolerance>
+          <Function test_validate_reproducibility_invalid_data>
+          <Function test_validate_reproducibility_invalid_current_data>
+          <Function test_validate_reproducibility_invalid_metric_data>
+          <Function test_validate_reproducibility_invalid_current_metric_data>
+          <Function test_validate_reproducibility_empty_metric_data>
+          <Function test_validate_reproducibility_empty_current_metric_data>
+          <Function test_validate_reproducibility_non_numeric_data>
+          <Function test_validate_reproducibility_non_numeric_current_data>
+          <Function test_save_report>
+          <Function test_save_report_no_filename>
+          <Function test_load_report>
+          <Function test_list_reports>
+          <Function test_get_validation_history>
+          <Function test_clear_validation_history>
+        <Class TestReproducibilityReport>
+          <Function test_initialization>
+          <Function test_to_dict>
+          <Function test_from_dict>
+        <Class TestValidationResult>
+          <Function test_initialization>
+          <Function test_to_dict>
+    <Package validation>
+      <Module test_llm_output_validation.py>
+        <Function test_registry_contains_expected_contracts>
+        <Function test_get_schema_returns_dict_with_properties>
+        <Function test_validate_fba_decision_strict_success_from_dict>
+        <Function test_validate_fba_decision_strict_success_from_json_string>
+        <Function test_validate_task_plan_positive>
+        <Function test_validate_tool_call_positive>
+        <Function test_validate_agent_response_positive>
+        <Function test_missing_required_field_fails>
+        <Function test_extra_fields_in_strict_mode_fail>
+        <Function test_type_mismatch_steps_not_list_fails>
+        <Function test_non_strict_coercion_numeric_string_to_float_succeeds>
+        <Function test_non_strict_ignores_unknown_fields>
+        <Function test_validate_by_name_success_and_dump>
+        <Function test_validate_by_name_unknown_contract>
+        <Function test_validate_with_jsonschema_optional>
+
+=================================== ERRORS ====================================
+_____ ERROR collecting integration_tests/test_cross_system_integration.py _____
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_cross_system_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+integration_tests\test_cross_system_integration.py:40: in <module>
+    from instrumentation.agent_tracer import AgentTracer
+E   ModuleNotFoundError: No module named 'instrumentation.agent_tracer'
+_______ ERROR collecting integration_tests/test_end_to_end_workflow.py ________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_end_to_end_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+integration_tests\test_end_to_end_workflow.py:34: in <module>
+    from instrumentation.simulation_tracer import SimulationTracer
+E   ModuleNotFoundError: No module named 'instrumentation.simulation_tracer'
+_________ ERROR collecting integration_tests/test_simulation_loop.py __________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_simulation_loop.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+integration_tests\test_simulation_loop.py:12: in <module>
+    from agents.multi_domain_controller import MultiDomainController
+E   ImportError: cannot import name 'MultiDomainController' from 'agents.multi_domain_controller' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\agents\multi_domain_controller.py). Did you mean: 'multi_domain_controller'?
+_____________ ERROR collecting medusa_experiments/test_schema.py ______________
+medusa_experiments\test_schema.py:3: in <module>
+    with open('genomes/student_agent_gen_0.yaml') as f:
+E   FileNotFoundError: [Errno 2] No such file or directory: 'genomes/student_agent_gen_0.yaml'
+______________ ERROR collecting scripts/cheap_llm_smoke_test.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\scripts\cheap_llm_smoke_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+scripts\cheap_llm_smoke_test.py:15: in <module>
+    from llm_interface.generic_openai_client import GenericOpenAIClient
+src\llm_interface\generic_openai_client.py:6: in <module>
+    import tiktoken
+E   ModuleNotFoundError: No module named 'tiktoken'
+_______________ ERROR collecting scripts/test_cost_tracking.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\scripts\test_cost_tracking.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+scripts\test_cost_tracking.py:7: in <module>
+    from llm_interface.generic_openai_client import GenericOpenAIClient
+src\llm_interface\generic_openai_client.py:6: in <module>
+    import tiktoken
+E   ModuleNotFoundError: No module named 'tiktoken'
+_____________________ ERROR collecting test_websockets.py _____________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\test_websockets.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_websockets.py:10: in <module>
+    import websockets
+E   ModuleNotFoundError: No module named 'websockets'
+__________________ ERROR collecting tests/api/test_medusa.py __________________
+import file mismatch:
+imported module 'test_medusa' has this __file__ attribute:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\medusa_experiments\test_medusa.py
+which is not the same as the test file we want to collect:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\api\test_medusa.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+__________ ERROR collecting tests/integration/api/test_agents_api.py __________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\api\test_agents_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\api\test_agents_api.py:13: in <module>
+    from fba_bench_api.main import create_app  # noqa: E402
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+__________ ERROR collecting tests/integration/api/test_config_api.py __________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\api\test_config_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\api\test_config_api.py:4: in <module>
+    from fba_bench_api.main import create_app
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+_______ ERROR collecting tests/integration/api/test_experiments_api.py ________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\api\test_experiments_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\api\test_experiments_api.py:13: in <module>
+    from fba_bench_api.main import create_app  # noqa: E402
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+_ ERROR collecting tests/integration/api/test_experiments_stop_and_results.py _
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\api\test_experiments_stop_and_results.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\api\test_experiments_stop_and_results.py:6: in <module>
+    from fba_bench_api.main import create_app as _create_app
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+_____ ERROR collecting tests/integration/api/test_health_and_security.py ______
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\api\test_health_and_security.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\api\test_health_and_security.py:4: in <module>
+    from fba_bench_api.main import app, create_app as _create_app
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+_____ ERROR collecting tests/integration/api/test_settings_and_metrics.py _____
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\api\test_settings_and_metrics.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\api\test_settings_and_metrics.py:4: in <module>
+    from fba_bench_api.main import app, create_app as _create_app
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+________ ERROR collecting tests/integration/api/test_simulation_api.py ________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\api\test_simulation_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\api\test_simulation_api.py:13: in <module>
+    from fba_bench_api.main import create_app  # noqa: E402
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+____ ERROR collecting tests/integration/test_comprehensive_integration.py _____
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_comprehensive_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\test_comprehensive_integration.py:35: in <module>
+    from events import SaleOccurred, TickEvent
+E   ImportError: cannot import name 'SaleOccurred' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+____________ ERROR collecting tests/integration/test_golden_run.py ____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_golden_run.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\test_golden_run.py:11: in <module>
+    from services.double_entry_ledger_service import DoubleEntryLedgerService
+src\services\double_entry_ledger_service.py:1: in <module>
+    from fba_bench_core.services.double_entry_ledger_service import *  # noqa: F403
+src\fba_bench_core\services\double_entry_ledger_service.py:3: in <module>
+    from .ledger import (
+src\fba_bench_core\services\ledger\__init__.py:22: in <module>
+    from .utils import FEE_ACCOUNT_MAP
+E   ModuleNotFoundError: No module named 'fba_bench_core.services.ledger.utils'
+______ ERROR collecting tests/integration/test_product_sourcing_flow.py _______
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_product_sourcing_flow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\test_product_sourcing_flow.py:9: in <module>
+    from agents.multi_domain_controller import MultiDomainController
+E   ImportError: cannot import name 'MultiDomainController' from 'agents.multi_domain_controller' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\agents\multi_domain_controller.py). Did you mean: 'multi_domain_controller'?
+_____ ERROR collecting tests/integration/test_production_environments.py ______
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_production_environments.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\test_production_environments.py:18: in <module>
+    from kubernetes import client, config
+E   ModuleNotFoundError: No module named 'kubernetes'
+________ ERROR collecting tests/integration/test_websocket_realtime.py ________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_websocket_realtime.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\integration\test_websocket_realtime.py:12: in <module>
+    from fba_bench_api.main import create_app
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+______ ERROR collecting tests/orchestration/test_orchestration_system.py ______
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\orchestration\test_orchestration_system.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\orchestration\test_orchestration_system.py:23: in <module>
+    from tests.benchmarks.performance_benchmarks import PerformanceBenchmarkSuite
+tests\benchmarks\performance_benchmarks.py:38: in <module>
+    from events import SaleOccurred, SetPriceCommand, TickEvent
+E   ImportError: cannot import name 'SaleOccurred' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+____________ ERROR collecting tests/test_adversarial_framework.py _____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_adversarial_framework.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_adversarial_framework.py:24: in <module>
+    from events import (
+E   ImportError: cannot import name 'ComplianceTrapEvent' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+________________ ERROR collecting tests/test_agent_runners.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_agent_runners.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_agent_runners.py:16: in <module>
+    from agent_runners import (
+E   ImportError: cannot import name 'RunnerFactory' from 'agent_runners' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\agent_runners\__init__.py). Did you mean: 'runner_factory'?
+__________________ ERROR collecting tests/test_auth_login.py __________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_auth_login.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_auth_login.py:7: in <module>
+    from api.db import Base, get_db
+E   ModuleNotFoundError: No module named 'api.db'
+___________________ ERROR collecting tests/test_auth_me.py ____________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_auth_me.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_auth_me.py:23: in <module>
+    from api.db import Base, get_db
+E   ModuleNotFoundError: No module named 'api.db'
+_________________ ERROR collecting tests/test_auth_profile.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_auth_profile.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_auth_profile.py:14: in <module>
+    from api.db import get_db
+E   ModuleNotFoundError: No module named 'api.db'
+________________ ERROR collecting tests/test_auth_register.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_auth_register.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_auth_register.py:4: in <module>
+    from api.db import Base, get_db
+E   ModuleNotFoundError: No module named 'api.db'
+_____________ ERROR collecting tests/test_benchmark_endpoints.py ______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_benchmark_endpoints.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_benchmark_endpoints.py:10: in <module>
+    from fba_bench_core.benchmarking.engine import EngineConfig, EngineReport
+E   ModuleNotFoundError: No module named 'fba_bench_core.benchmarking'
+_______________ ERROR collecting tests/test_billing_checkout.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_billing_checkout.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_billing_checkout.py:6: in <module>
+    from api.models import User
+E   ModuleNotFoundError: No module named 'api.models'
+________________ ERROR collecting tests/test_billing_portal.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_billing_portal.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_billing_portal.py:8: in <module>
+    from api.db import Base, get_db
+E   ModuleNotFoundError: No module named 'api.db'
+_______________ ERROR collecting tests/test_billing_webhooks.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_billing_webhooks.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_billing_webhooks.py:8: in <module>
+    from api.db import get_db, get_engine
+E   ModuleNotFoundError: No module named 'api.db'
+____________ ERROR collecting tests/test_competitor_integration.py ____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_competitor_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_competitor_integration.py:16: in <module>
+    from events import CompetitorPricesUpdated, CompetitorState, TickEvent
+E   ImportError: cannot import name 'CompetitorPricesUpdated' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+_________________ ERROR collecting tests/test_constraints.py __________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_constraints.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_constraints.py:10: in <module>
+    from metrics.cost_metrics import CostMetrics
+E   ModuleNotFoundError: No module named 'metrics.cost_metrics'
+_____________ ERROR collecting tests/test_dashboard_standalone.py _____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_dashboard_standalone.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_dashboard_standalone.py:22: in <module>
+    from events import SaleOccurred, SetPriceCommand, TickEvent
+E   ImportError: cannot import name 'SaleOccurred' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+______________ ERROR collecting tests/test_event_integration.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_event_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_event_integration.py:15: in <module>
+    from events import SaleOccurred, TickEvent
+E   ImportError: cannot import name 'SaleOccurred' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+______________ ERROR collecting tests/test_greedy_script_bot.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_greedy_script_bot.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_greedy_script_bot.py:8: in <module>
+    from events import SetPriceCommand  # Import the actual SetPriceCommand
+E   ImportError: cannot import name 'SetPriceCommand' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+______________ ERROR collecting tests/test_jupyter_connector.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_jupyter_connector.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_jupyter_connector.py:17: in <module>
+    from jupyter_connector import JupyterConnector, connect_to_simulation
+jupyter_connector.py:27: in <module>
+    import websockets
+E   ModuleNotFoundError: No module named 'websockets'
+_________ ERROR collecting tests/test_jupyter_connector_standalone.py _________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_jupyter_connector_standalone.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_jupyter_connector_standalone.py:12: in <module>
+    from jupyter_connector import JupyterConnector
+jupyter_connector.py:27: in <module>
+    import websockets
+E   ModuleNotFoundError: No module named 'websockets'
+___________________ ERROR collecting tests/test_llm_bots.py ___________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_llm_bots.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_llm_bots.py:15: in <module>
+    from events import SetPriceCommand  # Ensure this is actual path
+E   ImportError: cannot import name 'SetPriceCommand' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+______________ ERROR collecting tests/test_metrics_endpoints.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_metrics_endpoints.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_metrics_endpoints.py:12: in <module>
+    from services.double_entry_ledger_service import DoubleEntryLedgerService
+src\services\double_entry_ledger_service.py:1: in <module>
+    from fba_bench_core.services.double_entry_ledger_service import *  # noqa: F403
+src\fba_bench_core\services\double_entry_ledger_service.py:3: in <module>
+    from .ledger import (
+src\fba_bench_core\services\ledger\__init__.py:22: in <module>
+    from .utils import FEE_ACCOUNT_MAP
+E   ModuleNotFoundError: No module named 'fba_bench_core.services.ledger.utils'
+_______________ ERROR collecting tests/test_missing_features.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_missing_features.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_missing_features.py:12: in <module>
+    from services.double_entry_ledger_service import DoubleEntryLedgerService
+src\services\double_entry_ledger_service.py:1: in <module>
+    from fba_bench_core.services.double_entry_ledger_service import *  # noqa: F403
+src\fba_bench_core\services\double_entry_ledger_service.py:3: in <module>
+    from .ledger import (
+src\fba_bench_core\services\ledger\__init__.py:22: in <module>
+    from .utils import FEE_ACCOUNT_MAP
+E   ModuleNotFoundError: No module named 'fba_bench_core.services.ledger.utils'
+______________ ERROR collecting tests/test_multi_skill_agent.py _______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_multi_skill_agent.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_multi_skill_agent.py:15: in <module>
+    from events import (
+E   ImportError: cannot import name 'CustomerMessageReceived' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+_______________ ERROR collecting tests/test_multiagent_core.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_multiagent_core.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_multiagent_core.py:22: in <module>
+    from events import ProductPriceUpdated, SetPriceCommand
+E   ImportError: cannot import name 'ProductPriceUpdated' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+_______________ ERROR collecting tests/test_multiagent_loop.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_multiagent_loop.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_multiagent_loop.py:26: in <module>
+    from events import SetPriceCommand
+E   ImportError: cannot import name 'SetPriceCommand' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+_____________ ERROR collecting tests/test_persona_integration.py ______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_persona_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_persona_integration.py:20: in <module>
+    from events import CompetitorPricesUpdated, TickEvent
+E   ImportError: cannot import name 'CompetitorPricesUpdated' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+_________ ERROR collecting tests/test_research_toolkit_integration.py _________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_research_toolkit_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_research_toolkit_integration.py:19: in <module>
+    import websockets
+E   ModuleNotFoundError: No module named 'websockets'
+_______________ ERROR collecting tests/test_scenario_system.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_scenario_system.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_scenario_system.py:20: in <module>
+    from scenarios.scenario_engine import ScenarioEngine
+src\scenarios\scenario_engine.py:12: in <module>
+    from instrumentation.clearml_tracking import ClearMLTracker
+E   ModuleNotFoundError: No module named 'instrumentation.clearml_tracking'
+_____________ ERROR collecting tests/test_since_tick_filtering.py _____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_since_tick_filtering.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_since_tick_filtering.py:13: in <module>
+    from events import SaleOccurred, SetPriceCommand, TickEvent
+E   ImportError: cannot import name 'SaleOccurred' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+_______________ ERROR collecting tests/test_stripe_checkout.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_stripe_checkout.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_stripe_checkout.py:9: in <module>
+    from api.db import Base, get_db
+E   ModuleNotFoundError: No module named 'api.db'
+________________ ERROR collecting tests/test_stripe_portal.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_stripe_portal.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_stripe_portal.py:8: in <module>
+    from api.db import Base, get_db
+E   ModuleNotFoundError: No module named 'api.db'
+_______________ ERROR collecting tests/test_stripe_webhooks.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_stripe_webhooks.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_stripe_webhooks.py:4: in <module>
+    from api.db import Base, get_db
+E   ModuleNotFoundError: No module named 'api.db'
+______________ ERROR collecting tests/test_system_integration.py ______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_system_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_system_integration.py:17: in <module>
+    from services.world_store import ProductState, WorldStore
+E   ImportError: cannot import name 'ProductState' from 'services.world_store' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\services\world_store.py)
+____________ ERROR collecting tests/test_worldstore_standalone.py _____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_worldstore_standalone.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_worldstore_standalone.py:20: in <module>
+    from events import ProductPriceUpdated, SetPriceCommand
+E   ImportError: cannot import name 'ProductPriceUpdated' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+________ ERROR collecting tests/unit/api/test_dependencies_managers.py ________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\api\test_dependencies_managers.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\api\test_dependencies_managers.py:5: in <module>
+    from api.dependencies import ConnectionManager, ExperimentManager, SimulationManager
+E   ModuleNotFoundError: No module named 'api.dependencies'
+___________ ERROR collecting tests/unit/api/test_experiment_runs.py ___________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\api\test_experiment_runs.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\api\test_experiment_runs.py:19: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+______________ ERROR collecting tests/unit/api/test_scenarios.py ______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\api\test_scenarios.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\api\test_scenarios.py:11: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+_______ ERROR collecting tests/unit/benchmarking/test_engine_new_api.py _______
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\benchmarking\test_engine_new_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\benchmarking\test_engine_new_api.py:10: in <module>
+    from benchmarking.core.models import (
+E   ImportError: cannot import name 'ScenarioResult' from 'benchmarking.core.models' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\benchmarking\core\models.py)
+____________ ERROR collecting tests/unit/test_advanced_metrics.py _____________
+import file mismatch:
+imported module 'test_advanced_metrics' has this __file__ attribute:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_advanced_metrics.py
+which is not the same as the test file we want to collect:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_advanced_metrics.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+____________ ERROR collecting tests/unit/test_baseline_agent_v1.py ____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_baseline_agent_v1.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_baseline_agent_v1.py:9: in <module>
+    from events import WorldStateSnapshotEvent
+E   ImportError: cannot import name 'WorldStateSnapshotEvent' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+______________ ERROR collecting tests/unit/test_bsr_engine_v3.py ______________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_bsr_engine_v3.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_bsr_engine_v3.py:9: in <module>
+    from events import CompetitorPricesUpdated, CompetitorState, SaleOccurred
+E   ImportError: cannot import name 'CompetitorPricesUpdated' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+_____________ ERROR collecting tests/unit/test_dispute_service.py _____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_dispute_service.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_dispute_service.py:3: in <module>
+    from services.dispute_service import DisputeDetails, DisputeResolution, DisputeService
+src\services\dispute_service.py:1: in <module>
+    from fba_bench_core.services.dispute_service import *  # noqa: F403
+src\fba_bench_core\services\dispute_service.py:11: in <module>
+    from services.double_entry_ledger_service import (
+src\services\double_entry_ledger_service.py:1: in <module>
+    from fba_bench_core.services.double_entry_ledger_service import *  # noqa: F403
+src\fba_bench_core\services\double_entry_ledger_service.py:3: in <module>
+    from .ledger import (
+src\fba_bench_core\services\ledger\__init__.py:22: in <module>
+    from .utils import FEE_ACCOUNT_MAP
+E   ModuleNotFoundError: No module named 'fba_bench_core.services.ledger.utils'
+_________________ ERROR collecting tests/unit/test_engine.py __________________
+import file mismatch:
+imported module 'test_engine' has this __file__ attribute:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_engine.py
+which is not the same as the test file we want to collect:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_engine.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+_____________ ERROR collecting tests/unit/test_instrumentation.py _____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_instrumentation.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_instrumentation.py:9: in <module>
+    from instrumentation.agent_tracer import AgentTracer
+E   ModuleNotFoundError: No module named 'instrumentation.agent_tracer'
+________________ ERROR collecting tests/unit/test_learning.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_learning.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_learning.py:12: in <module>
+    from learning.curriculum_learning import CurriculumLearning
+learning\__init__.py:11: in <module>
+    from .rl_environment import FBABenchRLEnvironment, FBABenchSimulator
+learning\rl_environment.py:4: in <module>
+    import gymnasium as gym
+E   ModuleNotFoundError: No module named 'gymnasium'
+_________________ ERROR collecting tests/unit/test_metrics.py _________________
+import file mismatch:
+imported module 'test_metrics' has this __file__ attribute:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_metrics.py
+which is not the same as the test file we want to collect:
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_metrics.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+_________ ERROR collecting tests/unit/test_prod_config_enforcement.py _________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_prod_config_enforcement.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_prod_config_enforcement.py:5: in <module>
+    from fba_bench_api.main import create_app as _create_app
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+___________ ERROR collecting tests/unit/test_toolbox_api_service.py ___________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_toolbox_api_service.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_toolbox_api_service.py:8: in <module>
+    from events import WorldStateSnapshotEvent
+E   ImportError: cannot import name 'WorldStateSnapshotEvent' from 'events' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\events\__init__.py)
+___________ ERROR collecting tests/unit/test_version_and_health.py ____________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_version_and_health.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\unit\test_version_and_health.py:6: in <module>
+    from fba_bench_api.main import app
+src\fba_bench_api\main.py:5: in <module>
+    from fba_bench_api.server.app_factory import create_app
+src\fba_bench_api\server\app_factory.py:18: in <module>
+    from fba_bench_api.api.routes import (
+src\fba_bench_api\api\routes\demo.py:12: in <module>
+    from fba_bench_api.core.database_async import get_async_db_session
+src\fba_bench_api\core\database_async.py:67: in <module>
+    async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\ext\asyncio\engine.py:120: in create_async_engine
+    sync_engine = _create_engine(url, **kw)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\engine\create.py:617: in create_engine
+    dbapi = dbapi_meth(**dbapi_args)
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py:416: in import_dbapi
+    __import__("aiosqlite"), __import__("sqlite3")
+E   ModuleNotFoundError: No module named 'aiosqlite'
+============================== warnings summary ===============================
+src\fba_events\adversarial.py:9
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\fba_events\adversarial.py:9: DeprecationWarning: The 'money' package is deprecated; use 'fba_bench_core.money'. This shim will be removed in a future release.
+    from money import Money
+
+integration_tests\__init__.py:93
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\__init__.py:93: DeprecationWarning: The 'services' package is deprecated; use 'fba_bench_core.services'. This shim will be removed in a future release.
+    from src.services.fee_calculation_service import FeeCalculationService
+
+integration_tests\test_cross_system_integration.py:31
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_cross_system_integration.py:31: DeprecationWarning: The 'services' package is deprecated; use 'fba_bench_core.services'. This shim will be removed in a future release.
+    from services.dashboard_api_service import DashboardAPIService
+
+src\agent_runners\configs\framework_configs.py:12
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\agent_runners\configs\framework_configs.py:12: DeprecationWarning: The legacy schema-based configuration system in 'benchmarking.config' is deprecated and will be removed in a future version. Please use the Pydantic-based configuration models (e.g., PydanticBenchmarkConfig) instead.
+    from benchmarking.config.pydantic_config import (
+
+integration_tests\test_performance_benchmarks.py:104
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_performance_benchmarks.py:104: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+integration_tests\test_performance_benchmarks.py:226
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_performance_benchmarks.py:226: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+integration_tests\test_performance_benchmarks.py:401
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_performance_benchmarks.py:401: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+integration_tests\test_performance_benchmarks.py:598
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_performance_benchmarks.py:598: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+integration_tests\test_performance_benchmarks.py:728
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_performance_benchmarks.py:728: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+integration_tests\test_performance_benchmarks.py:864
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_performance_benchmarks.py:864: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+integration_tests\test_performance_benchmarks.py:87
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_performance_benchmarks.py:87: PytestCollectionWarning: cannot collect test class 'TestPerformanceBenchmarks' because it has a __init__ constructor (from: integration_tests/test_performance_benchmarks.py)
+    class TestPerformanceBenchmarks(IntegrationTestSuite):
+
+integration_tests\test_scientific_reproducibility.py:134
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_scientific_reproducibility.py:134: PytestUnknownMarkWarning: Unknown pytest.mark.reproducibility - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.reproducibility
+
+integration_tests\test_scientific_reproducibility.py:265
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_scientific_reproducibility.py:265: PytestUnknownMarkWarning: Unknown pytest.mark.reproducibility - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.reproducibility
+
+integration_tests\test_scientific_reproducibility.py:402
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_scientific_reproducibility.py:402: PytestUnknownMarkWarning: Unknown pytest.mark.reproducibility - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.reproducibility
+
+integration_tests\test_scientific_reproducibility.py:519
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_scientific_reproducibility.py:519: PytestUnknownMarkWarning: Unknown pytest.mark.reproducibility - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.reproducibility
+
+integration_tests\test_scientific_reproducibility.py:710
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_scientific_reproducibility.py:710: PytestUnknownMarkWarning: Unknown pytest.mark.reproducibility - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.reproducibility
+
+integration_tests\test_scientific_reproducibility.py:838
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_scientific_reproducibility.py:838: PytestUnknownMarkWarning: Unknown pytest.mark.reproducibility - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.reproducibility
+
+integration_tests\test_scientific_reproducibility.py:125
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_scientific_reproducibility.py:125: PytestCollectionWarning: cannot collect test class 'TestScientificReproducibility' because it has a __init__ constructor (from: integration_tests/test_scientific_reproducibility.py)
+    class TestScientificReproducibility(IntegrationTestSuite):
+
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\pydantic\_internal\_config.py:323: 19 warnings
+  C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\pydantic\_internal\_config.py:323: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.11/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+integration_tests\test_tier1_requirements.py:59
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:59: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:149
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:149: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:213
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:213: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:293
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:293: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:372
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:372: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:441
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:441: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:499
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:499: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:546
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:546: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:585
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:585: PytestUnknownMarkWarning: Unknown pytest.mark.tier1 - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tier1
+
+integration_tests\test_tier1_requirements.py:51
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\integration_tests\test_tier1_requirements.py:51: PytestCollectionWarning: cannot collect test class 'TestTier1Requirements' because it has a __init__ constructor (from: integration_tests/test_tier1_requirements.py)
+    class TestTier1Requirements(IntegrationTestSuite):
+
+scripts\minimal_cost_test.py:45
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\scripts\minimal_cost_test.py:45: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+..\..\..\..\..\..\ProgramData\anaconda3\Lib\site-packages\pythonjsonlogger\jsonlogger.py:11
+  C:\ProgramData\anaconda3\Lib\site-packages\pythonjsonlogger\jsonlogger.py:11: DeprecationWarning: pythonjsonlogger.jsonlogger has been moved to pythonjsonlogger.json
+    warnings.warn(
+
+..\..\..\..\AppData\Roaming\Python\Python313\site-packages\pydantic\_internal\_fields.py:198
+  C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\pydantic\_internal\_fields.py:198: UserWarning: Field name "schema" in "ToolSpec" shadows an attribute in parent "BaseModel"
+    warnings.warn(
+
+tests\benchmarking\test_engine_unit.py:29
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_engine_unit.py:29: PytestUnknownMarkWarning: Unknown pytest.mark.unit - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unit
+
+tests\benchmarking\test_engine_unit.py:52
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_engine_unit.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.unit - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unit
+
+tests\benchmarking\test_engine_unit.py:92
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_engine_unit.py:92: PytestUnknownMarkWarning: Unknown pytest.mark.unit - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unit
+
+tests\benchmarking\test_engine_unit.py:130
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_engine_unit.py:130: PytestUnknownMarkWarning: Unknown pytest.mark.unit - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unit
+
+tests\benchmarking\test_engine_unit.py:182
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\benchmarking\test_engine_unit.py:182: PytestUnknownMarkWarning: Unknown pytest.mark.unit - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unit
+
+tests\integration\runners\test_crewai_runner.py:12
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_crewai_runner.py:12: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_crewai_runner.py:27
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_crewai_runner.py:27: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_crewai_runner.py:86
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_crewai_runner.py:86: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_langchain_runner.py:10
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_langchain_runner.py:10: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_langchain_runner.py:25
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_langchain_runner.py:25: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_runner_registry.py:19
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_runner_registry.py:19: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_runner_registry.py:28
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_runner_registry.py:28: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_runner_registry.py:40
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_runner_registry.py:40: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\runners\test_runner_registry.py:58
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\runners\test_runner_registry.py:58: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_agent_integration.py:81
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_agent_integration.py:81: PytestCollectionWarning: cannot collect test class 'TestScenario' because it has a __init__ constructor (from: tests/integration/test_agent_integration.py)
+    class TestScenario(BaseScenario):
+
+tests\integration\test_alembic_migrations.py:11
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_alembic_migrations.py:11: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_database_api_integration.py:43
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_database_api_integration.py:43: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+tests\integration\test_database_api_integration.py:901
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_database_api_integration.py:901: PytestCollectionWarning: cannot collect test class 'TestScenarioForDBAPI' because it has a __init__ constructor (from: tests/integration/test_database_api_integration.py)
+    class TestScenarioForDBAPI(BaseScenario):
+
+tests\integration\test_database_api_integration.py:943
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_database_api_integration.py:943: PytestCollectionWarning: cannot collect test class 'TestMetricForDBAPI' because it has a __init__ constructor (from: tests/integration/test_database_api_integration.py)
+    class TestMetricForDBAPI(BaseMetric):
+
+tests\integration\test_engine_integration.py:20
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_engine_integration.py:20: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_metrics_integration.py:14
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_metrics_integration.py:14: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_metrics_workflows.py:133
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_metrics_workflows.py:133: PytestCollectionWarning: cannot collect test class 'TestScenarioWithMetrics' because it has a __init__ constructor (from: tests/integration/test_metrics_workflows.py)
+    class TestScenarioWithMetrics(BaseScenario):
+
+tests\integration\test_scenario_execution.py:141
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_scenario_execution.py:141: PytestCollectionWarning: cannot collect test class 'TestScenarioWithValidation' because it has a __init__ constructor (from: tests/integration/test_scenario_execution.py)
+    class TestScenarioWithValidation(BaseScenario):
+
+tests\integration\test_scenarios_integration.py:16
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_scenarios_integration.py:16: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_scenarios_integration.py:126
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_scenarios_integration.py:126: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_scenarios_integration.py:178
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_scenarios_integration.py:178: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_state_manager.py:17
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_state_manager.py:17: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.integration
+
+tests\integration\test_validators_integration.py:10
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\integration\test_validators_integration.py:10: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\test_agent_runners.py:13
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_agent_runners.py:13: DeprecationWarning: The 'models' package is deprecated; use 'fba_bench_core.models'. This shim will be removed in a future release.
+    from models.product import Product
+
+tests\test_reproducibility.py:74
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:74: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\test_reproducibility.py:87
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:87: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\test_reproducibility.py:141
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:141: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\test_reproducibility.py:166
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:166: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\test_reproducibility.py:198
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:198: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\test_reproducibility.py:216
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:216: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\test_reproducibility.py:251
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:251: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\test_reproducibility.py:282
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\test_reproducibility.py:282: PytestUnknownMarkWarning: Unknown pytest.mark.golden - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.golden
+
+tests\unit\test_eventbus_logging.py:11
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\tests\unit\test_eventbus_logging.py:11: DeprecationWarning: fba_events.compat is deprecated; import from fba_events.* instead
+    from fba_events.compat import TickEvent  # type: ignore
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR integration_tests/test_cross_system_integration.py
+ERROR integration_tests/test_end_to_end_workflow.py
+ERROR integration_tests/test_simulation_loop.py
+ERROR medusa_experiments/test_schema.py - FileNotFoundError: [Errno 2] No suc...
+ERROR scripts/cheap_llm_smoke_test.py
+ERROR scripts/test_cost_tracking.py
+ERROR test_websockets.py
+ERROR tests/api/test_medusa.py
+ERROR tests/integration/api/test_agents_api.py
+ERROR tests/integration/api/test_config_api.py
+ERROR tests/integration/api/test_experiments_api.py
+ERROR tests/integration/api/test_experiments_stop_and_results.py
+ERROR tests/integration/api/test_health_and_security.py
+ERROR tests/integration/api/test_settings_and_metrics.py
+ERROR tests/integration/api/test_simulation_api.py
+ERROR tests/integration/test_comprehensive_integration.py
+ERROR tests/integration/test_golden_run.py
+ERROR tests/integration/test_product_sourcing_flow.py
+ERROR tests/integration/test_production_environments.py
+ERROR tests/integration/test_websocket_realtime.py
+ERROR tests/orchestration/test_orchestration_system.py
+ERROR tests/test_adversarial_framework.py
+ERROR tests/test_agent_runners.py
+ERROR tests/test_auth_login.py
+ERROR tests/test_auth_me.py
+ERROR tests/test_auth_profile.py
+ERROR tests/test_auth_register.py
+ERROR tests/test_benchmark_endpoints.py
+ERROR tests/test_billing_checkout.py
+ERROR tests/test_billing_portal.py
+ERROR tests/test_billing_webhooks.py
+ERROR tests/test_competitor_integration.py
+ERROR tests/test_constraints.py
+ERROR tests/test_dashboard_standalone.py
+ERROR tests/test_event_integration.py
+ERROR tests/test_greedy_script_bot.py
+ERROR tests/test_jupyter_connector.py
+ERROR tests/test_jupyter_connector_standalone.py
+ERROR tests/test_llm_bots.py
+ERROR tests/test_metrics_endpoints.py
+ERROR tests/test_missing_features.py
+ERROR tests/test_multi_skill_agent.py
+ERROR tests/test_multiagent_core.py
+ERROR tests/test_multiagent_loop.py
+ERROR tests/test_persona_integration.py
+ERROR tests/test_research_toolkit_integration.py
+ERROR tests/test_scenario_system.py
+ERROR tests/test_since_tick_filtering.py
+ERROR tests/test_stripe_checkout.py
+ERROR tests/test_stripe_portal.py
+ERROR tests/test_stripe_webhooks.py
+ERROR tests/test_system_integration.py
+ERROR tests/test_worldstore_standalone.py
+ERROR tests/unit/api/test_dependencies_managers.py
+ERROR tests/unit/api/test_experiment_runs.py
+ERROR tests/unit/api/test_scenarios.py
+ERROR tests/unit/benchmarking/test_engine_new_api.py
+ERROR tests/unit/test_advanced_metrics.py
+ERROR tests/unit/test_baseline_agent_v1.py
+ERROR tests/unit/test_bsr_engine_v3.py
+ERROR tests/unit/test_dispute_service.py
+ERROR tests/unit/test_engine.py
+ERROR tests/unit/test_instrumentation.py
+ERROR tests/unit/test_learning.py
+ERROR tests/unit/test_metrics.py
+ERROR tests/unit/test_prod_config_enforcement.py
+ERROR tests/unit/test_toolbox_api_service.py
+ERROR tests/unit/test_version_and_health.py
+!!!!!!!!!!!!!!!!!! Interrupted: 68 errors during collection !!!!!!!!!!!!!!!!!!!
+================== 1008 tests collected, 68 errors in 5.59s ===================
+Exception ignored in atexit callback <built-in function unlink>:
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\admin\\AppData\\Local\\Temp\\tmpq8231kdf.db'
