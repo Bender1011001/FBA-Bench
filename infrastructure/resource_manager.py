@@ -1,6 +1,11 @@
 import logging
 from typing import Dict
 
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -240,24 +245,17 @@ class ResourceManager:
         """
         Lightweight monitoring shim to satisfy tests that expect resource snapshots.
         Returns a dict with token/cost totals and process memory metrics.
+        Issue 79: Moved psutil import to module level.
         """
         process_memory_mb = 0.0
-        try:
-            import psutil
-
-            process_memory_mb = float(psutil.Process().memory_info().rss) / (1024.0 * 1024.0)
-        except Exception:
-            # psutil may be patched by tests; on failure return 0.0
-            process_memory_mb = 0.0
-
-        # Include system-wide percent memory for tests expecting it
         system_percent = 0.0
-        try:
-            import psutil
-
-            system_percent = float(psutil.virtual_memory().percent)
-        except Exception:
-            system_percent = 0.0
+        
+        if psutil:
+            try:
+                process_memory_mb = float(psutil.Process().memory_info().rss) / (1024.0 * 1024.0)
+                system_percent = float(psutil.virtual_memory().percent)
+            except Exception:
+                pass
 
         return {
             "total_tokens_used": float(self.total_tokens_used),

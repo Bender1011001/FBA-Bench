@@ -154,13 +154,12 @@ class OpenRouterClient(BaseLLMClient):
                 if presence_penalty is not None
                 else self.config.presence_penalty
             ),
-            "response_format": (
-                response_format
-                if response_format is not None
-                else {"type": "json_object"}
-            ),
             **kwargs,
         }
+
+        # Fix #86: Only include response_format if explicitly provided
+        if response_format is not None:
+            payload["response_format"] = response_format
 
         # Log Level based control for payload details
         if logger.isEnabledFor(logging.DEBUG):

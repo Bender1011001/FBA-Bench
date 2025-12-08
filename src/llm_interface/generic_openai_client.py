@@ -57,6 +57,16 @@ class GenericOpenAIClient(BaseLLMClient):
             )
             self.encoding = tiktoken.get_encoding("cl100k_base")
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.aclose()
+
+    async def aclose(self):
+        """Closes the underlying HTTP client to release resources."""
+        await self.http_client.aclose()
+
     async def generate_response(
         self,
         prompt: str,
@@ -83,7 +93,7 @@ class GenericOpenAIClient(BaseLLMClient):
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "HTTP-Referer": referer,
+            "Referer": referer,  # Fix #85: Use standard Referer header
             "X-Title": app_title,
             "Content-Type": "application/json",
         }
@@ -136,21 +146,23 @@ class GenericOpenAIClient(BaseLLMClient):
             response_data = response.json()
             logger.debug(f"Received response: {response_data}")
 
-            # Validate minimal structure
+            # Issue 98: Relaxed validation for compatibility with non-OpenAI providers
             if not response_data.get("choices") or not isinstance(
                 response_data["choices"], list
             ):
                 raise LLMClientError(
                     f"Response missing 'choices' list: {response_data}"
                 )
+            
             first_choice = response_data["choices"][0]
-            # Allow empty content for reasoning models; only ensure message object exists
-            if (
-                not first_choice.get("message")
-                or "content" not in first_choice["message"]
-            ):
-                raise LLMClientError(
-                    f"Response missing message object in choices: {response_data}"
+            
+            # Check for message OR text (some legacy providers)
+            message = first_choice.get("message")
+            text = first_choice.get("text")
+            
+            if not message and not text:
+                 raise LLMClientError(
+                    f"Response missing content (message or text): {response_data}"
                 )
 
             # Report usage if cost_tracker is available and usage data is present

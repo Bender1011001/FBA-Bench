@@ -62,11 +62,13 @@ class DistributedEventBus:
                     # Wrap async handler so broker's sync publish schedules it properly
                     def _sync_wrapper(payload: Any, _h=handler):
                         try:
-                            asyncio.get_event_loop().create_task(_h(payload))
-                        except Exception:
-                            # If no running loop, fallback to creating task via ensure_future
+                            # Check for running loop in current thread
+                            loop = asyncio.get_running_loop()
+                            loop.create_task(_h(payload))
+                        except RuntimeError:
+                            # No running loop, try to schedule in a new loop or fail gracefully
                             try:
-                                asyncio.ensure_future(_h(payload))
+                                asyncio.run(_h(payload))
                             except Exception:
                                 pass
 
@@ -120,12 +122,11 @@ class DistributedEventBus:
                 # If handler returned a coroutine, schedule it so it runs (non-blocking)
                 if asyncio.iscoroutine(result):
                     try:
-                        asyncio.get_event_loop().create_task(result)
-                    except Exception:
-                        try:
-                            asyncio.ensure_future(result)
-                        except Exception:
-                            pass
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(result)
+                    except RuntimeError:
+                        # Fallback for sync execution of coroutine if needed, or swallow
+                        pass
             except Exception:
                 # Do not let handler errors break publishing loop in tests
                 pass

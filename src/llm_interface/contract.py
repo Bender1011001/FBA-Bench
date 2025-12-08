@@ -29,9 +29,12 @@ class BaseLLMClient(ABC):
             **kwargs: Additional parameters for the LLM API call (e.g., temperature, max_tokens).
 
         Returns:
-            A dictionary containing the LLM's raw response. Expected to have a "choices" field
-            similar to OpenAI's API.
-            Example: {"choices": [{"message": {"content": "..."}}], "usage": {"prompt_tokens": 100, "completion_tokens": 50}}
+            A dictionary containing the LLM's raw response.
+            The structure should be normalized by the adapter if possible,
+            but generally contains the generation content and usage metadata.
+
+        Raises:
+            LLMClientError: If there is an issue communicating with the LLM API or receiving a valid response.
 
         Raises:
             LLMClientError: If there is an issue communicating with the LLM API or receiving a valid response.

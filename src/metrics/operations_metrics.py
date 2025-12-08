@@ -44,7 +44,8 @@ class OperationsMetrics:
         self._metrics: Dict[str, Any] = {}
 
     def update(self, current_tick: int, events: List[Dict]):
-        self.total_operational_days = current_tick  # Assuming tick represents a day
+        # Assuming tick starts at 0, day count is tick + 1
+        self.total_operational_days = current_tick + 1
 
         # Update revenue from SaleOccurred events
         for event in events:
@@ -120,11 +121,14 @@ class OperationsMetrics:
         if not self.inventory_history:
             return 0.0
 
-        # Calculate average inventory value
+        # Calculate average inventory value based on history
+        # Note: We rely on history populated during updates.
         inventory_values = [d["value"] for d in self.inventory_history]
-        inventory_values.insert(
-            0, self.initial_inventory_value
-        )  # Include initial inventory
+        
+        # Avoid zero division
+        if not inventory_values:
+            return 0.0
+            
         average_inventory_value = sum(inventory_values) / len(inventory_values)
 
         if average_inventory_value > 0:
@@ -140,7 +144,15 @@ class OperationsMetrics:
         inventory_turnover = self.calculate_inventory_turnover()
         stockout_percentage = self.calculate_stockout_percentage()
 
+        # Simple overall score heuristic: higher turnover is good, lower stockout is good.
+        # This is a placeholder logic for overall_score to avoid missing key errors downstream.
+        overall_score = 0.0
+        if inventory_turnover > 0:
+             overall_score += min(50.0, inventory_turnover * 5) # Cap contribution
+        overall_score += max(0.0, 50.0 - stockout_percentage) # Cap contribution
+
         return {
+            "overall_score": overall_score,
             "inventory_turnover": inventory_turnover,
             "stockout_percentage": stockout_percentage,
         }

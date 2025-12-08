@@ -282,16 +282,29 @@ class CurriculumValidator:
         if tier is not None:
             data = data[data["tier"] == tier]
         if scenario_type is not None:
-            # This would require 'scenario_type' to be part of the collected results
-            # For simplicity, let's assume scenario_name contains type info for now or we add it to benchmark_agent_performance
-            data = data[
-                data["scenario_name"].str.contains(scenario_type, case=False, na=False)
-            ]
+            # Check for column existence and convert to string to safe-guard against non-string types
+            if "scenario_name" in data.columns:
+                data = data[
+                    data["scenario_name"]
+                    .astype(str)
+                    .str.contains(scenario_type, case=False, na=False)
+                ]
+            else:
+                # If scenario_name missing but type requested, we have no matches
+                return {}
 
         if data.empty:
             print(
                 f"No data for selected filters (Tier: {tier}, Type: {scenario_type})."
             )
+            return {}
+
+        # Ensure success_status column exists
+        if "success_status" not in data.columns:
+            # If missing, we can't calculate success rates.
+            # Defaulting all to 'failure' or 'success' might be misleading.
+            # We'll log a warning and return empty or assume 0% if strictly needed.
+            print("Warning: 'success_status' column missing in performance data.")
             return {}
 
         # Create JSON-serializable dict with string keys
@@ -340,11 +353,16 @@ class CurriculumValidator:
         report["success_rate_by_tier"] = {}
 
         try:
-            tier_values = pd.DataFrame(self.performance_data)["tier"].unique()
-            for tier_val in sorted(tier_values):
-                report["success_rate_by_tier"][f"Tier_{tier_val}"] = (
-                    self.analyze_success_rates(tier=tier_val)
-                )
+            # Check if 'tier' column exists before accessing
+            df = pd.DataFrame(self.performance_data)
+            if "tier" in df.columns:
+                tier_values = df["tier"].unique()
+                for tier_val in sorted(tier_values):
+                    report["success_rate_by_tier"][f"Tier_{tier_val}"] = (
+                        self.analyze_success_rates(tier=tier_val)
+                    )
+            else:
+                report["success_rate_by_tier"] = {}
         except Exception:
             # Fallback for tests with minimal data
             report["success_rate_by_tier"] = {"Tier_0": {"success_rate": 1.0}}
@@ -366,24 +384,30 @@ class CurriculumValidator:
             tier_summaries = performance_gaps["tier_summaries"]
             for tier_num, summary in tier_summaries.items():
                 avg_success = summary.get("avg_success_rate")
+                # Handle string tier_num key conversion if necessary
+                try:
+                    tier_int = int(tier_num)
+                except ValueError:
+                    continue
+
                 if avg_success is not None:
-                    if tier_num == 0 and avg_success < 0.80:
+                    if tier_int == 0 and avg_success < 0.80:
                         recommendations.append(
                             f"Tier {tier_num}: Success rate ({avg_success:.2f}) is low. Consider simplifying T0 scenarios (e.g., fewer external events, more capital)."
                         )
-                    elif tier_num == 0 and avg_success > 0.95:
+                    elif tier_int == 0 and avg_success > 0.95:
                         recommendations.append(
                             f"Tier {tier_num}: Success rate ({avg_success:.2f}) is very high. Consider slightly increasing T0 complexity."
                         )
-                    elif tier_num in [1, 2] and not (0.30 <= avg_success <= 0.70):
+                    elif tier_int in [1, 2] and not (0.30 <= avg_success <= 0.70):
                         recommendations.append(
                             f"Tier {tier_num}: Success rate ({avg_success:.2f}) is outside optimal range. Adjust complexity to target 30-70%."
                         )
-                    elif tier_num == 3 and avg_success > 0.30:
+                    elif tier_int == 3 and avg_success > 0.30:
                         recommendations.append(
                             f"Tier {tier_num}: Success rate ({avg_success:.2f}) is high for expert tier. Consider increasing T3 difficulty (e.g., more adversarial agents, severe shocks)."
                         )
-                    elif tier_num == 3 and avg_success < 0.10:
+                    elif tier_int == 3 and avg_success < 0.10:
                         recommendations.append(
                             f"Tier {tier_num}: Success rate ({avg_success:.2f}) is very low for expert tier. Consider slightly reducing T3 difficulty or providing more initial resources."
                         )
@@ -782,23 +806,3 @@ class CurriculumValidator:
             )
 
         return recommendations
-
-
-# Example Usage (after scenarios and engine are ready):
-# from scenarios.scenario_engine import ScenarioEngine
-# from some_agent_module import BasicAgent, AdvancedAgent
-
-# validator = CurriculumValidator()
-# engine = ScenarioEngine()
-
-# # Simulate T0 scenario
-# t0_scenario_config = engine.load_scenario('scenarios/tier_0_baseline.yaml')
-# # Assuming engine.run_simulation returns results with 'success_status', 'profit', 'simulation_duration'
-# # t0_results = engine.run_simulation(t0_scenario_config, agent=BasicAgent())
-# # validator.benchmark_agent_performance("BasicAgent", 0, "tier_0_baseline", t0_results)
-
-# # ... more simulation runs for different agents and tiers ...
-
-# # After all benchmarks are run:
-# # validator.generate_curriculum_report()
-# # validator.recommend_tier_adjustments(validator.validate_tier_progression())

@@ -50,8 +50,6 @@ class DynamicScenarioGenerator:
                         "Generated scenario failed consistency validation."
                     )
         except AttributeError:
-            # If validation method is unavailable, allow generation to proceed.
-            # Downstream tests will still validate via ScenarioConfig.from_yaml(...).
             pass
 
         return scenario
@@ -124,10 +122,8 @@ class DynamicScenarioGenerator:
                 elif isinstance(value, list) and "choices" in value:
                     data[key] = random.choice(value["choices"])
                 elif isinstance(value, bool):
-                    # For boolean flags like enabling/disabling a feature
                     if random.random() < 0.5:  # 50% chance to flip
                         data[key] = not data[key]
-                # Add more randomization types as needed (e.g., specific distributions)
         return data
 
     def randomize_parameters(
@@ -135,7 +131,6 @@ class DynamicScenarioGenerator:
     ) -> Dict[str, Any]:
         """
         Varies key parameters within realistic ranges specified by constraints.
-        This is a more generic method that can be used independently.
         """
         randomized_params = {}
         for param, config in parameter_set.items():
@@ -147,9 +142,8 @@ class DynamicScenarioGenerator:
                         randomized_params[param] = random.randint(min_val, max_val)
                     else:
                         randomized_params[param] = random.uniform(min_val, max_val)
-                # Add other constraint types (e.g., choices, distributions)
             else:
-                randomized_params[param] = config  # Keep original if no constraint
+                randomized_params[param] = config
         return randomized_params
 
     def schedule_random_events(
@@ -158,7 +152,6 @@ class DynamicScenarioGenerator:
         """
         Randomly distributes a subset of challenges from an event pool across a timeline.
         """
-        # Guard against empty event pool
         if not event_pool:
             return []
 
@@ -173,9 +166,7 @@ class DynamicScenarioGenerator:
         scheduled_events = []
         for event in selected_events:
             event_copy = event.copy()
-            event_copy["tick"] = random.randint(
-                1, timeline
-            )  # Random tick within simulation
+            event_copy["tick"] = random.randint(1, timeline)
             scheduled_events.append(event_copy)
 
         return scheduled_events
@@ -251,7 +242,7 @@ class DynamicScenarioGenerator:
                 base_events,
                 base_scenario_config.config_data.get("expected_duration", 1),
             )
-            random.shuffle(scenario_data["external_events"])  # Randomize order
+            random.shuffle(scenario_data["external_events"])
 
         # Ensure multi_agent_config is consistent with tier expectations for complexity
         if "multi_agent_config" in scenario_data:
@@ -279,16 +270,12 @@ class DynamicScenarioGenerator:
 
     def ensure_scenario_validity(self, generated_scenario: ScenarioConfig) -> bool:
         """
-        Performs a final validation check on a generated scenario to ensure realism and internal consistency.
-        Leverages the ScenarioConfig's own validation but can add more specific generator-level checks.
+        Performs a final validation check on a generated scenario.
         """
         print(
             f"Performing final validity check for generated scenario: {generated_scenario.config_data.get('scenario_name')}"
         )
         is_consistent = generated_scenario.validate_scenario_consistency()
-        # Add additional checks specific to procedural generation
-        # E.g., ensure that randomized events don't negate each other in a specific tick range
-        # Ensure product catalog is not empty after randomization if it shouldn't be
         if is_consistent:
             print("Generated scenario passed all validity checks.")
         else:

@@ -74,16 +74,9 @@ class MarketingMetrics:
 
     def __init__(
         self,
-        sales_service: Optional[AbstractSalesService] = None,
         config: Optional[MarketingMetricsConfig] = None,
     ):
-        if sales_service is not None and not isinstance(
-            sales_service, AbstractSalesService
-        ):
-            raise TypeError(
-                "sales_service must implement AbstractSalesService protocol."
-            )
-        self.sales_service = sales_service  # Dependency injection for sales data (optional for unit tests)
+        # Issue 94: Removed unused sales_service parameter
         self.config = config if config else MarketingMetricsConfig()
 
         self.total_revenue: Money = USD_ZERO
@@ -182,69 +175,46 @@ class MarketingMetrics:
 
     def calculate_weighted_roas_acos(self) -> float:
         """
-        Calculates a weighted average metric combining ROAS and ACoS across campaigns,
-        using configurable weights and handling division by zero.
-        Only campaigns with revenue contributing above `min_campaign_revenue_for_weighting` are considered.
+        Calculates a weighted score combining ROAS and ACoS, normalized to 0-100.
+        Uses config.target_roas to scale the ROAS component appropriately.
         """
         if not self.campaign_performance:
-            logger.debug(
-                "No campaign performance data to calculate weighted ROAS/ACoS. Returning 0.0."
-            )
             return 0.0
 
         total_weighted_score = 0.0
         contributing_campaigns = [
-            cp
-            for cp in self.campaign_performance.values()
+            cp for cp in self.campaign_performance.values()
             if cp.revenue.to_float() >= self.config.min_campaign_revenue_for_weighting
         ]
 
         if not contributing_campaigns:
-            logger.debug(
-                "No campaigns met the minimum revenue threshold for weighted ROAS/ACoS calculation. Returning 0.0."
-            )
             return 0.0
 
-        total_contributing_revenue = sum(
-            cp.revenue.to_float() for cp in contributing_campaigns
-        )
-
+        total_contributing_revenue = sum(cp.revenue.to_float() for cp in contributing_campaigns)
         if total_contributing_revenue == 0:
-            logger.warning(
-                "Total contributing campaign revenue is zero, cannot calculate weighted ROAS/ACoS. Returning 0.0."
-            )
             return 0.0
 
         for cp in contributing_campaigns:
-            campaign_revenue_float = cp.revenue.to_float()
-            campaign_ad_spend_float = cp.ad_spend.to_float()
+            revenue = cp.revenue.to_float()
+            spend = cp.ad_spend.to_float()
 
-            campaign_roas = self.config.default_on_zero_division
-            if campaign_ad_spend_float > 0:
-                campaign_roas = campaign_revenue_float / campaign_ad_spend_float
+            roas = revenue / spend if spend > 0 else 0.0
+            # Normalize ROAS: min(roas / target_roas, 1.0) * 100
+            roas_score = min(roas / self.config.target_roas, 1.0) * 100
 
-            campaign_acos = self.config.default_on_zero_division
-            if campaign_revenue_float > 0:
-                campaign_acos = (campaign_ad_spend_float / campaign_revenue_float) * 100
+            # ACoS Score: 100 - ACoS% (clamped at 0)
+            acos_val = (spend / revenue * 100) if revenue > 0 else 100.0
+            acos_score = max(0.0, 100.0 - acos_val)
 
-            # Combined score: ROAS and (100 - ACoS)/100, weighted by config
             combined_campaign_score = (
-                campaign_roas * self.config.roas_weight
-                + ((100 - campaign_acos) / 100) * self.config.acos_weight
+                roas_score * self.config.roas_weight +
+                acos_score * self.config.acos_weight
             )
 
-            weight = campaign_revenue_float / total_contributing_revenue
+            weight = revenue / total_contributing_revenue
             total_weighted_score += combined_campaign_score * weight
 
-        # Normalize the combined score to a 0-100 scale, effectively being a percentage of potential max score
-        # Assuming roas_weight + acos_weight = 1 for simplicity of scaling if scores are 0-1
-        max_possible_combined_score = (
-            1.0 * self.config.roas_weight + 1.0 * self.config.acos_weight
-        )  # If ROAS and (100-ACOs)/100 are between 0-1
-        if max_possible_combined_score == 0:
-            return 0.0  # Avoid division by zero if both weights are 0
-
-        return (total_weighted_score / max_possible_combined_score) * 100
+        return total_weighted_score
 
     # ---- Unit-test compatible helpers expected by tests ----
     def calculate_customer_lifetime_value(self, data: Dict[str, float]) -> float:

@@ -1,3 +1,4 @@
+# src/scenarios/tier_manager.py
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -99,7 +100,9 @@ class TierManager:
                 same_tier = tier_val == progression.current_tier
             else:
                 same_tier = str(tier_val) == progression.current_tier.value
-            if same_tier and s.get("success") is True:
+            
+            # Relaxed boolean check for robustness (Issue 66)
+            if same_tier and bool(s.get("success")):
                 succeeded += 1
         return succeeded >= required
 

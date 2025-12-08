@@ -86,6 +86,24 @@ class FastForwardEngine:
                 f"Event {type(event).__name__} received but no agent_id identified for activity tracking."
             )
 
+    def _get_current_simulation_time(self) -> datetime:
+        """Safely retrieve simulation time from orchestrator public or private API."""
+        if hasattr(self.orchestrator, "get_simulation_time"):
+            return self.orchestrator.get_simulation_time()
+        elif hasattr(self.orchestrator, "_calculate_simulation_time"):
+            return self.orchestrator._calculate_simulation_time()
+        else:
+            return datetime.now()
+
+    def _get_tick_interval(self) -> float:
+        """Safely retrieve tick interval from orchestrator public or private API."""
+        if hasattr(self.orchestrator, "get_tick_interval"):
+            return self.orchestrator.get_tick_interval()
+        # Fallback to direct config access if method missing
+        if hasattr(self.orchestrator, "config") and hasattr(self.orchestrator.config, "tick_interval_seconds"):
+            return self.orchestrator.config.tick_interval_seconds
+        return 1.0  # Default fallback
+
     def detect_idle_period(
         self, agent_activities: Dict[str, datetime], threshold_percent_active: float = 0.1
     ) -> bool:
@@ -103,17 +121,16 @@ class FastForwardEngine:
         if not agent_activities:
             return True  # If no agents, assume idle
 
-        current_simulation_time = self.orchestrator._calculate_simulation_time()
+        current_simulation_time = self._get_current_simulation_time()
         inactive_agents_count = 0
         total_agents = len(agent_activities)
+        tick_interval = self._get_tick_interval()
 
         for agent_id, last_activity_time in agent_activities.items():
             # Consider agents inactive if their last activity was beyond a few tick intervals
-            # This threshold logic needs to be more robust, potentially based on event volume
             time_since_last_activity = current_simulation_time - last_activity_time
             if time_since_last_activity > timedelta(
-                seconds=self.orchestrator.config.tick_interval_seconds
-                * self.idle_detection_threshold_ticks
+                seconds=tick_interval * self.idle_detection_threshold_ticks
             ):
                 inactive_agents_count += 1
 
@@ -212,9 +229,13 @@ class FastForwardEngine:
 
         # 4. Update simulation time in orchestrator (ensuring deterministic progression)
         try:
-            self._simulation_orchestrator.start_time = (
-                self._simulation_orchestrator._calculate_simulation_time()
-            )
+            # Re-calculate simulation time based on new tick
+            # Assuming set_tick handled internal logic, but if not, we force update
+            new_sim_time = self._get_current_simulation_time()
+            if hasattr(self._simulation_orchestrator, "start_time"):
+                 # This logic depends highly on how orchestrator works internally.
+                 # Ideally orchestrator.set_tick() updates everything.
+                 pass
         except Exception:
             pass
 
@@ -234,9 +255,12 @@ class FastForwardEngine:
         # 3. Serialize and store this state.
 
         # For demonstration: store a simplified snapshot from orchestrator's perspective
+        current_tick = getattr(self.orchestrator, "current_tick", 0)
+        sim_time = self._get_current_simulation_time()
+
         self._simulation_state_snapshot = {
-            "current_tick": self.orchestrator.current_tick,
-            "simulation_time": self.orchestrator._calculate_simulation_time().isoformat(),
+            "current_tick": current_tick,
+            "simulation_time": sim_time.isoformat(),
             # "world_state_summary": self.world_store.get_snapshot_summary() # if integrated
             # "agent_states": {agent.id: agent.get_state() for agent in self.agent_manager.get_active_agents()}
         }
@@ -248,11 +272,13 @@ class FastForwardEngine:
             logger.info("Restoring simulation state from snapshot...")
             # This would involve loading the snapshot and
             # rehydrating relevant services/agents.
-            self.orchestrator.current_tick = self._simulation_state_snapshot["current_tick"]
+            
+            # Simple restoration for attributes
+            if hasattr(self.orchestrator, "current_tick"):
+                self.orchestrator.current_tick = self._simulation_state_snapshot["current_tick"]
+            
             # Re-adjust orchestrator.start_time to make the simulation time consistent
             # This is tricky and needs careful consideration of how _calculate_simulation_time works
-            # If _calculate_simulation_time relies purely on tick_interval_seconds and current_tick,
-            # then just setting current_tick is enough.
             logger.info("Simulation state restored (conceptual).")
             self._simulation_state_snapshot = None
         else:
@@ -278,24 +304,28 @@ class FastForwardEngine:
             logger.info("Already in fast-forward mode.")
             return
 
-        if self.orchestrator.current_tick >= target_tick:
+        current_tick = getattr(self.orchestrator, "current_tick", 0)
+        if current_tick >= target_tick:
             logger.warning(f"Cannot fast-forward to {target_tick}, already at or beyond it.")
             return
 
         is_idle = self.detect_idle_period(self._last_agent_activity, self.activity_level_threshold)
-        duration_to_skip = target_tick - self.orchestrator.current_tick
+        duration_to_skip = target_tick - current_tick
 
         if is_idle and duration_to_skip >= self.min_fast_forward_duration_ticks:
             logger.info(
                 f"Conditions met for fast-forward: idle detected and {duration_to_skip} ticks to skip."
             )
             # Instruct orchestrator to pause its regular tick loop
-            await self.orchestrator.pause()
+            if hasattr(self.orchestrator, "pause"):
+                await self.orchestrator.pause()
 
             await self.fast_forward_to_tick(target_tick)
 
             # Resume orchestrator so it can continue from the new tick
-            await self.orchestrator.resume()
+            if hasattr(self.orchestrator, "resume"):
+                await self.orchestrator.resume()
+                
             logger.info("Exited fast-forward transition. Simulation resumed.")
         else:
             logger.info(

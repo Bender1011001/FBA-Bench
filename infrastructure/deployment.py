@@ -233,14 +233,14 @@ class DeploymentManager:
             "--build",
         ]
 
-        result = subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            logger.error(f"Docker Compose deployment failed: {result.stderr}")
+        try:
+            # Fix #84: Use check=True for robust error handling
+            subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True, check=True)
+            logger.info("Docker Compose deployment successful")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Docker Compose deployment failed: {e.stderr}")
             return False
-
-        logger.info("Docker Compose deployment successful")
-        return True
 
     def _deploy_kubernetes(self) -> bool:
         """Deploy using Kubernetes."""
@@ -260,30 +260,31 @@ class DeploymentManager:
         # Apply manifests
         cmd = ["kubectl", "apply", "-f", str(k8s_dir), "-n", self.config.kubernetes_namespace]
 
-        # Create namespace if it doesn't exist
-        namespace_cmd = [
-            "kubectl",
-            "create",
-            "namespace",
-            self.config.kubernetes_namespace,
-            "--dry-run=client",
-            "-o",
-            "yaml",
-        ]
-
-        result = subprocess.run(namespace_cmd, capture_output=True, text=True)
-        if result.returncode == 0:
+        try:
+            # Create namespace if it doesn't exist
+            namespace_cmd = [
+                "kubectl",
+                "create",
+                "namespace",
+                self.config.kubernetes_namespace,
+                "--dry-run=client",
+                "-o",
+                "yaml",
+            ]
+            result = subprocess.run(namespace_cmd, capture_output=True, text=True, check=True)
+            
             apply_ns_cmd = ["kubectl", "apply", "-f", "-"]
             subprocess.run(apply_ns_cmd, input=result.stdout, text=True, check=True)
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+            # Apply manifests
+            cmd = ["kubectl", "apply", "-f", str(k8s_dir), "-n", self.config.kubernetes_namespace]
+            subprocess.run(cmd, capture_output=True, text=True, check=True)
 
-        if result.returncode != 0:
-            logger.error(f"Kubernetes deployment failed: {result.stderr}")
+            logger.info("Kubernetes deployment successful")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Kubernetes deployment failed: {e.stderr}")
             return False
-
-        logger.info("Kubernetes deployment successful")
-        return True
 
     def _deploy_local(self) -> bool:
         """Deploy locally."""
@@ -298,16 +299,16 @@ class DeploymentManager:
         requirements_file = self.project_root / "requirements.txt"
         if requirements_file.exists():
             cmd = ["pip3", "install", "-r", str(requirements_file)]
-            result = subprocess.run(cmd, capture_output=True, text=True)
-
-            if result.returncode != 0:
-                logger.error(f"Failed to install dependencies: {result.stderr}")
+            try:
+                subprocess.run(cmd, capture_output=True, text=True, check=True)
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Failed to install dependencies: {e.stderr}")
                 return False
 
         # Start the application
         cmd = ["python3", "-m", "api_server"]
 
-        # Run in background
+        # Run in background - Popen doesn't support check=True as it doesn't wait
         subprocess.Popen(cmd, cwd=self.project_root)
 
         logger.info("Local deployment successful")
@@ -473,7 +474,7 @@ class DeploymentManager:
         self._generate_docker_compose_override(override_file)
 
         # Pull latest images and restart services
-        cmd = [
+        cmd_pull = [
             "docker-compose",
             "-f",
             str(self.docker_compose_file),
@@ -484,13 +485,13 @@ class DeploymentManager:
             "pull",
         ]
 
-        result = subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            logger.error(f"Docker Compose pull failed: {result.stderr}")
+        try:
+            subprocess.run(cmd_pull, cwd=self.project_root, capture_output=True, text=True, check=True)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Docker Compose pull failed: {e.stderr}")
             return False
 
-        cmd = [
+        cmd_up = [
             "docker-compose",
             "-f",
             str(self.docker_compose_file),
@@ -502,14 +503,13 @@ class DeploymentManager:
             "-d",
         ]
 
-        result = subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            logger.error(f"Docker Compose update failed: {result.stderr}")
+        try:
+            subprocess.run(cmd_up, cwd=self.project_root, capture_output=True, text=True, check=True)
+            logger.info("Docker Compose update successful")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Docker Compose update failed: {e.stderr}")
             return False
-
-        logger.info("Docker Compose update successful")
-        return True
 
     def _update_kubernetes(self) -> bool:
         """Update Kubernetes deployment."""
@@ -521,34 +521,28 @@ class DeploymentManager:
 
         self._generate_kubernetes_manifests(k8s_dir)
 
-        # Apply manifests
-        cmd = ["kubectl", "apply", "-f", str(k8s_dir), "-n", self.config.kubernetes_namespace]
+        try:
+            # Apply manifests
+            cmd_apply = ["kubectl", "apply", "-f", str(k8s_dir), "-n", self.config.kubernetes_namespace]
+            subprocess.run(cmd_apply, capture_output=True, text=True, check=True)
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+            # Restart deployment
+            cmd_restart = [
+                "kubectl",
+                "rollout",
+                "restart",
+                "deployment",
+                self.config.project_name,
+                "-n",
+                self.config.kubernetes_namespace,
+            ]
+            subprocess.run(cmd_restart, capture_output=True, text=True, check=True)
 
-        if result.returncode != 0:
-            logger.error(f"Kubernetes update failed: {result.stderr}")
+            logger.info("Kubernetes update successful")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Kubernetes update failed: {e.stderr}")
             return False
-
-        # Restart deployment
-        cmd = [
-            "kubectl",
-            "rollout",
-            "restart",
-            "deployment",
-            self.config.project_name,
-            "-n",
-            self.config.kubernetes_namespace,
-        ]
-
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            logger.error(f"Kubernetes rollout restart failed: {result.stderr}")
-            return False
-
-        logger.info("Kubernetes update successful")
-        return True
 
     def stop(self) -> bool:
         """
@@ -586,51 +580,44 @@ class DeploymentManager:
             "down",
         ]
 
-        result = subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            logger.error(f"Docker Compose stop failed: {result.stderr}")
+        try:
+            subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True, check=True)
+            logger.info("Docker Compose stop successful")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Docker Compose stop failed: {e.stderr}")
             return False
-
-        logger.info("Docker Compose stop successful")
-        return True
 
     def _stop_kubernetes(self) -> bool:
         """Stop Kubernetes deployment."""
         logger.info("Stopping Kubernetes deployment")
 
-        cmd = [
-            "kubectl",
-            "delete",
-            "deployment",
-            self.config.project_name,
-            "-n",
-            self.config.kubernetes_namespace,
-        ]
+        try:
+            cmd_delete_deploy = [
+                "kubectl",
+                "delete",
+                "deployment",
+                self.config.project_name,
+                "-n",
+                self.config.kubernetes_namespace,
+            ]
+            subprocess.run(cmd_delete_deploy, capture_output=True, text=True, check=True)
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+            cmd_delete_svc = [
+                "kubectl",
+                "delete",
+                "service",
+                self.config.project_name,
+                "-n",
+                self.config.kubernetes_namespace,
+            ]
+            subprocess.run(cmd_delete_svc, capture_output=True, text=True, check=True)
 
-        if result.returncode != 0:
-            logger.error(f"Kubernetes stop failed: {result.stderr}")
+            logger.info("Kubernetes stop successful")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Kubernetes stop failed: {e.stderr}")
             return False
-
-        cmd = [
-            "kubectl",
-            "delete",
-            "service",
-            self.config.project_name,
-            "-n",
-            self.config.kubernetes_namespace,
-        ]
-
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            logger.error(f"Kubernetes service delete failed: {result.stderr}")
-            return False
-
-        logger.info("Kubernetes stop successful")
-        return True
 
     def _stop_local(self) -> bool:
         """Stop local deployment."""
@@ -639,12 +626,13 @@ class DeploymentManager:
         # Find and kill the process
         cmd = ["pkill", "-f", "api_server"]
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            logger.warning(f"No api_server process found or failed to kill: {result.stderr}")
-            # Not necessarily an error
-            return True
+        try:
+            # pkill returns 0 if at least one process was matched and killed,
+            # 1 if no process matched. 1 is not a 'failure' for us, just means 'nothing to stop'.
+            subprocess.run(cmd, capture_output=True, text=True, check=True)
+        except subprocess.CalledProcessError:
+            # Ignored: Process likely not running
+            pass
 
         logger.info("Local stop successful")
         return True

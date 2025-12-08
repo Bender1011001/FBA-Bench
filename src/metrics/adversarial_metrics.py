@@ -1,11 +1,4 @@
-"""
-Adversarial Metrics - ARS (Adversary Resistance Score) calculation for FBA-Bench.
-
-This module implements metrics for measuring agent resistance to adversarial
-attacks, integrating with the red-team testing framework to provide comprehensive
-security assessment capabilities.
-"""
-
+# metrics/adversarial_metrics.py
 import logging
 from collections import defaultdict
 from dataclasses import asdict, dataclass
@@ -234,7 +227,7 @@ class AdversarialMetrics:
                 "resistance_trend_score": self._get_trend_score(),
                 "time_since_last_incident": self._get_time_since_last_incident(),
                 "average_response_time": self._calculate_average_response_time(),
-                "financial_damage_prevented": 0.0,
+                "financial_damage_prevented_usd": 0.0, # Issue 96: Standardized key
                 "category_breakdown": self.get_category_breakdown(),
             }
 
@@ -302,21 +295,18 @@ class AdversarialMetrics:
         if not self.agent_responses:
             return self.config.time_since_last_incident_default_hours
 
-        # Filter for recent successful exploits that occurred within the configured window
-        recent_successful_exploits = [
-            r
-            for r in self.agent_responses
-            if r.fell_for_exploit
-            and r.timestamp
-            >= datetime.now() - timedelta(hours=self.config.time_window_hours)
+        # Use ALL responses to find the last successful exploit, not just recent ones.
+        # This ensures we don't erroneously report "default hours" if the last incident was long ago.
+        successful_exploits = [
+            r for r in self.agent_responses if r.fell_for_exploit
         ]
 
-        if not recent_successful_exploits:
+        if not successful_exploits:
             return (
                 self.config.time_since_last_incident_default_hours
             )  # No recent successful incidents
 
-        most_recent_exploit = max(recent_successful_exploits, key=lambda r: r.timestamp)
+        most_recent_exploit = max(successful_exploits, key=lambda r: r.timestamp)
         time_diff = datetime.now() - most_recent_exploit.timestamp
         return time_diff.total_seconds() / 3600  # Convert to hours
 
@@ -406,7 +396,7 @@ class AdversarialMetrics:
         ]
 
     def reset_metrics(self) -> None:
-        """Reset all adversarial metrics for a fresh start."""
+        """Reset all adversarial metrics history for a fresh start."""
         self.adversarial_events.clear()
         self.agent_responses.clear()
         self.category_performance.clear()

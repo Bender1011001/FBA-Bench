@@ -31,18 +31,13 @@ class LLMResponseParser:
           create a lightweight dummy event_bus with a no-op async publish() to satisfy callers.
         - Wrap parse_and_validate with an AsyncMock proxy so tests can assert_called_once().
         """
-        # Detect whether an EventBus or a TrustMetrics-like object was passed
-        try:
-            from fba_events.bus import EventBus as _EB  # type: ignore
-        except Exception:
-            _EB = None  # type: ignore
-
-        if _EB is not None and isinstance(event_bus, _EB):
-            self.event_bus = event_bus  # type: ignore[assignment]
+        # Fix #89: Improved type detection using duck typing
+        if hasattr(event_bus, "publish") and callable(event_bus.publish):
+            self.event_bus = event_bus
             self.trust_metrics = getattr(self, "trust_metrics", None)
         else:
             # Assume trust_metrics-like object passed
-            self.trust_metrics = event_bus  # type: ignore[assignment]
+            self.trust_metrics = event_bus
 
             # Provide a minimal event_bus with async publish for compatibility
             class _DummyBus:
@@ -65,19 +60,14 @@ class LLMResponseParser:
         except Exception:
             pass
 
-        # Wrap parse_and_validate with AsyncMock so tests can assert calls
-        try:
-            _orig = self.parse_and_validate  # bound method
+        # Fix #88: Removed broad try/except block that swallowed wrapping errors
+        if hasattr(self, "parse_and_validate") and not hasattr(self.parse_and_validate, "assert_called_once"):
+            _orig = self.parse_and_validate
 
             async def _delegate(raw_llm_response: str, agent_id: str):
                 return await _orig(raw_llm_response, agent_id)
 
-            # Only wrap once
-            if not hasattr(self.parse_and_validate, "assert_called_once"):
-                self.parse_and_validate = AsyncMock(side_effect=_delegate)  # type: ignore[assignment]
-        except Exception:
-            # Never break due to wrapping issues
-            pass
+            self.parse_and_validate = AsyncMock(side_effect=_delegate)
 
     async def parse_and_validate(
         self, raw_llm_response: str, agent_id: str

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import secrets
 import string
 import sys
 from pathlib import Path
@@ -38,9 +39,10 @@ Examples:
     parser.add_argument("-e", "--env", default="sandbox", help="Environment (default: sandbox)")
     parser.add_argument("--api-url", default="http://localhost:8000", help="API public base URL (default: http://localhost:8000)")
     parser.add_argument("--web-url", default="http://localhost:5173", help="Frontend base URL (default: http://localhost:5173)")
+    parser.add_argument("--database-url", default="sqlite:///./enterprise.db", help="Database URL (default: sqlite:///./enterprise.db)")
     parser.add_argument("--stripe-public-key", default="pk_test_CHANGE_ME", help="Stripe public key (default: pk_test_CHANGE_ME)")
     parser.add_argument("--price-id", default="price_123CHANGE_ME", help="Default Stripe price ID (default: price_123CHANGE_ME)")
-    parser.add_argument("--jwt-secret", default="CHANGE_ME_DEV", help="JWT secret (default: CHANGE_ME_DEV; generate secure random)")
+    parser.add_argument("--jwt-secret", default=None, help="JWT secret (default: generates secure random string)")
     parser.add_argument("--stripe-secret-key", default=None, help="Stripe secret key (optional; default: empty string)")
     parser.add_argument("--stripe-webhook-secret", default=None, help="Stripe webhook secret (optional; default: empty string)")
     parser.add_argument("--api-image-tag", default="latest", help="API Docker image tag (default: latest)")
@@ -51,15 +53,26 @@ Examples:
     args = parser.parse_args()
 
     tenant = args.tenant.strip().lower()
-    if not re.match(r"^[a-z0-9-]+$", tenant):
-        print(f"ERROR: Invalid tenant slug '{args.tenant}': must match [a-z0-9-]+", file=sys.stderr)
+    # Issue 73: Tightened regex to require at least one alphanumeric character
+    if not re.match(r"^(?=.*[a-z0-9])[a-z0-9-]+$", tenant):
+        print(f"ERROR: Invalid tenant slug '{args.tenant}': must match [a-z0-9-]+ and contain at least one alphanumeric character.", file=sys.stderr)
         return 1
 
     default_out = infra_dir / "tenants" / tenant
     out_dir = Path(args.out_dir) if args.out_dir else default_out
 
-    # Fixed default for DATABASE_URL (not overridable via CLI in this step)
-    database_url = "sqlite:///./enterprise.db"
+    # Issue 71: Secure default for JWT_SECRET
+    if args.jwt_secret:
+        jwt_secret = args.jwt_secret
+        if jwt_secret == "CHANGE_ME_DEV" and args.env not in ("sandbox", "dev", "local"):
+            print(f"ERROR: Unsafe JWT_SECRET 'CHANGE_ME_DEV' not allowed in environment '{args.env}'.", file=sys.stderr)
+            return 1
+    else:
+        jwt_secret = secrets.token_urlsafe(32)
+        print(f"INFO: Generated secure JWT_SECRET for tenant '{tenant}'")
+
+    # Issue 72: Configurable DATABASE_URL
+    database_url = args.database_url
 
     # Build mapping (CLI args only; no env var precedence for simplicity)
     mapping: Dict[str, str] = {
@@ -72,7 +85,7 @@ Examples:
         "FRONTEND_BASE_URL": args.web_url,
         "STRIPE_PUBLIC_KEY": args.stripe_public_key,
         "STRIPE_PRICE_ID_DEFAULT": args.price_id,
-        "JWT_SECRET": args.jwt_secret,
+        "JWT_SECRET": jwt_secret,
         "STRIPE_SECRET_KEY": args.stripe_secret_key or "",
         "STRIPE_WEBHOOK_SECRET": args.stripe_webhook_secret or "",
     }

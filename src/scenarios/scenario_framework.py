@@ -5,19 +5,11 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 
-class ScenarioConfig:
-    """
-    Defines the configuration for a single FBA simulation scenario.
-    Includes market conditions, business parameters, external events,
-    and agent challenges.
-    """
+class ScenarioValidator:
+    """Handles validation logic for scenario configurations."""
 
-    def __init__(self, config_data: Dict[str, Any]):
-        self.config_data = config_data
-        self._validate_initial_config()
-
-    def _validate_initial_config(self):
-        """Basic validation for required keys in the config data."""
+    @staticmethod
+    def validate_initial_config(config_data: Dict[str, Any]) -> None:
         required_keys = [
             "scenario_name",
             "difficulty_tier",
@@ -28,8 +20,77 @@ class ScenarioConfig:
             "agent_constraints",
         ]
         for key in required_keys:
-            if key not in self.config_data:
+            if key not in config_data:
                 raise ValueError(f"Missing required key in scenario config: {key}")
+
+    @staticmethod
+    def validate_consistency(config_data: Dict[str, Any]) -> bool:
+        if not config_data.get("scenario_name"):
+            print("Validation Warning: Scenario name is missing.")
+            return False
+
+        tier = config_data.get("difficulty_tier")
+        if not isinstance(tier, int) or not (0 <= tier <= 3):
+            print(f"Validation Error: Invalid difficulty_tier: {tier}. Must be 0-3.")
+            return False
+
+        duration = config_data.get("expected_duration")
+        if not isinstance(duration, int) or duration <= 0:
+            print(f"Validation Error: Invalid expected_duration: {duration}. Must be positive integer.")
+            return False
+
+        if not ScenarioValidator._validate_numerical_ranges(config_data):
+            print("Validation Error: Invalid numerical ranges in scenario parameters.")
+            return False
+
+        return True
+
+    @staticmethod
+    def _validate_numerical_ranges(config_data: Dict[str, Any]) -> bool:
+        market_conditions = config_data.get("market_conditions", {})
+        for key, value in market_conditions.items():
+            if isinstance(value, (int, float)) and value < 0:
+                return False
+        return True
+
+
+class ScenarioGenerator:
+    """Handles generation of dynamic content for scenarios."""
+
+    @staticmethod
+    def generate_market_conditions(config_data: Dict[str, Any], scenario_type: str) -> Dict[str, Any]:
+        market_params = config_data.get("market_conditions", {}).copy()
+
+        # Apply scenario-specific logic
+        if scenario_type == "boom_and_bust":
+            market_params.update({"economic_cycle": "recession_recovery", "market_volatility": "high"})
+        elif scenario_type == "hyper_competitive":
+            market_params.update({"competition_level": "intense", "market_saturation": "high"})
+        else:
+            market_params.update({"economic_cycle": "stable", "competition_level": "moderate"})
+
+        return market_params
+
+    @staticmethod
+    def calculate_event_timing(event: Dict[str, Any], timeline: int) -> int:
+        if "timing_preference" in event:
+            pref = event["timing_preference"]
+            if pref == "early":
+                return random.randint(1, timeline // 3)
+            elif pref == "late":
+                return random.randint(2 * timeline // 3, timeline)
+        return random.randint(1, timeline)
+
+
+class ScenarioConfig:
+    """
+    Defines the configuration for a single FBA simulation scenario.
+    Delegates validation and generation to helper classes.
+    """
+
+    def __init__(self, config_data: Dict[str, Any]):
+        self.config_data = config_data
+        ScenarioValidator.validate_initial_config(self.config_data)
 
     @classmethod
     def from_yaml(cls, filepath: str):

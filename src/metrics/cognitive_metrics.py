@@ -1,15 +1,15 @@
 # metrics/cognitive_metrics.py
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
+
+from fba_events import BaseEvent
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class CognitiveMetricsConfig:
-    """Configuration for CognitiveMetrics."""
-
     goal_completion_weight: float = 0.1
     active_focus_weight: float = 0.05
     context_switch_penalty: float = 5.0
@@ -20,52 +20,55 @@ class CognitiveMetricsConfig:
 class CognitiveMetrics:
     def __init__(self, config: Optional[CognitiveMetricsConfig] = None):
         self.config = config if config else CognitiveMetricsConfig()
-        self.planned_goals: Dict[str, Any] = (
-            {}
-        )  # goal_id: {'status': 'active'/'completed'/'abandoned', 'start_tick': int, 'end_tick': int}
+        self.planned_goals: Dict[str, Any] = {}
         self.agent_actions_history: List[Dict] = []
-        self.focus_duration: Dict[str, int] = (
-            {}
-        )  # goal_id: total ticks agent focused on it
+        self.focus_duration: Dict[str, int] = {}
         self.context_switches = 0
-        self.planning_coherence_scores: List[float] = (
-            []
-        )  # Scores based on plan adherence
-
-        # Unit-test compatibility: lightweight metric registry
+        self.planning_coherence_scores: List[float] = []
         self._metrics: Dict[str, Any] = {}
 
-    def update(self, current_tick: int, events: List[Dict]):
+    def update(self, current_tick: int, events: List[Union[Dict, BaseEvent]]):
         for event in events:
-            if (
-                event.get("type") == "AgentPlannedGoalEvent"
-            ):  # Agent declares a new goal
-                goal_id = event["goal_id"]
-                self.planned_goals[goal_id] = {
-                    "description": event["description"],
-                    "status": "active",
-                    "start_tick": current_tick,
-                    "end_tick": -1,
+            # Normalize to dict
+            if isinstance(event, BaseEvent):
+                # Assuming BaseEvent has to_dict or we map fields manually
+                # Mapping known fields for cognitive events
+                evt_type = event.event_type
+                evt_data = {
+                    "type": evt_type,
+                    "goal_id": getattr(event, "goal_id", None),
+                    "description": getattr(event, "description", None),
+                    "status": getattr(event, "status", None),
+                    "current_goal_id": getattr(event, "current_goal_id", None),
+                    "score": getattr(event, "score", None),
                 }
-            elif (
-                event.get("type") == "AgentGoalStatusUpdateEvent"
-            ):  # Agent updates goal status
-                goal_id = event["goal_id"]
+            else:
+                evt_data = event
+
+            if evt_data.get("type") == "AgentPlannedGoalEvent":
+                goal_id = evt_data.get("goal_id")
+                if goal_id:
+                    self.planned_goals[goal_id] = {
+                        "description": evt_data.get("description"),
+                        "status": "active",
+                        "start_tick": current_tick,
+                        "end_tick": -1,
+                    }
+            elif evt_data.get("type") == "AgentGoalStatusUpdateEvent":
+                goal_id = evt_data.get("goal_id")
                 if goal_id in self.planned_goals:
-                    self.planned_goals[goal_id]["status"] = event["status"]
-                    if event["status"] in ["completed", "abandoned"]:
+                    self.planned_goals[goal_id]["status"] = evt_data.get("status")
+                    if evt_data.get("status") in ["completed", "abandoned"]:
                         self.planned_goals[goal_id]["end_tick"] = current_tick
 
-            elif event.get("type") == "AgentActionEvent":  # Agent performs an action
-                self.agent_actions_history.append(event)
-                # Infer focus and context switches from action-goal alignment
-                current_goal_id = event.get("current_goal_id")
+            elif evt_data.get("type") == "AgentActionEvent":
+                self.agent_actions_history.append(evt_data)
+                current_goal_id = evt_data.get("current_goal_id")
                 if current_goal_id:
                     self.focus_duration[current_goal_id] = (
                         self.focus_duration.get(current_goal_id, 0) + 1
                     )
 
-                # Simplified context switching: if goal changes between consecutive actions
                 if len(self.agent_actions_history) > 1:
                     prev_action = self.agent_actions_history[-2]
                     if (
@@ -74,16 +77,12 @@ class CognitiveMetrics:
                     ):
                         self.context_switches += 1
 
-            elif (
-                event.get("type") == "PlanningCoherenceScoreEvent"
-            ):  # External system gives a score
-                score = event.get("score")
+            elif evt_data.get("type") == "PlanningCoherenceScoreEvent":
+                score = evt_data.get("score")
                 if score is not None:
                     self.planning_coherence_scores.append(score)
 
     def calculate_cra_score(self) -> float:
-        # CRA (Cognitive Resilience Assessment) based on planned-goal attention
-        # Higher score for maintained focus, lower for excessive context switching or abandoned goals.
         total_goal_attention_score = 0
         active_and_completed_goals = 0
 
@@ -92,25 +91,19 @@ class CognitiveMetrics:
                 active_and_completed_goals += 1
                 duration = self.focus_duration.get(goal_id, 0)
 
-                # Reward for completing goals, penalize for abandoning
                 if (
                     goal_data["status"] == "completed"
                     and goal_data["start_tick"] != -1
                     and goal_data["end_tick"] != -1
                 ):
-                    # Longer task completion suggests sustained focus if successful
                     total_goal_attention_score += (
                         goal_data["end_tick"] - goal_data["start_tick"]
-                    ) * 0.1  # Example weighting
+                    ) * 0.1
                 elif goal_data["status"] == "active":
-                    total_goal_attention_score += (
-                        duration * 0.05
-                    )  # Reward for current focus
+                    total_goal_attention_score += duration * 0.05
 
-        # Penalize for context switches
-        penalty_for_switches = self.context_switches * 5  # Example penalty
+        penalty_for_switches = self.context_switches * 5
 
-        # Incorporate planning coherence
         avg_planning_coherence = (
             sum(self.planning_coherence_scores) / len(self.planning_coherence_scores)
             if self.planning_coherence_scores
@@ -122,9 +115,8 @@ class CognitiveMetrics:
             + avg_planning_coherence * 10
             - penalty_for_switches
         )
-        return max(0, min(100, cra_score))  # Clamp score between 0-100
+        return max(0, min(100, cra_score))
 
-    # ---- Unit-test compatible helpers expected by tests ----
     def _avg(self, values: List[float]) -> float:
         return sum(values) / len(values) if values else 0.0
 
@@ -199,7 +191,6 @@ class CognitiveMetrics:
 
     def get_metrics_breakdown(self) -> Dict[str, float]:
         cra_score = self.calculate_cra_score()
-
         return {
             "cra_score": cra_score,
             "context_switches": float(self.context_switches),
@@ -210,3 +201,6 @@ class CognitiveMetrics:
                 else 0.0
             ),
         }
+
+    def get_status_summary(self) -> Dict[str, Any]:
+        return self.get_metrics_breakdown()

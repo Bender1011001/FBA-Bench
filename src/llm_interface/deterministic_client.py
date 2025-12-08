@@ -1,158 +1,4 @@
-"""
-Deterministic LLM Client for FBA-Bench Reproducibility
-
-Provides a wrapper around existing LLM clients to add deterministic behavior
-through response caching and mode switching for scientific reproducibility.
-
-PURPOSE AND IMPORTANCE:
-=======================
-
-In scientific experimentation and benchmarking, non-deterministic behavior from
-Large Language Models (LLMs) can make it impossible to reproduce results, validate
-findings, or compare different approaches fairly. This DeterministicLLMClient
-addresses this fundamental challenge by providing a layer of control over LLM responses.
-
-The client ensures that:
-1. Identical inputs always produce identical outputs (determinism)
-2. Experiments can be reproduced exactly, even across different runs
-3. Performance comparisons between different agent implementations are fair
-4. Debugging and analysis of agent behavior is possible through controlled responses
-
-OPERATING MODES:
-================
-
-The client supports three distinct operating modes, each designed for specific
-experimental scenarios:
-
-1. DETERMINISTIC MODE:
-   - Only uses cached responses
-   - Fails if a response is not found in cache
-   - USE CASE: Perfect reproducibility for published experiments, golden snapshot testing
-   - BENEFIT: Guarantees identical responses across all runs
-
-2. STOCHASTIC MODE:
-   - Always makes live LLM calls
-   - Optionally records responses to cache
-   - USE CASE: Exploratory research, data collection for future experiments
-   - BENEFIT: Captures real LLM behavior while building a reproducible dataset
-
-3. HYBRID MODE:
-   - Uses cached responses when available
-   - Falls back to live LLM calls for cache misses
-   - Automatically caches new responses from live calls
-   - USE CASE: Development, debugging, incremental experimentation
-   - BENEFIT: Balances reproducibility with flexibility during development
-
-KEY FEATURES FOR REPRODUCIBILITY:
-================================
-
-1. Response Caching:
-   - All LLM responses are cached with comprehensive metadata
-   - Cache keys include prompt, model, temperature, and all parameters
-   - Supports persistent storage for cross-session reproducibility
-
-2. Response Validation:
-   - Validates all responses against configurable schemas
-   - Ensures response format consistency across different LLM calls
-   - Prevents corrupted or malformed responses from affecting experiments
-
-3. Fallback Mechanisms:
-   - Automatic retry with different parameters on validation failures
-   - Graceful degradation when primary responses are invalid
-   - Maintains experiment continuity even with LLM inconsistencies
-
-4. Comprehensive Metadata:
-   - Tracks response time, cache hits/misses, validation status
-   - Provides detailed audit trail for all LLM interactions
-   - Enables performance analysis and debugging
-
-USAGE EXAMPLES:
-===============
-
-Basic Usage:
------------
-    # Create a deterministic client
-    underlying_client = OpenAIClient(api_key="...", model="gpt-4")
-    cache = LLMResponseCache(cache_file="experiment.cache")
-
-    deterministic_client = DeterministicLLMClient(
-        underlying_client=underlying_client,
-        cache=cache,
-        mode=OperationMode.DETERMINISTIC
-    )
-
-    # This will always return the same response for the same input
-    response = await deterministic_client.call_llm("What is 2+2?")
-
-Recording Mode for Data Collection:
-----------------------------------
-    # Set up recording mode to capture real LLM responses
-    recording_client = DeterministicLLMClient(
-        underlying_client=underlying_client,
-        cache=cache,
-        mode=OperationMode.STOCHASTIC
-    )
-    recording_client.record_responses(True)
-
-    # These responses will be recorded for future deterministic use
-    responses = await asyncio.gather(*[
-        recording_client.call_llm(f"Question {i}")
-        for i in range(100)
-    ])
-
-Hybrid Mode for Development:
----------------------------
-    # Use hybrid mode during development
-    hybrid_client = DeterministicLLMClient(
-        underlying_client=underlying_client,
-        cache=cache,
-        mode=OperationMode.HYBRID
-    )
-
-    # Will use cache if available, otherwise make live call
-    response = await hybrid_client.call_llm("Develop a pricing strategy")
-
-BEST PRACTICES:
-===============
-
-1. For Published Experiments:
-   - Always use DETERMINISTIC mode with a pre-populated cache
-   - Include the cache file with your experimental data
-   - Document the exact client configuration used
-
-2. For Data Collection:
-   - Use STOCHASTIC mode with recording enabled
-   - Collect a diverse set of prompts and responses
-   - Validate the quality and consistency of recorded responses
-
-3. For Development and Debugging:
-   - Start with HYBRID mode for flexibility
-   - Switch to DETERMINISTIC mode once behavior is understood
-   - Use the health check functionality to verify system state
-
-4. Cache Management:
-   - Regularly validate cache integrity using built-in validation
-   - Export and version cache files alongside experimental code
-   - Use compression for large cache files to save storage space
-
-5. Performance Monitoring:
-   - Monitor cache hit ratios to optimize cache usage
-   - Track validation failures to identify LLM inconsistencies
-   - Use statistics to identify performance bottlenecks
-
-IMPLEMENTATION DETAILS:
-======================
-
-The DeterministicLLMClient wraps any BaseLLMClient implementation, making it
-compatible with various LLM providers (OpenAI, Anthropic, local models, etc.).
-It maintains its own statistics and health monitoring while delegating the
-actual LLM calls to the underlying client.
-
-The client integrates with the LLMResponseCache system for persistent storage
-and retrieval of responses, ensuring that reproducibility extends across
-different sessions and even different machines.
-"""
-
+# src/llm_interface/deterministic_client.py
 import asyncio
 import logging
 import time
@@ -266,9 +112,10 @@ class DeterministicLLMClient(BaseLLMClient):
     - HYBRID: Cache first, fallback to live calls
     """
 
-    # Default validation schema for OpenAI-compatible responses
+    # Issue 97: Modified schema to be more permissive. 'usage' is optional now.
     DEFAULT_SCHEMA = ValidationSchema(
-        required_fields=["choices"], field_types={"choices": list, "usage": dict}
+        required_fields=["choices"],
+        field_types={"choices": list} # Removed "usage": dict as strictly required
     )
 
     def __init__(
@@ -309,6 +156,9 @@ class DeterministicLLMClient(BaseLLMClient):
         self.fallback_temperature = fallback_temperature
         self.max_retries = max_retries
         self.retry_delay = retry_delay
+        
+        # State for auto-export
+        self._export_path = None
 
         # Statistics tracking
         self._total_calls = 0
@@ -318,6 +168,15 @@ class DeterministicLLMClient(BaseLLMClient):
         self._fallback_calls = 0
 
         logger.info(f"DeterministicLLMClient initialized in {mode.value} mode")
+
+    def __del__(self):
+        """Ensure cache is exported if recording was active."""
+        if self._export_path and self.cache._recording_mode:
+            try:
+                self.cache.export_cache(self._export_path)
+                logger.info(f"Auto-exported cache to {self._export_path} on shutdown.")
+            except Exception as e:
+                logger.error(f"Failed to auto-export cache on shutdown: {e}")
 
     def set_deterministic_mode(self, enabled: bool, cache_file: Optional[str] = None):
         """
@@ -348,14 +207,16 @@ class DeterministicLLMClient(BaseLLMClient):
             cache_file: Optional cache file to save to
         """
         self.cache.set_recording_mode(enabled)
-
+        
         if enabled and cache_file:
-            # Export cache when recording is disabled
-            def export_on_disable():
-                if not self.cache._recording_mode:
-                    self.cache.export_cache(cache_file)
-
-            # This would need a proper callback mechanism in production
+            self._export_path = cache_file # Store path for auto-export on disable/del
+        elif not enabled and self._export_path:
+            # Export now on disable
+            try:
+                self.cache.export_cache(self._export_path)
+                logger.info(f"Exported cache to {self._export_path} upon disabling recording.")
+            except Exception as e:
+                logger.error(f"Failed to export cache: {e}")
 
         logger.info(f"Response recording: {'enabled' if enabled else 'disabled'}")
 
@@ -431,35 +292,39 @@ class DeterministicLLMClient(BaseLLMClient):
             try:
                 cached_response = self.cache.get_cached_response(prompt_hash)
             except ValueError:
-                # Deterministic cache miss from cache layer; treat as miss and proceed to live call
+                # Deterministic cache miss from cache layer
                 cached_response = None
 
             if cached_response:
-                cache_hit = True
-                self._cache_hits += 1
-
-                # Validate cached response
+                # Validate cached response BEFORE counting as a hit
                 is_valid, error = self.validate_response_format(cached_response)
                 if not is_valid:
                     logger.warning(f"Cached response validation failed: {error}")
                     self._validation_failures += 1
-
+                    cached_response = None # Invalidate it
+                    
                     if self.mode == OperationMode.DETERMINISTIC:
-                        # In tests, allow fallback to live call even in deterministic mode on invalid cache
-                        cached_response = None
-                        cache_hit = False
-                    else:
-                        cached_response = None
-                        cache_hit = False
+                        # Strict mode: Invalid cache is a fatal error
+                        raise LLMClientError(f"Deterministic mode failure: Invalid cached response for {prompt_hash[:8]}")
+                else:
+                    # Only increment hits if valid
+                    cache_hit = True
+                    self._cache_hits += 1
             else:
                 self._cache_misses += 1
+                if self.mode == OperationMode.DETERMINISTIC:
+                     raise LLMClientError(f"Deterministic mode failure: Cache miss for {prompt_hash[:8]}")
 
         # Make live call if needed
         live_response = None
         fallback_used = False
 
         if not cached_response:
-            # Make live LLM call with retries (even in deterministic mode, first call should record)
+            # Ensure we are NOT in deterministic mode if we got here
+            if self.mode == OperationMode.DETERMINISTIC:
+                 raise LLMClientError(f"Deterministic mode failure: Cache miss or invalid cache for {prompt_hash[:8]}")
+
+            # Make live LLM call with retries
             live_response = await self._make_live_call_with_retry(
                 prompt, model_name, temperature, max_tokens, **kwargs
             )
@@ -494,10 +359,9 @@ class DeterministicLLMClient(BaseLLMClient):
                     raise LLMClientError(f"Response validation failed: {error}")
 
             # Cache the response for future determinism
-            # Always cache live responses in HYBRID and DETERMINISTIC modes, or when recording is enabled
             if self.cache._recording_mode or self.mode in (
                 OperationMode.HYBRID,
-                OperationMode.DETERMINISTIC,
+                OperationMode.DETERMINISTIC, # Should not reach here strictly, but good practice
             ):
                 metadata = {
                     "model": model_name,

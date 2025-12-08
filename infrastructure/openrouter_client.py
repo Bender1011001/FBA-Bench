@@ -105,12 +105,14 @@ class OpenRouterClient:
         max_retries: int = 3,
         initial_backoff_ms: int = 1000,
         max_connections: int = 10,
+        fallback_cost_per_1k: float = 0.002,  # Configurable default
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.timeout = ClientTimeout(total=timeout_seconds)
         self.max_retries = max_retries
         self.initial_backoff_ms = initial_backoff_ms
+        self.fallback_cost_per_1k = fallback_cost_per_1k
         self.session: Optional[aiohttp.ClientSession] = None
         self._connector = aiohttp.TCPConnector(limit=max_connections, enable_cleanup_closed=True)
 
@@ -123,6 +125,9 @@ class OpenRouterClient:
         if self.session:
             await self.session.close()
             self.session = None
+        # Explicitly close connector to ensure no leakage if session didn't own it fully or if closed early
+        if self._connector and not self._connector.closed:
+            await self._connector.close()
 
     async def _request_with_retries(self, method: str, url: str, **kwargs) -> aiohttp.ClientResponse:
         if not self.session:
@@ -138,8 +143,14 @@ class OpenRouterClient:
                     return resp
 
                 # Non-2xx: check if retryable
-                body_text = await resp.text()
-                detail = f"status={resp.status} reason={resp.reason} url={resp.url} body={body_text[:1024]}"
+                # Fix #81: Only read truncated body to avoid memory issues with large error pages
+                # We read up to 2KB to capture enough context without loading massive payloads
+                raw_body = await resp.read()
+                body_text = raw_body.decode(errors='replace')[:2048]
+                if len(raw_body) > 2048:
+                    body_text += "... (truncated)"
+
+                detail = f"status={resp.status} reason={resp.reason} url={resp.url} body={body_text}"
                 logger.warning(f"OpenRouter non-2xx: {detail}")
 
                 retryable = resp.status in (429, 500, 502, 503, 504)
@@ -150,7 +161,7 @@ class OpenRouterClient:
                     backoff_ms *= 2
                     continue
 
-                # Raise detailed error
+                # Fix #82: Pass truncated body text to exception
                 raise ClientResponseError(
                     request_info=resp.request_info,
                     history=resp.history,
@@ -272,8 +283,8 @@ class OpenRouterClient:
         # If still no cost, provide conservative estimate (fallback)
         if not merged.get("cost"):
             total_tokens = merged.get("total_tokens", 0)
-            # Very conservative floor estimate; override per-model upstream if you want accuracy.
-            merged["cost"] = (total_tokens / 1000.0) * 0.002
+            # Fix #87: Use configurable cost model instead of hardcoded 0.002
+            merged["cost"] = (total_tokens / 1000.0) * self.fallback_cost_per_1k
 
         logger.info(
             "OpenRouter call ok: model=%s, total_tokens=%s, cost=$%.6f",

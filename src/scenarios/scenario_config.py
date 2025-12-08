@@ -1,7 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from scenarios.dynamic_generator import DynamicScenarioGenerator
 from scenarios.scenario_framework import ScenarioConfig
@@ -11,7 +11,6 @@ from scenarios.scenario_framework import ScenarioConfig
 class ScenarioConfiguration:
     """
     Dataclass for holding a comprehensive scenario configuration.
-    This mirrors the structure expected in the YAML files.
     """
 
     scenario_name: str
@@ -22,7 +21,6 @@ class ScenarioConfiguration:
     external_events: List[Dict[str, Any]]
     agent_constraints: Dict[str, Any]
     multi_agent_config: Optional[Dict[str, Any]] = field(default_factory=dict)
-    # Additional fields can be added here as the simulation evolves
     product_catalog: Optional[List[Dict[str, Any]]] = field(default_factory=list)
     business_parameters: Optional[Dict[str, Any]] = field(default_factory=dict)
 
@@ -101,24 +99,31 @@ class ScenarioConfigManager:
         This operation requires loading each file to check its tier.
         """
         tier_scenarios = []
+        loaded_paths: Set[str] = set()
+
         # First, check default tier configs
         if tier in self.default_tier_configs:
-            try:
-                tier_scenarios.append(
-                    ScenarioConfig.from_yaml(self.default_tier_configs[tier])
-                )
-            except Exception as e:
-                logging.warning(f"Could not load default tier {tier} scenario: {e}")
+            path = self.default_tier_configs[tier]
+            if os.path.exists(path):
+                try:
+                    config = ScenarioConfig.from_yaml(path)
+                    tier_scenarios.append(config)
+                    loaded_paths.add(os.path.abspath(path))
+                except Exception as e:
+                    logging.warning(f"Could not load default tier {tier} scenario: {e}")
 
         # Then, scan all available scenarios to find those matching the tier
+        # Fix #83: Use path deduplication to avoid loading same scenario twice
         for name, filepath in self.available_scenarios.items():
+            abs_path = os.path.abspath(filepath)
+            if abs_path in loaded_paths:
+                continue
+
             try:
                 config = ScenarioConfig.from_yaml(filepath)
-                if (
-                    config.config_data.get("difficulty_tier") == tier
-                    and config not in tier_scenarios
-                ):
+                if config.config_data.get("difficulty_tier") == tier:
                     tier_scenarios.append(config)
+                    loaded_paths.add(abs_path)
             except Exception as e:
                 logging.warning(f"Could not load metadata for '{name}': {e}")
 
@@ -138,7 +143,6 @@ class ScenarioConfigManager:
     def quantify_difficulty(self, scenario_config: ScenarioConfig) -> Dict[str, Any]:
         """
         Quantifies scenario complexity objectively based on various parameters.
-        This provides a programmatic way to get difficulty metrics beyond just the tier.
         """
         metrics = {
             "num_external_events": len(
@@ -155,9 +159,7 @@ class ScenarioConfigManager:
             ).get("supply_chain_complexity", "simple"),
             "initial_capital_normalized": scenario_config.config_data.get(
                 "agent_constraints", {}
-            ).get(
-                "initial_capital", 100000
-            ),  # Higher capital = easier
+            ).get("initial_capital", 100000),
             "has_multi_agent": "multi_agent_config" in scenario_config.config_data
             and scenario_config.config_data["multi_agent_config"].get("num_agents", 0)
             > 1,
@@ -165,23 +167,11 @@ class ScenarioConfigManager:
                 "agent_constraints", {}
             ).get("information_asymmetry", False),
         }
-        # A more sophisticated approach would assign numerical scores or weights to these
-        # For example, mapping 'extreme' competition_level to a score of 1.0, 'low' to 0.2
         return metrics
 
-    def integration_hook_example(self, simulation_system_api: Any):
+    def integration_hook_example(self, simulation_system_api: Any) -> None:
         """
         Example-only integration hook.
-
-        This method demonstrates how scenario configs could hook into other simulation
-        systems. It is DISABLED by default for safety and has no side effects.
-
-        Enable explicitly by setting environment variable:
-          SCENARIO_INTEGRATION_HOOK_ENABLED=true
-
-        Behavior:
-        - When disabled (default): log at DEBUG and return immediately (no-ops).
-        - When enabled: perform a safe no-op and log that the demo hook executed.
         """
         enabled = os.environ.get("SCENARIO_INTEGRATION_HOOK_ENABLED", "").lower() in {
             "1",
@@ -194,11 +184,9 @@ class ScenarioConfigManager:
             )
             return
 
-        # Demo mode: do not mutate external state; just log once to show the path is reachable.
         logging.info(
             "ScenarioConfigManager.integration_hook_example executed in demonstration mode (no-op). No external state was modified."
         )
-        # Intentionally avoid calling any simulation_system_api mutators here.
         return
 
     def generate_dynamic_scenario(
@@ -224,6 +212,7 @@ class ScenarioConfigManager:
             logging.info(
                 f"Scaling dynamically generated scenario to Tier {target_tier}..."
             )
+            # Confirms existence of method per issue 31/32 checks
             generated_scenario = self.dynamic_generator.scale_difficulty(
                 generated_scenario, target_tier
             )

@@ -116,6 +116,7 @@ class StressMetrics:
                         start_tick=current_tick,
                         start_time=datetime.now(),
                         baseline_metric_at_shock=current_performance_metric,
+                        impact_metric=current_performance_metric, # Initialize impact with current state
                     )
                     logger.info(
                         f"Shock '{shock_id}' injected at tick {current_tick}. Baseline: {current_performance_metric:.2f}"
@@ -136,15 +137,19 @@ class StressMetrics:
                     shock_state = self.shock_events[shock_id]
                     shock_state.end_tick = current_tick
                     shock_state.end_time = datetime.now()
-                    shock_state.impact_metric = current_performance_metric  # Performance at end of direct impact
+                    # Final impact check at end of shock is handled in the continuous loop below
                     logger.info(
-                        f"Shock '{shock_id}' ended at tick {current_tick}. Impact metric: {current_performance_metric:.2f}"
+                        f"Shock '{shock_id}' ended at tick {current_tick}. Final Impact Metric stored: {shock_state.impact_metric:.2f}"
                     )
 
         # Continuously track performance during and post-shock for active shocks
         for shock_id, shock_state in self.shock_events.items():
             if shock_state.end_tick == -1:  # Shock is active
                 shock_state.performance_during_shock.append(current_performance_metric)
+                # Track the minimum performance metric observed during the shock as the "impact"
+                if current_performance_metric < shock_state.impact_metric:
+                    shock_state.impact_metric = current_performance_metric
+                    
             elif (
                 shock_state.end_tick != -1 and shock_state.recovery_tick == -1
             ):  # Post shock, awaiting recovery
@@ -201,7 +206,7 @@ class StressMetrics:
 
         # Calculate a normalized MTTR score (higher is better)
         normalized_mttr_score = 0.0
-        if avg_mttr != float("nan"):  # Only if MTTR could be calculated
+        if avg_mttr != float("nan") and avg_mttr > 0:  # Only if MTTR could be calculated
             # Scale MTTR to 0-100 score: faster recovery = higher score
             # A configurable max acceptable MTTR (e.g., 50 ticks)
             capped_mttr = min(avg_mttr, self.config.max_acceptable_mttr_ticks)
@@ -211,6 +216,12 @@ class StressMetrics:
             normalized_mttr_score = max(
                 0.0, min(100.0, normalized_mttr_score)
             )  # Ensure 0-100 range
+        elif len(finite_mttr_values) == 0 and len(mttr_results) > 0:
+             # Shocks occurred but none recovered (inf)
+             normalized_mttr_score = 0.0
+        elif len(mttr_results) == 0:
+             # No shocks occurred, perfect score
+             normalized_mttr_score = 100.0
 
         # Calculate average performance drops during shocks
         avg_impact_drop = 0.0
@@ -253,10 +264,28 @@ class StressMetrics:
         }
         return {
             "num_shocks_tracked": len(self.shock_events),
+            # Issue 92: Expose usage of performance_history
             "current_performance_history_length": len(self.performance_history),
+            "recent_performance_trend": self.performance_history,
             "shock_events_details": shock_events_summary,
             "config": asdict(self.config),
         }
+
+    def track_shock(self, shock_type: str, severity: float) -> None:
+        """
+        Manually track a shock event start.
+        Used by MetricSuite if passing discrete args instead of event objects.
+        """
+        # Create a dummy ID
+        import uuid
+        shock_id = f"{shock_type}_{uuid.uuid4().hex[:8]}"
+        self.shock_events[shock_id] = ShockEventState(
+            shock_id=shock_id,
+            start_tick=len(self.performance_history), # Approximate current tick
+            start_time=datetime.now(),
+            baseline_metric_at_shock=self.performance_history[-1][1] if self.performance_history else 100.0,
+            impact_metric=self.performance_history[-1][1] if self.performance_history else 100.0
+        )
 
     def reset_metrics(self) -> None:
         """Resets all stress metrics history for a new simulation run."""

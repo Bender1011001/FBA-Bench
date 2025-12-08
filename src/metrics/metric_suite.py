@@ -24,20 +24,20 @@ logger = logging.getLogger(__name__)
 # These would ideally be defined in a `services.contract` or similar module.
 class AbstractFinancialAuditService:
     """Abstract interface for a financial audit service."""
-
     # Add methods that MetricSuite expects to call, e.g., async def get_violations(self) -> List[Any]:
+    pass
 
 
 class AbstractSalesService:
     """Abstract interface for a sales service."""
-
     # Add methods that MetricSuite expects to call, e.g., async def get_sales_data(self, period) -> Dict[str, Any]:
+    pass
 
 
 class AbstractTrustScoreService:
     """Abstract interface for a trust score service."""
-
     # Add methods that MetricSuite expects to call, e.g., async def get_holistic_trust_score(self) -> float:
+    pass
 
 
 # Define the standard weights for the metrics domains
@@ -162,11 +162,10 @@ class MetricSuite:
             FBAEventTypes.PLANNING_COHERENCE_SCORE.value: self._handle_cognitive_event,
             FBAEventTypes.SHOCK_INJECTION.value: self._handle_stress_event,
             FBAEventTypes.SHOCK_END.value: self._handle_stress_event,
-            FBAEventTypes.ADVERSARIAL_EVENT.value: self._handle_adversarial_event,  # Directly handle by AdversarialMetrics
-            FBAEventTypes.PHISHING_EVENT.value: self._handle_adversarial_event,  # Directly handle by AdversarialMetrics
-            FBAEventTypes.MARKET_MANIPULATION_EVENT.value: self._handle_adversarial_event,  # Directly handle by AdversarialMetrics
-            FBAEventTypes.COMPLIANCE_TRAP_EVENT.value: self._handle_adversarial_event,  # Directly handle by AdversarialMetrics
-            # Add other specific event types as needed
+            FBAEventTypes.ADVERSARIAL_EVENT.value: self._handle_adversarial_event,
+            FBAEventTypes.PHISHING_EVENT.value: self._handle_adversarial_event,
+            FBAEventTypes.MARKET_MANIPULATION_EVENT.value: self._handle_adversarial_event,
+            FBAEventTypes.COMPLIANCE_TRAP_EVENT.value: self._handle_adversarial_event,
         }
         return handlers
 
@@ -200,11 +199,10 @@ class MetricSuite:
 
     # --- Individual Event Handlers for clarity and modularity ---
     def _handle_sale_event(self, event: BaseEvent) -> None:
-        # Assuming events passed to metrics update methods are lists for batching
         self.finance_metrics.update(self.current_tick, [event])
         self.operations_metrics.update(self.current_tick, [event])
         self.marketing_metrics.update([event])
-        self.cost_metrics.record_api_cost_event(event)  # Record event for cost metrics
+        self.cost_metrics.record_api_cost_event(event)
 
     def _handle_cognitive_event(self, event: BaseEvent) -> None:
         self.cognitive_metrics.update(self.current_tick, [event])
@@ -214,17 +212,15 @@ class MetricSuite:
 
     def _handle_marketing_event(self, event: BaseEvent) -> None:
         self.marketing_metrics.update([event])
-        self.cost_metrics.record_api_cost_event(event)  # Record event for cost metrics
+        self.cost_metrics.record_api_cost_event(event)
 
     def _handle_cost_event(self, event: BaseEvent) -> None:
-        self.cost_metrics.record_api_cost_event(event)  # Record API cost event
+        self.cost_metrics.record_api_cost_event(event)
 
     def _handle_stress_event(self, event: BaseEvent) -> None:
-        # Assuming ShockInjectionEvent and ShockEndEvent have 'shock_type' and 'severity'
         self.stress_metrics.track_shock(event.shock_type, event.severity)
 
     def _handle_adversarial_event(self, event: BaseEvent) -> None:
-        # AdversarialMetrics should receive adversarial events directly for its internal tracking
         self.adversarial_metrics.update(self.current_tick, [event])
 
     def calculate_kpis(self, tick_number: int) -> Dict[str, Any]:
@@ -233,7 +229,6 @@ class MetricSuite:
         Ensures robust handling of missing metrics and proper normalization.
         """
         if self.evaluation_start_time is None:
-            # If no events processed, initialize with defaults
             logger.warning("No events processed yet, returning default KPI scores.")
             return {
                 "overall_score": 0.0,
@@ -242,36 +237,35 @@ class MetricSuite:
                 "tick_number": tick_number,
             }
 
-        # Removed OpenTelemetry tracing span creation. Assuming external tracing configuration.
-
-        # Calculate metrics for each domain
+        # Retrieve metrics with consistent key mapping
+        # 1. Finance
         finance_breakdown = self.finance_metrics.get_metrics_breakdown()
         finance_score = finance_breakdown.get("overall_score", 0.0)
 
+        # 2. Operations
         ops_breakdown = self.operations_metrics.get_metrics_breakdown()
         ops_score = ops_breakdown.get("overall_score", 0.0)
 
+        # 3. Marketing
         marketing_breakdown = self.marketing_metrics.get_metrics_breakdown()
         marketing_score = marketing_breakdown.get("overall_score", 0.0)
 
+        # 4. Trust
         trust_breakdown = self.trust_metrics.get_metrics_breakdown()
         trust_score = trust_breakdown.get("overall_score", 0.0)
 
+        # Issue 95: Standardized key lookups to handle non-uniform return values from sub-modules
         cognitive_breakdown = self.cognitive_metrics.get_metrics_breakdown()
-        cognitive_score = cognitive_breakdown.get("cra_score", 0.0)
+        cognitive_score = cognitive_breakdown.get("overall_score", cognitive_breakdown.get("cra_score", 0.0))
 
         stress_breakdown = self.stress_metrics.get_metrics_breakdown()
         stress_score = stress_breakdown.get("overall_score", 0.0)
 
         cost_breakdown = self.cost_metrics.get_metrics_breakdown()
-        cost_score = cost_breakdown.get(
-            "cost_penalty_score", 0.0
-        )  # Assuming this is a penalty and lower is better
+        cost_score = cost_breakdown.get("overall_score", cost_breakdown.get("cost_penalty_score", 0.0))
 
         adversarial_breakdown = self.adversarial_metrics.get_metrics_breakdown()
-        adversarial_score = adversarial_breakdown.get(
-            "ars_score", 0.0
-        )  # Assuming higher ARS is better
+        adversarial_score = adversarial_breakdown.get("overall_score", adversarial_breakdown.get("ars_score", 0.0))
 
         breakdown = {
             "finance": {"score": finance_score, "details": finance_breakdown},
@@ -280,17 +274,11 @@ class MetricSuite:
             "trust": {"score": trust_score, "details": trust_breakdown},
             "cognitive": {"score": cognitive_score, "details": cognitive_breakdown},
             "stress_recovery": {"score": stress_score, "details": stress_breakdown},
-            "cost": {
-                "score": cost_score,
-                "details": cost_breakdown,
-            },  # Cost as a score for consistency
-            "adversarial_resistance": {
-                "score": adversarial_score,
-                "details": adversarial_breakdown,
-            },
+            "cost": {"score": cost_score, "details": cost_breakdown},
+            "adversarial_resistance": {"score": adversarial_score, "details": adversarial_breakdown},
         }
 
-        # Calculate overall weighted score, ensuring weights sum to 1 or normalize
+        # Calculate overall weighted score
         overall_raw_score = (
             finance_score * self.weights.get("finance", 0.0)
             + ops_score * self.weights.get("ops", 0.0)
@@ -299,25 +287,18 @@ class MetricSuite:
             + cognitive_score * self.weights.get("cognitive", 0.0)
             + stress_score * self.weights.get("stress_recovery", 0.0)
             + adversarial_score * self.weights.get("adversarial_resistance", 0.0)
-            +
-            # Assuming cost_score is an inverse metric (higher is better for overall) or needs inversion here
-            cost_score * self.weights.get("cost", 0.0)
+            + cost_score * self.weights.get("cost", 0.0)
         )
 
-        total_weight_sum = sum(self.weights.values())  # Sum of all weights
+        total_weight_sum = sum(self.weights.values())
 
         if total_weight_sum > 0:
-            overall_score = (
-                overall_raw_score / total_weight_sum
-            )  # Normalize to scale of individual metrics
+            overall_score = overall_raw_score / total_weight_sum
         else:
             overall_score = 0.0
             logger.warning(
                 "Total weights sum to zero, overall_score set to 0.0. Review MetricSuite weights configuration."
             )
-
-        # Optionally scale to 0-100 range if individual metric scores are also 0-100
-        # If individual metrics are already scaled 0-100, no further scaling needed here.
 
         kpis = {
             "overall_score": round(overall_score, 2),
@@ -333,10 +314,6 @@ class MetricSuite:
 
     # ---- Unit-test compatible registry API expected by tests ----
     def register_metric(self, metric: Dict[str, Any]) -> str:
-        """
-        Register a metric definition.
-        Expected keys: name, description, calculation_function (callable), category
-        """
         metric_id = f"metric_{self._metric_counter}"
         self._metric_counter += 1
         self._metrics[metric_id] = metric
@@ -354,10 +331,6 @@ class MetricSuite:
     def calculate_metrics_by_category(
         self, category: str, input_value: Any
     ) -> Dict[str, Any]:
-        """
-        Calculate all metrics in a given category and return a mapping of
-        metric_id -> calculated_value, matching unit test expectations.
-        """
         results: Dict[str, Any] = {}
         for metric_id, m in self._metrics.items():
             if m.get("category") == category and callable(
@@ -369,10 +342,6 @@ class MetricSuite:
     def generate_comprehensive_report(
         self, input_value: Any
     ) -> Dict[str, Dict[str, Any]]:
-        """
-        Generate a report of all registered metrics grouped by category.
-        Returns: { category: { metric_id: value, ... }, ... }
-        """
         report: Dict[str, Dict[str, Any]] = {}
         for metric_id, m in self._metrics.items():
             func = m.get("calculation_function")
@@ -384,11 +353,9 @@ class MetricSuite:
         return report
 
     def get_audit_violations(self) -> List[Any]:
-        """Get financial audit violations from the finance metrics."""
         return self.finance_metrics.get_violations()
 
     def get_metrics_status(self) -> Dict[str, Any]:
-        """Get a summary of the current status of all internal metrics calculators."""
         return {
             "finance_metrics_status": self.finance_metrics.get_status_summary(),
             "operations_metrics_status": self.operations_metrics.get_status_summary(),
@@ -397,7 +364,7 @@ class MetricSuite:
             "cognitive_metrics_status": self.cognitive_metrics.get_status_summary(),
             "stress_metrics_status": self.stress_metrics.get_status_summary(),
             "cost_metrics_status": self.cost_metrics.get_status_summary(),
-            "adversarial_metrics_status": self.adversarial_metrics.get_metrics_breakdown(),  # This method is fine
+            "adversarial_metrics_status": self.adversarial_metrics.get_metrics_breakdown(),
             "last_evaluation_time": (
                 self.evaluation_start_time.isoformat()
                 if self.evaluation_start_time

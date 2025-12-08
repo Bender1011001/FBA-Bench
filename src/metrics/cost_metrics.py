@@ -179,12 +179,12 @@ class CostMetrics:
         """Internal check to apply penalty if a single operation incurs a high cost."""
         threshold = Money.from_dollars(self.config.high_cost_threshold_usd, "USD")
         if incurred_cost > threshold:
-            # Create a minimal event-like object to satisfy apply_penalty context
-            dummy_event = type(
-                "DummyEvent",
-                (),
-                {"event_id": str(uuid.uuid4()), "event_type": "HighCostOperationCheck"},
-            )()
+            # Issue 93: Use proper BaseEvent instead of dynamic type creation
+            system_event = BaseEvent(
+                event_id=str(uuid.uuid4()),
+                event_type="HighCostOperationCheck",
+                timestamp=datetime.now(),
+            )
             base_value = (
                 incurred_cost.to_float() / self.config.high_cost_threshold_usd
                 if self.config.high_cost_threshold_usd > 0
@@ -192,7 +192,7 @@ class CostMetrics:
             )
             asyncio.create_task(
                 self.apply_penalty(
-                    dummy_event, PenaltyType.HIGH_COST_OPERATION, base_value=base_value
+                    system_event, PenaltyType.HIGH_COST_OPERATION, base_value=base_value
                 )
             )
 
