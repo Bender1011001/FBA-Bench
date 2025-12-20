@@ -1,0 +1,5 @@
+C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\pydantic\_internal\_fields.py:172: UserWarning: Field name "json" in "LoggingSettings" shadows an attribute in parent "BaseModel"
+  warnings.warn(
+2025-12-20 01:43:56.409 | WARNING | benchmarking.agents.unified_agent | [req=-] | Services module not available. Some agent functionality may be limited.
+2025-12-20 01:43:56.594 | INFO | fba_bench_api.core.persistence | [req=-] | ConfigPersistenceManager storage: ./config_storage
+2025-12-20 01:43:56.618 | ERROR | uvicorn.error | [req=-] | Error loading ASGI app. Attribute "app" not found in module "src.fba_bench_api.main".

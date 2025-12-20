@@ -5,7 +5,13 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
 
-from fba_bench_api.models.scenarios import Scenario, ScenarioList, get_scenario_service
+from fba_bench_api.models.scenarios import (
+    Scenario,
+    ScenarioCreate,
+    ScenarioList,
+    ScenarioUpdate,
+    get_scenario_service,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/scenarios", tags=["Scenarios"])

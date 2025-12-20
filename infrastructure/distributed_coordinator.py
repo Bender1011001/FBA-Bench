@@ -5,11 +5,21 @@ import time
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Protocol, TYPE_CHECKING
 
-# Assuming DistributedEventBus and other necessary infrastructure components
-# from infrastructure.distributed_event_bus import DistributedEventBus
-# from events import BaseEvent, TickEvent, WorkerHeartbeatEvent # and other relevant events
+if TYPE_CHECKING:
+    # Define minimal interfaces for type checking without runtime circular imports
+    class DistributedEventBusProtocol(Protocol):
+        async def start(self) -> None: ...
+        async def stop(self) -> None: ...
+        async def publish_event(self, event_type: str, data: Dict, target_partition: Optional[str] = None) -> None: ...
+        async def register_worker(self, worker_id: str, capabilities: Dict) -> None: ...
+        async def create_partition(self, partition_id: str, agents: List[str]) -> None: ...
+        async def handle_worker_failure(self, worker_id: str) -> None: ...
+
+    class ScalabilityConfigProtocol(Protocol):
+        tick_interval_seconds: float
+        coordinator_ack_timeout_seconds: float
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +34,17 @@ class DistributedCoordinator:
     - Result aggregation: Collects and merges results from all partitions.
     """
 
+    DEFAULT_ACK_TIMEOUT_SECONDS = 30.0
+
     def __init__(
-        self, distributed_event_bus: Any, simulation_config: Any
-    ):  # Use Any to avoid circular deps
+        self,
+        distributed_event_bus: "DistributedEventBusProtocol",
+        simulation_config: "ScalabilityConfigProtocol",
+    ):
         self.distributed_event_bus = distributed_event_bus
         # Back-compat alias expected by some tests
         self._distributed_event_bus = distributed_event_bus
-        self.simulation_config = simulation_config  # This would be an instance of ScalabilityConfig
+        self.simulation_config = simulation_config
 
         self._workers: Dict[
             str, Dict[str, Any]
@@ -177,18 +191,21 @@ class DistributedCoordinator:
         """
         logger.info("Tick synchronization loop started.")
         # Determine ack timeout (seconds)
-        default_timeout = 30.0
         env_timeout = os.getenv("FBA_COORDINATOR_ACK_TIMEOUT_SECONDS")
         try:
             env_timeout_val = float(env_timeout) if env_timeout is not None else None
         except ValueError:
             env_timeout_val = None
+        
         configured_timeout = (
             getattr(self.simulation_config, "coordinator_ack_timeout_seconds", None)
             if self.simulation_config
             else None
         )
-        ack_timeout_seconds: float = float(configured_timeout or env_timeout_val or default_timeout)
+        
+        ack_timeout_seconds: float = float(
+            configured_timeout or env_timeout_val or self.DEFAULT_ACK_TIMEOUT_SECONDS
+        )
 
         # Track when we started waiting for the current tick to be acknowledged
         current_tick_wait_started_at: float = time.time()

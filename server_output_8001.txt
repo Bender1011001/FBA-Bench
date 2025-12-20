@@ -1,0 +1,53 @@
+C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\pydantic\_internal\_fields.py:172: UserWarning: Field name "json" in "LoggingSettings" shadows an attribute in parent "BaseModel"
+  warnings.warn(
+2025-12-20 01:52:52.976 | WARNING | benchmarking.agents.unified_agent | [req=-] | Services module not available. Some agent functionality may be limited.
+2025-12-20 01:52:53.158 | INFO | fba_bench_api.core.persistence | [req=-] | ConfigPersistenceManager storage: ./config_storage
+2025-12-20 01:52:53.185 | WARNING | fba_bench_api | [req=-] | SQLAlchemy OTEL instrumentation not available. Install opentelemetry-instrumentation-sqlalchemy.
+2025-12-20 01:52:53.185 | INFO | fba_bench_api | [req=-] | SlowAPI rate limiting enabled: 100/minute
+2025-12-20 01:52:53.185 | INFO | fba_bench_api | [req=-] | JWTAuthMiddleware disabled (AUTH_ENABLED=False, KEYS_CONFIGURED=0)
+2025-12-20 01:52:53.226 | INFO | uvicorn.error | [req=-] | Started server process [11812]
+2025-12-20 01:52:53.226 | INFO | uvicorn.error | [req=-] | Waiting for application startup.
+2025-12-20 01:52:53.226 | INFO | fba_bench_api.core.lifespan | [req=-] | Starting FBA-Bench APIà
+2025-12-20 01:52:53.226 | WARNING | fba_bench_api.core.lifespan | [req=-] | Missing optional environment variables: DATABASE_URL or FBA_BENCH_DB_URL. Some features may not work.
+2025-12-20 01:52:53.232 | INFO | fba_bench_api.core.lifespan | [req=-] | Event bus started
+2025-12-20 01:52:53.232 | INFO | fba_bench_core.services.world_store.persistence | [req=-] | InMemoryStorageBackend initialized.
+2025-12-20 01:52:53.232 | INFO | fba_bench_core.services.world_store.arbitration | [req=-] | CommandArbitrator initialized
+2025-12-20 01:52:53.232 | INFO | fba_bench_core.services.world_store | [req=-] | WorldStore initialized - ready for multi-agent command processing
+2025-12-20 01:52:53.232 | INFO | fba_bench_core.services.world_store.persistence | [req=-] | InMemoryStorageBackend initialized - no external connection needed.
+2025-12-20 01:52:53.232 | INFO | fba_bench_core.services.world_store.persistence | [req=-] | No latest in-memory state snapshot found.
+2025-12-20 01:52:53.232 | INFO | fba_bench_core.services.world_store | [req=-] | No existing state found in persistence backend.
+2025-12-20 01:52:53.233 | INFO | fba_bench_core.services.world_store | [req=-] | WorldStore started - subscribed to SetPriceCommand, InventoryUpdate, TickEvent events
+2025-12-20 01:52:53.233 | INFO | fba_bench_core.services.world_store.factory | [req=-] | Global WorldStore instance has been set.
+2025-12-20 01:52:53.233 | INFO | fba_bench_api.core.lifespan | [req=-] | WorldStore started and registered as global instance
+2025-12-20 01:52:53.233 | INFO | fba_bench_core.services.supply_chain_service | [req=-] | SupplyChainService started and subscribed to PlaceOrderCommand and TickEvent.
+2025-12-20 01:52:53.233 | INFO | fba_bench_api.core.lifespan | [req=-] | SupplyChainService started
+2025-12-20 01:52:53.233 | INFO | agent_runners.agent_manager | [req=-] | AgentManager for 0 agents starting.
+2025-12-20 01:52:53.233 | INFO | agent_runners.agent_manager | [req=-] | AgentManager subscribed to core events (decision cycle, command ack, skills pipeline).
+2025-12-20 01:52:53.233 | INFO | agent_runners.agent_manager | [req=-] | AgentManager started. 0 agents active.
+2025-12-20 01:52:53.233 | INFO | fba_bench_api.core.lifespan | [req=-] | AgentManager started
+2025-12-20 01:52:53.233 | INFO | fba_bench_api.core.lifespan | [req=-] | CostTrackingService started and injected into SimulationOrchestrator
+2025-12-20 01:52:53.233 | INFO | uvicorn.error | [req=-] | Application startup complete.
+2025-12-20 01:52:53.233 | INFO | uvicorn.error | [req=-] | Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+2025-12-20 01:53:07.378 | INFO | uvicorn.access | [req=-] | 127.0.0.1:8643 - "GET /docs HTTP/1.1" 200
+2025-12-20 06:21:45.777 | INFO | fba_bench_api.api.routes.demo | [req=56b2b016-9430-4334-841a-2e0d507ccfaf] | Starting demo data population (clear_existing=True)
+2025-12-20 06:21:45.790 | INFO | fba_bench_api.api.routes.demo | [req=56b2b016-9430-4334-841a-2e0d507ccfaf] | Cleared 0 existing demo experiments
+2025-12-20 06:21:45.811 | INFO | fba_bench_api.api.routes.demo | [req=56b2b016-9430-4334-841a-2e0d507ccfaf] | Created 6 demo experiments
+2025-12-20 06:21:45.811 | INFO | fba_bench_api.api.routes.demo | [req=56b2b016-9430-4334-841a-2e0d507ccfaf] | Demo data population completed: Successfully created 6 demo experiments
+2025-12-20 06:21:45.814 | INFO | uvicorn.access | [req=-] | 127.0.0.1:2871 - "POST /api/v1/demo/populate HTTP/1.1" 200
+2025-12-20 06:22:13.222 | INFO | fba_bench_api.api.routes.leaderboard | [req=370e9098-cab8-4283-9cd7-edb503d78769] | Generating leaderboard with limit=50
+2025-12-20 06:22:13.225 | INFO | fba_bench_api.api.routes.leaderboard | [req=370e9098-cab8-4283-9cd7-edb503d78769] | Generated leaderboard with 6 entries
+2025-12-20 06:22:13.226 | INFO | uvicorn.access | [req=-] | 127.0.0.1:2890 - "GET /api/v1/leaderboard HTTP/1.1" 200
+2025-12-20 06:22:31.238 | INFO | fba_bench_api.api.routes.leaderboard | [req=454ccf70-0256-4d4c-bf5b-0d5a8283ba58] | Generating leaderboard with limit=50
+2025-12-20 06:22:31.241 | INFO | fba_bench_api.api.routes.leaderboard | [req=454ccf70-0256-4d4c-bf5b-0d5a8283ba58] | Generated leaderboard with 6 entries
+2025-12-20 06:22:31.242 | INFO | uvicorn.access | [req=-] | 127.0.0.1:2905 - "GET /api/v1/leaderboard HTTP/1.1" 200
+2025-12-20 06:22:48.548 | INFO | fba_bench_api.api.routes.leaderboard | [req=dc9913ee-1b83-412d-935b-2b86ce472d18] | Generating leaderboard with limit=50
+2025-12-20 06:22:48.551 | INFO | fba_bench_api.api.routes.leaderboard | [req=dc9913ee-1b83-412d-935b-2b86ce472d18] | Generated leaderboard with 6 entries
+2025-12-20 06:22:48.552 | INFO | uvicorn.access | [req=-] | 127.0.0.1:2917 - "GET /api/v1/leaderboard HTTP/1.1" 200
+2025-12-20 06:33:01.628 | INFO | fba_bench_api.api.routes.demo | [req=81b58d1b-33f7-44a1-bd3b-af4e6dc128ac] | Starting demo data population (clear_existing=True)
+2025-12-20 06:33:01.645 | INFO | fba_bench_api.api.routes.demo | [req=81b58d1b-33f7-44a1-bd3b-af4e6dc128ac] | Cleared 5 existing demo experiments
+2025-12-20 06:33:01.656 | INFO | fba_bench_api.api.routes.demo | [req=81b58d1b-33f7-44a1-bd3b-af4e6dc128ac] | Created 6 demo experiments
+2025-12-20 06:33:01.656 | INFO | fba_bench_api.api.routes.demo | [req=81b58d1b-33f7-44a1-bd3b-af4e6dc128ac] | Demo data population completed: Successfully created 6 demo experiments (cleared 5 existing)
+2025-12-20 06:33:01.660 | INFO | uvicorn.access | [req=-] | 127.0.0.1:14510 - "POST /api/v1/demo/populate HTTP/1.1" 200
+2025-12-20 06:44:34.778 | INFO | fba_bench_api.api.routes.leaderboard | [req=e1ec949b-a39d-48f3-86a3-25a205e1587b] | Generating leaderboard with limit=50
+2025-12-20 06:44:34.781 | INFO | fba_bench_api.api.routes.leaderboard | [req=e1ec949b-a39d-48f3-86a3-25a205e1587b] | Generated leaderboard with 7 entries
+2025-12-20 06:44:34.782 | INFO | uvicorn.access | [req=-] | 127.0.0.1:5929 - "GET /api/v1/leaderboard HTTP/1.1" 200

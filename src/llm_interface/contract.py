@@ -29,12 +29,9 @@ class BaseLLMClient(ABC):
             **kwargs: Additional parameters for the LLM API call (e.g., temperature, max_tokens).
 
         Returns:
-            A dictionary containing the LLM's raw response.
-            The structure should be normalized by the adapter if possible,
-            but generally contains the generation content and usage metadata.
-
-        Raises:
-            LLMClientError: If there is an issue communicating with the LLM API or receiving a valid response.
+            A dictionary containing the LLM's raw response. Expected to have a "choices" field
+            similar to OpenAI's API.
+            Example: {"choices": [{"message": {"content": "..."}}], "usage": {"prompt_tokens": 100, "completion_tokens": 50}}
 
         Raises:
             LLMClientError: If there is an issue communicating with the LLM API or receiving a valid response.
@@ -44,6 +41,11 @@ class BaseLLMClient(ABC):
     async def get_token_count(self, text: str) -> int:
         """
         Estimates or calculates the token count for a given text using the client's model.
+        
+        Implementation Note:
+            This method is asynchronous to allow implementations to offload CPU-bound 
+            tokenization tasks (e.g., tiktoken encoding) to a separate thread or call 
+            an external API, ensuring the main event loop remains unblocked.
 
         Args:
             text: The text string to count tokens for.

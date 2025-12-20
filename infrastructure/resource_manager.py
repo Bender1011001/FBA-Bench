@@ -1,10 +1,5 @@
 import logging
-from typing import Dict
-
-try:
-    import psutil
-except ImportError:
-    psutil = None
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -123,8 +118,7 @@ class ResourceManager:
             return int(self.total_tokens_used)
         return int(self._token_usage.get(name, 0))
 
-    # keep enforce_cost_limits signature compatible
-    def enforce_cost_limits(self, limit: float | None = None) -> None:
+    def enforce_cost_limits(self, limit: Optional[float] = None) -> None:
         """
         Enforce cost limits.
 
@@ -166,69 +160,11 @@ class ResourceManager:
 
     def set_global_token_cap(self, cap: int) -> None:
         """Compatibility helper for tests to set a global cap."""
-        try:
-            self._global_token_cap = int(cap)
-            self.token_budget = int(cap)
-        except Exception:
-            pass
-
-    def monitor_memory_usage(self) -> Dict[str, float]:
-        """
-        Lightweight probe returning a dict for PerformanceMonitor:
-        - system_percent: proxy via ratio of total tokens used to global cap
-        - process_memory_mb: simple function of tracked dict sizes (best-effort)
-        """
-        try:
-            system_pct = 0.0
-            if self._global_token_cap > 0:
-                system_pct = min(
-                    100.0, 100.0 * float(self.total_tokens_used) / float(self._global_token_cap)
-                )
-        except Exception:
-            system_pct = 0.0
-        try:
-            approx_mb = (
-                len(self._token_usage) * 0.001
-                + len(self._token_budgets) * 0.001
-                + len(self._llm_costs) * 0.002
-            )
-        except Exception:
-            approx_mb = 0.0
-        return {"system_percent": float(system_pct), "process_memory_mb": float(approx_mb)}
-
-    def get_resource_metrics(self) -> Dict[str, float]:
-        """
-        Summary metrics used by PerformanceMonitor:
-        - total_llm_cost
-        - total_tokens_used
-        - cost_limit
-        """
-        metrics = {
-            "total_llm_cost": float(self.get_total_api_cost()),
-            "total_tokens_used": float(self.total_tokens_used),
-            "cost_limit": float(self.cost_limit),
-        }
-        return metrics
-        return {
-            "tokens": dict(self._token_usage),
-            "costs": dict(self._llm_costs),
-            "totals": {
-                "tokens": float(self.total_tokens_used),
-                "cost": float(self.total_cost),
-                "token_budget": float(self.token_budget),
-                "cost_limit": float(self.cost_limit),
-            },
-        }
-
-    # Compatibility helpers expected by some tests
-    def set_global_token_cap(self, cap: int) -> None:
-        """Set the global token cap used by tests and components."""
         if cap < 0:
             raise ValueError("cap must be >= 0")
         self._global_token_cap = int(cap)
         self.token_budget = int(cap)
 
-    # Test-expected API: set_token_budget(name, n) to set per-tool token budgets explicitly
     def set_token_budget(self, name: str, n: int) -> None:
         if n < 0:
             raise ValueError("n must be >= 0")
@@ -245,17 +181,24 @@ class ResourceManager:
         """
         Lightweight monitoring shim to satisfy tests that expect resource snapshots.
         Returns a dict with token/cost totals and process memory metrics.
-        Issue 79: Moved psutil import to module level.
         """
         process_memory_mb = 0.0
+        try:
+            import psutil
+
+            process_memory_mb = float(psutil.Process().memory_info().rss) / (1024.0 * 1024.0)
+        except Exception:
+            # psutil may be patched by tests; on failure return 0.0
+            process_memory_mb = 0.0
+
+        # Include system-wide percent memory for tests expecting it
         system_percent = 0.0
-        
-        if psutil:
-            try:
-                process_memory_mb = float(psutil.Process().memory_info().rss) / (1024.0 * 1024.0)
-                system_percent = float(psutil.virtual_memory().percent)
-            except Exception:
-                pass
+        try:
+            import psutil
+
+            system_percent = float(psutil.virtual_memory().percent)
+        except Exception:
+            system_percent = 0.0
 
         return {
             "total_tokens_used": float(self.total_tokens_used),

@@ -48,21 +48,18 @@ ASYNC_DATABASE_URL: str = _resolve_async_url()
 _engine_kwargs: dict = {
     "future": True,
     "pool_pre_ping": True,
-    "pool_size": 20,  # max connections
-    "max_overflow": 10,
     "pool_recycle": 3600,
 }
-# Ensure in-memory SQLite works across multiple connections by using StaticPool
-# and disabling thread checks; this keeps a single shared connection alive.
-if ASYNC_DATABASE_URL.startswith("sqlite+aiosqlite") and (
-    ASYNC_DATABASE_URL.endswith(":memory:") or "mode=memory" in ASYNC_DATABASE_URL
-):
-    _engine_kwargs["poolclass"] = StaticPool
-    _engine_kwargs["connect_args"] = {"check_same_thread": False}
-elif ASYNC_DATABASE_URL.startswith("postgresql+asyncpg"):
-    # asyncpg-specific min idle via pool_pre_ping and recycle; no direct min_size
-    # but pool_size=20 with pre_ping ensures efficient reuse
-    pass
+
+if ASYNC_DATABASE_URL.startswith("sqlite"):
+    # SQLite does not support pool_size/max_overflow with standard NullPool/StaticPool
+    if ASYNC_DATABASE_URL.endswith(":memory:") or "mode=memory" in ASYNC_DATABASE_URL:
+        _engine_kwargs["poolclass"] = StaticPool
+        _engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    # Postgres and others
+    _engine_kwargs["pool_size"] = 20
+    _engine_kwargs["max_overflow"] = 10
 
 async_engine: AsyncEngine = create_async_engine(ASYNC_DATABASE_URL, **_engine_kwargs)
 AsyncSessionLocal = async_sessionmaker(

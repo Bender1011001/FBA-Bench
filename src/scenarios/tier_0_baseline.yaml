@@ -1,33 +1,15 @@
-scenario_name: Tier 0 Baseline
-difficulty_tier: 0
-expected_duration: 30 # simulation days
-
-success_criteria:
-  profit_target: 1000.00
-  customer_satisfaction: 0.80 # 80%
-  stock_out_rate_max: 0.05 # Max 5%
-
+id: "baseline_sim_001"
+name: "Tier 0 Baseline - Single Product"
+duration_days: 30
 market_conditions:
-  economic_cycles: stable
-  seasonality: none
-  competition_levels: very_low
-  demand_volatility: very_low
-
-business_parameters:
-  product_categories: [single_basic_product]
-  pricing_dynamics: fixed_price
-  supply_chain_complexity: simple_single_supplier
-  initial_inventory:
-    main_warehouse: { basic_product: 100 }
-
-external_events: [] # No external events for baseline
-
-agent_constraints:
-  initial_capital: 20000.00
-  max_debt_ratio: 0.10
-  information_asymmetry:
-    market_data: complete
-    supplier_reliability: high
-  resource_constraints:
-    marketing_budget: unlimited
-    customer_service_capacity: high
+  category: "Home & Kitchen"
+  demand_volatility: 0.1
+  competitor_aggression: 0.5
+product:
+  name: "Stainless Steel Garlic Press"
+  base_cost: 4.50
+  initial_price: 14.99
+  initial_inventory: 500
+agent:
+  type: "RuleBased" # Uses your 'greedy_script_bot.py' logic, cheaper than LLM
+  strategy: "match_competitor"

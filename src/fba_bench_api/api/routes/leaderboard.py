@@ -68,17 +68,22 @@ def _calculate_experiment_score(experiment: dict) -> float:
     # - Risk metrics (safety, compliance, stability)
 
     # For now, create a realistic scoring algorithm based on available data
+    # If experiment has a pre-calculated score in params, use it
+    if "quality_score" in params:
+        return float(params["quality_score"]) * 100.0
+
+    # Fallback to mock scoring logic
     if experiment.get("status") == "completed":
         # Base completion bonus
         score += 60.0
 
-        # Agent complexity bonus (more sophisticated agents get slight boost)
-        agent_id = experiment.get("agent_id", "")
-        if "gpt-4" in agent_id.lower():
+        # Agent complexity bonus
+        agent_id = experiment.get("agent_id", "").lower()
+        if "gpt-4" in agent_id or "grok-4" in agent_id:
             score += 15.0
-        elif "claude" in agent_id.lower():
+        elif "claude" in agent_id or "deepseek-v3" in agent_id:
             score += 12.0
-        elif "llama" in agent_id.lower():
+        elif "llama" in agent_id:
             score += 10.0
         else:
             score += 5.0
@@ -92,21 +97,16 @@ def _calculate_experiment_score(experiment: dict) -> float:
         else:
             score += 10.0
 
-        # Add some variability based on experiment name/id for realistic distribution
+        # Add some variability
         import hashlib
-
         name_hash = int(hashlib.md5(experiment["name"].encode()).hexdigest()[:8], 16)
-        variance = (name_hash % 21) - 10  # -10 to +10 variance
+        variance = (name_hash % 21) - 10
         score += variance
-
     elif experiment.get("status") == "running":
-        # Partial score for running experiments
         score += 30.0
     elif experiment.get("status") == "failed":
-        # Minimal score for failed experiments
         score += 5.0
 
-    # Ensure score is within bounds
     return max(0.0, min(100.0, score))
 
 
@@ -155,6 +155,12 @@ def _extract_model_name(agent_id: str) -> str:
         return "Llama-3.1-405B"
     elif "llama" in agent_lower:
         return "Llama-2-70B"
+    elif "grok" in agent_lower:
+        v = "4.1" if "4.1" in agent_lower else "4"
+        return f"Grok-{v} Fast"
+    elif "deepseek" in agent_lower:
+        v = "v3.2" if "v3.2" in agent_lower else "v3"
+        return f"DeepSeek-{v}"
     elif "baseline" in agent_lower:
         return "Baseline Bot"
     else:

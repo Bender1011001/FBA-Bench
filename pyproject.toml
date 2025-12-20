@@ -27,12 +27,26 @@ classifiers = [
 packages = [
     {include = "fba_bench_core", from = "src"},
     {include = "fba_bench_api", from = "src"},
+    {include = "fba_bench", from = "src"},
     {include = "agents", from = "src"},
     {include = "agent_runners", from = "src"},
+    {include = "baseline_bots", from = "src"},
     {include = "benchmarking", from = "src"},
-    {include = "scenarios", from = "src"},
-    {include = "plugins", from = "src"},
+    {include = "config", from = "src"},
     {include = "fba_events", from = "src"},
+    {include = "instrumentation", from = "src"},
+    {include = "llm_interface", from = "src"},
+    {include = "memory_experiments", from = "src"},
+    {include = "metrics", from = "src"},
+    {include = "models", from = "src"},
+    {include = "money", from = "src"},
+    {include = "observability", from = "src"},
+    {include = "personas", from = "src"},
+    {include = "plugins", from = "src"},
+    {include = "redteam", from = "src"},
+    {include = "reproducibility", from = "src"},
+    {include = "scenarios", from = "src"},
+    {include = "services", from = "src"},
 ]
 
 [tool.poetry.dependencies]

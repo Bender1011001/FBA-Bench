@@ -1,0 +1,139 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core
+configfile: pyproject.toml
+plugins: anyio-4.6.0, cov-7.0.0
+collecting ... collected 0 items / 10 errors
+
+=================================== ERRORS ====================================
+________________ ERROR collecting tests/agents/test_config.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\agents\test_config.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\agents\test_config.py:6: in <module>
+    from fba_bench_core.agents.base import BaseAgent
+E   ModuleNotFoundError: No module named 'fba_bench_core.agents'
+___________ ERROR collecting tests/benchmarking/test_engine_unit.py ___________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\benchmarking\test_engine_unit.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\benchmarking\test_engine_unit.py:7: in <module>
+    from fba_bench_core.benchmarking.engine import (
+src\fba_bench_core\benchmarking\__init__.py:7: in <module>
+    from src.benchmarking.core import engine
+E   ModuleNotFoundError: No module named 'src'
+__________ ERROR collecting tests/benchmarking/test_metrics_unit.py ___________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\benchmarking\test_metrics_unit.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\benchmarking\test_metrics_unit.py:4: in <module>
+    from fba_bench_core.benchmarking.metrics.aggregate import (
+src\fba_bench_core\benchmarking\__init__.py:7: in <module>
+    from src.benchmarking.core import engine
+E   ModuleNotFoundError: No module named 'src'
+_________ ERROR collecting tests/benchmarking/test_scenarios_unit.py __________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\benchmarking\test_scenarios_unit.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\benchmarking\test_scenarios_unit.py:7: in <module>
+    from fba_bench_core.benchmarking.scenarios import registry as sc_reg  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\fba_bench_core\benchmarking\__init__.py:7: in <module>
+    from src.benchmarking.core import engine
+E   ModuleNotFoundError: No module named 'src'
+_________ ERROR collecting tests/benchmarking/test_validators_unit.py _________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\benchmarking\test_validators_unit.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\benchmarking\test_validators_unit.py:3: in <module>
+    from fba_bench_core.benchmarking.validators import determinism_check  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\fba_bench_core\benchmarking\__init__.py:7: in <module>
+    from src.benchmarking.core import engine
+E   ModuleNotFoundError: No module named 'src'
+________________ ERROR collecting tests/domain/test_events.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\domain\test_events.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\domain\test_events.py:9: in <module>
+    from fba_bench_core.domain.events import (
+E   ModuleNotFoundError: No module named 'fba_bench_core.domain'
+________________ ERROR collecting tests/domain/test_models.py _________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\domain\test_models.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\domain\test_models.py:8: in <module>
+    from fba_bench_core.domain.models import (
+E   ModuleNotFoundError: No module named 'fba_bench_core.domain'
+_______________ ERROR collecting tests/exceptions/test_base.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\exceptions\test_base.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\exceptions\test_base.py:5: in <module>
+    from fba_bench_core.exceptions import AgentError, ConfigurationError, FBABenchException
+E   ModuleNotFoundError: No module named 'fba_bench_core.exceptions'
+__________ ERROR collecting tests/integration/test_business_rules.py __________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\integration\test_business_rules.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\integration\test_business_rules.py:13: in <module>
+    from fba_bench_core.agents.base import BaseAgent
+E   ModuleNotFoundError: No module named 'fba_bench_core.agents'
+________________ ERROR collecting tests/test_core_contracts.py ________________
+ImportError while importing test module 'C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-core\tests\test_core_contracts.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\ProgramData\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\FBA-Bench-core\tests\test_core_contracts.py:22: in <module>
+    from fba_bench_core.config import BaseAgentConfig, BaseServiceConfig
+E   ImportError: cannot import name 'BaseAgentConfig' from 'fba_bench_core.config' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\fba_bench_core\config.py)
+============================== warnings summary ===============================
+venv\Lib\site-packages\_pytest\config\__init__.py:1428
+  C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\_pytest\config\__init__.py:1428: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR ..\FBA-Bench-core\tests\agents\test_config.py
+ERROR ..\FBA-Bench-core\tests\benchmarking\test_engine_unit.py
+ERROR ..\FBA-Bench-core\tests\benchmarking\test_metrics_unit.py
+ERROR ..\FBA-Bench-core\tests\benchmarking\test_scenarios_unit.py
+ERROR ..\FBA-Bench-core\tests\benchmarking\test_validators_unit.py
+ERROR ..\FBA-Bench-core\tests\domain\test_events.py
+ERROR ..\FBA-Bench-core\tests\domain\test_models.py
+ERROR ..\FBA-Bench-core\tests\exceptions\test_base.py
+ERROR ..\FBA-Bench-core\tests\integration\test_business_rules.py
+ERROR ..\FBA-Bench-core\tests\test_core_contracts.py
+!!!!!!!!!!!!!!!!!! Interrupted: 10 errors during collection !!!!!!!!!!!!!!!!!!!
+======================== 1 warning, 10 errors in 0.60s ========================

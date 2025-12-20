@@ -1,0 +1,74 @@
+C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\pydantic\_internal\_fields.py:172: UserWarning: Field name "json" in "LoggingSettings" shadows an attribute in parent "BaseModel"
+  warnings.warn(
+2025-12-20 01:43:11.342 | WARNING | benchmarking.agents.unified_agent | [req=-] | Services module not available. Some agent functionality may be limited.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Scripts\uvicorn.exe\__main__.py", line 7, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\click\core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\click\core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\click\core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\click\core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\uvicorn\main.py", line 412, in main
+    run(
+    ~~~^
+        app,
+        ^^^^
+    ...<45 lines>...
+        h11_max_incomplete_event_size=h11_max_incomplete_event_size,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\uvicorn\main.py", line 579, in run
+    server.run()
+    ~~~~~~~~~~^^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\uvicorn\server.py", line 65, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\uvicorn\server.py", line 69, in serve
+    await self._serve(sockets)
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\uvicorn\server.py", line 76, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\uvicorn\config.py", line 434, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\venv\Lib\site-packages\uvicorn\importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\ProgramData\anaconda3\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\main.py", line 5, in <module>
+    from fba_bench_api.server.app_factory import create_app
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\server\app_factory.py", line 39, in <module>
+    from fba_bench_api.core.lifespan import lifespan
+  File "C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\core\lifespan.py", line 17, in <module>
+    from fba_bench_api.core.redis_client import (
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )  # Graceful Redis init/shutdown
+    ^
+ImportError: cannot import name 'close_redis' from 'fba_bench_api.core.redis_client' (C:\Users\admin\Desktop\GitHub-projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\core\redis_client.py)

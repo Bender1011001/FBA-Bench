@@ -50,6 +50,12 @@ class RedisClient:
             value = json.dumps(value)
             
         await self._redis.lpush(key, value)
+        
+    def __getattr__(self, name: str):
+        """Delegate unknown attributes to the underlying Redis client."""
+        if self._redis:
+            return getattr(self._redis, name)
+        raise AttributeError(f"'RedisClient' object has no attribute '{name}' (and not connected)")
 
 # Singleton instance
 _redis_client = RedisClient()
@@ -59,3 +65,7 @@ async def get_redis() -> RedisClient:
     if not _redis_client._redis:
         await _redis_client.connect()
     return _redis_client
+
+async def close_redis() -> None:
+    """Close the global Redis client connection."""
+    await _redis_client.close()

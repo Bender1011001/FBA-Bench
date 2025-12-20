@@ -10,9 +10,10 @@ Zero external dependencies beyond Python standard library.
 import argparse
 from pathlib import Path
 from string import Template
+from typing import Dict
 
 
-def render_template(template_path: Path, substitutions: dict) -> str:
+def render_template(template_path: Path, substitutions: Dict[str, str]) -> str:
     """Render a template file with given substitutions."""
     with open(template_path) as f:
         template_content = f.read()
@@ -95,7 +96,7 @@ def main():
     tfvars_file = tfvars_out / f"{args.tenant_id}.tfvars"
 
     # Common substitutions
-    subs = {
+    subs: Dict[str, str] = {
         "tenant": args.tenant_id,
         "domain": args.domain,
         "public_app_base_url": args.public_app_base_url,

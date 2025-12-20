@@ -23,7 +23,7 @@ from .events import (
 )
 from .factory import get_world_store, set_world_store
 from .models import CommandArbitrationResult, ProductState, SimpleArbitrationResult
-from .persistence import InMemoryStorageBackend, PersistenceBackend
+from .persistence import InMemoryStorageBackend, JsonFileStorageBackend, PersistenceBackend
 from .state import WorldStateManager
 
 logger = logging.getLogger(__name__)
@@ -287,4 +287,16 @@ class WorldStore:
         logger.info("WorldStore state reset")
 
 
-__all__ = ["WorldStore", "get_world_store", "set_world_store"]
+__all__ = [
+    "WorldStore",
+    "get_world_store",
+    "set_world_store",
+    # Storage backend classes
+    "PersistenceBackend",
+    "InMemoryStorageBackend",
+    "JsonFileStorageBackend",
+    # Model classes
+    "CommandArbitrationResult",
+    "ProductState",
+    "SimpleArbitrationResult",
+]
