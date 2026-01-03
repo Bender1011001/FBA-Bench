@@ -1,0 +1,45 @@
+# syntax=docker/dockerfile:1.7
+# Test/Dev-grade container for FBA-Bench API
+# - Uses Poetry to install ALL dependencies (including dev/test)
+# - Runs as root (for simplicity in CI/test environments, or match user in compose)
+# - Exposes 8000
+
+FROM python:3.11-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    POETRY_VERSION=1.8.3 \
+    POETRY_VIRTUALENVS_CREATE=false
+
+# System dependencies for common wheels and build
+RUN apt-get update -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libffi-dev \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN python -m pip install --upgrade pip setuptools wheel \
+    && python -m pip install "poetry==${POETRY_VERSION}"
+
+WORKDIR /app
+ENV PYTHONPATH=/app/src
+
+# Leverage Docker layer caching: copy manifestation first
+COPY pyproject.toml ./
+
+# Install ALL dependencies (main + dev + test)
+RUN poetry install --no-interaction --no-ansi
+
+# Copy source code and configuration
+COPY src/ ./src/
+COPY alembic/ ./alembic/
+COPY alembic.ini ./
+COPY api_server.py ./
+
+# Tests will be mounted, default command runs server
+CMD ["python", "-m", "uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8000"]

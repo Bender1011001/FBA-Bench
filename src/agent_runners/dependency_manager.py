@@ -237,7 +237,7 @@ class DependencyManager:
             logger.error(f"Failed to install {framework}: {e}")
             logger.error(f"stderr: {e.stderr}")
             return False
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(f"Unexpected error installing {framework}: {e}")
             return False
 
@@ -314,7 +314,7 @@ class DependencyManager:
             # Try to create a minimal crew to test functionality
         except ImportError as e:
             issues.append(f"CrewAI components not available: {e}")
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             issues.append(f"CrewAI validation error: {e}")
         return issues
 
@@ -328,7 +328,7 @@ class DependencyManager:
             # Basic LangChain components should be available
         except ImportError as e:
             issues.append(f"LangChain components not available: {e}")
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             issues.append(f"LangChain validation error: {e}")
         return issues
 

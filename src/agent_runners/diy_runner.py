@@ -40,13 +40,13 @@ class ComparablePriceFloat(float):
         # Try best-effort to coerce pytest.approx-like objects to a numeric value
         try:
             return float(other)
-        except Exception:
+        except (TypeError, ValueError):
             for attr in ("expected", "target", "value"):
                 v = getattr(other, attr, None)
                 if v is not None:
                     try:
                         return float(v)
-                    except Exception:
+                    except (TypeError, ValueError, AttributeError):
                         continue
         return None
 
@@ -56,7 +56,7 @@ class ComparablePriceFloat(float):
             # Fallback: attempt direct float comparison, else be permissive
             try:
                 return float(self) >= float(other)
-            except Exception:
+            except (TypeError, ValueError, AttributeError):
                 return True
         return float(self) >= ov
 
@@ -65,7 +65,7 @@ class ComparablePriceFloat(float):
         if ov is None:
             try:
                 return float(self) <= float(other)
-            except Exception:
+            except (TypeError, ValueError, AttributeError):
                 return True
         return float(self) <= ov
 
@@ -231,7 +231,7 @@ class DynamicPricingStrategy(PricingStrategy):
                     min(float(self._pp.elasticity_clip_max), elasticity),
                 )
                 return elasticity
-        except Exception:
+        except (AttributeError, TypeError, ValueError, RuntimeError):
             logger.exception(
                 f"Error estimating elasticity for DynamicPricingStrategy in agent {self.agent_id}"
             )
@@ -367,7 +367,7 @@ class DIYRunner(AgentRunner):
 
             logger.info(f"DIY agent runner {self.agent_id} initialized successfully")
 
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             raise AgentRunnerInitializationError(
                 f"Failed to initialize DIY agent {self.agent_id}: {e}",
                 agent_id=self.agent_id,
@@ -521,7 +521,7 @@ class DIYRunner(AgentRunner):
 
             return decision
 
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.exception(f"Error in DIY decision making for agent {self.agent_id}")
             raise AgentRunnerDecisionError(
                 f"Decision making failed for DIY agent {self.agent_id}: {e}",

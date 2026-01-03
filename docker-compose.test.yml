@@ -92,6 +92,8 @@ services:
       PYTHONPATH: "/app/src"
       LOG_LEVEL: "DEBUG"
       TESTING: "true"
+    env_file:
+      - .env
     volumes:
       - ./tests:/app/tests:ro
       - test_results:/app/test-results

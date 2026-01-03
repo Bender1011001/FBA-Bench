@@ -34,7 +34,7 @@ try:
         LowInventoryEvent,
         WorldStateSnapshotEvent,
     )
-except Exception:
+except ImportError:
     pass
 
 try:
@@ -43,7 +43,7 @@ try:
         BudgetWarning,
         ConstraintViolation,
     )
-except Exception:
+except ImportError:
     pass
 
 # Marketing/common convenience re-exports (+ legacy alias)
@@ -57,7 +57,7 @@ try:
 
     # Legacy alias used by some tests/fixtures
     MarketChangeEvent = MarketTrendEvent
-except Exception:
+except ImportError:
     pass
 
 # Adversarial event family (needed by redteam and tests)
@@ -69,7 +69,7 @@ try:
         MarketManipulationEvent,
         PhishingEvent,
     )
-except Exception:
+except ImportError:
     pass
 
 # Customer events (messaging/complaints)
@@ -80,7 +80,7 @@ try:
         NegativeReviewEvent,
         RespondToCustomerMessageCommand,
     )
-except Exception:
+except ImportError:
     pass
 
 # Reporting events (profit/loss summaries)
@@ -89,7 +89,7 @@ try:
         LossEvent,
         ProfitReport,
     )
-except Exception:
+except ImportError:
     pass
 
 __all__ = [

@@ -22,7 +22,7 @@ from .langchain_runner import LangChainRunner, LangChainRunnerConfig
 # DIY is always available and does not have a dedicated Pydantic config model
 try:
     from .diy_runner import DIYRunner
-except Exception:
+except (ImportError, AttributeError):
     DIYRunner = None  # type: ignore
 
 logger = logging.getLogger(__name__)
@@ -75,9 +75,9 @@ def _validate_config(key: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
             # Fallback to dict-like
             try:
                 return dict(validated)
-            except Exception:
+            except (TypeError, ValueError, AttributeError):
                 return cfg or {}
-    except Exception:
+    except (AttributeError, TypeError, ValueError, RuntimeError):
         # fall through to v1 attempt
         pass
 
@@ -90,9 +90,9 @@ def _validate_config(key: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
             return inst.model_dump(exclude_none=True)
         try:
             return dict(inst)
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             return cfg or {}
-    except Exception as e:
+    except (TypeError, ValueError, AttributeError, RuntimeError) as e:
         # Clear error message surfaced to callers, but keep it forgiving for non-pydantic inputs
         raise ValueError(f"Invalid config for runner '{key}': {e}") from e
 
@@ -147,7 +147,7 @@ def create_runner(
     # This preserves soft-dependency behavior: import errors happen at instantiation time
     try:
         return runner_cls(final_agent_id, normalized_cfg)
-    except Exception:
+    except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerError):
         # Let caller see runner-specific exceptions (e.g., AgentRunnerInitializationError)
         raise
 
@@ -167,7 +167,7 @@ def is_framework_available(name: str) -> bool:
     """Return True if a runner is registered under the given name."""
     try:
         return name.strip().lower() in RUNNER_REGISTRY
-    except Exception:
+    except (AttributeError, TypeError):
         return False
 
 
@@ -180,7 +180,7 @@ def get_framework_info(name: str) -> Dict[str, Any]:
     """Return basic information about a registered runner."""
     try:
         nk = name.strip().lower()
-    except Exception:
+    except (AttributeError, TypeError):
         nk = str(name or "").strip().lower()
     entry = RUNNER_REGISTRY.get(nk)
     if not entry:

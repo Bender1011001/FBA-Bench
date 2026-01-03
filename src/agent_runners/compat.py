@@ -24,17 +24,17 @@ def _resolve_TickEvent() -> type[Any]:
         from fba_events.compat import TickEvent as T
 
         return T
-    except Exception:
+    except (ImportError, AttributeError):
         try:
             from fba_events import TickEvent as T
 
             return T
-        except Exception:
+        except (ImportError, AttributeError):
             try:
                 from fba_events.time_events import TickEvent as T
 
                 return T
-            except Exception:
+            except (ImportError, AttributeError):
 
                 @runtime_checkable
                 class _TickEvent(Protocol):
@@ -53,17 +53,17 @@ def _resolve_SetPriceCommand() -> type[Any]:
         from fba_events.compat import SetPriceCommand as C
 
         return C
-    except Exception:
+    except (ImportError, AttributeError):
         try:
             from fba_events import SetPriceCommand as C
 
             return C
-        except Exception:
+        except (ImportError, AttributeError):
             try:
                 from fba_events.pricing import SetPriceCommand as C
 
                 return C
-            except Exception:
+            except (ImportError, AttributeError):
 
                 @runtime_checkable
                 class _SetPriceCommand(Protocol):

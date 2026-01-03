@@ -82,7 +82,7 @@ class FBABenchGUILauncher:
                     if line and not line.startswith("#") and "=" in line:
                         key, value = line.split("=", 1)
                         env_content[key.strip()] = value.strip()
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Failed to read .env file: {e}")
             return {"exists": True, "valid": False, "error": str(e)}
 
@@ -142,7 +142,7 @@ API_RATE_LIMIT=1000/minute
             logger.info(f"Created default .env file at {self.env_file}")
             return True
 
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Failed to create .env file: {e}")
             return False
 
@@ -186,7 +186,7 @@ API_RATE_LIMIT=1000/minute
                 logger.error("✗ Backend server failed to start")
                 return False
 
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError) as e:
             logger.error(f"Failed to start backend: {e}")
             return False
 
@@ -226,7 +226,7 @@ API_RATE_LIMIT=1000/minute
                 logger.error("✗ Frontend server failed to start")
                 return False
 
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError) as e:
             logger.error(f"Failed to start frontend: {e}")
             return False
 
@@ -280,7 +280,7 @@ API_RATE_LIMIT=1000/minute
                     process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     process.kill()
-                except Exception as e:
+                except OSError as e:
                     logger.error(f"Error stopping {name}: {e}")
 
         self.running = False

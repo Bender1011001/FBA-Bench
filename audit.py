@@ -483,7 +483,7 @@ def _discover_external_configs() -> Dict[str, Any]:
                     return json.load(f)
             else:
                 return None
-        except Exception as e:
+        except (OSError, ValueError, ImportError) as e:
             logger.warning(f"Failed to load config file {path}: {e}")
             return None
 
@@ -541,7 +541,7 @@ def _apply_hash_rotation(hash_value: str) -> str:
             with open(rotation_file, encoding="utf-8") as f:
                 mapping = json.load(f)
             return mapping.get(hash_value, hash_value)
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         logger.warning(f"Hash rotation mapping load failed: {e}")
     return hash_value
 
@@ -573,7 +573,7 @@ def _validate_against_baseline(
             expected = baseline.get(k)
             if expected and v != expected:
                 violations.append(f"Baseline mismatch for {k}: expected {expected}, got {v}")
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         logger.warning(f"Failed to validate against baseline: {e}")
 
     return violations
@@ -615,7 +615,7 @@ def _build_cache_key(
                 scenario = getattr(sim.config, "scenario_name", None) or getattr(
                     sim.config, "scenario_id", None
                 )
-    except Exception:
+    except AttributeError:
         pass
     payload = {
         "tier": tier or "unknown",
@@ -735,7 +735,7 @@ def _maybe_load_cached_run(
             logger.warning("Cached run integrity check failed; ignoring cache.")
             return None
         return _deserialize_run(payload)
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         logger.warning(f"Failed to read simulation cache: {e}")
         return None
 
@@ -760,5 +760,5 @@ def _maybe_write_cached_run(sim, audit: RunAudit) -> None:
         with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(_serialize_run(audit), f, sort_keys=True)
         os.replace(tmp_path, cache_path)
-    except Exception as e:
+    except OSError as e:
         logger.warning(f"Failed to write simulation cache: {e}")

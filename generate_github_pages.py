@@ -3,35 +3,70 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent
-DATA_PATH = ROOT_DIR / "openrouter_benchmark_results.json"
+DATA_PATH = ROOT_DIR / "top_models_benchmark.json"
 OUTPUT_PATH = ROOT_DIR / "docs" / "index.html"
 
 def generate_html(data):
-    rankings = data.get("rankings", [])
-    last_updated = datetime.fromisoformat(data["generated_at"]).strftime("%B %d, %Y")
+    # Adapt to different input formats
+    summary = data.get("summary", {})
+    if "model_rankings" in summary:
+        rankings = summary["model_rankings"]
+    else:
+        # Default/Legacy format (top-level rankings key)
+        rankings = data.get("rankings", [])
+        
+    if not rankings:
+        print("Warning: No rankings found in data.")
+        return
+        
+    generated_at = data.get("benchmark_info", {}).get("timestamp") or data.get("generated_at")
+    last_updated = datetime.fromisoformat(generated_at).strftime("%B %d, %Y") if generated_at else "Unknown"
     
     rows_html = ""
-    for entry in rankings:
-        rank_class = f"rank-{entry['rank']}" if entry['rank'] <= 3 else ""
-        tier_class = f"badge-{entry['tier'].lower()}"
+    for idx, entry in enumerate(rankings):
+        rank = idx + 1
+        rank_class = f"rank-{rank}" if rank <= 3 else ""
+        
+        # Determine attributes based on benchmark type
+        model_name = entry.get('model', 'Unknown')
+        
+        # Check for financial metrics vs qualitative metrics
+        if 'net_profit' in entry:
+            # Financial Benchmark
+            metric_1_label = f"${entry['net_profit']:,.2f}"
+            metric_1_sub = f"ROI: {entry.get('roi', 0)}%"
+            metric_2_label = f"${entry.get('revenue', 0):,.2f}"
+            metric_2_sub = f"Margin: {entry.get('margin', 0)}%"
+            tier = entry.get('tier', 'Standard')
+        else:
+            # Qualitative/Reasoning Benchmark
+            success_rate = entry.get('success_rate', 0) * 100
+            quality = entry.get('quality_score', 0)
+            
+            metric_1_label = f"{success_rate:.0f}%"
+            metric_1_sub = "Success Rate"
+            metric_2_label = f"{entry.get('avg_response_time', 0):.2f}s"
+            metric_2_sub = "Avg Time"
+            tier = "Qualitative"
+
+        tier_class = f"badge-{tier.lower()}"
         
         rows_html += f"""
         <tr>
-            <td><span class="rank-badge {rank_class}">{entry['rank']}</span></td>
+            <td><span class="rank-badge {rank_class}">{rank}</span></td>
             <td>
-                <div style="font-weight: 600;">{entry['display_name']}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">{entry['model']}</div>
+                <div style="font-weight: 600;">{model_name}</div>
             </td>
             <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">${entry['net_profit']:,.2f}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: {entry['roi']}%</div>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">{metric_1_label}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{metric_1_sub}</div>
             </td>
             <td>
-                <div>${entry['revenue']:,.2f}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: {entry['margin']}%</div>
+                <div>{metric_2_label}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{metric_2_sub}</div>
             </td>
-            <td><span class="badge {tier_class}">{entry['tier']}</span></td>
-            <td>{entry['avg_response_time']}s</td>
+            <td><span class="badge {tier_class}">{tier}</span></td>
+            <td>{entry.get('total_tokens', 0)} toks</td>
         </tr>
         """
 
@@ -115,8 +150,8 @@ def generate_html(data):
                 <span style="font-size: 1.5rem;">\U0001F4A1</span>
                 <div>
                     <strong style="color: var(--accent);">Benchmark Summary:</strong> 
-                    Currently <strong>{data['summary']['most_profitable']}</strong> leads in profitability with a 
-                    <strong>{max(entry['roi'] for entry in data['rankings'])}% ROI</strong>.
+                    Currently <strong>{data['summary'].get('most_profitable') or data['summary'].get('best_performing_model', 'Unknown')}</strong> leads with 
+                    <strong>{f"{max(entry.get('roi', 0) for entry in rankings)}% ROI" if any('roi' in e for e in rankings) else f"{max(entry.get('success_rate', 0)*100 for entry in rankings):.0f}% Success Rate"}</strong>.
                 </div>
             </div>
         </div>

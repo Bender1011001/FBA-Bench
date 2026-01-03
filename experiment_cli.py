@@ -225,7 +225,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     try:
         # Available in Python 3.7+
         subparsers.required = True
-    except Exception:
+    except AttributeError:
         pass
 
     run_parser = subparsers.add_parser("run", help="Run scenarios or utilities")

@@ -101,7 +101,7 @@ class ToolCall:
 # Soft dependency guard: avoid hard import to agents.* in core runner base
 try:
     from agents.skill_modules.base_skill import SkillOutcome  # type: ignore
-except Exception:
+except (ImportError, AttributeError, TypeError):
 
     class SkillOutcome(Protocol):
         """Protocol fallback for learning outcomes to avoid hard dependency."""
@@ -246,7 +246,7 @@ class AgentRunner:
             self.status = AgentRunnerStatus.READY
             self._trigger_callbacks("on_status_change", self.status)
             logger.info(f"Agent runner {self.agent_id} initialized successfully")
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             self.status = AgentRunnerStatus.FAILED
             self.error_message = str(e)
             self._trigger_callbacks("on_status_change", self.status)
@@ -332,7 +332,7 @@ class AgentRunner:
             self._trigger_callbacks("on_decision", result)
 
             return result
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError, AgentRunnerTimeoutError) as e:
             self.status = AgentRunnerStatus.FAILED
             self.error_message = str(e)
             self._trigger_callbacks("on_status_change", self.status)
@@ -462,7 +462,7 @@ class AgentRunner:
         for callback in self.callbacks.get(event_type, []):
             try:
                 callback(self, *args, **kwargs)
-            except Exception as e:
+            except (AttributeError, TypeError, ValueError, RuntimeError) as e:
                 logger.error(f"Error in callback for {event_type}: {e}")
 
     def pause(self) -> None:
@@ -513,7 +513,7 @@ class AgentRunner:
             self._trigger_callbacks("on_status_change", self.status)
 
             logger.info(f"Agent runner {self.agent_id} cleaned up successfully")
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerCleanupError) as e:
             self.status = AgentRunnerStatus.FAILED
             self.error_message = str(e)
             self._trigger_callbacks("on_status_change", self.status)

@@ -237,7 +237,7 @@ class LLMResponseCache:
                     if hasattr(result, "__await__"):
                         return await result  # type: ignore[misc]
                     return result
-                except Exception as e:
+                except (OSError, RuntimeError, AttributeError) as e:
                     logger.error(f"Error closing LLM cache: {e}")
                     # Swallow exception to match historical compatibility where close errors are logged but not propagated
                     return None
@@ -292,7 +292,7 @@ class LLMResponseCache:
             if conn:
                 try:
                     conn.close()
-                except Exception as e:
+                except (sqlite3.Error, OSError) as e:
                     logger.error(f"Error closing init DB connection: {e}")
                 finally:
                     try:
@@ -329,7 +329,7 @@ class LLMResponseCache:
             if conn:
                 try:
                     conn.close()
-                except Exception as e:
+                except (sqlite3.Error, OSError) as e:
                     logger.error(f"Error closing DB connection: {e}")
                 finally:
                     try:
@@ -488,7 +488,7 @@ class LLMResponseCache:
                 logger.debug(f"Cached response for hash: {prompt_hash[:16]}...")
                 return True
 
-        except Exception as e:
+        except (sqlite3.Error, OSError, json.JSONDecodeError) as e:
             logger.error(f"Failed to cache response: {e}")
             return False
 
@@ -588,7 +588,7 @@ class LLMResponseCache:
                 logger.debug(f"Cache miss for hash: {prompt_hash[:16]}...")
                 return None
 
-        except Exception as e:
+        except (sqlite3.Error, OSError, json.JSONDecodeError) as e:
             logger.error(f"Failed to retrieve cached response: {e}")
             if self._deterministic_mode:
                 raise
@@ -629,7 +629,7 @@ class LLMResponseCache:
                                 f"Hash mismatch for {row['prompt_hash'][:16]}..."
                             )
 
-                    except Exception as e:
+                    except (json.JSONDecodeError, ValueError) as e:
                         errors.append(
                             f"Parse error for {row['prompt_hash'][:16]}...: {e}"
                         )
@@ -809,7 +809,7 @@ class LLMResponseCache:
                                 cursor.close()
                             except (AttributeError, TypeError):
                                 pass
-            except Exception as e:
+            except (sqlite3.Error, OSError) as e:
                 logger.error(f"Failed to get cache size: {e}")
 
             return CacheStatistics(
@@ -851,7 +851,7 @@ class LLMResponseCache:
                 logger.info("Cache cleared successfully")
                 return True
 
-        except Exception as e:
+        except (sqlite3.Error, OSError) as e:
             logger.error(f"Failed to clear cache: {e}")
             return False
 
@@ -872,7 +872,7 @@ class LLMResponseCache:
                             close_fn = getattr(h, "close", None)
                             if callable(close_fn):
                                 close_fn()
-                        except Exception as e:
+                        except (OSError, AttributeError, RuntimeError) as e:
                             logger.error(f"Error closing handle {h!r}: {e}")
                         finally:
                             try:
@@ -884,34 +884,34 @@ class LLMResponseCache:
                         self._open_handles.clear()
                     except (AttributeError, TypeError, KeyError):
                         pass
-                except Exception as e:
+                except (AttributeError, TypeError, KeyError) as e:
                     logger.error(f"Error during handle cleanup: {e}")
 
                 # Clear in-memory structures, then drop strong references
                 try:
                     if getattr(self, "_memory_cache", None) is not None:
                         self._memory_cache.clear()  # type: ignore[union-attr]
-                except Exception as e:
+                except (AttributeError, TypeError, RuntimeError) as e:
                     logger.error(f"Error clearing memory cache: {e}")
                 try:
                     if getattr(self, "_access_order", None) is not None:
                         self._access_order.clear()  # type: ignore[union-attr]
-                except Exception as e:
+                except (AttributeError, TypeError, RuntimeError) as e:
                     logger.error(f"Error clearing access order: {e}")
 
                 # compat: Windows file handle release — explicitly drop references so GC can finalize promptly.
                 try:
                     self._memory_cache = None  # type: ignore[assignment]
-                except Exception as e:
+                except (AttributeError, TypeError) as e:
                     logger.error(f"Error releasing memory cache reference: {e}")
                 try:
                     self._access_order = None  # type: ignore[assignment]
-                except Exception as e:
+                except (AttributeError, TypeError) as e:
                     logger.error(f"Error releasing access order reference: {e}")
 
                 # Ensure closed flag set under lock
                 self._closed = True
-        except Exception as e:
+        except (OSError, RuntimeError, AttributeError) as e:
             # compat: swallow errors on close paths
             logger.error(f"Error during LLM cache close: {e}")
 
@@ -939,7 +939,7 @@ class LLMResponseCache:
                     f"Hit ratio: {self._stats.hit_ratio:.2%}"
                 )
             logger.debug("LLM cache cleanup completed successfully")
-        except Exception as e:
+        except (OSError, RuntimeError, AttributeError) as e:
             logger.error(f"Error during LLM cache cleanup: {e}")
             # Don't re-raise to avoid masking the original exception if one occurred
 
@@ -952,7 +952,7 @@ class LLMResponseCache:
         try:
             # Delegate to sync close for deterministic cleanup on Windows
             self.close()
-        except Exception as e:
+        except (OSError, RuntimeError, AttributeError) as e:
             logger.error(f"Error closing LLM cache: {e}")
 
     async def __aenter__(self):
@@ -961,7 +961,7 @@ class LLMResponseCache:
     async def __aexit__(self, exc_type, exc, tb):
         try:
             await self._close()
-        except Exception as e:
+        except (OSError, RuntimeError, AttributeError) as e:
             # compat: tests expect error to be logged but not propagated
             logger.error(f"Error closing LLM cache: {e}")
             return False

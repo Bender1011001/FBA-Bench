@@ -349,7 +349,7 @@ class AdvancedAgent:
         )
         try:
             return float(price) if price is not None else None
-        except Exception:
+        except (TypeError, ValueError):
             return None
 
     def _get_cost(
@@ -365,7 +365,7 @@ class AdvancedAgent:
                 if cost is not None
                 else float(fallback_price or 10.0) * float(fallback_ratio)
             )
-        except Exception:
+        except (TypeError, ValueError):
             return float(fallback_price or 10.0) * float(fallback_ratio)
 
     def _estimate_competitor_price(
@@ -381,7 +381,7 @@ class AdvancedAgent:
                 if v is not None:
                     try:
                         prices.append(float(v))
-                    except Exception:
+                    except (TypeError, ValueError):
                         continue
         if prices:
             # Return the lowest visible competitor price
@@ -391,7 +391,7 @@ class AdvancedAgent:
         try:
             if market_price is not None:
                 return float(market_price)
-        except Exception:
+        except (TypeError, ValueError):
             pass
         return max(float(default), 0.01)
 
@@ -454,7 +454,7 @@ class AdvancedAgent:
         )
         try:
             return int(inv) if inv is not None else 100  # Default fallback inventory
-        except Exception:
+        except (TypeError, ValueError):
             return 100  # Default fallback inventory
 
     def _compute_inventory_ratio(self, inventory: int) -> float:
@@ -593,7 +593,7 @@ class AdvancedAgent:
         except RuntimeError:
             # Re-raise RuntimeError for hard budget violations
             raise
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             # Log other exceptions but don't fail the agent
             logger.warning(f"Error in meter_api_call for agent {self.agent_id}: {e}")
             return {"exceeded": False}

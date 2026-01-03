@@ -565,7 +565,7 @@ class CoordinationManager:
 
             return is_aligned, alignment_score, reasoning
 
-        except Exception as e:
+        except (AttributeError, KeyError, TypeError, ValueError) as e:
             logger.error(f"Error validating strategic alignment: {e}")
             return False, 0.0, f"Validation error: {e}"
 

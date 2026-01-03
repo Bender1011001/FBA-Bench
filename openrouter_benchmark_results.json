@@ -1,117 +1,64 @@
 {
-  "generated_at": "2025-12-20T00:01:59.439416",
-  "benchmark_version": "1.1.0",
-  "scenario_name": "Tier 2: 180-Day Supply Chain Crisis",
-  "starting_capital": 25000.0,
-  "rankings": [
+  "benchmark_info": {
+    "timestamp": "2026-01-03T21:12:35.945692",
+    "total_duration": 1.8951525779993972,
+    "models_tested": 1,
+    "openrouter_endpoint": "https://openrouter.ai/api/v1"
+  },
+  "model_results": [
     {
-      "rank": 1,
-      "model": "deepseek/deepseek-v3.2",
-      "display_name": "Deepseek V3.2",
-      "net_profit": -10483.04,
-      "revenue": 150000.0,
-      "roi": -41.9,
-      "margin": -7.0,
-      "avg_response_time": 41.11,
-      "tier": "High-Performance",
-      "cost": "$0.14/M",
-      "timestamp": "2025-12-19T23:17:17.139215"
-    },
-    {
-      "rank": 2,
-      "model": "openai/gpt-5.2",
-      "display_name": "Gpt 5.2",
-      "net_profit": -16783.04,
-      "revenue": 150000.0,
-      "roi": -67.1,
-      "margin": -11.2,
-      "avg_response_time": 34.82,
-      "tier": "Flagship",
-      "cost": "$3.00/M",
-      "timestamp": "2025-12-19T23:14:10.144676"
-    },
-    {
-      "rank": 3,
-      "model": "anthropic/claude-opus-4.5",
-      "display_name": "Claude Opus 4.5",
-      "net_profit": -16783.04,
-      "revenue": 150000.0,
-      "roi": -67.1,
-      "margin": -11.2,
-      "avg_response_time": 24.29,
-      "tier": "Flagship",
-      "cost": "$5.00/M",
-      "timestamp": "2025-12-19T23:25:36.026211"
-    },
-    {
-      "rank": 4,
-      "model": "mistralai/mistral-7b-instruct:free",
-      "display_name": "Mistral 7B Instruct (Free)",
-      "net_profit": -16783.04,
-      "revenue": 150000.0,
-      "roi": -67.1,
-      "margin": -11.2,
-      "avg_response_time": 18.57,
-      "tier": "Free",
-      "cost": "$0",
-      "timestamp": "2025-12-19T23:58:19.623359"
-    },
-    {
-      "rank": 5,
-      "model": "tngtech/deepseek-r1t2-chimera:free",
-      "display_name": "Deepseek R1T2 Chimera (Free)",
-      "net_profit": -17538.46,
-      "revenue": 150000.0,
-      "roi": -70.2,
-      "margin": -11.7,
-      "avg_response_time": 81.34,
-      "tier": "High-Performance",
-      "cost": "$0",
-      "timestamp": "2025-12-19T23:29:04.339710"
-    },
-    {
-      "rank": 6,
-      "model": "x-ai/grok-4.1-fast",
-      "display_name": "Grok 4.1 Fast",
-      "net_profit": -28552.99,
-      "revenue": 111785.88,
-      "roi": -114.2,
-      "margin": -25.5,
-      "avg_response_time": 20.77,
-      "tier": "High-Performance",
-      "cost": "$0.50/M",
-      "timestamp": "2025-12-19T23:19:20.694287"
-    },
-    {
-      "rank": 7,
-      "model": "google/gemini-3-pro-preview",
-      "display_name": "Gemini 3 Pro Preview",
-      "net_profit": -41569.95,
-      "revenue": 111785.88,
-      "roi": -166.3,
-      "margin": -37.2,
-      "avg_response_time": 22.66,
-      "tier": "Flagship",
-      "cost": "Unknown",
-      "timestamp": "2025-12-19T23:16:08.932109"
-    },
-    {
-      "rank": 8,
       "model": "deepseek/deepseek-r1-0528:free",
-      "display_name": "Deepseek R1 0528 (Free)",
-      "net_profit": -55830.08,
-      "revenue": 65486.76,
-      "roi": -223.3,
-      "margin": -85.3,
-      "avg_response_time": 36.9,
-      "tier": "High-Performance",
-      "cost": "$0",
-      "timestamp": "2025-12-19T23:27:10.047166"
+      "timestamp": "2026-01-03T21:12:34.050585",
+      "prompts": [
+        {
+          "prompt_name": "business_reasoning",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 401 - {\"error\":{\"message\":\"No cookie auth credentials found\",\"code\":401}}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "problem_solving",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 401 - {\"error\":{\"message\":\"No cookie auth credentials found\",\"code\":401}}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "creative_strategy",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 401 - {\"error\":{\"message\":\"No cookie auth credentials found\",\"code\":401}}",
+          "quality_score": 0.0
+        }
+      ],
+      "summary": {
+        "total_prompts": 3,
+        "successful_responses": 0,
+        "average_response_time": 0.0,
+        "total_tokens": 0,
+        "errors": [
+          "OpenAI-compatible API returned an HTTP error: 401 - {\"error\":{\"message\":\"No cookie auth credentials found\",\"code\":401}}",
+          "OpenAI-compatible API returned an HTTP error: 401 - {\"error\":{\"message\":\"No cookie auth credentials found\",\"code\":401}}",
+          "OpenAI-compatible API returned an HTTP error: 401 - {\"error\":{\"message\":\"No cookie auth credentials found\",\"code\":401}}"
+        ],
+        "success_rate": 0.0
+      }
     }
   ],
   "summary": {
-    "most_profitable": "deepseek/deepseek-v3.2",
-    "highest_roi": "deepseek/deepseek-v3.2",
-    "fastest": "mistralai/mistral-7b-instruct:free"
+    "total_models_tested": 1,
+    "working_models": 0,
+    "total_api_calls": 3,
+    "successful_calls": 0,
+    "overall_success_rate": 0.0,
+    "best_performing_model": null,
+    "model_rankings": []
   }
 }

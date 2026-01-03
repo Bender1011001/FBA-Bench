@@ -131,7 +131,7 @@ try:
     from fba_bench.core.logging import setup_logging  # type: ignore
 
     setup_logging()
-except Exception:
+except ImportError:
     # Fall back silently to stdlib default configuration if project logger isn't available at import time
     pass
 
@@ -236,7 +236,7 @@ def _invoke_tool(
             return None, f"Tool '{name}' not found"
         result = func(**args) if args else func()  # simple invocation pattern
         return result, None
-    except Exception as e:
+    except (TypeError, ValueError, RuntimeError) as e:
         return None, f"Tool '{name}' invocation failed: {e}"
 
 
@@ -477,7 +477,7 @@ def _safe_eval_expr(expr: str) -> Optional[float]:
     try:
         # Restricted eval environment
         return float(eval(expr, {"__builtins__": {}}, {}))
-    except Exception:
+    except (TypeError, ValueError, ZeroDivisionError, OverflowError):
         return None
 
 
@@ -505,7 +505,7 @@ def _handle_compute(text: str, meta: Dict[str, Any], ctx: Dict[str, Any]) -> str
                     formatted = str(int(float(result)))
                 else:
                     formatted = str(result)
-            except Exception:
+            except (TypeError, ValueError):
                 formatted = str(result)
         used.append(
             {"name": "calculator", "args": args, "result": formatted, "error": err}
@@ -637,7 +637,7 @@ def decide(
     # Normalize input
     try:
         raw_text, meta = _ensure_str_task(task)
-    except Exception as e:
+    except (TypeError, ValueError, AttributeError) as e:
         return {
             "status": "failed",
             "output": "",
@@ -719,7 +719,7 @@ def decide(
                         # After terminal, still allow finalization rules to run
                         # but don't run other non-finalization rules
                         break
-            except Exception as re_err:
+            except (AttributeError, TypeError, ValueError, RuntimeError) as re_err:
                 # Log and continue; do not crash the engine
                 _logger.warning("Rule %s failed: %s", rule.id, re_err)
                 reasoning.append(f"Rule {rule.id} error, continuing")
@@ -752,7 +752,7 @@ def decide(
                 applied_rules.append("RULE_CONSTRAINT_ENFORCER")
                 reasoning.append("Applied RULE_CONSTRAINT_ENFORCER")
 
-    except Exception as e:
+    except (AttributeError, TypeError, ValueError, RuntimeError) as e:
         status = "failed"
         reasoning.append(f"Engine error: {e}")
         if not output:

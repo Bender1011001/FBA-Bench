@@ -135,7 +135,7 @@ class SkillCoordinator:
                 logger.debug(
                     f"Skill '{skill_name}' subscribed to EventBus for agent {self.agent_id}"
                 )
-            except Exception as e:
+            except (AttributeError, TypeError, RuntimeError) as e:
                 logger.warning(f"Failed to subscribe skill '{skill_name}': {e}")
 
         logger.info(
@@ -163,7 +163,7 @@ class SkillCoordinator:
             try:
                 await subscription.skill.unsubscribe_from_bus(self.event_bus)
                 logger.debug(f"Skill '{skill_name}' unsubscribed from EventBus")
-            except Exception as e:
+            except (AttributeError, TypeError, RuntimeError) as e:
                 logger.warning(f"Failed to unsubscribe skill '{skill_name}': {e}")
 
         logger.info(f"Unregistered skill '{skill_name}' for agent {self.agent_id}")
@@ -220,7 +220,7 @@ class SkillCoordinator:
                 logger.warning(
                     f"Skill '{skill_name}' timed out processing {event_type} for agent {self.agent_id}"
                 )
-            except Exception as e:
+            except (AttributeError, TypeError, ValueError, RuntimeError) as e:
                 logger.error(
                     f"Skill '{skill_name}' failed processing {event_type}: {e}",
                     exc_info=True,
@@ -288,7 +288,7 @@ class SkillCoordinator:
                     f"Skill '{skill_name}' returned unexpected type: {type(result)}"
                 )
                 return []
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(
                 f"Error in skill '{skill_name}.process_event': {e}", exc_info=True
             )

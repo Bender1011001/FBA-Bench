@@ -349,7 +349,7 @@ def archive_completed_objectives(
         # Normalize to string label
         try:
             s = status.value  # Enum-like
-        except Exception:
+        except AttributeError:
             s = str(status)
         s = str(s).lower()
         return s in {"completed", "cancelled", "failed"}
@@ -517,7 +517,7 @@ def reschedule_failed_action(
 try:  # pragma: no cover
     pass  # type: ignore
 
-except Exception as _outer_e:
+except (TypeError, AttributeError, RuntimeError) as _outer_e:
     logger.debug(f"SimpleNamespace patch block failed: {_outer_e}")
 
 # Compatibility shim: allow tests to call _cleanup_old_actions() on a SimpleNamespace
@@ -535,7 +535,7 @@ try:  # pragma: no cover
                 cleanup_days = getattr(
                     self._planner_params, "tactical_action_cleanup_days", 1
                 )
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 cleanup_days = 1
             cutoff_time = datetime.now() - timedelta(days=int(cleanup_days))
 
@@ -547,13 +547,13 @@ try:  # pragma: no cover
                 status = getattr(action, "status", None)
                 try:
                     s = status.value  # Enum-like
-                except Exception:
+                except AttributeError:
                     s = str(status)
                 s = str(s).lower()
                 created_at = getattr(action, "created_at", None)
                 try:
                     is_old = created_at is not None and created_at < cutoff_time
-                except Exception:
+                except (AttributeError, TypeError):
                     is_old = False
                 if s in {"completed", "failed", "cancelled"} and is_old:
                     stale_ids.append(action_id)
@@ -561,10 +561,10 @@ try:  # pragma: no cover
             for aid in stale_ids:
                 try:
                     del self.tactical_actions[aid]
-                except Exception:
+                except KeyError:
                     pass
 
         _SimpleNamespace._cleanup_old_actions = _ns_cleanup_old_actions
-except Exception:
+except (ImportError, AttributeError, TypeError, RuntimeError):
     # If anything goes wrong, do not impact normal planner functionality.
     pass

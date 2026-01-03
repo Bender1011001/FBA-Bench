@@ -41,7 +41,7 @@ class StatisticalAnalyzer:
         try:
             statistic, p_value = stats.ttest_ind(group1, group2)
             return p_value
-        except Exception:
+        except (ValueError, TypeError):
             return 1.0  # Return non-significant if test fails
 
     def ttest_paired(self, group1: List[float], group2: List[float]) -> float:
@@ -61,7 +61,7 @@ class StatisticalAnalyzer:
         try:
             statistic, p_value = stats.ttest_rel(group1, group2)
             return p_value
-        except Exception:
+        except (ValueError, TypeError):
             return 1.0
 
     def cohens_d(self, group1: List[float], group2: List[float]) -> float:
@@ -94,7 +94,7 @@ class StatisticalAnalyzer:
 
             return (mean1 - mean2) / pooled_std
 
-        except Exception:
+        except (ValueError, statistics.StatisticsError):
             return 0.0
 
     def confidence_interval(
@@ -126,7 +126,7 @@ class StatisticalAnalyzer:
 
             return (mean - margin_error, mean + margin_error)
 
-        except Exception:
+        except (ValueError, statistics.StatisticsError):
             return (0.0, 0.0)
 
     def variance(self, data: List[float]) -> float:
@@ -136,7 +136,7 @@ class StatisticalAnalyzer:
 
         try:
             return statistics.variance(data)
-        except Exception:
+        except (ValueError, statistics.StatisticsError):
             return 0.0
 
     def correlation(self, x: List[float], y: List[float]) -> float:
@@ -156,7 +156,7 @@ class StatisticalAnalyzer:
         try:
             correlation, _ = stats.pearsonr(x, y)
             return correlation
-        except Exception:
+        except (ValueError, TypeError):
             return 0.0
 
     def anova_oneway(self, *groups: List[float]) -> Tuple[float, float]:
@@ -181,7 +181,7 @@ class StatisticalAnalyzer:
         try:
             f_stat, p_value = stats.f_oneway(*valid_groups)
             return f_stat, p_value
-        except Exception:
+        except (ValueError, TypeError):
             return 0.0, 1.0
 
     def mann_whitney_u(self, group1: List[float], group2: List[float]) -> float:
@@ -201,7 +201,7 @@ class StatisticalAnalyzer:
         try:
             _, p_value = stats.mannwhitneyu(group1, group2, alternative="two-sided")
             return p_value
-        except Exception:
+        except (ValueError, TypeError):
             return 1.0
 
     def effect_size_interpretation(self, cohens_d: float) -> str:
@@ -373,7 +373,7 @@ class StatisticalAnalyzer:
 
             return (lower_bound, upper_bound)
 
-        except Exception:
+        except (ValueError, TypeError, statistics.StatisticsError):
             # Fallback to standard confidence interval
             return self.confidence_interval(data, confidence_level)
 
@@ -440,10 +440,10 @@ class StatisticalAnalyzer:
             try:
                 summary["skewness"] = stats.skew(data)
                 summary["kurtosis"] = stats.kurtosis(data)
-            except:
+            except (ValueError, TypeError):
                 pass
 
             return summary
 
-        except Exception:
+        except (ValueError, TypeError, statistics.StatisticsError):
             return {"count": len(data), "error": "Could not calculate statistics"}

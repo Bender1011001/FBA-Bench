@@ -202,25 +202,9 @@ class AgentRegistry:
                     logger.debug(
                         f"No specific cleanup/close method found for runner of agent {agent_id}. Skipping runner disposal."
                     )
-            except (AttributeError, RuntimeError, TypeError, ValueError) as e:
-                logger.warning(
-                    f"Runner disposal issue for agent {agent_id}: {type(e).__name__}: {e}",
-                    exc_info=True,
-                )
-            except AgentRunnerCleanupError as e:
-                logger.error(
-                    f"Cleanup failed for agent {agent_id}: {type(e).__name__}: {e}",
-                    exc_info=True,
-                )
-            except asyncio.CancelledError as e:
-                logger.warning(
-                    f"Cleanup cancelled for agent {agent_id}: {e}", exc_info=True
-                )
-            except OSError as e:
-                logger.error(
-                    f"OS error during runner disposal for agent {agent_id}: {e}",
-                    exc_info=True,
-                )
+            except (AttributeError, RuntimeError, TypeError, ValueError, OSError, AgentRunnerCleanupError, asyncio.CancelledError):
+                # Specific handled exceptions
+                raise
             except Exception as e:
                 # Keep deregistration resilient but log unexpected exceptions with full context
                 logger.error(
@@ -278,7 +262,7 @@ class AgentManager:
                 elif callable(resolved_bus) and not hasattr(resolved_bus, "subscribe"):
                     # Fallback: provider-like callable that isn't yet an EventBus instance
                     resolved_bus = resolved_bus()
-            except Exception:
+            except (AttributeError, TypeError, ImportError, RuntimeError):
                 # Leave unresolved; subsequent usage will surface misconfiguration
                 pass
         self.event_bus = resolved_bus
@@ -320,9 +304,9 @@ class AgentManager:
 
                 self.unified_agent_factory = AgentFactory()
                 logger.info("AgentManager initialized with unified agent system.")
-            except Exception as e:
+            except (ImportError, AttributeError, TypeError):
                 # Do not fail initialization if unified agent system is unavailable
-                logger.warning(f"Unified agent system unavailable: {e}")
+                logger.warning("Unified agent system components unavailable.")
                 self.unified_agent_factory = None
 
         # Keep track of subscription handles so we can unsubscribe correctly
@@ -375,7 +359,7 @@ class AgentManager:
         try:
             # Prefer not to import here to keep environment light; store a simple placeholder
             self.multi_domain_controllers[str(aid)] = {"agent_id": str(aid)}
-        except Exception:
+        except (AttributeError, TypeError):
             self.multi_domain_controllers[str(aid)] = None
         # Stats
         self.stats["total_agents"] = self.agent_registry.agent_count()
@@ -390,7 +374,7 @@ class AgentManager:
         if agent_id in self.agents:
             try:
                 del self.agents[agent_id]
-            except Exception:
+            except KeyError:
                 pass
         # Remove controller
         self.multi_domain_controllers.pop(agent_id, None)
@@ -419,7 +403,7 @@ class AgentManager:
                     self.agents[aid]["total_decisions"] = (
                         self.agents[aid]["total_decisions"] + 1
                     )
-            except Exception as e:
+            except (AttributeError, TypeError, ValueError, RuntimeError) as e:
                 logger.warning(f"Decision cycle error for agent {aid}: {e}")
                 continue
         self.decision_cycles_completed += 1
@@ -500,7 +484,7 @@ class AgentManager:
                     for handle in self._subscription_handles:
                         try:
                             await self.event_bus.unsubscribe(handle)  # type: ignore[arg-type]
-                        except Exception as ue:
+                        except (AttributeError, TypeError, ValueError, RuntimeError) as ue:
                             logger.debug(f"Issue unsubscribing handle {handle}: {ue}")
                     self._subscription_handles.clear()
                     logger.info("AgentManager unsubscribed from core events.")
@@ -508,7 +492,7 @@ class AgentManager:
                     logger.debug(
                         "EventBus does not support unsubscribe; proceeding without explicit unsubscription."
                     )
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.warning(f"Unsubscription encountered an issue: {e}")
 
         # Cleanup all agent runners
@@ -545,7 +529,7 @@ class AgentManager:
             if isinstance(rec, dict):
                 return bool(rec.get("active", False))
             return bool(getattr(rec, "active", False))
-        except Exception:
+        except (AttributeError, TypeError):
             return False
 
     async def _process_agent_decision(
@@ -588,7 +572,7 @@ class AgentManager:
                     mirror.total_tool_calls = int(
                         getattr(mirror, "total_tool_calls", 0)
                     ) + (len(tool_calls) if tool_calls else 0)
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError) as e:
             logger.error(f"_process_agent_decision error: {e}", exc_info=True)
 
     async def register_agent(
@@ -626,7 +610,7 @@ class AgentManager:
                 f"Custom framework agent {agent_id} ({framework}) registered via RunnerFactory (preferred)."
             )
             return runner
-        except Exception as e:
+        except (AttributeError, TypeError, ImportError, RuntimeError) as e:
             logger.debug(f"RunnerFactory path unavailable for '{framework}': {e}")
 
         # Next: direct registry lookup for class (supports tests registering 'mock' at runtime)
@@ -654,7 +638,7 @@ class AgentManager:
                     f"Agent {agent_id} created via direct registry lookup for framework '{framework}'."
                 )
                 return runner
-        except Exception as e:
+        except (AttributeError, TypeError, ImportError, RuntimeError) as e:
             logger.debug(f"Direct registry lookup failed for '{framework}': {e}")
 
         # Fallback: attempt registry.create_runner
@@ -678,7 +662,7 @@ class AgentManager:
                 f"Custom framework agent {agent_id} ({framework}) registered via registry.create_runner."
             )
             return runner
-        except Exception as e:
+        except (AttributeError, TypeError, ImportError, RuntimeError) as e:
             logger.debug(f"registry.create_runner failed for '{framework}': {e}")
 
         # Unified agent system default path
@@ -713,7 +697,7 @@ class AgentManager:
                 f"Unified agent {agent_id} ({framework}) registered successfully."
             )
             return runner_wrapper
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(f"Failed to register agent {agent_id} ({framework}): {e}")
             self.agent_registry.add_agent(agent_id, None, framework, config or {})
             self.agent_registry.mark_agent_as_failed(agent_id, str(e))
@@ -841,7 +825,7 @@ class AgentManager:
             # Surface timeout to caller so manager can apply specialized policy (mark unresponsive / retry)
             logger.warning(f"Agent '{runner.agent_id}' decision timed out: {e}")
             raise
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(
                 f"Unexpected error during agent '{runner.agent_id}' decision: {e}",
                 exc_info=True,
@@ -889,7 +873,7 @@ class AgentManager:
 
                 # Execute approved actions (publish commands)
                 await self._execute_skill_actions(agent_id, approved)
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(f"Skills tick pipeline failed: {e}", exc_info=True)
 
     async def _ensure_product_sourcing_skill_registered(
@@ -912,7 +896,7 @@ class AgentManager:
                 priority_multiplier=1.0,
             )
             logger.info(f"Registered ProductSourcingSkill for agent {agent_id}")
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(
                 f"Failed to register ProductSourcingSkill for agent {agent_id}: {e}",
                 exc_info=True,
@@ -962,7 +946,7 @@ class AgentManager:
 
                 # Extend here with other mappings, e.g., run_marketing_campaign -> Marketing command
 
-            except Exception as e:
+            except (AttributeError, TypeError, ValueError, RuntimeError) as e:
                 logger.error(
                     f"Failed to execute skill action {action.action_type} for agent {agent_id}: {e}",
                     exc_info=True,
@@ -1025,7 +1009,7 @@ class AgentManager:
                 await self._process_tool_call(agent_id, tc)
                 count += 1
             return count
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(f"Error in arbitration for agent {agent_id}: {e}")
             return 0
 
@@ -1117,7 +1101,7 @@ class AgentManager:
         # Import at runtime to ensure availability when TYPE_CHECKING is False
         try:
             from benchmarking.agents.unified_agent import PydanticAgentConfig  # type: ignore
-        except Exception as e:
+        except (ImportError, AttributeError, TypeError):
             raise RuntimeError(f"PydanticAgentConfig unavailable: {e}")
         return PydanticAgentConfig(
             agent_id=agent_id,
@@ -1249,7 +1233,7 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
         try:
             await self.unified_runner.initialize()
             logger.info(f"Unified agent runner wrapper {self.agent_id} initialized")
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             raise AgentRunnerInitializationError(
                 f"Failed to initialize unified agent runner {self.agent_id}: {e}"
             )
@@ -1277,7 +1261,7 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
 
             return tool_calls
 
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError, AgentRunnerTimeoutError) as e:
             raise AgentRunnerDecisionError(
                 f"Failed to get decision from unified agent {self.agent_id}: {e}"
             )
@@ -1287,7 +1271,7 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
         try:
             await self.unified_runner.cleanup()
             logger.info(f"Unified agent runner wrapper {self.agent_id} cleaned up")
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerCleanupError) as e:
             raise AgentRunnerCleanupError(
                 f"Failed to cleanup unified agent runner {self.agent_id}: {e}"
             )
@@ -1309,7 +1293,7 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
                 agent_learn = getattr(agent_obj, "learn", None)
                 if callable(agent_learn):
                     await agent_learn(outcome)
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError):
             logger.warning(
                 f"Unified agent {self.agent_id} learn() forwarding failed: {e}"
             )

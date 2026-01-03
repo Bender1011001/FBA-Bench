@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Protocol
 try:
     # Local import to integrate with our analyzer if available
     from trace_analyzer import TraceAnalyzer
-except Exception:
+except ImportError:
     TraceAnalyzer = None  # type: ignore
 
 

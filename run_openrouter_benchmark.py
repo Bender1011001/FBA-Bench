@@ -238,12 +238,14 @@ class OpenRouterBenchmarkRunner:
             start_time = asyncio.get_event_loop().time()
 
             # Make the API call
+            logger.info(f"    Running prompt: {prompt_data['name']}...")
             response = await client.generate_response(
                 prompt=prompt_data["prompt"], temperature=0.7, max_tokens=2048
             )
 
             end_time = asyncio.get_event_loop().time()
             prompt_result["response_time"] = end_time - start_time
+            logger.info(f"    ✓ {prompt_data['name']} completed in {prompt_result['response_time']:.1f}s")
 
             # Extract response content
             if response.get("choices") and len(response["choices"]) > 0:

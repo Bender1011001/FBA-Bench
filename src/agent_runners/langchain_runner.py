@@ -120,8 +120,8 @@ async def _maybe_publish_progress(topic: str, event: Dict[str, Any]) -> None:
         client = await get_redis()
         payload = json.dumps(event)
         await client.publish(topic, payload)
-    except Exception as exc:  # pragma: no cover
-        logger.debug("Progress publish skipped (redis unavailable): %s", exc)
+    except (AttributeError, TypeError, ValueError, RuntimeError) as exc:  # pragma: no cover
+        logger.debug("Progress publish skipped (redis unavailable or misconfigured): %s", exc)
 
 
 def _now_iso() -> str:
@@ -205,7 +205,7 @@ class LangChainRunner(AgentRunner):
         """Instantiate ChatOpenAI and optionally a tools-enabled agent (soft import)."""
         try:
             from langchain_openai import ChatOpenAI  # type: ignore
-        except Exception as e:
+        except (ImportError, AttributeError, TypeError) as e:
             raise AgentRunnerInitializationError(
                 "LangChain + langchain-openai are not installed. Install extras: "
                 "pip install 'langchain>=0.3' 'langchain-openai>=0.2'",
@@ -234,7 +234,7 @@ class LangChainRunner(AgentRunner):
         try:
             if self._tools_spec:
                 self._agent = self._build_agent_with_tools(self._tools_spec)
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             # Tools are optional; log and continue without tools
             logger.debug("Failed to initialize LangChain agent with tools: %s", e)
             self._agent = None
@@ -257,7 +257,7 @@ class LangChainRunner(AgentRunner):
                     # Accept JSON string or raw
                     try:
                         payload = json.loads(value) if isinstance(value, str) else value
-                    except Exception:
+                    except (json.JSONDecodeError, TypeError, ValueError):
                         payload = {"input": value}
                     res = _f(payload)
                     if asyncio.iscoroutine(res):
@@ -275,7 +275,7 @@ class LangChainRunner(AgentRunner):
                     )
                 )
             return wrapped
-        except Exception:
+        except (ImportError, AttributeError, TypeError, ValueError):
             logger.debug(
                 "LangChain Tool adapter not available; continuing without tools"
             )
@@ -285,7 +285,7 @@ class LangChainRunner(AgentRunner):
         """Build an agent using LangChain initialize_agent if available."""
         try:
             from langchain.agents import AgentType, initialize_agent  # type: ignore
-        except Exception as e:
+        except (ImportError, AttributeError, TypeError) as e:
             # Tools not supported if agents not present
             logger.debug("LangChain agents unavailable: %s", e)
             return None
@@ -338,7 +338,7 @@ class LangChainRunner(AgentRunner):
             self._agent = None
             try:
                 self._agent = self._build_agent_with_tools(tools_spec)
-            except Exception as e:
+            except (AttributeError, TypeError, ValueError, RuntimeError) as e:
                 logger.debug("Failed to rebuild agent with per-run tools: %s", e)
                 self._agent = None
 
@@ -364,7 +364,7 @@ class LangChainRunner(AgentRunner):
                 # Raw LLM call using messages to preserve system prompt
                 try:
                     from langchain_core.messages import HumanMessage, SystemMessage  # type: ignore
-                except Exception:
+                except (ImportError, AttributeError, TypeError):
                     SystemMessage = None  # type: ignore
                     HumanMessage = None  # type: ignore
 
@@ -402,7 +402,7 @@ class LangChainRunner(AgentRunner):
                 "tool_calls": tool_calls,
                 "metrics": metrics,
             }
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError) as e:
             logger.exception("LangChain run failed: %s", e)
             await _maybe_publish_progress(
                 topic, {"phase": "error", "at": _now_iso(), "error": str(e)}

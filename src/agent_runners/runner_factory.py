@@ -20,13 +20,13 @@ def _get_registry():
         from agent_runners import registry as reg  # type: ignore
 
         return reg
-    except Exception:
+    except (ImportError, AttributeError):
         # Fallback to importlib if needed
         try:
             import importlib
 
             return importlib.import_module("agent_runners.registry")
-        except Exception:
+        except (ImportError, AttributeError):
             return None
 
 
@@ -56,12 +56,12 @@ class RunnerFactory:
         if reg and hasattr(reg, "supported_runners"):
             try:
                 return list(reg.supported_runners())
-            except Exception:
+            except (AttributeError, TypeError):
                 return []
         if reg and hasattr(reg, "get_all_frameworks"):
             try:
                 return list(reg.get_all_frameworks())
-            except Exception:
+            except (AttributeError, TypeError):
                 return []
         return []
 
@@ -71,7 +71,7 @@ class RunnerFactory:
         if reg and hasattr(reg, "get_framework_info"):
             try:
                 return reg.get_framework_info(name)
-            except Exception:
+            except (AttributeError, TypeError):
                 return {"name": name, "available": False}
         return {"name": name, "available": False}
 
@@ -81,7 +81,7 @@ class RunnerFactory:
         if reg and hasattr(reg, "is_framework_available"):
             try:
                 return bool(reg.is_framework_available(name))
-            except Exception:
+            except (AttributeError, TypeError):
                 return False
         return False
 

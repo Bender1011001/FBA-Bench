@@ -38,11 +38,11 @@ class EventBus(_CoreEventBus):  # type: ignore[misc]
         try:
             # Prefer the core bus' stats schema
             return super().get_stats()  # type: ignore[attr-defined]
-        except Exception:
+        except AttributeError:
             # Defensive fallback
             try:
                 subs = sum(len(v) for v in getattr(self, "_subscribers", {}).values())
-            except Exception:
+            except (AttributeError, TypeError):
                 subs = 0
             return {
                 "started": bool(getattr(self, "_started", False)),
@@ -114,7 +114,7 @@ def get_event_bus() -> EventBus:
             return bus
         # Wrap if needed
         return EventBusShim(bus)
-    except Exception:
+    except (ImportError, AttributeError):
         # Fallback to events InMemoryEventBus
         return _EventsInMemoryEventBus()
 
@@ -126,10 +126,10 @@ def set_event_bus(bus: Any) -> None:
     """
     try:
         _events_set_event_bus(bus)
-    except Exception:
+    except (ImportError, AttributeError):
         try:
             _core_set_event_bus(bus)
-        except Exception:
+        except (ImportError, AttributeError):
             # best-effort
             pass
 
@@ -177,6 +177,6 @@ def _count_by_key(items: Any, key: str) -> Dict[str, int]:
                 continue
             ks = str(k)
             counts[ks] = counts.get(ks, 0) + 1
-    except Exception:
+    except (AttributeError, TypeError):
         pass
     return counts

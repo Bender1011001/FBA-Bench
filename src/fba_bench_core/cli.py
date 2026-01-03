@@ -423,7 +423,7 @@ def start_api_server():
                     "API server uvicorn execution failed with return code: %s",
                     proc.poll(),
                 )
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError) as e:
             LOG.debug("Method 3 failed: %s", e)
 
         LOG.error("All methods to start API server failed")
@@ -844,7 +844,7 @@ def handle_launch(with_server: bool, game_mode: bool = False) -> int:
         if api_process:
             try:
                 api_process.terminate()
-            except:
+            except (subprocess.SubprocessError, OSError):
                 pass
         return 1
 

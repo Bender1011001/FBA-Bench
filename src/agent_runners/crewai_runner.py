@@ -123,8 +123,8 @@ async def _maybe_publish_progress(topic: str, event: Dict[str, Any]) -> None:
         client = await get_redis()
         payload = json.dumps(event)
         await client.publish(topic, payload)
-    except Exception as exc:  # pragma: no cover
-        logger.debug("Progress publish skipped (redis unavailable): %s", exc)
+    except (AttributeError, TypeError, ValueError, RuntimeError) as exc:  # pragma: no cover
+        logger.debug("Progress publish skipped (redis unavailable or misconfigured): %s", exc)
 
 
 def _now_iso() -> str:
@@ -212,9 +212,9 @@ class CrewAIRunner(AgentRunner):
                 Crew,
                 Task,
             )
-        except Exception as e:
+        except (ImportError, AttributeError, TypeError) as e:
             raise AgentRunnerInitializationError(
-                "CrewAI is not installed. Install extras: pip install 'crewai>=0.28'",
+                "CrewAI is not installed or incompatible version. Install extras: pip install 'crewai>=0.28'",
                 agent_id=self.agent_id,
                 framework="CrewAI",
             ) from e
@@ -262,7 +262,7 @@ class CrewAIRunner(AgentRunner):
                 async def _run(value: str, _f=func) -> str:
                     try:
                         payload = json.loads(value) if isinstance(value, str) else value
-                    except Exception:
+                    except (json.JSONDecodeError, TypeError, ValueError):
                         payload = {"input": value}
                     res = _f(payload)
                     if asyncio.iscoroutine(res):
@@ -281,7 +281,7 @@ class CrewAIRunner(AgentRunner):
                     )
                 )
             return wrapped
-        except Exception:
+        except (ImportError, AttributeError, TypeError, ValueError):
             # Fallback: return empty list if wrapping is not supported
             logger.debug("CrewAI Tool adapter not available; continuing without tools")
             return []
@@ -385,7 +385,7 @@ class CrewAIRunner(AgentRunner):
                 "tool_calls": tool_calls,
                 "metrics": metrics,
             }
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError) as e:
             logger.exception("CrewAI run failed: %s", e)
             await _maybe_publish_progress(
                 topic, {"phase": "error", "at": _now_iso(), "error": str(e)}

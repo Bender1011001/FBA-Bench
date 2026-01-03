@@ -615,7 +615,7 @@ class SkillConfigurationManager:
             )
             return True
 
-        except Exception as e:
+        except (TypeError, ValueError, AttributeError, KeyError) as e:
             logger.error(f"Error importing configuration: {e}")
             return False
 

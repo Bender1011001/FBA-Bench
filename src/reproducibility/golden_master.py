@@ -275,7 +275,7 @@ class GoldenMasterTester:
             logger.info(f"Comparison complete: {result.summary()}")
             return result
 
-        except (OSError, json.JSONDecodeError, sqlite3.Error) as e:
+        except (OSError, json.JSONDecodeError) as e:
             logger.error(f"Comparison failed: {e}")
             return ComparisonResult(
                 is_identical=False,
@@ -978,7 +978,7 @@ class GoldenMasterTester:
 
             return deleted
 
-        except Exception as e:
+        except (OSError, IOError) as e:
             logger.error(f"Failed to delete golden master '{label}': {e}")
             return False
 

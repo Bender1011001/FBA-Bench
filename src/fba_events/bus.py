@@ -276,7 +276,7 @@ class InMemoryEventBus(EventBus):
         ts = datetime.now(timezone.utc).isoformat()
         try:
             await self.log_event(event, event_type, ts)
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError):
             # Never let logging failures impact publish path
             logger.debug("log_event failed: %s", e)
         # Increment published counter
@@ -581,7 +581,7 @@ class InMemoryEventBus(EventBus):
                 logging.getLogger("fba_events.bus").handle(rec)
             except (AttributeError, TypeError, RuntimeError):
                 pass
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError):
             # Logging must never interfere with event flow
             try:
                 logger.debug("Event logging skipped: %s", e)
@@ -628,7 +628,7 @@ class InMemoryEventBus(EventBus):
                             # Cap reached; mark truncated and stop appending
                             if not self._recording_truncated:
                                 self._recording_truncated = True
-                    except Exception as rec_e:
+                    except (AttributeError, TypeError, ValueError):
                         # Defensive: never crash the bus due to recording failure
                         logger.warning(
                             "Failed to record event %s: %s", event_type, rec_e
@@ -658,14 +658,9 @@ class InMemoryEventBus(EventBus):
                     self._handler_tasks.add(t)
                     t.add_done_callback(lambda task: self._handler_tasks.discard(task))
         except asyncio.CancelledError:
-            # Graceful exit via cancellation
-            return
-        except RuntimeError as e:
-            # Typical during test teardown: "Event loop is closed" / "no running event loop"
-            logger.debug("InMemoryEventBus runner exiting due to runtime error: %s", e)
-            return
-        except Exception as e:
-            logger.exception("Unhandled exception in InMemoryEventBus runner: %s", e)
+            raise
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
+            logger.exception("Unhandled error in InMemoryEventBus runner: %s", e)
             # Avoid attempting restart if the loop may be closing
             try:
                 loop = asyncio.get_running_loop()
@@ -711,7 +706,7 @@ class InMemoryEventBus(EventBus):
     async def _safe_invoke(self, handler: Handler, event: Any) -> None:
         try:
             await handler(event)
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.error(
                 "Event handler error for %s: %s",
                 self._event_type_name(event),

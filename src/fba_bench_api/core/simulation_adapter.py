@@ -26,7 +26,7 @@ except ImportError:
             for sub in self.subscribers:
                 try:
                     sub(event)
-                except Exception:
+                except (AttributeError, TypeError, ValueError):
                     pass
 
 # Import from Enterprise
@@ -99,19 +99,19 @@ class EnterpriseSimulationAdapter:
                 if hasattr(self.orchestrator, "get_kpis"):
                     try:
                         kpis = self.orchestrator.get_kpis()
-                    except Exception:
+                    except (AttributeError, TypeError, ValueError):
                         pass
                 elif hasattr(self.orchestrator, "get_state"):
                     try:
                         state = self.orchestrator.get_state()
                         # Extract KPIs from state if possible
                         kpis = state.get("kpis", {}) if isinstance(state, dict) else {}
-                    except Exception:
+                    except (AttributeError, TypeError, ValueError):
                         pass
                 elif hasattr(self.orchestrator, "_calculate_scenario_kpis"):
                     try:
                         kpis = self.orchestrator._calculate_scenario_kpis()
-                    except Exception:
+                    except (AttributeError, TypeError, ValueError):
                         pass
                 
                 # Construct report
@@ -142,7 +142,9 @@ class EnterpriseSimulationAdapter:
             )
             print(f"[System] Simulation {self.run_id} finished")
             
-        except Exception as e:
+        except (asyncio.CancelledError, SystemExit):
+            raise
+        except (subprocess.SubprocessError, OSError, RuntimeError, ValueError) as e:
             print(f"[System] Simulation {self.run_id} failed: {e}")
             # Publish error
             await self.redis.publish(
@@ -187,7 +189,7 @@ class EnterpriseSimulationAdapter:
                     new_price=money_price
                 )
                 await self.orchestrator.event_bus.publish(command)
-        except Exception as e:
+        except (ImportError, AttributeError, TypeError, ValueError) as e:
             # Log but don't crash the adapter
             print(f"[Error] Failed to inject agent action {action}: {e}")
 

@@ -67,7 +67,7 @@ class OpenRouterBot:
                 raw_prompt = self.prompt_adapter.build_prompt(state)  # type: ignore[attr-defined]
             else:
                 raw_prompt = f"State at tick {getattr(state, 'current_tick', '?')}"
-        except Exception:
+        except (AttributeError, TypeError):
             raw_prompt = "State unavailable"
 
         # 2) Preprocess via AgentGateway (inject budgets, guardrails)
@@ -79,7 +79,7 @@ class OpenRouterBot:
         except SystemExit:
             # Hard stop enforced by gateway in tests
             return []
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             # Fail safe: if gateway hard-fails, return no actions per tests
             return []
 
@@ -95,14 +95,14 @@ class OpenRouterBot:
                 max_tokens=max_tokens,
                 top_p=top_p,
             )
-        except Exception:
+        except (AttributeError, TypeError, ValueError, RuntimeError):
             # LLM failure -> no actions; parser may penalize in other tests
             try:
                 if hasattr(self.response_parser, "trust_metrics"):
                     self.response_parser.trust_metrics.apply_penalty(  # type: ignore[attr-defined]
                         self.agent_id, 1.0, "LLM call failed"
                     )
-            except Exception:
+            except (AttributeError, TypeError):
                 pass
             return []
 
@@ -112,7 +112,7 @@ class OpenRouterBot:
             try:
                 # Common OpenAI-like payload: choices[0].message.content
                 content = llm_response.get("choices", [{}])[0].get("message", {}).get("content", "")
-            except Exception:
+            except (AttributeError, TypeError, IndexError):
                 content = ""
 
             actions = []
@@ -129,7 +129,7 @@ class OpenRouterBot:
 
                     if inspect.isawaitable(parse_result):
                         parse_result = await parse_result  # type: ignore[assignment]
-                except Exception:
+                except (AttributeError, TypeError):
                     pass
 
                 # Normalize results: tuple(parsed_json, error) | list(actions) | iterable | None
@@ -142,32 +142,32 @@ class OpenRouterBot:
                         elif maybe is not None:
                             try:
                                 actions = list(maybe)  # type: ignore[arg-type]
-                            except Exception:
+                            except (TypeError, ValueError):
                                 actions = []
                     elif isinstance(parsed_json, list):
                         actions = parsed_json
                     elif parsed_json is not None:
                         try:
                             actions = list(parsed_json)  # type: ignore[arg-type]
-                        except Exception:
+                        except (TypeError, ValueError):
                             actions = []
                 elif isinstance(parse_result, list):
                     actions = parse_result
                 elif parse_result is not None:
                     try:
                         actions = list(parse_result)  # type: ignore[arg-type]
-                    except Exception:
+                    except (TypeError, ValueError):
                         actions = []
             else:
                 actions = []
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             # Ensure trust penalty on parsing/validation failures as tests expect
             try:
                 if hasattr(self.response_parser, "trust_metrics"):
                     self.response_parser.trust_metrics.apply_penalty(  # type: ignore[attr-defined]
                         self.agent_id, 1.0, "LLM parse/validation error"
                     )
-            except Exception:
+            except (AttributeError, TypeError):
                 pass
             actions = []
 
@@ -181,7 +181,7 @@ class OpenRouterBot:
                     _acts = _direct.get("actions")
                     if isinstance(_acts, list):
                         actions = _acts
-            except Exception:
+            except (ImportError, ValueError, TypeError):
                 # Ignore fallback errors; keep actions as-is
                 pass
 
@@ -224,13 +224,13 @@ class OpenRouterBot:
                                 )
                             )
                             continue
-                        except Exception:
+                        except (TypeError, ValueError, AttributeError):
                             # If price is malformed or missing, retain original dict for visibility
                             pass
                 # Fallback: keep original shape
                 converted.append(a)
             actions = converted
-        except Exception:
+        except (ImportError, AttributeError, TypeError, ValueError):
             # Best-effort conversion; do not fail decision flow
             pass
 
@@ -242,7 +242,7 @@ class OpenRouterBot:
                 processed_prompt if isinstance(processed_prompt, str) else str(processed_prompt),
                 content,
             )
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             # Non-fatal for tests
             pass
 
