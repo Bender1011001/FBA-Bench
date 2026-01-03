@@ -63,7 +63,7 @@ async def handle_inventory_update(
                 f"Initialized product state with inventory: asin={asin}, quantity={new_quantity}, cost={cost_basis}"
             )
 
-    except Exception as e:
+    except (TypeError, AttributeError, ValueError) as e:
         logger.error(
             f"Error handling InventoryUpdate event {event.event_id}: {e}", exc_info=True
         )

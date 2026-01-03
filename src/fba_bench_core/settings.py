@@ -193,7 +193,7 @@ def _load_yaml_config(path: Optional[Path]) -> Dict[str, Any]:
         if not isinstance(data, dict):
             return {}
         return data
-    except Exception:
+    except (OSError, yaml.YAMLError, TypeError, ValueError):
         # Do not raise during configuration bootstrap; prefer safe defaults
         return {}
 

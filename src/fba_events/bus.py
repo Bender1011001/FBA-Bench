@@ -179,7 +179,7 @@ class InMemoryEventBus(EventBus):
             if self._queue is not None:
                 # Put a sentinel tuple that the runner will detect and exit on
                 self._queue.put_nowait((self._STOP, "_STOP", ""))
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError):
             # If queue is gone or closed, proceed to awaiting/cancelling the runner
             pass
 
@@ -193,7 +193,7 @@ class InMemoryEventBus(EventBus):
             except RuntimeError as e:
                 # Event loop closed during teardown: swallow for test stability
                 logger.debug("Runner stop encountered runtime error (ignored): %s", e)
-            except Exception as e:
+            except (RuntimeError, AttributeError, TypeError) as e:
                 logger.exception("Error while stopping InMemoryEventBus runner: %s", e)
 
         # Gracefully wait for handler tasks to finish briefly, then cancel stragglers
@@ -201,14 +201,14 @@ class InMemoryEventBus(EventBus):
         if pending:
             try:
                 done, still = await asyncio.wait(pending, timeout=0.25)
-            except Exception:
+            except (RuntimeError, asyncio.CancelledError):
                 done, still = set(), pending
             for t in still:
                 t.cancel()
             if still:
                 try:
                     await asyncio.gather(*still, return_exceptions=True)
-                except Exception:
+                except (RuntimeError, asyncio.CancelledError):
                     pass
             self._handler_tasks.difference_update(done | still)
 
@@ -219,7 +219,7 @@ class InMemoryEventBus(EventBus):
             try:
                 while not q.empty():
                     q.get_nowait()
-            except Exception:
+            except (RuntimeError, AttributeError):
                 pass
 
         # compat: release loop and queue references to avoid cross-loop binding/leaks on Windows/pytest
@@ -259,7 +259,7 @@ class InMemoryEventBus(EventBus):
                     try:
                         if self._queue is not None:
                             self._queue.put_nowait((self._STOP, "_STOP", ""))
-                    except Exception:
+                    except (RuntimeError, AttributeError, TypeError):
                         pass
                     # Rebind to current loop with a fresh queue/runner
                     self._queue = asyncio.Queue()
@@ -268,7 +268,7 @@ class InMemoryEventBus(EventBus):
                     )
                     self._loop = current_loop
                     self._started = True
-            except Exception:
+            except (RuntimeError, AttributeError, TypeError):
                 # Do not fail publish due to rebind issues
                 pass
 
@@ -282,7 +282,7 @@ class InMemoryEventBus(EventBus):
         # Increment published counter
         try:
             self._events_published += 1
-        except Exception:
+        except (AttributeError, TypeError):
             # Be defensive: keep publish path resilient even if counter missing
             pass
 
@@ -305,7 +305,7 @@ class InMemoryEventBus(EventBus):
                     and self._loop is not current_loop
                 ):
                     use_direct_dispatch = True
-        except Exception:
+        except (AttributeError, TypeError):
             use_direct_dispatch = True
 
         if use_direct_dispatch:
@@ -325,7 +325,7 @@ class InMemoryEventBus(EventBus):
                     else:
                         if not self._recording_truncated:
                             self._recording_truncated = True
-                except Exception:
+                except (AttributeError, TypeError, ValueError):
                     # Never fail publish due to recording issues
                     pass
 
@@ -334,7 +334,7 @@ class InMemoryEventBus(EventBus):
             try:
                 # Update processed counter to reflect immediate dispatch
                 self._events_processed += 1
-            except Exception:
+            except (AttributeError, TypeError):
                 pass
 
             if handlers:
@@ -343,7 +343,7 @@ class InMemoryEventBus(EventBus):
                         *(self._safe_invoke(h, event) for h in handlers),
                         return_exceptions=True,
                     )
-                except Exception:
+                except (AttributeError, TypeError, RuntimeError, asyncio.CancelledError):
                     # Swallow to keep publish resilient
                     pass
         else:
@@ -383,7 +383,7 @@ class InMemoryEventBus(EventBus):
                 # Signal old runner to stop
                 try:
                     self._queue.put_nowait((self._STOP, "_STOP", ""))
-                except Exception:
+                except (RuntimeError, AttributeError, TypeError):
                     pass
                 # Bind a fresh queue/runner on the current loop
                 self._queue = asyncio.Queue()
@@ -392,7 +392,7 @@ class InMemoryEventBus(EventBus):
                 )
                 self._loop = current_loop
                 self._started = True
-            except Exception:
+            except (RuntimeError, AttributeError, TypeError):
                 # Never fail subscription due to rebind issues
                 pass
 
@@ -405,7 +405,7 @@ class InMemoryEventBus(EventBus):
             if isinstance(event_selector, type):
                 name_key = event_selector.__name__
                 self._subscribers.setdefault(name_key, []).append(async_handler)
-        except Exception:
+        except (AttributeError, TypeError):
             # Best-effort; ignore if type name cannot be derived
             pass
         return (sel, async_handler)
@@ -515,7 +515,7 @@ class InMemoryEventBus(EventBus):
         """
         try:
             subs = sum(len(v) for v in self._subscribers.values())
-        except Exception:
+        except (AttributeError, TypeError):
             subs = 0
         return {
             "started": bool(getattr(self, "_started", False)),
@@ -557,11 +557,11 @@ class InMemoryEventBus(EventBus):
                 # Restore previous logger state
                 try:
                     _log.setLevel(prev_level)
-                except Exception:
+                except (AttributeError, TypeError):
                     pass
                 try:
                     _log.propagate = prev_propagate
-                except Exception:
+                except (AttributeError, TypeError):
                     pass
                 _log.disabled = prev_disabled
 
@@ -579,13 +579,13 @@ class InMemoryEventBus(EventBus):
                     }
                 )
                 logging.getLogger("fba_events.bus").handle(rec)
-            except Exception:
+            except (AttributeError, TypeError, RuntimeError):
                 pass
         except Exception as e:
             # Logging must never interfere with event flow
             try:
                 logger.debug("Event logging skipped: %s", e)
-            except Exception:
+            except (AttributeError, TypeError):
                 pass
 
     # -------------------------
@@ -603,7 +603,7 @@ class InMemoryEventBus(EventBus):
                 # Update processed counter
                 try:
                     self._events_processed += 1
-                except Exception:
+                except (AttributeError, TypeError):
                     # Defensive: keep runner resilient even if counter missing
                     pass
 
@@ -646,7 +646,7 @@ class InMemoryEventBus(EventBus):
                             else:
                                 if not self._recording_truncated:
                                     self._recording_truncated = True
-                        except Exception:
+                        except (AttributeError, TypeError, KeyError):
                             # As a last resort, swallow errors silently to keep dispatching
                             pass
 
@@ -674,7 +674,7 @@ class InMemoryEventBus(EventBus):
                     asyncio.create_task(
                         self._runner(), name="InMemoryEventBusRunner-Restarted"
                     )
-            except Exception:
+            except (RuntimeError, AttributeError):
                 # If we cannot confirm a healthy loop, exit
                 return
 
@@ -693,7 +693,7 @@ class InMemoryEventBus(EventBus):
             try:
                 if isinstance(event, key):  # type: ignore[arg-type]
                     matched.extend(handlers)
-            except Exception:
+            except (AttributeError, TypeError):
                 # Non-type keys or unexpected selector; ignore
                 continue
 
@@ -737,13 +737,13 @@ class InMemoryEventBus(EventBus):
         """
         try:
             return event.__class__.__name__
-        except Exception:
+        except (AttributeError, TypeError):
             pass
         try:
             et = getattr(event, "event_type", None)
             if isinstance(et, str):
                 return et
-        except Exception:
+        except (AttributeError, TypeError):
             pass
         return str(type(event))
 
@@ -762,14 +762,14 @@ class InMemoryEventBus(EventBus):
                 data = to_sum()
                 if isinstance(data, dict):
                     return self._jsonify_dict(data)
-        except Exception:
+        except (AttributeError, TypeError):
             pass
 
         # 2) Dataclass fallback
         try:
             if is_dataclass(event):
                 return self._jsonify_dict(asdict(event))
-        except Exception:
+        except (AttributeError, TypeError):
             pass
 
         # 3) Generic object __dict__ fallback
@@ -777,7 +777,7 @@ class InMemoryEventBus(EventBus):
             d = vars(event)
             if isinstance(d, dict):
                 return self._jsonify_dict(d)
-        except Exception:
+        except (AttributeError, TypeError):
             pass
 
         # 4) Last resort: string representation
@@ -812,12 +812,12 @@ class InMemoryEventBus(EventBus):
         if is_dataclass(v):
             try:
                 return self._jsonify_dict(asdict(v))
-            except Exception:
+            except (AttributeError, TypeError):
                 return str(v)
         # Money or other custom types -> str()
         try:
             return str(v)
-        except Exception:
+        except (AttributeError, TypeError):
             return repr(v)
 
     # -------------------------
@@ -831,7 +831,7 @@ class InMemoryEventBus(EventBus):
                 return default_max
             parsed = int(val)
             return parsed if parsed > 0 else default_max
-        except Exception:
+        except (ValueError, TypeError):
             return default_max
 
     def _read_logging_enabled(self) -> bool:
@@ -842,7 +842,7 @@ class InMemoryEventBus(EventBus):
         try:
             val = os.getenv("EVENT_LOGGING_ENABLED", "1").strip().lower()
             return val not in ("0", "false", "no")
-        except Exception:
+        except (AttributeError, TypeError):
             return True
 
     def get_recording_stats(self) -> Dict[str, Any]:
@@ -913,7 +913,7 @@ class InMemoryEventBus(EventBus):
         # Fallback: keep string representation (should be rare after _to_jsonable)
         try:
             return str(data)
-        except Exception:
+        except (AttributeError, TypeError):
             return repr(data)
 
     def clear_recorded_events(self) -> None:
@@ -921,7 +921,7 @@ class InMemoryEventBus(EventBus):
         try:
             self._recorded.clear()
             self._recording_truncated = False
-        except Exception:
+        except (AttributeError, TypeError):
             self._recorded = []
             self._recording_truncated = False
 
@@ -931,7 +931,7 @@ class InMemoryEventBus(EventBus):
             pending = len(
                 [t for t in getattr(self, "_handler_tasks", set()) if not t.done()]
             )
-        except Exception:
+        except (AttributeError, TypeError):
             pending = 0
         return {
             "subscribers": sum(len(v) for v in self._subscribers.values()),

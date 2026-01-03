@@ -59,7 +59,7 @@ class OperationsMetrics:
                     unit_price = event.get("unit_price") or event.get("price") or 0.0
                     try:
                         self.total_revenue += float(units) * float(unit_price)
-                    except Exception:
+                    except (ValueError, TypeError):
                         # ignore if not computable
                         pass
 
@@ -89,7 +89,7 @@ class OperationsMetrics:
                 val = getter()
                 if isinstance(val, (int, float)):
                     return float(val)
-        except Exception:
+        except (AttributeError, RuntimeError):
             pass
 
         # 2) Fallback via events data

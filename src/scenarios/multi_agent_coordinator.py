@@ -91,7 +91,7 @@ class MultiAgentCoordinator:
                     actions.extend(result)
                 elif result is not None:
                     actions.append(result)
-            except Exception:
+            except (AttributeError, TypeError, ValueError, RuntimeError):
                 # Non-fatal; skip broken coordinator output
                 pass
         return actions

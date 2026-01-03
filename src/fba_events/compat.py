@@ -32,43 +32,43 @@ warnings.warn(
 # BaseEvent
 try:
     from fba_events import BaseEvent as BaseEvent  # type: ignore
-except Exception:
+except ImportError:
     from fba_events.base import BaseEvent as BaseEvent  # type: ignore
 
 # TickEvent
 try:
     from fba_events import TickEvent as TickEvent  # type: ignore
-except Exception:
+except ImportError:
     from fba_events.time_events import TickEvent as TickEvent  # type: ignore
 
 # SetPriceCommand, ProductPriceUpdated
 try:
     from fba_events import SetPriceCommand as SetPriceCommand  # type: ignore
-except Exception:
+except ImportError:
     from fba_events.pricing import SetPriceCommand as SetPriceCommand  # type: ignore
 
 try:
     from fba_events import ProductPriceUpdated as ProductPriceUpdated  # type: ignore
-except Exception:
+except ImportError:
     from fba_events.pricing import ProductPriceUpdated as ProductPriceUpdated  # type: ignore
 
 # SaleOccurred
 try:
     from fba_events import SaleOccurred as SaleOccurred  # type: ignore
-except Exception:
+except ImportError:
     from fba_events.sales import SaleOccurred as SaleOccurred  # type: ignore
 
 # CompetitorPricesUpdated, CompetitorState
 try:
     from fba_events import CompetitorPricesUpdated as CompetitorPricesUpdated  # type: ignore
-except Exception:
+except ImportError:
     from fba_events.competitor import (
         CompetitorPricesUpdated as CompetitorPricesUpdated,  # type: ignore
     )
 
 try:
     from fba_events import CompetitorState as CompetitorState  # type: ignore
-except Exception:
+except ImportError:
     from fba_events.competitor import CompetitorState as CompetitorState  # type: ignore
 
 

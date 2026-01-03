@@ -50,12 +50,41 @@ logger = logging.getLogger(__name__)
 
 # OpenRouter configuration
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+# Top-tier paid models (December 2025 rankings)
+OPENROUTER_TOP_MODELS = [
+    "openai/gpt-5.2",                    # GPT-5.2 - Top reasoning & speed
+    "anthropic/claude-opus-4.5",         # Claude Opus 4.5 - Best coding
+    "google/gemini-3-pro-preview",       # Gemini 3 Pro - Best multimodal
+    "deepseek/deepseek-v3.2",            # DeepSeek V3.2 - Best value
+    "x-ai/grok-4.1-fast",                # Grok 4.1 Fast - Fast reasoning
+]
+
+# Mid-tier models (expected to do moderately well)
+OPENROUTER_MID_MODELS = [
+    "meta-llama/llama-3.3-70b-instruct", # Llama 3.3 70B
+    "mistralai/mistral-large-latest",    # Mistral Large
+    "google/gemini-2.0-flash-exp:free",  # Gemini 2.0 Flash (free)
+    "anthropic/claude-3.5-sonnet",       # Claude 3.5 Sonnet (older)
+]
+
+# Weak/Small models (EXPECTED TO LOSE MONEY - this is the validation test!)
+OPENROUTER_WEAK_MODELS = [
+    "mistralai/mistral-7b-instruct:free",     # Mistral 7B - Small model
+    "meta-llama/llama-3.2-3b-instruct:free",  # Llama 3.2 3B - Tiny model
+    "google/gemma-2-9b-it:free",              # Gemma 2 9B - Small Google model
+    "microsoft/phi-3-mini-128k-instruct:free",# Phi-3 Mini - Micro model
+    "qwen/qwen-2-7b-instruct:free",           # Qwen 2 7B - Small Alibaba model
+    "nvidia/nemotron-nano-12b-2:free",        # Nemotron Nano 12B
+]
+
+# Free tier models available on OpenRouter (mixed quality)
 OPENROUTER_FREE_MODELS = [
-    "deepseek/deepseek-chat-v3.1:free",
-    "x-ai/grok-4-fast:free",
-    "deepseek/deepseek-r1-0528:free",
-    "deepseek/deepseek-chat-v3-0324:free",
-    "tngtech/deepseek-r1t2-chimera:free",
+    "deepseek/deepseek-r1-0528:free",    # DeepSeek R1 Free (good)
+    "tngtech/deepseek-r1t2-chimera:free",# DeepSeek R1T2 Chimera (good)
+    "allenai/olmo-3-32b-think:free",     # OLMo 3 32B Think (medium)
+    "arcee-ai/trinity-mini:free",        # Arcee Trinity Mini (small)
+    "xiaomi/mimo-v2-flash:free",         # MiMo V2 Flash (small)
 ]
 
 # Standard test prompts for benchmarking
@@ -355,11 +384,41 @@ class OpenRouterBenchmarkRunner:
 
 async def main() -> int:
     """Main function to run the OpenRouter benchmark."""
-    parser = argparse.ArgumentParser(description="Run OpenRouter free models benchmark")
+    parser = argparse.ArgumentParser(description="Run OpenRouter models benchmark")
     parser.add_argument(
         "--model",
         type=str,
-        help="Test specific model (default: test all free models)",
+        help="Test specific model by slug",
+    )
+    parser.add_argument(
+        "--top",
+        action="store_true",
+        help="Test top-tier paid models (GPT-5.2, Claude Opus 4.5, Gemini 3 Pro, DeepSeek V3.2, Grok 4.1 Fast)",
+    )
+    parser.add_argument(
+        "--free",
+        action="store_true",
+        help="Test free tier models only (default if no flag specified)",
+    )
+    parser.add_argument(
+        "--weak",
+        action="store_true",
+        help="Test weak/small models (expected to lose money - validation test)",
+    )
+    parser.add_argument(
+        "--mid",
+        action="store_true",
+        help="Test mid-tier models",
+    )
+    parser.add_argument(
+        "--wide",
+        action="store_true",
+        help="Test WIDE range: top + mid + weak + free (full benchmark validation)",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Test all models (top + free)",
     )
     parser.add_argument(
         "--output",
@@ -385,9 +444,29 @@ async def main() -> int:
 
     try:
         # Determine models to test
-        models_to_test = [args.model] if args.model else None
-        if args.model and args.model not in OPENROUTER_FREE_MODELS:
-            logger.warning(f"Model '{args.model}' is not in the free tier list")
+        if args.model:
+            models_to_test = [args.model]
+            logger.info(f"Testing single model: {args.model}")
+        elif args.top:
+            models_to_test = OPENROUTER_TOP_MODELS
+            logger.info(f"Testing {len(models_to_test)} top-tier paid models")
+        elif args.weak:
+            models_to_test = OPENROUTER_WEAK_MODELS
+            logger.info(f"Testing {len(models_to_test)} WEAK/SMALL models (expected to lose money)")
+        elif args.mid:
+            models_to_test = OPENROUTER_MID_MODELS
+            logger.info(f"Testing {len(models_to_test)} mid-tier models")
+        elif getattr(args, 'wide', False):
+            models_to_test = OPENROUTER_TOP_MODELS + OPENROUTER_MID_MODELS + OPENROUTER_WEAK_MODELS + OPENROUTER_FREE_MODELS
+            logger.info(f"Testing WIDE range: {len(models_to_test)} models across all tiers")
+        elif getattr(args, 'all', False):
+            models_to_test = OPENROUTER_TOP_MODELS + OPENROUTER_FREE_MODELS
+            logger.info(f"Testing all {len(models_to_test)} models (top + free)")
+        else:
+            # Default to free models
+            models_to_test = OPENROUTER_FREE_MODELS
+            logger.info(f"Testing {len(models_to_test)} free tier models")
+
 
         # Run benchmark
         runner = OpenRouterBenchmarkRunner(api_key)

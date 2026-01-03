@@ -256,7 +256,7 @@ class BsrEngineV3Service:
                 composite_index = _clamp(
                     composite_index * rep_factor, self.index_floor, self.index_ceiling
                 )
-            except Exception:
+            except (TypeError, AttributeError, ValueError):
                 # On provider errors, do not adjust
                 pass
 

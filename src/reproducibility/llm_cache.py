@@ -124,7 +124,7 @@ class LLMResponseCache:
         try:
             self._cache_dir_path = Path(final_chosen_dir_value)
             self._cache_dir_path.mkdir(parents=True, exist_ok=True)
-        except Exception:
+        except (OSError, IOError):
             # Fallback: use package-local cache directory
             self._cache_dir_path = Path(__file__).parent / "cache"
             self._cache_dir_path.mkdir(parents=True, exist_ok=True)
@@ -172,7 +172,7 @@ class LLMResponseCache:
                         or other == self._path
                         or other == str(self._path)
                     )
-                except Exception:
+                except (AttributeError, TypeError):
                     return False
 
             def __getattr__(self, name):
@@ -297,7 +297,7 @@ class LLMResponseCache:
                 finally:
                     try:
                         self._open_handles.discard(conn)
-                    except Exception:
+                    except (KeyError, TypeError):
                         pass
 
     def _open_sqlite_connection(self):
@@ -306,8 +306,7 @@ class LLMResponseCache:
         conn.row_factory = sqlite3.Row
         try:
             self._open_handles.add(conn)
-        except Exception:
-            # Best-effort; proceed even if tracking fails
+        except (AttributeError, TypeError):
             pass
         return conn
 
@@ -323,7 +322,7 @@ class LLMResponseCache:
             if conn:
                 try:
                     conn.rollback()
-                except Exception:
+                except sqlite3.Error:
                     pass
             raise
         finally:
@@ -335,7 +334,7 @@ class LLMResponseCache:
                 finally:
                     try:
                         self._open_handles.discard(conn)
-                    except Exception:
+                    except (KeyError, TypeError):
                         pass
 
     def generate_prompt_hash(
@@ -574,7 +573,7 @@ class LLMResponseCache:
                         if cursor is not None:
                             try:
                                 cursor.close()
-                            except Exception:
+                            except sqlite3.Error:
                                 pass
 
                 # Cache miss
@@ -645,7 +644,7 @@ class LLMResponseCache:
 
             return is_valid, errors
 
-        except Exception as e:
+        except (sqlite3.Error, OSError) as e:
             logger.error(f"Cache validation failed: {e}")
             return False, [f"Validation error: {e}"]
 
@@ -708,7 +707,7 @@ class LLMResponseCache:
             logger.info(f"Cache exported to: {filepath}")
             return True
 
-        except Exception as e:
+        except (OSError, sqlite3.Error, json.JSONDecodeError) as e:
             logger.error(f"Failed to export cache: {e}")
             return False
 
@@ -790,7 +789,7 @@ class LLMResponseCache:
             logger.info(f"Imported {imported_count} cache entries from: {filepath}")
             return True
 
-        except Exception as e:
+        except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as e:
             logger.error(f"Failed to import cache: {e}")
             return False
 
@@ -808,7 +807,7 @@ class LLMResponseCache:
                         if cursor is not None:
                             try:
                                 cursor.close()
-                            except Exception:
+                            except (AttributeError, TypeError):
                                 pass
             except Exception as e:
                 logger.error(f"Failed to get cache size: {e}")
@@ -878,12 +877,12 @@ class LLMResponseCache:
                         finally:
                             try:
                                 self._open_handles.discard(h)
-                            except Exception:
+                            except (AttributeError, TypeError, KeyError):
                                 pass
                     # Clear the handle set
                     try:
                         self._open_handles.clear()
-                    except Exception:
+                    except (AttributeError, TypeError, KeyError):
                         pass
                 except Exception as e:
                     logger.error(f"Error during handle cleanup: {e}")
@@ -920,7 +919,7 @@ class LLMResponseCache:
         # compat: best-effort close on GC to avoid locked files on Windows
         try:
             self.close()
-        except Exception:
+        except (RuntimeError, AttributeError, TypeError):
             pass
 
     def __enter__(self):

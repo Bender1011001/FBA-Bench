@@ -82,12 +82,12 @@ class OutcomeAnalysisService:
                 try:
                     if tr is not None:
                         revenue += float(str(tr).replace("$", "").replace(",", ""))
-                except Exception:
+                except (TypeError, ValueError):
                     pass
                 try:
                     if tp is not None:
                         profit += float(str(tp).replace("$", "").replace(",", ""))
-                except Exception:
+                except (TypeError, ValueError):
                     pass
                 units += int(data.get("units_sold", 0))
                 # Positive reinforcement when sales follow actions
@@ -98,7 +98,7 @@ class OutcomeAnalysisService:
                 try:
                     if sp is not None:
                         ad_spend += float(str(sp).replace("$", "").replace(",", ""))
-                except Exception:
+                except (TypeError, ValueError):
                     pass
 
             if etype in (

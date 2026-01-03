@@ -136,7 +136,7 @@ class MarketingService:
                 str(daily_budget),
                 duration_days,
             )
-        except Exception as e:
+        except (TypeError, AttributeError, ValueError) as e:
             logger.error(
                 f"Error handling RunMarketingCampaignCommand {getattr(event, 'event_id', 'unknown')}: {e}",
                 exc_info=True,
@@ -146,7 +146,7 @@ class MarketingService:
         try:
             self._current_tick = int(getattr(event, "tick_number", self._current_tick))
             await self.process_tick()
-        except Exception as e:
+        except (TypeError, AttributeError, ValueError) as e:
             logger.error(
                 f"Error processing TickEvent in MarketingService: {e}", exc_info=True
             )
@@ -192,7 +192,7 @@ class MarketingService:
                 current_vis = float(
                     self.world_store.get_marketing_visibility(camp.asin)
                 )
-            except Exception:
+            except (TypeError, AttributeError):
                 current_vis = 1.0
 
             # Effect increment from this tick's spend
@@ -201,7 +201,7 @@ class MarketingService:
             new_vis = 1.0 + (self.retention * (current_vis - 1.0)) + (effect_incr - 1.0)
             try:
                 self.world_store.set_marketing_visibility(camp.asin, new_vis)
-            except Exception as e:
+            except (TypeError, AttributeError, ValueError) as e:
                 logger.error(
                     f"Failed to set marketing visibility for {camp.asin}: {e}",
                     exc_info=True,

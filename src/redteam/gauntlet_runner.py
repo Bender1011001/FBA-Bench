@@ -25,7 +25,7 @@ from .resistance_scorer import AdversaryResistanceScorer, ARSBreakdown
 # OpenTelemetry Imports (optional)
 try:  # pragma: no cover - optional dependency
     from opentelemetry import trace as _otel_trace
-except Exception:
+except ImportError:
     _otel_trace = None
 from instrumentation.tracer import setup_tracing
 
@@ -239,7 +239,7 @@ class GauntletRunner:
 
                 return result
 
-            except Exception as e:
+            except (RuntimeError, ValueError, TypeError) as e:
                 logger.error(f"Gauntlet {gauntlet_id} failed with error: {e}")
                 result.failure_reason = f"Execution error: {e!s}"
                 result.execution_time_seconds = (
@@ -361,7 +361,7 @@ class GauntletRunner:
                     ),
                 }
 
-            except Exception as e:
+            except (RuntimeError, ValueError, TypeError) as e:
                 logger.error(f"Failed to execute exploit {exploit.name}: {e}")
                 continue
 
@@ -420,7 +420,7 @@ class GauntletRunner:
 
             return responses
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.error(f"Failed to execute exploit {exploit.name}: {e}")
             return []
 

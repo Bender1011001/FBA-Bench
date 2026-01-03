@@ -1,8 +1,0 @@
-{
-  "provider": "openrouter",
-  "model": "openai/gpt-5",
-  "days_run": 0,
-  "budget_usd_cap": 10.0,
-  "cumulative_cost_usd": 0.0,
-  "runs": []
-}

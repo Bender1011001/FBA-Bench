@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 try:
     import yaml  # type: ignore
-except Exception:  # pragma: no cover
+except ImportError:  # pragma: no cover
     yaml = None  # YAML overlay becomes a no-op if PyYAML is missing
 
 from pydantic import Field
@@ -146,7 +146,7 @@ class AppSettings(BaseSettings):
             try:
                 with open(path, encoding="utf-8") as f:
                     data = yaml.safe_load(f) or {}
-            except Exception:
+            except (OSError, yaml.YAMLError):
                 return {}
             if not isinstance(data, dict):
                 return {}
@@ -195,7 +195,7 @@ class AppSettings(BaseSettings):
                 if "jwt_clock_skew" in auth:
                     try:
                         mapped["AUTH_JWT_CLOCK_SKEW"] = int(auth["jwt_clock_skew"])
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
 
             # redis.url / database.url convenience
@@ -232,19 +232,19 @@ class AppSettings(BaseSettings):
                 if "web_port" in clearml:
                     try:
                         mapped["FBA_BENCH_CLEARML_WEB_PORT"] = int(clearml["web_port"])
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
                 if "file_port" in clearml:
                     try:
                         mapped["FBA_BENCH_CLEARML_FILE_PORT"] = int(
                             clearml["file_port"]
                         )
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
                 if "api_port" in clearml:
                     try:
                         mapped["FBA_BENCH_CLEARML_API_PORT"] = int(clearml["api_port"])
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
                 if isinstance(clearml.get("compose_filename"), str):
                     mapped["FBA_BENCH_CLEARML_COMPOSE"] = clearml["compose_filename"]

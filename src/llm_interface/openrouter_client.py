@@ -16,7 +16,7 @@ try:
     from dotenv import load_dotenv  # type: ignore
 
     _HAS_DOTENV = True
-except Exception:
+except ImportError:
     _HAS_DOTENV = False
 
 
@@ -39,7 +39,7 @@ class OpenRouterClient(BaseLLMClient):
             try:
                 load_dotenv()
                 api_key_value = os.getenv(api_key_env_name)
-            except Exception:
+            except (OSError, AttributeError):
                 pass
         if not api_key_value:
             raise ValueError(
@@ -215,7 +215,7 @@ class OpenRouterClient(BaseLLMClient):
             raise LLMClientError(
                 f"Network error connecting to OpenRouter API: {e}", original_exception=e
             )
-        except Exception as e:
+        except (TypeError, AttributeError, RuntimeError, KeyError) as e:
             logger.error(
                 f"An unexpected error occurred during OpenRouter API call: {e}",
                 exc_info=True,

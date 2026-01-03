@@ -620,19 +620,33 @@ class DeploymentManager:
             return False
 
     def _stop_local(self) -> bool:
-        """Stop local deployment."""
+        """Stop local deployment using cross-platform process management."""
         logger.info("Stopping local deployment")
 
-        # Find and kill the process
-        cmd = ["pkill", "-f", "api_server"]
-
         try:
-            # pkill returns 0 if at least one process was matched and killed,
-            # 1 if no process matched. 1 is not a 'failure' for us, just means 'nothing to stop'.
-            subprocess.run(cmd, capture_output=True, text=True, check=True)
-        except subprocess.CalledProcessError:
-            # Ignored: Process likely not running
-            pass
+            import psutil
+        except ImportError:
+            logger.error("psutil is required for local deployment management. Install with: pip install psutil")
+            return False
+
+        # Find and terminate processes matching 'api_server' (cross-platform)
+        terminated_count = 0
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                cmdline = proc.info.get('cmdline') or []
+                cmdline_str = ' '.join(cmdline) if cmdline else ''
+                if 'api_server' in cmdline_str:
+                    proc.terminate()
+                    terminated_count += 1
+                    logger.debug(f"Terminated process {proc.info['pid']}")
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                # Process already gone or we can't access it
+                pass
+
+        if terminated_count == 0:
+            logger.info("No api_server processes found to stop")
+        else:
+            logger.info(f"Terminated {terminated_count} api_server process(es)")
 
         logger.info("Local stop successful")
         return True
@@ -762,18 +776,29 @@ class DeploymentManager:
         }
 
     def _status_local(self) -> Dict[str, Any]:
-        """Get local deployment status."""
+        """Get local deployment status using cross-platform process management."""
         logger.info("Getting local status")
 
-        # Check if the process is running
-        cmd = ["pgrep", "-f", "api_server"]
+        try:
+            import psutil
+        except ImportError:
+            logger.error("psutil is required for local deployment management. Install with: pip install psutil")
+            return {"error": "psutil not installed"}
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        # Find processes matching 'api_server' (cross-platform)
+        pids = []
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                cmdline = proc.info.get('cmdline') or []
+                cmdline_str = ' '.join(cmdline) if cmdline else ''
+                if 'api_server' in cmdline_str:
+                    pids.append(str(proc.info['pid']))
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                # Process already gone or we can't access it
+                pass
 
-        if result.returncode != 0:
+        if not pids:
             return {"status": "Not running"}
-
-        pids = result.stdout.strip().split("\n")
 
         return {"status": "Running", "pids": pids}
 

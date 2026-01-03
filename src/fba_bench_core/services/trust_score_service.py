@@ -133,14 +133,14 @@ class TrustScoreService:
                                 self.event_history.append(
                                     _NS(event_type=_NS(value="stockout"), raw=evt)
                                 )
-                        except Exception:
+                        except (TypeError, AttributeError):
                             pass
-                    except Exception:
+                    except (TypeError, AttributeError):
                         # Defensive: never break the subscriber path
                         pass
 
                 await self.event_bus.subscribe(SaleOccurred, _on_sale)
-        except Exception:
+        except (TypeError, AttributeError, RuntimeError):
             # Non-fatal
             pass
 
@@ -150,7 +150,7 @@ class TrustScoreService:
         try:
             if self.event_bus and hasattr(self.event_bus, "stop"):
                 await self.event_bus.stop()
-        except Exception:
+        except (TypeError, AttributeError, RuntimeError):
             pass
 
     # Backwards-compatible helper for tests expecting an instance method

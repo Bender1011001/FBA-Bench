@@ -67,7 +67,7 @@ class WorldStateManager:
                 if not sid:
                     continue
                 by_id[sid] = dict(entry)
-        except Exception:
+        except (TypeError, AttributeError):
             by_id = {}
 
         self._supplier_catalog = by_id
@@ -89,7 +89,7 @@ class WorldStateManager:
             if lt is None:
                 return None
             return max(0, int(lt))
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             return None
 
     # Marketing visibility helpers
@@ -104,7 +104,7 @@ class WorldStateManager:
             return 1.0
         try:
             vis = float(state.metadata.get("marketing_visibility", 1.0))
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             vis = 1.0
         # Bound visibility to a reasonable range [0.1, 5.0] to avoid instabilities
         return max(0.1, min(5.0, vis))
@@ -145,7 +145,7 @@ class WorldStateManager:
             return 0.7
         try:
             rep = float(state.metadata.get("reputation_score", 0.7))
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             rep = 0.7
         return max(0.0, min(1.0, rep))
 
@@ -184,13 +184,13 @@ class WorldStateManager:
         """
         try:
             asin = str(getattr(state, "asin", "") or product_id)
-        except Exception:
+        except (TypeError, AttributeError):
             asin = str(product_id)
         # Ensure last_updated is present
         if not getattr(state, "last_updated", None):
             try:
                 state.last_updated = datetime.utcnow()
-            except Exception:
+            except (TypeError, AttributeError):
                 pass
         self._product_state[asin] = state
 

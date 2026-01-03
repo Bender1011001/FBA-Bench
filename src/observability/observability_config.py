@@ -88,14 +88,14 @@ class ObservabilityConfig:
             val = os.getenv(name)
             try:
                 return int(val) if val is not None else default
-            except Exception:
+            except (ValueError, TypeError):
                 return default
 
         def _f(name: str, default: float) -> float:
             val = os.getenv(name)
             try:
                 return float(val) if val is not None else default
-            except Exception:
+            except (ValueError, TypeError):
                 return default
 
         cfg = cls(
@@ -131,7 +131,7 @@ class ObservabilityConfig:
         try:
             with open(path, encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
-        except Exception as e:
+        except (OSError, yaml.YAMLError) as e:
             raise ValueError(f"Failed to read YAML file: {e}")
 
         if not isinstance(data, dict):
@@ -150,14 +150,14 @@ class ObservabilityConfig:
             v = data.get(k, default)
             try:
                 return int(v)
-            except Exception:
+            except (ValueError, TypeError):
                 return default
 
         def _get_float(k: str, default: float) -> float:
             v = data.get(k, default)
             try:
                 return float(v)
-            except Exception:
+            except (ValueError, TypeError):
                 return default
 
         cfg = cls(

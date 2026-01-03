@@ -64,7 +64,7 @@ class CompetitorManager:
 
                 # Create a local in-memory WorldStore instance; no global mutation
                 self.world_store = _WorldStore(storage_backend=_InMemBackend())  # type: ignore[assignment]
-            except Exception:
+            except ImportError:
                 # Fallback minimal adapter implementing only the interface we use
                 class _InMemoryWorldStore:
                     """Minimal in-memory WorldStore adapter used for tests.
@@ -139,7 +139,7 @@ class CompetitorManager:
         """
         try:
             return self.competitor_personas.get(str(competitor_id))
-        except Exception:
+        except (TypeError, ValueError):
             return None
 
     def get_persona_statistics(self) -> Dict[str, Any]:
@@ -159,14 +159,14 @@ class CompetitorManager:
                     # Fallback to external id alias if available
                     try:
                         ext_id = getattr(comp, "competitor_id", None)
-                    except Exception:
+                    except AttributeError:
                         ext_id = None
                     if ext_id is not None:
                         persona = self.competitor_personas.get(str(ext_id))
                 if persona is not None:
                     name = type(persona).__name__
                     dist[name] = dist.get(name, 0) + 1
-        except Exception:
+        except (RuntimeError, AttributeError):
             pass
         return {
             "total_competitors": len(self.competitors),
@@ -210,7 +210,7 @@ class CompetitorManager:
                 else:
                     # Try best-effort coercion
                     price = Money.from_dollars(price)
-            except Exception:
+            except (TypeError, ValueError):
                 price = Money.zero()
             competitor.price = price
 
@@ -229,7 +229,7 @@ class CompetitorManager:
             assigned_persona = persona
             try:
                 competitor.persona = persona
-            except Exception:
+            except AttributeError:
                 # Non-fatal; continue without persona if object is restricted
                 pass
         else:
@@ -240,9 +240,9 @@ class CompetitorManager:
                 assigned_persona = SlowFollower(str(comp_id), competitor.price)
                 try:
                     competitor.persona = assigned_persona
-                except Exception:
+                except AttributeError:
                     pass
-            except Exception:
+            except ImportError:
                 assigned_persona = None  # fallback if personas unavailable
 
         if assigned_persona is not None:
@@ -251,7 +251,7 @@ class CompetitorManager:
                 external_id = getattr(competitor, "competitor_id", None)
                 if external_id:
                     self.competitor_personas[str(external_id)] = assigned_persona
-            except Exception:
+            except AttributeError:
                 pass
             self.competitor_personas[str(comp_id)] = assigned_persona
 
@@ -314,7 +314,7 @@ class CompetitorManager:
 
                 if getattr(_comp_mod, "Money", None) is not _MoneyRT:
                     _comp_mod.Money = _MoneyRT
-            except Exception:
+            except ImportError:
                 # Non-fatal; if patching fails we proceed and let type checks/logs surface issues.
                 pass
 
@@ -332,7 +332,7 @@ class CompetitorManager:
                 # Persona-based modifiers to amplify behavioral differences where personas are present
                 try:
                     persona = getattr(competitor, "persona", None)
-                except Exception:
+                except AttributeError:
                     persona = None
                 if persona is not None:
                     new_price, new_bsr, new_sales_velocity = (
@@ -354,7 +354,7 @@ class CompetitorManager:
 
                     # Patch the Money reference inside the competitor events module to the active runtime Money
                     _comp_mod.Money = _Money
-                except Exception:
+                except ImportError:
                     # Non-fatal if patching fails
                     pass
                 price_for_event = competitor.price
@@ -363,7 +363,7 @@ class CompetitorManager:
                 # otherwise fall back to the internal key (asin/id).
                 try:
                     external_id = getattr(competitor, "competitor_id", None)
-                except Exception:
+                except AttributeError:
                     external_id = None
                 state_id = str(external_id) if external_id else str(competitor_id)
 
@@ -380,7 +380,7 @@ class CompetitorManager:
                     ext_id = getattr(competitor, "competitor_id", None)
                     if ext_id:
                         self.competitor_states[str(ext_id)] = state
-                except Exception:
+                except AttributeError:
                     pass
                 self.competitor_states[str(competitor_id)] = state
 
@@ -442,21 +442,21 @@ class CompetitorManager:
                 if isinstance(cents_attr, (int, float)):
                     try:
                         return _Money(int(cents_attr))
-                    except Exception:
+                    except (TypeError, AttributeError):
                         pass
                 # Serializable formats: float/Decimal/str interpreted as dollars
                 if isinstance(val, (float, Decimal, str)):
                     try:
                         return _Money.from_dollars(val)
-                    except Exception:
+                    except (TypeError, AttributeError):
                         pass
                 # Integers interpreted as cents (consistent with WorldStore coercion)
                 if isinstance(val, int):
                     try:
                         return _Money(val)
-                    except Exception:
+                    except (TypeError, AttributeError):
                         pass
-        except Exception:
+        except (AttributeError, TypeError):
             # Non-fatal; fall through to WorldStore
             pass
 
@@ -465,7 +465,7 @@ class CompetitorManager:
             ps = self.world_store.get_product_state("B0DEFAULT")
             if ps and getattr(ps, "price", None):
                 return ps.price
-        except Exception:
+        except (AttributeError, RuntimeError):
             pass
 
         # Final fallback: $1.00
@@ -492,7 +492,7 @@ class CompetitorManager:
                         if member.value == raw_strategy.strip().lower():
                             resolved = member
                             break
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             resolved = None
         if resolved is None:
             logger.warning(
@@ -552,7 +552,7 @@ class CompetitorManager:
         base_sv = competitor.sales_velocity
         try:
             base_sv_f = float(base_sv)
-        except Exception:
+        except (TypeError, ValueError):
             base_sv_f = 0.0
         new_sales_velocity = base_sv_f * (
             1 + random.uniform(-self.sales_volatility, self.sales_volatility)
@@ -592,7 +592,7 @@ class CompetitorManager:
 
         try:
             from personas import IrrationalSlasher, SlowFollower  # type: ignore
-        except Exception:
+        except ImportError:
             # Personas module not available; return original values
             return price, bsr, sales_velocity
 
@@ -612,7 +612,7 @@ class CompetitorManager:
                     sales_velocity = float(sales_velocity) * (
                         1.10 + random.uniform(0.0, 0.15)
                     )
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             pass
 
         # SlowFollower behavior: resist frequent changes and move slowly
@@ -635,7 +635,7 @@ class CompetitorManager:
                 sales_velocity = (float(sales_velocity) * 0.6) + (
                     float(competitor.sales_velocity) * 0.4
                 )
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             pass
 
         return price, bsr, sales_velocity
@@ -657,7 +657,7 @@ class CompetitorManager:
         # Convert prices to float dollars using the canonical API
         try:
             prices = [c.price.to_float() for c in competitors]
-        except Exception:
+        except AttributeError:
             # Fallback: derive from cents if to_float is unavailable
             prices = [getattr(c.price, "cents", 0) / 100.0 for c in competitors]
 

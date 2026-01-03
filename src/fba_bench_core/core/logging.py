@@ -27,7 +27,7 @@ from fba_bench_core.config import get_settings
 
 try:
     from pythonjsonlogger import jsonlogger  # type: ignore
-except Exception:  # pragma: no cover - optional dependency
+except ImportError:  # pragma: no cover - optional dependency
     jsonlogger = None  # type: ignore
 
 
@@ -162,7 +162,7 @@ def setup_logging(
             fh.setFormatter(formatter)
             fh.addFilter(RequestIdFilter())
             root_logger.addHandler(fh)
-        except Exception as e:  # pragma: no cover
+        except (OSError, AttributeError) as e:  # pragma: no cover
             # If file handler fails, proceed with stdout only
             root_logger.warning(f"Failed to attach file handler: {e}")
 
@@ -196,9 +196,7 @@ try:
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.requests import Request
     from starlette.responses import Response
-except (
-    Exception
-):  # pragma: no cover - Starlette present with FastAPI; guard for import-time use
+except ImportError:  # pragma: no cover - Starlette present with FastAPI; guard for import-time use
     BaseHTTPMiddleware = object  # type: ignore
     Request = object  # type: ignore
     Response = object  # type: ignore

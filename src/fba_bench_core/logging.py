@@ -24,7 +24,7 @@ from typing import Optional
 try:
     # Optional dependency; if missing and json=True, we fall back to plain formatting
     from pythonjsonlogger import jsonlogger  # type: ignore
-except Exception:  # pragma: no cover - optional import
+except ImportError:  # pragma: no cover - optional import
     jsonlogger = None  # type: ignore[assignment]
 
 
@@ -35,7 +35,7 @@ _configured_flag_local = False  # module-local safeguard for idempotence
 def _level_from_str(level: str) -> int:
     try:
         return getattr(logging, level.upper())
-    except Exception:
+    except AttributeError:
         return logging.INFO
 
 
@@ -51,7 +51,7 @@ def _make_handler(destination: str, filename: Optional[str]) -> logging.Handler:
     try:
         if path.parent and not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
-    except Exception:
+    except OSError:
         pass
     return logging.FileHandler(path, encoding="utf-8")
 
@@ -99,7 +99,7 @@ def configure_logging(settings=None, *, force: bool = False) -> None:
             )  # lazy import to avoid cycles
 
             settings = get_settings()
-        except Exception:
+        except (ImportError, AttributeError, ValueError, RuntimeError):
             # As a last resort, use a minimal default if settings cannot be loaded
             class _Fallback:
                 class logging:  # type: ignore
@@ -168,7 +168,7 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
     if not (_configured_flag_local or logging.getLogger().handlers):
         try:
             configure_logging()
-        except Exception:
+        except (ImportError, AttributeError, ValueError, RuntimeError):
             # Never fail logger retrieval due to configuration issues
             pass
     return logging.getLogger(name)

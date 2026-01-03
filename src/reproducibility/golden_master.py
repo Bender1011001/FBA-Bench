@@ -163,7 +163,7 @@ class GoldenMasterTester:
             # affecting the recorded baseline (tests rely on this behavior)
             try:
                 simulation_copy = copy.deepcopy(simulation_run)
-            except Exception:
+            except (copy.Error, TypeError):
                 # Fallback: JSON round-trip for robust deep copy
                 simulation_copy = json.loads(json.dumps(simulation_run, sort_keys=True))
 
@@ -200,7 +200,7 @@ class GoldenMasterTester:
             logger.info(f"Golden master '{label}' recorded: {file_path}")
             return True
 
-        except Exception as e:
+        except (OSError, IOError, json.JSONDecodeError) as e:
             logger.error(f"Failed to record golden master '{label}': {e}")
             return False
 
@@ -275,7 +275,7 @@ class GoldenMasterTester:
             logger.info(f"Comparison complete: {result.summary()}")
             return result
 
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, sqlite3.Error) as e:
             logger.error(f"Comparison failed: {e}")
             return ComparisonResult(
                 is_identical=False,
@@ -360,7 +360,7 @@ class GoldenMasterTester:
                     return True
                 float(str(x))
                 return True
-            except Exception:
+            except (ValueError, TypeError, ImportError):
                 return False
 
         # If both values are numeric-like, compare with numeric tolerance regardless of Python types
@@ -581,7 +581,7 @@ class GoldenMasterTester:
                 if isinstance(x, Decimal):
                     return float(x)
                 return float(str(x))
-            except Exception:
+            except (ValueError, TypeError, ImportError):
                 return None
 
         fexp = _to_float(expected)
@@ -702,14 +702,14 @@ class GoldenMasterTester:
 
             dt1 = dtparser.parse(ts1)
             dt2 = dtparser.parse(ts2)
-        except Exception:
+        except (ImportError, ValueError, TypeError):
             # Fallback to strict ISO 8601 parsing
             try:
                 from datetime import datetime
 
                 dt1 = datetime.fromisoformat(ts1.replace("Z", "+00:00"))
                 dt2 = datetime.fromisoformat(ts2.replace("Z", "+00:00"))
-            except Exception:
+            except (ValueError, TypeError):
                 return None
         return abs((dt1 - dt2).total_seconds() * 1000)
 
@@ -761,7 +761,7 @@ class GoldenMasterTester:
 
             return golden_master
 
-        except Exception as e:
+        except (OSError, json.JSONDecodeError) as e:
             logger.error(f"Failed to load golden master '{label}': {e}")
             return None
 
@@ -992,7 +992,7 @@ class GoldenMasterTester:
         """
         try:
             obj = copy.deepcopy(data)
-        except Exception:
+        except (TypeError, AttributeError, RecursionError):
             obj = json.loads(json.dumps(data))
 
         def _normalize_event(ev: Any) -> Any:
@@ -1012,7 +1012,7 @@ class GoldenMasterTester:
         try:
             if isinstance(obj, dict) and isinstance(obj.get("events"), list):
                 obj["events"] = [_normalize_event(ev) for ev in obj["events"]]
-        except Exception:
+        except (TypeError, AttributeError):
             pass
 
         return obj

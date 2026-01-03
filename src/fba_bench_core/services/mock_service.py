@@ -214,7 +214,7 @@ class ResponseCache:
             "data": data or {},
         }
         key_json = json.dumps(key_data, sort_keys=True)
-        return hashlib.md5(key_json.encode()).hexdigest()
+        return hashlib.md5(key_json.encode(), usedforsecurity=False).hexdigest()
 
     def get(
         self,
@@ -253,7 +253,7 @@ class ResponseCache:
 
             return cached_data
 
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, KeyError) as e:
             logger.error(f"Error reading cache: {e}")
             return None
 
@@ -290,7 +290,7 @@ class ResponseCache:
             with open(cache_file, "w") as f:
                 json.dump(cache_entry, f)
 
-        except Exception as e:
+        except (OSError, TypeError) as e:
             logger.error(f"Error writing cache: {e}")
 
     def clear(self) -> None:

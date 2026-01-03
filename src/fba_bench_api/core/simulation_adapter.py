@@ -152,8 +152,44 @@ class EnterpriseSimulationAdapter:
 
     async def inject_agent_action(self, agent_id: str, action: str, params: Dict):
         """Allows the API to force an action into the engine."""
-        # TODO: Implement command injection for Engine
-        pass
+        if not hasattr(self.orchestrator, "event_bus") or not self.orchestrator.event_bus:
+            return
+
+        try:
+            if action in ("set_price", "SetPriceCommand"):
+                from fba_events.pricing import SetPriceCommand
+                import uuid
+                from datetime import datetime
+                
+                # Dynamic import of Money to avoid early circular dependencies or missing core
+                try:
+                    from fba_bench_core.money import Money
+                except ImportError:
+                    # Fallback for minimal environments
+                    from fba_bench.money import Money # type: ignore
+
+                asin = params.get("asin") or params.get("product_id")
+                price_val = params.get("new_price") or params.get("price")
+                
+                if price_val is not None:
+                    if isinstance(price_val, (int, float, str)):
+                        money_price = Money.from_dollars(price_val)
+                    else:
+                        money_price = price_val # Assume already a Money-compatible object
+                else:
+                    money_price = Money(0)
+                
+                command = SetPriceCommand(
+                    event_id=str(uuid.uuid4()),
+                    timestamp=datetime.now(),
+                    agent_id=agent_id,
+                    asin=str(asin) if asin else "",
+                    new_price=money_price
+                )
+                await self.orchestrator.event_bus.publish(command)
+        except Exception as e:
+            # Log but don't crash the adapter
+            print(f"[Error] Failed to inject agent action {action}: {e}")
 
     async def _handle_core_event(self, event):
         """Log core events to the Enterprise Audit Trail."""

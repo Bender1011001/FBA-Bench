@@ -74,20 +74,20 @@ class ProductState:
         try:
             if not isinstance(self.price, Money):
                 self.price = _money_from_serializable(self.price)
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             # Fallback to zero if coercion fails
             self.price = Money.zero()
         # Map 'inventory' alias to 'inventory_quantity'
         if self.inventory is not None:
             try:
                 self.inventory_quantity = int(self.inventory)
-            except Exception:
+            except (TypeError, ValueError):
                 pass
         # Map 'quality' into metadata
         if self.quality is not None:
             try:
                 self.metadata["quality"] = float(self.quality)
-            except Exception:
+            except (TypeError, ValueError):
                 pass
 
     def to_dict(self) -> Dict[str, Any]:

@@ -244,7 +244,7 @@ class CurriculumValidator:
                     ),
                     "avg_duration": float(tier_summary.loc[tier_idx, "avg_duration"]),
                 }
-        except Exception:
+        except (ValueError, TypeError, KeyError, AttributeError):
             # Fallback for empty or malformed DataFrames
             validation_report["tier_summaries"] = {}
 
@@ -343,7 +343,7 @@ class CurriculumValidator:
                     col_stats[str(stat_name)] = float(df_desc.loc[stat_name, col])
                 summary_dict[str(col)] = col_stats
             report["overall_performance_summary"] = summary_dict
-        except Exception:
+        except (ValueError, TypeError, KeyError, AttributeError):
             # Fallback simple summary
             report["overall_performance_summary"] = {
                 "status": "summary_generation_failed"
@@ -363,7 +363,7 @@ class CurriculumValidator:
                     )
             else:
                 report["success_rate_by_tier"] = {}
-        except Exception:
+        except (ValueError, TypeError, KeyError, AttributeError):
             # Fallback for tests with minimal data
             report["success_rate_by_tier"] = {"Tier_0": {"success_rate": 1.0}}
 

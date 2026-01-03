@@ -61,7 +61,7 @@ def _truncate_payload_for_log(
         # dict-like
         s = json.dumps(payload, ensure_ascii=False)
         return (s[:limit] + "...") if len(s) > limit else s
-    except Exception:
+    except (TypeError, ValueError, AttributeError):
         return "<unserializable payload>"
 
 
@@ -104,14 +104,14 @@ def coerce_loose_types(obj: Any) -> Any:
         try:
             if s.isdigit() or (s.startswith("-") and s[1:].isdigit()):
                 return int(s)
-        except Exception:
+        except (TypeError, ValueError):
             pass
         # float
         try:
             # Reject if it contains non-numeric except one dot / leading sign
             f = float(s)
             return f
-        except Exception:
+        except (TypeError, ValueError):
             return s
     return obj
 
@@ -357,7 +357,7 @@ def validate_output(
             truncated,
         )
         return False, None, errors
-    except Exception as e:
+    except (TypeError, AttributeError, RuntimeError, KeyError) as e:
         # Unexpected error
         err = {"loc": "root", "msg": str(e), "type": "internal_error"}
         logger.exception(
@@ -382,7 +382,7 @@ def validate_with_jsonschema(
             ValidationError as JSValidationError,  # type: ignore
             validate as js_validate,  # type: ignore
         )
-    except Exception:
+    except ImportError:
         # jsonschema isn't available; return a sentinel error letting caller decide
         return [
             {

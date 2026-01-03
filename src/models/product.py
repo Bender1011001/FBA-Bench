@@ -7,13 +7,13 @@ try:
     from fba_bench_core.money import (
         Money as CoreMoney,  # canonical subclass over fba_bench.money.Money
     )
-except Exception:  # pragma: no cover
+except ImportError:  # pragma: no cover
     CoreMoney = None  # type: ignore[misc]
 
 # Fallback legacy repo-local shim (tests force-load it via tests/conftest.py)
 try:
     from money import Money as LegacyMoney
-except Exception:  # pragma: no cover
+except ImportError:  # pragma: no cover
     LegacyMoney = None  # type: ignore[misc]
 
 
@@ -31,11 +31,11 @@ class _CompatMoney(_CompatBase):  # type: ignore[misc]
                 cents = getattr(self, "cents", None)
                 if isinstance(cents, int):
                     return float(cents) / 100.0 == float(other)
-        except Exception:
+        except (AttributeError, TypeError):
             pass
         try:
             return super().__eq__(other)  # type: ignore[misc]
-        except Exception:
+        except (AttributeError, TypeError):
             return object.__eq__(self, other)  # fallback
 
 
@@ -100,7 +100,7 @@ class Product:
         try:
             cents = getattr(value, "cents", None)
             return int(cents) if isinstance(cents, int) else None
-        except Exception:
+        except (AttributeError, TypeError):
             return None
 
     @staticmethod
@@ -108,7 +108,7 @@ class Product:
         try:
             cur = getattr(value, "currency", None)
             return str(cur) if cur else "USD"
-        except Exception:
+        except (AttributeError, TypeError):
             return "USD"
 
     @staticmethod
@@ -120,7 +120,7 @@ class Product:
                     return float(c) / 100.0
         try:
             return float(value)
-        except Exception:
+        except (ValueError, TypeError):
             return 0.0
 
     @staticmethod
@@ -132,7 +132,7 @@ class Product:
         if CoreMoney is not None:
             try:
                 return _CompatMoney(int(round(amount_dollars * 100)), currency)  # type: ignore[misc]
-            except Exception:
+            except (TypeError, AttributeError):
                 # Try parent factory, then wrap back to compat
                 try:
                     parent = CoreMoney.from_dollars(amount_dollars, currency)  # type: ignore[attr-defined]
@@ -141,15 +141,15 @@ class Product:
                     )
                     cur = Product._money_currency(parent)
                     return _CompatMoney(int(cents), cur)  # type: ignore[misc]
-                except Exception:
+                except (TypeError, AttributeError):
                     pass
         if LegacyMoney is not None:
             try:
                 return LegacyMoney(int(round(amount_dollars * 100)), currency)  # type: ignore[misc]
-            except Exception:
+            except (TypeError, AttributeError):
                 try:
                     return LegacyMoney.from_dollars(amount_dollars, currency)  # type: ignore[attr-defined]
-                except Exception:
+                except (TypeError, AttributeError):
                     pass
         return amount_dollars
 
@@ -169,7 +169,7 @@ class Product:
             if cents is not None:
                 try:
                     return _CompatMoney(int(cents), cur)  # type: ignore[misc]
-                except Exception:
+                except (TypeError, ValueError):
                     return value
         return value
 
@@ -192,7 +192,7 @@ class Product:
             try:
                 amt = float(value)
                 return Product._construct_money(amt, cur)
-            except Exception:
+            except (TypeError, ValueError):
                 return value
 
         # dict input
@@ -205,7 +205,7 @@ class Product:
             if amount is not None:
                 try:
                     return Product._construct_money(float(amount), cur)
-                except Exception:
+                except (TypeError, ValueError):
                     return value
 
         # numeric or string input
@@ -213,7 +213,7 @@ class Product:
             try:
                 amt = float(value)
                 return Product._construct_money(amt, "USD")
-            except Exception:
+            except (TypeError, ValueError):
                 return value
 
         # Unknown type: return as-is
@@ -284,7 +284,7 @@ class Product:
         for s in self.sales_history:
             try:
                 total += int(s.get("quantity", 0) or 0)
-            except Exception:
+            except (TypeError, ValueError, AttributeError):
                 pass
         return total
 
@@ -293,7 +293,7 @@ class Product:
         for s in self.sales_history:
             try:
                 total += float(s.get("revenue", 0.0) or 0.0)
-            except Exception:
+            except (TypeError, ValueError, AttributeError):
                 pass
         return round(total, 2)
 
@@ -304,7 +304,7 @@ class Product:
         def _qty(item: Dict[str, Any]) -> int:
             try:
                 return int(item.get("quantity", 0) or 0)
-            except Exception:
+            except (TypeError, ValueError, AttributeError):
                 return 0
 
         best = max(self.sales_history, key=_qty)
@@ -319,7 +319,7 @@ class Product:
         # Primary path: rely on Money arithmetic
         try:
             return self.price - self.cost
-        except Exception:
+        except (TypeError, AttributeError):
             pass
 
         # Fallback: build via cents if available
@@ -329,7 +329,7 @@ class Product:
             return self._construct_money(
                 (pc - cc) / 100.0, self._money_currency(self.price)
             )
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             # Final fallback: numeric delta coerced back to Money
             delta = self._as_float(self.price) - self._as_float(self.cost)
             return self._construct_money(delta, self._money_currency(self.price))

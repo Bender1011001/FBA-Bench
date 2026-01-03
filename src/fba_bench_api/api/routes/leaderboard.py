@@ -99,7 +99,7 @@ def _calculate_experiment_score(experiment: dict) -> float:
 
         # Add some variability
         import hashlib
-        name_hash = int(hashlib.md5(experiment["name"].encode()).hexdigest()[:8], 16)
+        name_hash = int(hashlib.md5(experiment["name"].encode(), usedforsecurity=False).hexdigest()[:8], 16)
         variance = (name_hash % 21) - 10
         score += variance
     elif experiment.get("status") == "running":

@@ -115,7 +115,7 @@ class EventSnapshot:
             df.to_parquet(parquet_path, index=False)
             print(f"Event snapshot dumped to: {parquet_path}")
             return parquet_path
-        except Exception as e:
+        except (ImportError, RuntimeError, ValueError, OSError) as e:
             # Fallback to JSON if parquet engine is not available
             json_path = ARTIFACTS_DIR / f"{file_base}.json"
             try:
@@ -127,7 +127,7 @@ class EventSnapshot:
                     f"Parquet unavailable ({e}); wrote JSON snapshot to: {json_path}"
                 )
                 return json_path
-            except Exception:
+            except (OSError, IOError, TypeError):
                 # Re-raise the original exception if JSON fallback also fails
                 raise
 
@@ -141,7 +141,7 @@ class EventSnapshot:
             try:
                 df = pd.read_parquet(file_path)
                 return df.to_dict(orient="records")
-            except Exception:
+            except (ImportError, RuntimeError, ValueError, OSError):
                 # Fall through to JSON fallback
                 pass
 
@@ -351,7 +351,7 @@ class EventSnapshot:
 
             return enhanced_path
 
-        except Exception as e:
+        except (OSError, IOError, TypeError) as e:
             logger.error(f"Failed to save enhanced snapshot: {e}")
             # Fall back to standard dump
             return cls.dump_events(events, git_sha, run_id)
@@ -387,7 +387,7 @@ class EventSnapshot:
                     data["llm_interactions"] = [
                         _asdict(li) for li in cls._llm_interactions
                     ]
-            except Exception:
+            except (ImportError, AttributeError, TypeError):
                 pass
 
             # Also ensure reproducibility metadata is present for tests when fallback JSON was used
@@ -397,13 +397,13 @@ class EventSnapshot:
                     and cls._snapshot_metadata is not None
                 ):
                     data["reproducibility_metadata"] = asdict(cls._snapshot_metadata)
-            except Exception:
+            except (ImportError, AttributeError, TypeError):
                 pass
 
             logger.info(f"Loaded enhanced snapshot: {file_path}")
             return data
 
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, ValueError) as e:
             logger.error(f"Failed to load enhanced snapshot: {e}")
             raise
 
@@ -492,7 +492,7 @@ class EventSnapshot:
 
             return validation_result
 
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, ValueError) as e:
             logger.error(f"Snapshot validation failed: {e}")
             return {
                 "is_reproducible": False,

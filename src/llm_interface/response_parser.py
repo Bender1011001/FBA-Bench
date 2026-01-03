@@ -9,7 +9,6 @@ from fba_events.llm import (
 from llm_interface.schema_validator import LLM_RESPONSE_SCHEMA, validate_llm_response
 
 logger = logging.getLogger(__name__)
-from unittest.mock import AsyncMock, MagicMock
 
 
 class LLMResponseParser:
@@ -25,18 +24,18 @@ class LLMResponseParser:
 
     def __init__(self, event_bus: EventBus | Any):
         """
-        Test-friendly init:
-        - Accepts either an EventBus-like object or a TrustMetrics-like object as first parameter.
-        - When a TrustMetrics-like object is provided, store it on self.trust_metrics and
-          create a lightweight dummy event_bus with a no-op async publish() to satisfy callers.
-        - Wrap parse_and_validate with an AsyncMock proxy so tests can assert_called_once().
+        Initialize the LLMResponseParser.
+        
+        Args:
+            event_bus: An EventBus instance for publishing error events.
+                       Can also accept a TrustMetrics-like object for backwards compatibility.
         """
-        # Fix #89: Improved type detection using duck typing
+        # Use duck typing to detect EventBus vs TrustMetrics
         if hasattr(event_bus, "publish") and callable(event_bus.publish):
             self.event_bus = event_bus
-            self.trust_metrics = getattr(self, "trust_metrics", None)
+            self.trust_metrics = None
         else:
-            # Assume trust_metrics-like object passed
+            # Backwards compatibility: trust_metrics-like object passed
             self.trust_metrics = event_bus
 
             # Provide a minimal event_bus with async publish for compatibility
@@ -47,27 +46,6 @@ class LLMResponseParser:
             self.event_bus = _DummyBus()
 
         self.LLM_RESPONSE_SCHEMA = LLM_RESPONSE_SCHEMA  # Expose for reference
-
-        # Ensure trust_metrics.apply_penalty is a mock so tests can assert calls
-        try:
-            tm = getattr(self, "trust_metrics", None)
-            if (
-                tm is not None
-                and hasattr(tm, "apply_penalty")
-                and not hasattr(tm.apply_penalty, "assert_called_once")
-            ):
-                tm.apply_penalty = MagicMock(wraps=tm.apply_penalty)
-        except Exception:
-            pass
-
-        # Fix #88: Removed broad try/except block that swallowed wrapping errors
-        if hasattr(self, "parse_and_validate") and not hasattr(self.parse_and_validate, "assert_called_once"):
-            _orig = self.parse_and_validate
-
-            async def _delegate(raw_llm_response: str, agent_id: str):
-                return await _orig(raw_llm_response, agent_id)
-
-            self.parse_and_validate = AsyncMock(side_effect=_delegate)
 
     async def parse_and_validate(
         self, raw_llm_response: str, agent_id: str
@@ -109,7 +87,7 @@ class LLMResponseParser:
             logger.error(f"[{agent_id}] JSON Parsing Error: {error_details['message']}")
             await self._publish_llm_error(agent_id, error_details)
             return None, error_details
-        except Exception as e:
+        except (TypeError, AttributeError, ValueError) as e:
             # Redact raw_llm_response content for security
             redacted_response = (
                 raw_llm_response[:200] + "..."
@@ -153,12 +131,12 @@ class LLMResponseParser:
         if not is_valid:
             try:
                 msg = str(validation_error_info.get("message", ""))
-            except Exception:
+            except (AttributeError, TypeError):
                 msg = ""
             path_str = ""
             try:
                 path_str = str(validation_error_info.get("path", "") or "")
-            except Exception:
+            except (AttributeError, TypeError):
                 path_str = ""
             if "should be non-empty" in msg and (
                 "actions" in msg or "actions" in path_str
@@ -204,7 +182,7 @@ class LLMResponseParser:
                     apply(
                         agent_id, penalty
                     )  # intentionally sync; tests often patch to assert calls
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             # Do not allow trust penalty path to interfere with event publishing
             logger.debug(
                 "LLMResponseParser: trust_metrics penalty application skipped due to error"
@@ -227,7 +205,7 @@ class LLMResponseParser:
             publish = getattr(self.event_bus, "publish", None)
             if callable(publish):
                 await publish(event)  # type: ignore[misc]
-        except Exception:
+        except (AttributeError, TypeError, RuntimeError, asyncio.CancelledError):
             # Logging only; do not break caller flows when event bus is a mock
             logger.debug("LLMResponseParser: event_bus publish skipped due to error")
         logger.info(f"[{agent_id}] Published LLMResponseErrorEvent: {event.message}")

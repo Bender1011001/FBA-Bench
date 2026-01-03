@@ -118,7 +118,7 @@ class TierManager:
         if not isinstance(tier_level, TierLevel):
             try:
                 tier_level = TierLevel(str(tier_level))
-            except Exception:
+            except ValueError:
                 tier_level = progression.current_tier
 
         progression.record_attempt(tier_level)

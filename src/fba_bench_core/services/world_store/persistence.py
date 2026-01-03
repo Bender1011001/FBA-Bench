@@ -116,7 +116,7 @@ class JsonFileStorageBackend:
             )
             # Attempt to find the latest snapshot ID on startup
             await self._find_latest_snapshot_id()
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Failed to initialize JsonFileStorageBackend directory: {e}",
                 exc_info=True,
@@ -147,7 +147,7 @@ class JsonFileStorageBackend:
                 )
             else:
                 logger.info("JsonFileStorageBackend found no existing snapshots.")
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Error finding latest snapshot ID in JsonFileStorageBackend: {e}",
                 exc_info=True,
@@ -170,7 +170,7 @@ class JsonFileStorageBackend:
             self._latest_snapshot_id = snapshot_id
             logger.info(f"Saved JSON state snapshot: {snapshot_id} to {snapshot_path}")
             return snapshot_id
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Failed to save JSON state snapshot {snapshot_id}: {e}", exc_info=True
             )
@@ -199,7 +199,7 @@ class JsonFileStorageBackend:
                 f"Loaded JSON state snapshot by ID: {snapshot_id} from {snapshot_path}"
             )
             return snapshot_data.get("state")
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Failed to load JSON state snapshot {snapshot_id}: {e}", exc_info=True
             )

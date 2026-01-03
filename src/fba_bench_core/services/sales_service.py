@@ -82,7 +82,7 @@ class SalesService:
                 # tests use 'seasonal_factor'
                 if "seasonal_factor" in md:
                     seasonal = float(md["seasonal_factor"])
-            except Exception:
+            except (TypeError, ValueError):
                 seasonal = 1.0
             self.current_market_conditions = MarketConditions(
                 seasonal_adjustment=seasonal
@@ -97,7 +97,7 @@ class SalesService:
                     # very basic demand model using seasonal adjustment
                     base = float(getattr(p, "base_demand", 0.0) or 0.0)
                     units_sold = max(0, int(base * seasonal) // 100)
-                except Exception:
+                except (TypeError, AttributeError, ValueError):
                     units_sold = 0
 
                 if units_sold > 0:
@@ -115,7 +115,7 @@ class SalesService:
                             ) = await self.fee_service.calculate_fees(
                                 p, units_sold
                             )  # type: ignore
-                        except Exception:
+                        except (TypeError, AttributeError, RuntimeError):
                             total_fees, fee_breakdown = Money.zero(), {}
                     total_profit = (
                         total_revenue - total_fees - getattr(p, "cost", Money.zero())
@@ -137,7 +137,7 @@ class SalesService:
                         fee_breakdown=fee_breakdown,
                     )
                     await self.event_bus.publish(sale)  # type: ignore[arg-type]
-        except Exception as e:
+        except (TypeError, AttributeError, RuntimeError) as e:
             logger.error(
                 "Error handling TickEvent in SalesService: %s", e, exc_info=True
             )
@@ -155,7 +155,7 @@ class SalesService:
                 "average_price": avg_price,
                 "market_updated": True,
             }
-        except Exception as e:
+        except (TypeError, AttributeError, RuntimeError) as e:
             logger.error("Error handling CompetitorPricesUpdated: %s", e, exc_info=True)
 
     # ------------- Helpers used by tests -------------
@@ -195,7 +195,7 @@ class SalesService:
                 continue
             try:
                 r = float(our_price.amount / comp_price.amount)
-            except Exception:
+            except (TypeError, AttributeError, ZeroDivisionError):
                 continue
             ratios.append(r)
             total += 1

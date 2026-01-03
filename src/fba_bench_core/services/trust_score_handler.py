@@ -73,7 +73,7 @@ class TrustScoreEventHandler:
                         revenue = float(sale_result.unit_price) * int(
                             sale_result.quantity
                         )
-                    except Exception:
+                    except (TypeError, ValueError):
                         revenue = 0.0
                 else:
                     revenue = 0.0
@@ -99,5 +99,5 @@ class TrustScoreEventHandler:
                 sale_revenue,
                 score,
             )
-        except Exception:
+        except (TypeError, AttributeError, ValueError, RuntimeError):
             logger.exception("Error handling sale.processed event")

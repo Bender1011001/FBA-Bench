@@ -105,7 +105,7 @@ class DisputeService:
                 )
                 if asyncio.iscoroutine(res2):
                     asyncio.get_event_loop().create_task(res2)
-            except Exception:
+            except (TypeError, AttributeError, RuntimeError):
                 # Defer registration for an explicit call later
                 self._pending_subscriptions.append(
                     (CustomerDisputeEvent, self._on_customer_dispute)
@@ -128,7 +128,7 @@ class DisputeService:
             selector, handler = self._pending_subscriptions.pop(0)
             try:
                 await self.event_bus.subscribe(selector, handler)
-            except Exception:
+            except (TypeError, AttributeError, RuntimeError):
                 # If subscription fails, re-queue and exit to avoid tight loop
                 self._pending_subscriptions.insert(0, (selector, handler))
                 break
@@ -178,7 +178,7 @@ class DisputeService:
             )
             # Publish asynchronously; ignore failures to keep bus resilient
             await self.event_bus.publish(resolution_event)
-        except Exception:
+        except (TypeError, AttributeError, ValueError, RuntimeError):
             # Defensive: never let handler exceptions crash the bus
             return
 
@@ -211,7 +211,7 @@ class DisputeService:
                 resolution_amount=settlement_amount,
             )
             await self.event_bus.publish(resolution_event)
-        except Exception:
+        except (TypeError, AttributeError, ValueError, RuntimeError):
             # Defensive: never let handler exceptions crash the bus
             return
 

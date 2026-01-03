@@ -154,7 +154,7 @@ class JsonFileStorageBackend:
             )
             # Attempt to find the latest snapshot ID on startup
             await self._find_latest_snapshot_id()
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Failed to initialize JsonFileStorageBackend directory: {e}",
                 exc_info=True,
@@ -185,7 +185,7 @@ class JsonFileStorageBackend:
                 )
             else:
                 logger.info("JsonFileStorageBackend found no existing snapshots.")
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Error finding latest snapshot ID in JsonFileStorageBackend: {e}",
                 exc_info=True,
@@ -208,7 +208,7 @@ class JsonFileStorageBackend:
             self._latest_snapshot_id = snapshot_id
             logger.info(f"Saved JSON state snapshot: {snapshot_id} to {snapshot_path}")
             return snapshot_id
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Failed to save JSON state snapshot {snapshot_id}: {e}", exc_info=True
             )
@@ -237,7 +237,7 @@ class JsonFileStorageBackend:
                 f"Loaded JSON state snapshot by ID: {snapshot_id} from {snapshot_path}"
             )
             return snapshot_data.get("state")
-        except Exception as e:
+        except (TypeError, AttributeError, OSError) as e:
             logger.error(
                 f"Failed to load JSON state snapshot {snapshot_id}: {e}", exc_info=True
             )
@@ -282,20 +282,20 @@ class ProductState:
         try:
             if not isinstance(self.price, Money):
                 self.price = _money_from_serializable(self.price)
-        except Exception:
+        except (TypeError, ValueError):
             # Fallback to zero if coercion fails
             self.price = Money.zero()
         # Map 'inventory' alias to 'inventory_quantity'
         if self.inventory is not None:
             try:
                 self.inventory_quantity = int(self.inventory)
-            except Exception:
+            except (TypeError, ValueError):
                 pass
         # Map 'quality' into metadata
         if self.quality is not None:
             try:
                 self.metadata["quality"] = float(self.quality)
-            except Exception:
+            except (TypeError, ValueError):
                 pass
 
     def to_dict(self) -> Dict[str, Any]:
@@ -514,7 +514,7 @@ class WorldStore:
             # Record in history
             self._command_history.append(event)
 
-        except Exception as e:
+        except (TypeError, AttributeError, RuntimeError) as e:
             logger.error(
                 f"Error processing SetPriceCommand {event.event_id}: {e}", exc_info=True
             )
@@ -558,7 +558,7 @@ class WorldStore:
                     f"Initialized product state with inventory: asin={asin}, quantity={new_quantity}, cost={cost_basis}"
                 )
 
-        except Exception as e:
+        except (TypeError, AttributeError, RuntimeError) as e:
             logger.error(
                 f"Error handling InventoryUpdate event {event.event_id}: {e}",
                 exc_info=True,
@@ -736,7 +736,7 @@ class WorldStore:
         """
         try:
             asin = str(getattr(state, "asin", "") or product_id)
-        except Exception:
+        except (TypeError, AttributeError):
             asin = str(product_id)
         # Ensure last_updated is present
         if not getattr(state, "last_updated", None):
@@ -744,7 +744,7 @@ class WorldStore:
                 from datetime import datetime as _dt
 
                 state.last_updated = _dt.utcnow()
-            except Exception:
+            except (TypeError, AttributeError):
                 pass
         self._product_state[asin] = state
 
@@ -760,7 +760,7 @@ class WorldStore:
         """
         try:
             cmds = list(commands or [])
-        except Exception:
+        except (TypeError, AttributeError):
             cmds = []
         if not cmds:
             return SimpleArbitrationResult(winning_command={}, reason="empty")
@@ -768,35 +768,13 @@ class WorldStore:
         def _key(c: Dict[str, Any]) -> float:
             try:
                 return float(c.get("timestamp", 0.0))
-            except Exception:
+            except (TypeError, AttributeError, ValueError):
                 return 0.0
 
         winner = max(cmds, key=_key)
         return SimpleArbitrationResult(winning_command=winner, reason="timestamp")
 
     # --- Direct state mutation helpers for tests/fixtures ---
-
-    def set_product_state(self, product_id: str, state: ProductState) -> None:
-        """
-        Back-compat helper used by tests to inject a ProductState directly.
-
-        Args:
-            product_id: Alias for ASIN used by tests.
-            state: ProductState instance to set as canonical.
-        """
-        try:
-            asin = str(getattr(state, "asin", "") or product_id)
-        except Exception:
-            asin = str(product_id)
-        # Ensure last_updated is present
-        if not getattr(state, "last_updated", None):
-            try:
-                from datetime import datetime as _dt
-
-                state.last_updated = _dt.utcnow()
-            except Exception:
-                pass
-        self._product_state[asin] = state
 
     # --- Supplier catalog helpers ---
 
@@ -812,7 +790,7 @@ class WorldStore:
                 if not sid:
                     continue
                 by_id[sid] = dict(entry)
-        except Exception:
+        except (TypeError, AttributeError):
             by_id = {}
 
         self._supplier_catalog = by_id
@@ -834,7 +812,7 @@ class WorldStore:
             if lt is None:
                 return None
             return max(0, int(lt))
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             return None
 
     # --- Marketing visibility (effect) helpers ---
@@ -849,7 +827,7 @@ class WorldStore:
             return 1.0
         try:
             vis = float(state.metadata.get("marketing_visibility", 1.0))
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             vis = 1.0
         # Bound visibility to a reasonable range [0.1, 5.0] to avoid instabilities
         return max(0.1, min(5.0, vis))
@@ -890,7 +868,7 @@ class WorldStore:
             return 0.7
         try:
             rep = float(state.metadata.get("reputation_score", 0.7))
-        except Exception:
+        except (TypeError, AttributeError, ValueError):
             rep = 0.7
         return max(0.0, min(1.0, rep))
 

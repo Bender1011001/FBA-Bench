@@ -96,7 +96,7 @@ class PluginFramework:
         for name in list(self._active_plugins):
             try:
                 await self.deactivate_plugin(name)
-            except Exception:  # pragma: no cover - defensive
+            except (PluginError, RuntimeError, AttributeError):
                 pass
 
     # ---------- Unit test API ----------
@@ -131,7 +131,7 @@ class PluginFramework:
         if plugin_id in self._loaded_plugins:
             try:
                 self.unload_plugin(plugin_id)
-            except Exception:  # pragma: no cover
+            except (PluginError, RuntimeError, AttributeError):
                 pass
 
     def _load_plugin_module(self, plugin_id: str) -> Any:
@@ -181,7 +181,7 @@ class PluginFramework:
         if instance and hasattr(instance, "cleanup") and callable(instance.cleanup):
             try:
                 instance.cleanup()
-            except Exception:  # pragma: no cover - test uses Mock
+            except (AttributeError, RuntimeError):
                 logger.warning("Cleanup raised but was ignored", exc_info=True)
 
     def get_plugin(self, plugin_id: str) -> Optional[Dict[str, Any]]:
@@ -265,7 +265,7 @@ class PluginFramework:
                 module = inspect.getmodule(plugin_obj.__class__)
                 if module and not await self._validate_plugin_module_security(module):
                     return False
-            except Exception:
+            except (OSError, SyntaxError, AttributeError):
                 # Conservative default: allow if validation can't run
                 pass
 

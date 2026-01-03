@@ -1,0 +1,172 @@
+:root {
+    --bg-dark: #0a0b10;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --primary: #9d50bb;
+    --secondary: #6e48aa;
+    --accent: #00d2ff;
+    --gold: #fbc02d;
+    --silver: #bdc3c7;
+    --bronze: #cd7f32;
+    --text-main: #e0e0e0;
+    --text-muted: #a0a0a0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background: radial-gradient(circle at top right, rgba(157, 80, 187, 0.15), transparent),
+        radial-gradient(circle at bottom left, rgba(0, 210, 255, 0.15), transparent);
+}
+
+.hero h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    max-width: 600px;
+    color: var(--text-muted);
+}
+
+.leaderboard-preview {
+    max-width: 1000px;
+    width: 90%;
+    margin: -100px auto 4rem;
+    padding: 2rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+th {
+    text-align: left;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+}
+
+td {
+    padding: 1.25rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+tr td:first-child {
+    border-radius: 12px 0 0 12px;
+}
+
+tr td:last-child {
+    border-radius: 0 12px 12px 0;
+}
+
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-weight: 700;
+}
+
+.rank-1 {
+    background: var(--gold);
+    color: #000;
+    box-shadow: 0 0 20px rgba(251, 192, 45, 0.3);
+}
+
+.rank-2 {
+    background: var(--silver);
+    color: #000;
+}
+
+.rank-3 {
+    background: var(--bronze);
+    color: #000;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-flagship {
+    background: rgba(0, 210, 255, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0, 210, 255, 0.3);
+}
+
+.badge-free {
+    background: rgba(157, 80, 187, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(157, 80, 187, 0.3);
+}
+
+.score-bar-bg {
+    width: 100px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.score-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.cta-button {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-block;
+    margin-top: 2rem;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(110, 72, 170, 0.4);
+}

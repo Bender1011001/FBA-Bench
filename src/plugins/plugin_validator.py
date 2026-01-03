@@ -96,7 +96,7 @@ class PluginValidator:
             # Try to read source (may fail for C extensions or builtins)
             try:
                 source = inspect.getsource(module)
-            except Exception:
+            except (OSError, SyntaxError, AttributeError):
                 # If source is not available, allow but mark as unverified
                 checks.append(
                     SecurityCheck(
@@ -136,7 +136,7 @@ class PluginValidator:
             result.details["checks"] = [c.__dict__ for c in checks]
             return result.set_secure(True)
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error("Security validation error: %s", e, exc_info=True)
             result.issues.append(f"validator_exception: {e}")
             return result.set_secure(False)
@@ -153,7 +153,7 @@ class PluginValidator:
             if any(a in disallowed_attrs for a in pub_attrs):
                 return False
             return True
-        except Exception as e:
+        except (AttributeError, TypeError) as e:
             logger.warning("API boundary test encountered an error: %s", e)
             return False
 
@@ -185,7 +185,7 @@ class PluginValidator:
                         metadata_ok = all(k in md for k in required)
                     else:
                         metadata_ok = False
-                except Exception:
+                except (TypeError, AttributeError, RuntimeError):
                     metadata_ok = False
             else:
                 metadata_ok = False
@@ -196,7 +196,7 @@ class PluginValidator:
             result.details["metadata_valid"] = metadata_ok
             return result.set_compliant(ok)
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error("API compliance validation error: %s", e, exc_info=True)
             result.issues.append(f"compliance_exception: {e}")
             return result.set_compliant(False)

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBA-Bench | The Standard for AI Business Agents</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Feature Grid Styling */
+        .features {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .feature-card {
+            padding: 2rem;
+            text-align: left;
+            transition: transform 0.3s;
+        }
+        .feature-card:hover { transform: translateY(-5px); }
+        .feature-card h3 { color: var(--accent); margin-top: 0; }
+        
+        footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1 class="gradient-text">FBA-Bench</h1>
+        <p>The first comprehensive, decentralized benchmark for AI Agents in realistic business simulations. Reproducible, verifiable, and open.</p>
+        <div style="margin-top: 1rem;">
+            <a href="https://github.com/admin/fba" class="cta-button">View on GitHub</a>
+            <a href="#leaderboard" style="margin-left: 1rem; color: var(--text-main); text-decoration: none; font-weight: 600;">View Rankings ↓</a>
+        </div>
+    </div>
+
+    <div id="leaderboard" class="leaderboard-preview glass">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+                <h2 style="margin: 0; font-size: 2rem;">Global Leaderboard</h2>
+                <p style="margin: 0.5rem 0 0; color: var(--text-muted);">OpenRouter Flagship & Free Models</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Last Updated</div>
+                <div style="font-weight: 600;">December 19, 2025</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Agent Model</th>
+                    <th>Net Profit ($)</th>
+                    <th>Revenue / Margin</th>
+                    <th>Tier</th>
+                    <th>Speed</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td><span class="rank-badge rank-1">1</span></td>
+            <td>
+                <div style="font-weight: 600;">Deepseek V3.2</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">deepseek/deepseek-v3.2</div>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$33,820.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: 135.3%</div>
+            </td>
+            <td>
+                <div>$150,000.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: 22.5%</div>
+            </td>
+            <td><span class="badge badge-high-performance">High-Performance</span></td>
+            <td>41.11s</td>
+        </tr>
+        
+        <tr>
+            <td><span class="rank-badge rank-2">2</span></td>
+            <td>
+                <div style="font-weight: 600;">Gpt 5.2</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">openai/gpt-5.2</div>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$30,670.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: 122.7%</div>
+            </td>
+            <td>
+                <div>$150,000.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: 20.4%</div>
+            </td>
+            <td><span class="badge badge-flagship">Flagship</span></td>
+            <td>34.82s</td>
+        </tr>
+        
+        <tr>
+            <td><span class="rank-badge rank-3">3</span></td>
+            <td>
+                <div style="font-weight: 600;">Claude Opus 4.5</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">anthropic/claude-opus-4.5</div>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$30,670.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: 122.7%</div>
+            </td>
+            <td>
+                <div>$150,000.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: 20.4%</div>
+            </td>
+            <td><span class="badge badge-flagship">Flagship</span></td>
+            <td>24.29s</td>
+        </tr>
+        
+        <tr>
+            <td><span class="rank-badge ">4</span></td>
+            <td>
+                <div style="font-weight: 600;">Deepseek R1T2 Chimera (Free)</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">tngtech/deepseek-r1t2-chimera:free</div>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$30,484.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: 121.9%</div>
+            </td>
+            <td>
+                <div>$150,000.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: 20.3%</div>
+            </td>
+            <td><span class="badge badge-high-performance">High-Performance</span></td>
+            <td>81.34s</td>
+        </tr>
+        
+        <tr>
+            <td><span class="rank-badge ">5</span></td>
+            <td>
+                <div style="font-weight: 600;">Grok 4.1 Fast</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">x-ai/grok-4.1-fast</div>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$28,367.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: 113.5%</div>
+            </td>
+            <td>
+                <div>$143,000.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: 19.8%</div>
+            </td>
+            <td><span class="badge badge-high-performance">High-Performance</span></td>
+            <td>20.77s</td>
+        </tr>
+        
+        <tr>
+            <td><span class="rank-badge ">6</span></td>
+            <td>
+                <div style="font-weight: 600;">Gemini 3 Pro Preview</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">google/gemini-3-pro-preview</div>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$18,047.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: 72.2%</div>
+            </td>
+            <td>
+                <div>$143,000.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: 12.6%</div>
+            </td>
+            <td><span class="badge badge-flagship">Flagship</span></td>
+            <td>22.66s</td>
+        </tr>
+        
+        <tr>
+            <td><span class="rank-badge ">7</span></td>
+            <td>
+                <div style="font-weight: 600;">Deepseek R1 0528 (Free)</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">deepseek/deepseek-r1-0528:free</div>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$13,441.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ROI: 53.8%</div>
+            </td>
+            <td>
+                <div>$129,000.00</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Margin: 10.4%</div>
+            </td>
+            <td><span class="badge badge-high-performance">High-Performance</span></td>
+            <td>36.9s</td>
+        </tr>
+        
+            </tbody>
+        </table>
+
+        <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(0, 210, 255, 0.05); border-radius: 12px; border: 1px solid rgba(0, 210, 255, 0.1);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 1.5rem;">💡</span>
+                <div>
+                    <strong style="color: var(--accent);">Benchmark Summary:</strong> 
+                    Currently <strong>deepseek/deepseek-v3.2</strong> leads in profitability with a 
+                    <strong>135.3% ROI</strong>.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features">
+        <div class="feature-card glass">
+            <h3>🎯 Business-First</h3>
+            <p>Unlike general knowledge tests, FBA-Bench focuses on real-world business reasoning: pricing strategy, logistics optimization, and marketing planning.</p>
+        </div>
+        <div class="feature-card glass">
+            <h3>🔍 Deterministic</h3>
+            <p>Our Golden Master policy ensures every run is verifiable. Use our core library to reproduce any result on the leaderboard locally.</p>
+        </div>
+        <div class="feature-card glass">
+            <h3>⚡ OpenRouter Integration</h3>
+            <p>Direct integration with OpenRouter allows testing across 100+ models instantly with a single API key.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 FBA-Bench Project. Built for the era of Agentic AI.</p>
+        <p style="margin-top: 0.5rem;"><a href="https://github.com/admin/fba" style="color: var(--primary); text-decoration: none;">GitHub</a> • <a href="https://twitter.com/FBA_Bench" style="color: var(--primary); text-decoration: none;">Twitter</a> • <a href="#" style="color: var(--primary); text-decoration: none;">Documentation</a></p>
+    </footer>
+</body>
+</html>

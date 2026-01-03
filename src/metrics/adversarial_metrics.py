@@ -1,5 +1,6 @@
 # metrics/adversarial_metrics.py
 import logging
+import statistics
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta

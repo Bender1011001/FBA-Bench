@@ -94,7 +94,7 @@ class TrustMetrics:
                     buyer_feedback_scores=self.buyer_feedback_scores,
                     total_days=self.total_days,
                 )
-            except Exception as e:
+            except (TypeError, AttributeError, RuntimeError) as e:
                 logger.error(f"Error calculating holistic trust score: {e}")
                 holistic_trust_score = 0.0  # Fallback
         else:

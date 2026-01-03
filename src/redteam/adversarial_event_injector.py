@@ -192,7 +192,7 @@ class AdversarialEventInjector:
         if evt is not None:
             try:
                 diff = int(getattr(evt, "difficulty_level", diff))
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 pass
 
         # Build AdversarialResponse; financial_damage may be Money-like and is validated in dataclass

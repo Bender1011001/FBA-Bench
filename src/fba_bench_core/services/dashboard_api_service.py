@@ -503,7 +503,7 @@ class DashboardAPIService:
                         return None
                     try:
                         return float(x)
-                    except Exception:
+                    except (TypeError, ValueError):
                         return None
 
                 products.append(
@@ -711,7 +711,7 @@ class FeeMetricsAggregatorService:
                     # Convert Decimal to float for JSON number
                     try:
                         return float(x)
-                    except Exception:
+                    except (TypeError, ValueError):
                         return None
 
                 products.append(

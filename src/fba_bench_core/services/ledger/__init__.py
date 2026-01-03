@@ -8,7 +8,7 @@ from money import Money
 
 from fba_events.bus import EventBus
 
-from .core import LedgerCore
+from .core import AccountingError, LedgerCore
 from .events import EventsHandler
 from .models import (
     Account,
@@ -158,3 +158,23 @@ class DoubleEntryLedgerService:
     def get_cash_balance(self) -> Money:
         """Return current cash account balance."""
         return self.core.get_cash_balance()
+
+    def verify_integrity(self, raise_on_failure: bool = True) -> bool:
+        """Verify the fundamental accounting equation: Assets = Liabilities + Equity.
+        
+        This is the 'Panic Button' - if violated, the simulation should halt.
+        
+        Args:
+            raise_on_failure: If True, raises AccountingError on violation.
+        
+        Returns:
+            True if the accounting equation holds.
+            
+        Raises:
+            AccountingError: If raise_on_failure=True and equation is violated.
+        """
+        return self.core.verify_integrity(raise_on_failure=raise_on_failure)
+
+    def get_accounting_equation_summary(self) -> Dict[str, Any]:
+        """Return a summary of the accounting equation components for audit."""
+        return self.core.get_accounting_equation_summary()

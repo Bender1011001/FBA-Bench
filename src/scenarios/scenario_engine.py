@@ -79,7 +79,7 @@ class ScenarioEngine:
                         raise ValueError(
                             f"Scenario '{scenario_file_path}' failed consistency validation."
                         )
-            except Exception as ve:
+            except (ValueError, TypeError, NameError, AttributeError) as ve:
                 logging.warning(f"Skipping scenario validation due to: {ve}")
             logging.info(
                 f"Scenario '{self.current_scenario.config_data.get('scenario_name', 'Unnamed')}' loaded successfully."
@@ -110,7 +110,7 @@ class ScenarioEngine:
         scenario_type = config.config_data.get("scenario_type") or "default"
         try:
             market_params = config.generate_market_conditions(scenario_type)
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             market_params = (config.config_data.get("market_conditions") or {}).copy()
             logging.warning(
                 f"Using raw market_conditions due to error in generate_market_conditions: {e}"
@@ -138,7 +138,7 @@ class ScenarioEngine:
                     try:
                         cat_products = config.define_product_catalog(cat, complexity)
                         product_catalog.extend(cat_products or [])
-                    except Exception as e:
+                    except (ValueError, TypeError, AttributeError) as e:
                         logging.warning(
                             f"Failed to build product catalog for category '{cat}': {e}"
                         )
@@ -147,7 +147,7 @@ class ScenarioEngine:
                 product_catalog = config.define_product_catalog(
                     raw_categories, complexity
                 )
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logging.warning(
                 f"Falling back to YAML-defined product_catalog due to error in define_product_catalog: {e}"
             )
@@ -166,7 +166,7 @@ class ScenarioEngine:
                     logging.info(
                         f"Loaded {len(supplier_catalog)} supplier entries into WorldStore."
                     )
-        except Exception as e:
+        except (AttributeError, ValueError, TypeError) as e:
             logging.warning(f"Skipping supplier catalog load: {e}")
 
         # Configure agent constraints (apply to relevant agents)
@@ -174,7 +174,7 @@ class ScenarioEngine:
             agent_constraints = config.configure_agent_constraints(
                 config.config_data.get("difficulty_tier")
             )
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             agent_constraints = config.config_data.get("agent_constraints", {}) or {}
             logging.warning(
                 f"Using raw agent_constraints due to error in configure_agent_constraints: {e}"
@@ -330,7 +330,7 @@ class ScenarioEngine:
                     min_target = objectives.get("profit_target", 0.0)
                 try:
                     min_target = float(min_target or 0.0)
-                except Exception:
+                except (ValueError, TypeError):
                     min_target = 0.0
 
                 # Actual profit from canonical 'profit' (fallback to legacy-prop key)
@@ -339,7 +339,7 @@ class ScenarioEngine:
                     actual_profit = final_state.get("profit_target", 0.0)
                 try:
                     actual_profit = float(actual_profit or 0.0)
-                except Exception:
+                except (ValueError, TypeError):
                     actual_profit = 0.0
 
                 cap_multiple = float(bonus_policy.get("cap_multiple", 2.0))
@@ -367,7 +367,7 @@ class ScenarioEngine:
                         bonus_score *= math.exp(
                             -lambda_param * max(0.0, volatility_or_drawdown)
                         )
-                    except Exception:
+                    except (ImportError, RuntimeError, AttributeError):
                         pass
 
                 pass_flag = (
@@ -377,7 +377,7 @@ class ScenarioEngine:
 
             analysis_results["bonus_score"] = bonus_score
             analysis_results["composite_score"] = composite_score
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logging.error(f"Bonus/composite score computation failed: {e}")
 
         logging.info(
@@ -445,10 +445,10 @@ class ScenarioEngine:
                     self.tracker.execute_remotely(
                         queue_name=queue, clone=False, exit_process=True
                     )
-            except Exception:
+            except (ImportError, RuntimeError, AttributeError, OSError):
                 # Never fail the simulation if remote scheduling misbehaves
                 pass
-        except Exception:
+        except (ImportError, RuntimeError, AttributeError, OSError):
             # Keep running even if tracker init fails
             self.tracker = self.tracker or None
 
@@ -481,7 +481,7 @@ class ScenarioEngine:
                 if success_criteria.get("profit_target_min") is not None
                 else (success_criteria.get("profit_target") or 0.0)
             )
-        except Exception:
+        except (ValueError, TypeError):
             _profit_min_target = 0.0
 
         # Deterministic profit shaping toggle (default True for golden runs)
@@ -549,7 +549,7 @@ class ScenarioEngine:
                     sim_metrics.get("customer_satisfaction", 0.0),
                     iteration=tick,
                 )
-            except Exception:
+            except (TypeError, ValueError, AttributeError, ImportError, RuntimeError):
                 pass
 
         # Final state calculation (simplified aggregation)
@@ -619,7 +619,7 @@ class ScenarioEngine:
                     )
                     metrics["total_profit"] = float(sim_profit)
             results["metrics"] = metrics
-        except Exception:
+        except (AttributeError, TypeError, ValueError, KeyError):
             # Do not fail the run if augmentation fails; logging already configured globally
             pass
 
@@ -637,12 +637,12 @@ class ScenarioEngine:
                 "simulation_duration": results.get("simulation_duration", total_ticks),
             }
             self.tracker.log_parameters(final_payload, name="final_summary")
-        except Exception:
+        except (ImportError, RuntimeError, AttributeError):
             pass
         finally:
             try:
                 self.tracker.close()
-            except Exception:
+            except (TypeError, AttributeError, RuntimeError):
                 pass
 
         return results

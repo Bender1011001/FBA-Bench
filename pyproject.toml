@@ -7,7 +7,7 @@ name = "fba-bench-enterprise"
 version = "0.1.0"
 description = "FBA-Bench Enterprise: benchmarking and simulation platform"
 authors = ["FBA-Bench Team"]
-license = "MIT"
+license = "Proprietary"
 readme = "README.md"
 repository = "https://github.com/Bender1011001/FBA-Bench-Enterprise"
 classifiers = [
@@ -138,7 +138,7 @@ target-version = "py39"
 # Keep core error checks while unblocking CI by relaxing noisy style checks.
 # We scope strictness mainly to src/ and ease constraints for tests/migrations.
 select = ["E", "F"]
-ignore = ["E501","E402","F811","F401","F841","F821","E722","E741","E721","E712"]
+ignore = ["E501","E402","E741","E721","E712"]
 
 # Directory-specific relaxations to avoid penalizing tests and migrations.
 [tool.ruff.lint.per-file-ignores]
@@ -175,7 +175,7 @@ explicit_package_bases = true
 # Do not follow imports into untyped/external modules
 follow_imports = "skip"
 # Curated typed surface for this phase
-files = ["src/llm_interface/llm_config.py"]
+files = ["src"]
 
 # Tests and scripts can be more lenient
 [[tool.mypy.overrides]]

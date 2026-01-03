@@ -123,7 +123,7 @@ class ToolboxAPIService:
                     "timestamp": event.timestamp or datetime.now(timezone.utc),
                 }
                 self._product_cache[asin] = record
-        except Exception:
+        except (TypeError, AttributeError, ValueError, KeyError):
             # Cache updates must never crash the bus
             pass
 
@@ -138,7 +138,7 @@ class ToolboxAPIService:
                 "price": event.new_price,
                 "timestamp": event.timestamp or datetime.now(timezone.utc),
             }
-        except Exception:
+        except (TypeError, AttributeError, KeyError):
             pass
 
     # --------------------

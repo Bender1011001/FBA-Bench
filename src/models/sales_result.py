@@ -11,7 +11,7 @@ def _parse_date(d: Any) -> Optional[datetime]:
         if isinstance(d, str):
             # Expect format "YYYY-MM-DD" per tests
             return datetime.strptime(d, "%Y-%m-%d")
-    except Exception:
+    except (ValueError, TypeError):
         return None
     return None
 
@@ -149,5 +149,5 @@ class SalesResult:
         delta = dd - sd
         try:
             return int(delta.days)
-        except Exception:
+        except (ValueError, TypeError, AttributeError):
             return None

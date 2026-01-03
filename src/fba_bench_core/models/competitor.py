@@ -61,7 +61,7 @@ class Competitor:
             # For compatibility with explicit mode consumers, also expose asin when possible.
             try:
                 self.asin: str = str(data.get("asin") or data.get("id") or "")
-            except Exception:
+            except (TypeError, ValueError):
                 self.asin = ""
             # Optional fields used by some flows; provide neutral defaults
             self.price = Money.zero()
@@ -70,7 +70,7 @@ class Competitor:
             self.strategy = data.get("strategy", "") or data.get("pricing_strategy", "")
             try:
                 self.trust_score = float(data.get("trust_score", 0.0))
-            except Exception:
+            except (TypeError, ValueError):
                 self.trust_score = 0.0
         else:
             # ---- Explicit keyword-based initialization (integration tests) ----
@@ -87,25 +87,25 @@ class Competitor:
             if not isinstance(price, Money):
                 try:
                     price = Money.from_dollars(price)
-                except Exception:
+                except (TypeError, ValueError):
                     price = Money.zero()
             self.price: Money = price
 
             # Core quantitative attributes
             try:
                 self.sales_velocity: float = float(kwargs.get("sales_velocity", 0.0))
-            except Exception:
+            except (TypeError, ValueError):
                 self.sales_velocity = 0.0
 
             try:
                 self.bsr: int = int(kwargs.get("bsr", 100000))
-            except Exception:
+            except (TypeError, ValueError):
                 self.bsr = 100000
 
             self.strategy: str = str(kwargs.get("strategy", "adaptive"))
             try:
                 self.trust_score: float = float(kwargs.get("trust_score", 0.8))
-            except Exception:
+            except (TypeError, ValueError):
                 self.trust_score = 0.8
 
             # Legacy-centric attributes preserved with benign defaults

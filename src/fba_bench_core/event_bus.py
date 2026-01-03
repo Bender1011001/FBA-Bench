@@ -43,11 +43,10 @@ class EventBus(_InMemoryEventBus):
         if backend is None:
             backend = kwargs.get("backend")
         super().__init__()
-        # Store compat backend if it's our _CompatBackend
         try:
             if isinstance(backend, _CompatBackend):
                 self._compat_backend = backend
-        except Exception:
+        except (TypeError, AttributeError):
             self._compat_backend = None
 
     async def subscribe(self, event_type, handler):  # type: ignore[override]
@@ -82,7 +81,7 @@ class EventBus(_InMemoryEventBus):
         """
         try:
             subs = sum(len(v) for v in getattr(self, "_subscribers", {}).values())
-        except Exception:
+        except (TypeError, AttributeError):
             subs = 0
         return {
             "started": bool(getattr(self, "_started", False)),
@@ -145,7 +144,7 @@ class _CompatBackend(_InMemoryEventBus):
                 # Support async handlers
                 if hasattr(res, "__await__"):
                     await res  # type: ignore[func-returns-value]
-            except Exception:
+            except (TypeError, AttributeError, RuntimeError):
                 # Swallow handler errors to avoid breaking publisher in tests
                 pass
         return True

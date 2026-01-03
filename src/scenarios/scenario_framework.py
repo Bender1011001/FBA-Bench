@@ -113,7 +113,7 @@ class ScenarioConfig:
             # Reuse the richer validator defined below on ScenarioFramework
             sf = ScenarioFramework(self.config_data)  # type: ignore[name-defined]
             return bool(sf.validate_scenario_consistency())
-        except Exception:
+        except (ValueError, TypeError, NameError):
             # Minimal fallback: ensure required keys exist
             required_keys = [
                 "scenario_name",

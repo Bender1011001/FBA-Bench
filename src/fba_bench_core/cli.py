@@ -97,7 +97,7 @@ def locate_repo_root(start: Optional[Path] = None) -> Optional[Path]:
     if start is None:
         try:
             candidates.append(Path(__file__).resolve().parent.parent)
-        except Exception:
+        except (OSError, AttributeError):
             pass
         candidates.append(Path.cwd())
     else:
@@ -213,7 +213,7 @@ def open_clearml_ui(local: bool) -> None:
     LOG.info("Opening ClearML Web UI: %s", url)
     try:
         webbrowser.open(url, new=2)  # new tab
-    except Exception as e:
+    except (webbrowser.Error, OSError) as e:
         LOG.warning("Failed to open web browser automatically: %s", e)
 
 
@@ -278,7 +278,7 @@ def check_docker_available() -> tuple[bool, Optional[str]]:
                 )
     except FileNotFoundError:
         return False, "Docker is not installed or not on PATH."
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         return False, f"Error checking Docker status: {e}"
 
     return True, None
@@ -307,7 +307,7 @@ def start_docker_compose(compose_file: Path) -> bool:
             if _is_command_available("docker-compose"):
                 LOG.info("Falling back to 'docker-compose' CLI.")
                 base = ["docker-compose"]
-    except Exception:
+    except (subprocess.SubprocessError, OSError):
         # If any error, try fallback
         if _is_command_available("docker-compose"):
             LOG.info("Falling back to 'docker-compose' CLI.")
@@ -328,7 +328,7 @@ def start_docker_compose(compose_file: Path) -> bool:
             "Docker Compose command not found. Ensure Docker is installed and available on PATH."
         )
         return False
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         LOG.error("Error starting Docker Compose: %s", e)
         return False
 
@@ -370,7 +370,7 @@ def start_api_server():
                     "API server module execution failed with return code: %s",
                     proc.poll(),
                 )
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError) as e:
             LOG.debug("Method 1 failed: %s", e)
 
         # Method 2: Try direct script execution via api_server.py
@@ -394,7 +394,7 @@ def start_api_server():
                             "API server script execution failed with return code: %s",
                             proc.poll(),
                         )
-                except Exception as e:
+                except (subprocess.SubprocessError, OSError) as e:
                     LOG.debug("Method 2 failed: %s", e)
 
         # Method 3: Try uvicorn directly
@@ -429,7 +429,7 @@ def start_api_server():
         LOG.error("All methods to start API server failed")
         return None
 
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         LOG.error("Failed to start API server: %s", e)
         return None
 
@@ -452,14 +452,14 @@ def run_simulation_orchestrator() -> int:
     sim_mod = None
     try:
         from . import simulation_orchestrator as sim_mod  # type: ignore
-    except Exception:
+    except (ImportError, TypeError):
         sim_mod = None
 
     # Step 2: Repo-top-level import (when executed from source)
     if sim_mod is None:
         try:
             import simulation_orchestrator as sim_mod  # type: ignore
-        except Exception:
+        except (ImportError, TypeError):
             sim_mod = None
 
     # If module import succeeded, attempt to call an entry
@@ -478,7 +478,7 @@ def run_simulation_orchestrator() -> int:
             except SystemExit as e:
                 # In case the orchestrator calls sys.exit
                 return int(e.code) if isinstance(e.code, int) else 0
-            except Exception as e:
+            except (AttributeError, TypeError, ValueError) as e:
                 LOG.error("Error running orchestrator function '%s': %s", attr, e)
                 break  # Fall back to subprocess route
 
@@ -490,7 +490,7 @@ def run_simulation_orchestrator() -> int:
         if proc.returncode == 0:
             return 0
         LOG.warning("Module execution returned non-zero exit code: %s", proc.returncode)
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         LOG.debug("Module execution failed: %s", e)
 
     # Step 4: Fallback to repo-root script execution
@@ -503,7 +503,7 @@ def run_simulation_orchestrator() -> int:
             try:
                 proc = subprocess.run(cmd)
                 return int(proc.returncode)
-            except Exception as e:
+            except (subprocess.SubprocessError, OSError) as e:
                 LOG.error("Failed to run orchestrator script: %s", e)
                 return 1
 
@@ -549,7 +549,7 @@ def start_api_server():
             else:
                 proc.terminate()
                 LOG.warning("API server didn't start properly (port 8000 not open)")
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError) as e:
             LOG.debug("Method 1 failed: %s", e)
             if "proc" in locals():
                 proc.terminate()
@@ -579,7 +579,7 @@ def start_api_server():
             else:
                 proc.terminate()
                 LOG.warning("API server didn't start properly (port 8000 not open)")
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError) as e:
             LOG.debug("Method 2 failed: %s", e)
             if "proc" in locals():
                 proc.terminate()
@@ -587,7 +587,7 @@ def start_api_server():
         LOG.error("All methods to start API server failed")
         return None
 
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, RuntimeError) as e:
         LOG.error("Failed to start API server: %s", e)
         return None
 
@@ -839,7 +839,7 @@ def handle_launch(with_server: bool, game_mode: bool = False) -> int:
                 compose_file,
             )
         return 130
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, RuntimeError) as e:
         LOG.exception("Unexpected error: %s", e)
         if api_process:
             try:
@@ -923,7 +923,7 @@ def handle_run(args: argparse.Namespace) -> int:
             if _is_command_available("docker-compose"):
                 LOG.info("Falling back to 'docker-compose' CLI.")
                 base = ["docker-compose"]
-    except Exception:
+    except (subprocess.SubprocessError, OSError):
         if _is_command_available("docker-compose"):
             LOG.info("Falling back to 'docker-compose' CLI.")
             base = ["docker-compose"]
@@ -943,7 +943,7 @@ def handle_run(args: argparse.Namespace) -> int:
     except FileNotFoundError:
         LOG.error("Docker Compose command not found.")
         return 1
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError, RuntimeError) as e:
         LOG.error("Error starting services: %s", e)
         return 1
 
@@ -986,7 +986,7 @@ def cli_main() -> int:
     except SystemExit as e:
         try:
             return int(e.code) if e.code is not None else 0
-        except Exception:
+        except (TypeError, ValueError):
             return 0
 
 

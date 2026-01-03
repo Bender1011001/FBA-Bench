@@ -104,7 +104,7 @@ class CostMetrics:
             logger.debug(
                 f"Published TokenUsageEvent for {tokens_used} tokens from event {event.event_id}."
             )
-        except Exception as e:
+        except (AttributeError, RuntimeError) as e:
             logger.error(f"Failed to publish TokenUsageEvent: {e}", exc_info=True)
 
         self._check_and_penalize_high_cost_operation(
@@ -134,7 +134,7 @@ class CostMetrics:
             )
             await self.event_bus.publish(api_cost_event)
             logger.debug(f"Published ApiCostEvent for event {event.event_id}.")
-        except Exception as e:
+        except (AttributeError, RuntimeError) as e:
             logger.error(f"Failed to publish ApiCostEvent: {e}", exc_info=True)
 
         if cost_amount:
@@ -172,7 +172,7 @@ class CostMetrics:
             logger.info(
                 f"Published PenaltyEvent: {penalty_type.value} for event {event.event_id}, amount {penalty_amount:.2f}."
             )
-        except Exception as e:
+        except (AttributeError, RuntimeError) as e:
             logger.error(f"Failed to publish PenaltyEvent: {e}", exc_info=True)
 
     def _check_and_penalize_high_cost_operation(self, incurred_cost: Money) -> None:

@@ -7,6 +7,7 @@ from __future__ import annotations
 #     Money(cents=1234, currency="USD")      -> Money(1234, "USD")
 # Ensures instances created via this module are instances of this subclass,
 # satisfying Pydantic's `is_instance_of` checks.
+import decimal
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
@@ -43,7 +44,7 @@ class Money(_Money):  # type: ignore[misc]
                             Decimal("1"), rounding=ROUND_HALF_UP
                         )
                     )
-                except Exception:
+                except (decimal.InvalidOperation, ValueError, TypeError):
                     cents = 0
             super().__init__(cents, currency)
         else:
@@ -60,7 +61,7 @@ class Money(_Money):  # type: ignore[misc]
             cents = int(
                 (d * Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
             )
-        except Exception:
+        except (decimal.InvalidOperation, ValueError, TypeError):
             cents = 0
         return cls(cents, currency)
 
@@ -93,11 +94,11 @@ class Money(_Money):  # type: ignore[misc]
         try:
             if isinstance(other, (int, float)):
                 return float(self.cents) / 100.0 == float(other)
-        except Exception:
+        except (TypeError, AttributeError):
             pass
         try:
             return super().__eq__(other)  # type: ignore[misc]
-        except Exception:
+        except (TypeError, AttributeError):
             return False
 
     def __req__(self, other: Any) -> bool:
@@ -107,7 +108,7 @@ class Money(_Money):  # type: ignore[misc]
     def __float__(self) -> float:
         try:
             return float(self.cents) / 100.0
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             return 0.0
 
     def to_float(self) -> float:
@@ -117,7 +118,7 @@ class Money(_Money):  # type: ignore[misc]
         """
         try:
             return float(self.cents) / 100.0
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             return 0.0
 
     @property
@@ -130,7 +131,7 @@ class Money(_Money):  # type: ignore[misc]
             return (Decimal(self.cents) / Decimal("100")).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             )
-        except Exception:
+        except (decimal.InvalidOperation, ValueError, TypeError):
             # Safe fallback without quantization if Decimal math fails
             return Decimal(str(float(self.cents) / 100.0)).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP

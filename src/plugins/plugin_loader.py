@@ -92,7 +92,7 @@ class PluginLoader:
                 if meta:
                     name = meta.get("name") or module_name
                     discovered[name] = meta
-            except Exception as e:
+            except (ImportError, AttributeError, OSError) as e:
                 logger.error(
                     "Failed to inspect plugin module %s: %s",
                     module_path,
@@ -155,7 +155,7 @@ class PluginLoader:
                             md.setdefault("description", f"{md['name']} plugin")
                             md.setdefault("author", "Unknown")
                             return md
-                except Exception:
+                except (TypeError, AttributeError, RuntimeError):
                     # Fall back to class-level attributes
                     pass
 

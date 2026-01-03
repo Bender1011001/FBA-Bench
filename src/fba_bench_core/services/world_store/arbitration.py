@@ -106,7 +106,7 @@ class CommandArbitrator:
             # Record in history
             self._command_history.append(event)
 
-        except Exception as e:
+        except (TypeError, AttributeError, RuntimeError, ValueError) as e:
             logger.error(
                 f"Error processing SetPriceCommand {event.event_id}: {e}", exc_info=True
             )
@@ -262,7 +262,7 @@ class CommandArbitrator:
         """
         try:
             cmds = list(commands or [])
-        except Exception:
+        except (TypeError, AttributeError):
             cmds = []
         if not cmds:
             return SimpleArbitrationResult(winning_command={}, reason="empty")
@@ -270,7 +270,7 @@ class CommandArbitrator:
         def _key(c: Dict[str, Any]) -> float:
             try:
                 return float(c.get("timestamp", 0.0))
-            except Exception:
+            except (TypeError, AttributeError, ValueError):
                 return 0.0
 
         winner = max(cmds, key=_key)

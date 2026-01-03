@@ -61,7 +61,7 @@ class DynamicScenarioGenerator:
         """
         try:
             tier = int(data.get("difficulty_tier", 0) or 0)
-        except Exception:
+        except (ValueError, TypeError):
             tier = 0
 
         # Ensure agent_constraints is a dict
@@ -75,7 +75,7 @@ class DynamicScenarioGenerator:
             ic = ac.get("initial_capital")
             try:
                 ic_val = int(ic) if isinstance(ic, (int, float)) else 10000
-            except Exception:
+            except (ValueError, TypeError):
                 ic_val = 10000
             if ic_val < 10000:
                 ic_val = 10000
@@ -85,7 +85,7 @@ class DynamicScenarioGenerator:
             mdr = ac.get("max_debt_ratio", 0.2)
             try:
                 mdr_val = float(mdr)
-            except Exception:
+            except (ValueError, TypeError):
                 mdr_val = 0.2
             if mdr_val > 0.2:
                 mdr_val = 0.2

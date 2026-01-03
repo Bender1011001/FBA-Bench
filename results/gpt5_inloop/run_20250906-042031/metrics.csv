@@ -1,4 +1,0 @@
-day,decision_prompt_tokens,decision_completion_tokens,decision_cost_cents,reflection_prompt_tokens,reflection_completion_tokens,reflection_cost_cents,cumulative_cost_cents
-1,354,1200,8,358,1000,7,15
-2,354,1200,8,358,1000,7,30
-3,354,1161,8,309,1000,7,45

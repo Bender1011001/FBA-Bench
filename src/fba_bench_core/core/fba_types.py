@@ -57,7 +57,7 @@ class SimulationState:
                 a = getattr(p, "asin", None)
                 if a == asin:
                     return p
-            except Exception:
+            except (AttributeError, TypeError):
                 pass
             if isinstance(p, dict) and p.get("asin") == asin:
                 return p
@@ -106,7 +106,7 @@ class ToolCall:
         # Validate confidence in [0, 1]
         try:
             c = float(self.confidence)
-        except Exception as e:
+        except (TypeError, ValueError) as e:
             raise ValueError(f"confidence must be a number: {e}")
         if c < 0.0 or c > 1.0:
             raise ValueError("confidence must be between 0.0 and 1.0 inclusive")

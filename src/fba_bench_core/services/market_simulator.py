@@ -3,19 +3,23 @@ MarketSimulationService
 
 Initial coherent world model step for FBA-Bench.
 - Listens to SetPriceCommand and CompetitorPricesUpdated events
-- Computes demand/sales using a simple, stateful model
+- Computes demand/sales using a simple, stateful model OR customer agent pool
 - Publishes SaleOccurred and updates inventory via InventoryUpdate
+
+**NEW**: Supports agent-based shopping mode with utility-based customer decisions.
 """
 
 from __future__ import annotations
 
 import logging
+import random
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from money import Money
 
+from fba_bench_core.domain.market.customer import Customer, CustomerPool
 from fba_bench_core.services.trust_score_service import TrustScoreService
 from fba_bench_core.services.world_store import WorldStore
 from fba_events.bus import EventBus, get_event_bus
@@ -37,12 +41,18 @@ class CompetitorSnapshot:
 
 class MarketSimulationService:
     """
-    Stateful demand/sales simulation.
+    Stateful demand/sales simulation with optional agent-based mode.
 
-    Demand model (initial step):
+    Demand model (elasticity mode - default):
       demand = base_demand * (p / p_ref)^(-elasticity)
       where p_ref = min(average competitor price, previous known price), if available
       If no competitor data is available, use the last known canonical price as p_ref.
+
+    Agent-based mode (new):
+      - Customer pool is sampled each tick
+      - Each customer evaluates products using utility function
+      - Purchases based on utility threshold
+      - More realistic purchasing patterns
 
     - units_sold = min(demand, inventory)
     - revenue = units_sold * price
@@ -57,11 +67,28 @@ class MarketSimulationService:
         event_bus: Optional[EventBus] = None,
         base_demand: int = 100,
         demand_elasticity: float = 1.5,
+        # Agent-based mode parameters
+        use_agent_mode: bool = False,
+        customers_per_tick: int = 100,
+        customer_seed: Optional[int] = None,
     ) -> None:
         self.world_store = world_store
         self.event_bus = event_bus or get_event_bus()
         self.base_demand = base_demand
         self.demand_elasticity = demand_elasticity
+
+        # Agent-based mode configuration
+        self._use_agent_mode = use_agent_mode
+        self._customers_per_tick = customers_per_tick
+        self._customer_seed = customer_seed
+        self._customer_pool: Optional[CustomerPool] = None
+        self._rng = random.Random(customer_seed)
+        
+        if use_agent_mode:
+            self._customer_pool = CustomerPool.generate(
+                count=customers_per_tick * 10,  # Pool 10x for variety
+                seed=customer_seed,
+            )
 
         # Internal caches
         self._competitors_by_asin: Dict[str, List[CompetitorSnapshot]] = {}
@@ -72,6 +99,14 @@ class MarketSimulationService:
 
         # Control flags
         self._started = False
+        
+        # Statistics for agent mode
+        self._agent_stats = {
+            "total_customers_served": 0,
+            "total_purchases": 0,
+            "purchase_rate": 0.0,
+        }
+
 
     async def start(self) -> None:
         """Subscribe to relevant events."""
@@ -112,7 +147,7 @@ class MarketSimulationService:
                     self._competitors_by_asin[comp.asin] = self._competitors_by_asin[
                         comp.asin
                     ][-25:]
-        except Exception as e:
+        except (TypeError, AttributeError, ValueError) as e:
             logger.error(f"Error handling CompetitorPricesUpdated: {e}", exc_info=True)
 
     async def _on_set_price_command(self, event: SetPriceCommand) -> None:
@@ -153,7 +188,7 @@ class MarketSimulationService:
             if b <= 0.0:
                 return default
             return a / b
-        except Exception:
+        except (TypeError, AttributeError, ZeroDivisionError):
             return default
 
     def _demand(self, price: Money, ref_price: Money) -> int:
@@ -170,6 +205,116 @@ class MarketSimulationService:
         quantity = self.base_demand * (ratio ** (-self.demand_elasticity))
         # integer demand
         return max(0, int(round(quantity)))
+
+    def _demand_agent_based(
+        self,
+        price: Money,
+        product_data: Dict[str, Any],
+    ) -> int:
+        """
+        Compute demand using customer agent pool.
+        
+        Each customer evaluates the product using their utility function
+        and decides whether to purchase based on their threshold.
+        
+        Args:
+            price: Current product price.
+            product_data: Dict with reviews, shipping_days, review_count.
+            
+        Returns:
+            Number of units demanded by customer pool.
+        """
+        if not self._customer_pool:
+            return 0
+        
+        # Sample customers for this tick
+        pool_size = len(self._customer_pool)
+        sample_size = min(self._customers_per_tick, pool_size)
+        
+        # Get random sample of customers (deterministic with seed)
+        sample_indices = self._rng.sample(range(pool_size), sample_size)
+        sampled_customers = [self._customer_pool[i] for i in sample_indices]
+        
+        # Build product offering
+        product_offering = {
+            "price": float(price.cents) / 100.0,
+            "reviews": product_data.get("reviews", 4.0),
+            "shipping_days": product_data.get("shipping_days", 3),
+            "review_count": product_data.get("review_count", 100),
+            "sku": product_data.get("asin", "unknown"),
+        }
+        
+        # Count purchases
+        purchases = 0
+        for customer in sampled_customers:
+            self._agent_stats["total_customers_served"] += 1
+            
+            # Check if customer can afford and wants to buy
+            if not customer.can_afford(product_offering["price"]):
+                continue
+            
+            utility = customer.calculate_utility(
+                price=product_offering["price"],
+                reviews=product_offering["reviews"],
+                shipping_days=product_offering["shipping_days"],
+                review_count=product_offering["review_count"],
+            )
+            
+            if customer.will_purchase(utility):
+                purchases += 1
+                self._agent_stats["total_purchases"] += 1
+        
+        # Update purchase rate
+        if self._agent_stats["total_customers_served"] > 0:
+            self._agent_stats["purchase_rate"] = (
+                self._agent_stats["total_purchases"] /
+                self._agent_stats["total_customers_served"]
+            )
+        
+        return purchases
+
+    def set_agent_mode(
+        self,
+        enabled: bool,
+        customers_per_tick: Optional[int] = None,
+        seed: Optional[int] = None,
+    ) -> None:
+        """Enable or disable agent-based demand mode.
+        
+        Args:
+            enabled: Whether to use agent-based mode.
+            customers_per_tick: Number of customers to sample per tick.
+            seed: Random seed for deterministic sampling.
+        """
+        self._use_agent_mode = enabled
+        
+        if customers_per_tick is not None:
+            self._customers_per_tick = customers_per_tick
+        
+        if seed is not None:
+            self._customer_seed = seed
+            self._rng = random.Random(seed)
+        
+        if enabled and self._customer_pool is None:
+            self._customer_pool = CustomerPool.generate(
+                count=self._customers_per_tick * 10,
+                seed=self._customer_seed,
+            )
+        
+        logger.info(
+            "Agent mode %s: customers_per_tick=%d",
+            "enabled" if enabled else "disabled",
+            self._customers_per_tick,
+        )
+
+    def get_agent_stats(self) -> Dict[str, Any]:
+        """Return agent-mode statistics."""
+        return {
+            **self._agent_stats,
+            "agent_mode_enabled": self._use_agent_mode,
+            "pool_size": len(self._customer_pool) if self._customer_pool else 0,
+            "customers_per_tick": self._customers_per_tick,
+        }
 
     async def process_for_asin(self, asin: str) -> None:
         """
@@ -197,15 +342,40 @@ class MarketSimulationService:
                     marketing_multiplier = float(
                         self.world_store.get_marketing_visibility(asin)
                     )
-                except Exception:
+                except (TypeError, AttributeError, ValueError, KeyError):
                     marketing_multiplier = 1.0
 
-            units_demanded_raw = self._demand(current_price, ref_price)
-            units_demanded = max(
-                0, int(round(units_demanded_raw * max(0.0, marketing_multiplier)))
-            )
+            # Calculate demand based on mode
+            if self._use_agent_mode:
+                # Agent-based mode: customers evaluate product using utility function
+                product_data = {
+                    "asin": asin,
+                    "reviews": 4.0,  # Default
+                    "shipping_days": 3,  # Default FBA
+                    "review_count": 100,
+                }
+                # Extract review data from product metadata if available
+                if hasattr(product, "metadata") and isinstance(product.metadata, dict):
+                    md = product.metadata
+                    product_data["reviews"] = float(md.get("review_rating", 4.0) or 4.0)
+                    product_data["review_count"] = int(md.get("review_count", 100) or 100)
+                    product_data["shipping_days"] = int(md.get("shipping_days", 3) or 3)
+                
+                units_demanded_raw = self._demand_agent_based(current_price, product_data)
+                # Marketing multiplier affects how many customers see the product
+                units_demanded = max(
+                    0, int(round(units_demanded_raw * max(0.0, marketing_multiplier)))
+                )
+            else:
+                # Elasticity formula mode (original)
+                units_demanded_raw = self._demand(current_price, ref_price)
+                units_demanded = max(
+                    0, int(round(units_demanded_raw * max(0.0, marketing_multiplier)))
+                )
+            
             inventory_qty = self.world_store.get_product_inventory_quantity(asin)
             units_sold = min(units_demanded, max(0, inventory_qty))
+
 
             revenue = current_price * units_sold
             total_fees = Money.zero()  # integrate FeeCalculationService later
@@ -244,7 +414,7 @@ class MarketSimulationService:
                 max_s = float(getattr(self._trust_service, "max_score", 100.0))
                 denom = (max_s - min_s) if (max_s - min_s) != 0 else 100.0
                 trust_score = max(0.0, min(1.0, (raw_trust - min_s) / denom))
-            except Exception:
+            except (TypeError, AttributeError, ZeroDivisionError, ValueError):
                 # Conservative fallback
                 trust_score = max(0.0, min(1.0, raw_trust / 100.0))
             # BSR: derive from metadata if present; otherwise estimate from demand proxy
@@ -320,7 +490,7 @@ class MarketSimulationService:
                 f"demand={units_demanded}, sold={units_sold}, revenue={revenue}"
             )
 
-        except Exception as e:
+        except (TypeError, AttributeError, RuntimeError) as e:
             logger.error(
                 f"Error in MarketSimulationService.process_for_asin for {asin}: {e}",
                 exc_info=True,

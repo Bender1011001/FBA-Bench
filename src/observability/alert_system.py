@@ -228,7 +228,7 @@ class ObservabilityAlertSystem:
                 )
             except ValueError as e:
                 logging.error(f"Invalid alert rule definition: {e} for {rule_def}")
-            except Exception as e:
+            except (TypeError, AttributeError, KeyError, RuntimeError) as e:
                 logging.error(f"Error processing alert rule {rule_def}: {e}")
         logging.info(f"Loaded {len(self.alert_rules)} alert rules.")
 
@@ -251,7 +251,7 @@ class ObservabilityAlertSystem:
                     },  # Include timestamp in context for callback
                 )
                 logging.info("Alert dispatched via callback.")
-            except Exception as e:
+            except (TypeError, AttributeError, RuntimeError) as e:
                 logging.error(f"Error sending alert via callback: {e}")
         else:
             logging.info("No notification callback configured. Alert logged only.")
@@ -357,7 +357,7 @@ class AlertSystem:
         try:
             lhs = float(metrics.get(metric, 0))
             rhs = float(rhs_str)
-        except Exception:
+        except (ValueError, TypeError, AttributeError):
             return False
 
         if op == ">":
@@ -393,7 +393,7 @@ class AlertSystem:
             if callable(handler):
                 try:
                     handler(alert)
-                except Exception:  # pragma: no cover
+                except (AttributeError, RuntimeError, TypeError):  # pragma: no cover
                     logger.exception("Subscriber raised during handle_alert")
 
     # ---- History ----
