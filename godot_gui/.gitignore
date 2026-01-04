@@ -1,0 +1,7 @@
+# Godot ignore file
+.godot/
+*.import
+export_presets.cfg
+*.translation
+node_modules/
+.tmp/

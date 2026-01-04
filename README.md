@@ -73,8 +73,7 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 
 ## Project Structure
 - `src/`: Core packages (`fba_bench_core/`, `fba_bench_api/`, `agents/`, `agent_runners/`, `benchmarking/`, `scenarios/`, `plugins/`, `fba_events/`).
-- `web/`: The main React application (Login UI/Dashboard).
-- `frontend/`: The Authentication Client Library (shared lib).
+- `godot_gui/`: Immersive Godot 4 GUI for simulation visualization, leaderboards, and sandbox experimentation.
 - `tests/`: Unit/integration tests with pytest markers.
 - `config/` and `configs/`: YAML configurations and templates.
 - `docs/`: Architecture, API, and deployment guides.

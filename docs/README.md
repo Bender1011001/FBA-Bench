@@ -46,13 +46,13 @@ Security reminders
   - Prefer managed Redis/Postgres with TLS-capable URLs (rediss:// for Redis).
 
 Current project state (release readiness snapshot)
-- Release candidate: v3.0.0-rc.1 (component versions are consistent across the repo: backend 3.0.0, frontend 1.0.0).
+- Release candidate: v3.0.0-rc.1 (component versions are consistent across the repo: backend 3.0.0, Godot GUI 1.0.0).
 - Validation summary (full reports live in the repo):
   - Quality gates: FAILED — Coverage 22.6% (minimum 80%), 353 failing tests. See quality results: [`quality-gate-results.json`](quality-gate-results.json:1).
   - Test suite baseline: 955 passed, 351 failed, 54 errors = 1362 total tests. See test artifacts: [`python-unit-results.xml`](python-unit-results.xml:1) and [`python-validation-results.xml`](python-validation-results.xml:1).
   - Security audit: 1 Critical, 2 High, 1 Medium findings (detailed below).
   - Observability: NOT_READY — missing OTLP endpoints, insecure exporters, no centralized logs backend.
-  - Frontend: NEEDS_ATTENTION — hardcoded localhost URLs, 9 npm vulnerabilities, CRA tooling drift (old React/TS frontend deprecated).
+  - GUI: Godot 4 application in `godot_gui/` — replaces deprecated React frontend.
   - One-click scripts: ISSUES_FOUND — missing PowerShell launch script for Windows, demo scripts are demo-ready but not production hardened.
   - Performance baseline: Established. Snapshot from stress run available: [`perf_results/system_stress_results_run1.json`](perf_results/system_stress_results_run1.json:1).
 
@@ -60,7 +60,7 @@ Known limitations (must be read before deploying)
 - Test coverage is far below required levels (22.6%). Many critical integration and unit tests fail; do not assume stability.
 - Several services expose development defaults (HTTP endpoints, hardcoded localhost) — these must be removed/parameterized before production.
 - Observability and alerting are not configured for production: no secure OTLP endpoints, exporters may be sending telemetry in plaintext.
-- Frontend is not production-ready: legacy CRA frontend removed in CI, and current frontend package requires audit/fixes.
+- Godot GUI is ready for development use. Export templates needed for production builds.
 - One-click demo scripts are intended for local demonstration only. They do not configure production-grade secrets, TLS, or hardened deploys.
 
 Performance snapshot (summary)
@@ -99,8 +99,8 @@ Setup & deployment guidance (current safe path)
      - Parameterize and remove hardcoded localhost URLs in frontend and backend
   4) Observability:
      - Configure OTLP endpoints over TLS, add logs backend (e.g. hosted ELK/Tempo/Datadog), secure exporters.
-  5) Frontend:
-     - Address npm vulnerabilities, update CRA or migrate to supported frontend tooling; remove legacy frontend references from CI.
+  5) GUI:
+     - Godot 4 GUI in `godot_gui/` is functional; export for production with signed binaries if distributing.
   6) CI/CD:
      - Add gating to block releases when Quality gates fail (coverage/failed tests) and for unmitigated Critical/High CVEs.
   7) One-click scripts:

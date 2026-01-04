@@ -59,25 +59,8 @@ services:
     networks:
       - backend
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: fba-frontend-test
-    environment:
-      VITE_API_URL: "http://localhost:8000"
-      NODE_ENV: "test"
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app:ro
-      - /app/node_modules
-    depends_on:
-      api:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - backend
+  # Note: Frontend GUI is now a Godot 4 application (see godot_gui/)
+  # Run with: python launch_godot_gui.py
 
   # Test runner service for CI/CD
   test-runner:

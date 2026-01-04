@@ -1,0 +1,177 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7nk3m8x5v2pq"]
+
+[ext_resource type="Script" path="res://scenes/simulation/SimulationViewer.gd" id="1_sim"]
+
+[node name="SimulationViewer" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_sim")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.08, 1)
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+split_offset = 250
+
+[node name="LeftPanel" type="PanelContainer" parent="HSplitContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/LeftPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SIMULATION CONTROL"
+
+[node name="HSeparator" type="HSeparator" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ScenarioLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Scenario:"
+
+[node name="ScenarioDropdown" type="OptionButton" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="AgentLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Agent Model:"
+
+[node name="AgentDropdown" type="OptionButton" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="SeedLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Random Seed:"
+
+[node name="SeedInput" type="SpinBox" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+min_value = 1.0
+max_value = 999999.0
+value = 42.0
+
+[node name="HSeparator2" type="HSeparator" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="HSplitContainer/LeftPanel/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "START"
+
+[node name="StepButton" type="Button" parent="HSplitContainer/LeftPanel/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "STEP"
+
+[node name="StopButton" type="Button" parent="HSplitContainer/LeftPanel/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "STOP"
+
+[node name="SpeedLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Simulation Speed:"
+
+[node name="SpeedSlider" type="HSlider" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+min_value = 0.1
+max_value = 10.0
+step = 0.1
+value = 1.0
+
+[node name="HSeparator3" type="HSeparator" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatsHeader" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "STATISTICS"
+
+[node name="TickLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Tick: 0"
+
+[node name="RevenueLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Revenue: $0.00"
+
+[node name="InventoryLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Inventory: 0 units"
+
+[node name="OrdersLabel" type="Label" parent="HSplitContainer/LeftPanel/VBoxContainer"]
+layout_mode = 2
+text = "Orders: 0 pending"
+
+[node name="CenterPanel" type="Control" parent="HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WarehouseView" type="SubViewportContainer" parent="HSplitContainer/CenterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="HSplitContainer/CenterPanel/WarehouseView"]
+handle_input_locally = false
+size = Vector2i(800, 600)
+render_target_update_mode = 4
+
+[node name="Camera2D" type="Camera2D" parent="HSplitContainer/CenterPanel/WarehouseView/SubViewport"]
+position = Vector2(400, 300)
+
+[node name="WarehouseContainer" type="Node2D" parent="HSplitContainer/CenterPanel/WarehouseView/SubViewport"]
+
+[node name="HeatmapOverlay" type="Sprite2D" parent="HSplitContainer/CenterPanel/WarehouseView/SubViewport"]
+
+[node name="AgentContainer" type="Node2D" parent="HSplitContainer/CenterPanel/WarehouseView/SubViewport"]
+
+[node name="OverlayUI" type="Control" parent="HSplitContainer/CenterPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ZoomControls" type="VBoxContainer" parent="HSplitContainer/CenterPanel/OverlayUI"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -60.0
+offset_top = -100.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="ZoomIn" type="Button" parent="HSplitContainer/CenterPanel/OverlayUI/ZoomControls"]
+layout_mode = 2
+text = "+"
+
+[node name="ZoomOut" type="Button" parent="HSplitContainer/CenterPanel/OverlayUI/ZoomControls"]
+layout_mode = 2
+text = "-"
+
+[node name="ResetView" type="Button" parent="HSplitContainer/CenterPanel/OverlayUI/ZoomControls"]
+layout_mode = 2
+text = "⌂"

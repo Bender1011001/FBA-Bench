@@ -1,0 +1,196 @@
+[gd_scene load_steps=2 format=3 uid="uid://c9xn4m5k8p2wq"]
+
+[ext_resource type="Script" path="res://scenes/sandbox/Sandbox.gd" id="1_sb"]
+
+[node name="Sandbox" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_sb")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.08, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HSplitContainer" type="HSplitContainer" parent="MarginContainer"]
+layout_mode = 2
+split_offset = 350
+
+[node name="ConfigPanel" type="PanelContainer" parent="MarginContainer/HSplitContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/HSplitContainer/ConfigPanel"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "SANDBOX CONFIG"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ScenarioSection" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "— SCENARIO —"
+
+[node name="ScenarioFile" type="OptionButton" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="InitialCapital" type="HBoxContainer" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/InitialCapital"]
+layout_mode = 2
+text = "Initial Capital:"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/InitialCapital"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1000.0
+max_value = 1000000.0
+step = 1000.0
+value = 10000.0
+
+[node name="MaxTicks" type="HBoxContainer" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/MaxTicks"]
+layout_mode = 2
+text = "Max Ticks:"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/MaxTicks"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10.0
+max_value = 10000.0
+step = 10.0
+value = 100.0
+
+[node name="MarketSection" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "— MARKET —"
+
+[node name="Volatility" type="HBoxContainer" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Volatility"]
+layout_mode = 2
+text = "Volatility:"
+
+[node name="Slider" type="HSlider" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Volatility"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.05
+value = 0.3
+
+[node name="Value" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Volatility"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 0)
+text = "0.30"
+
+[node name="Competitors" type="HBoxContainer" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Competitors"]
+layout_mode = 2
+text = "Competitors:"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Competitors"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 20.0
+value = 3.0
+
+[node name="AgentSection" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "— AGENT —"
+
+[node name="AgentModel" type="OptionButton" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Temperature" type="HBoxContainer" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Temperature"]
+layout_mode = 2
+text = "Temperature:"
+
+[node name="Slider" type="HSlider" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Temperature"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 2.0
+step = 0.1
+value = 0.7
+
+[node name="Value" type="Label" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/Temperature"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 0)
+text = "0.70"
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonBox" type="HBoxContainer" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="RunButton" type="Button" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/ButtonBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "RUN EXPERIMENT"
+
+[node name="SaveButton" type="Button" parent="MarginContainer/HSplitContainer/ConfigPanel/ScrollContainer/VBoxContainer/ButtonBox"]
+layout_mode = 2
+text = "SAVE CONFIG"
+
+[node name="ResultsPanel" type="PanelContainer" parent="MarginContainer/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HSplitContainer/ResultsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="MarginContainer/HSplitContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "EXPERIMENT RESULTS"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/HSplitContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ResultsLog" type="RichTextLabel" parent="MarginContainer/HSplitContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[i]Run an experiment to see results...[/i]"
+scroll_following = true
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/HSplitContainer/ResultsPanel/VBoxContainer"]
+layout_mode = 2
+value = 0.0
+show_percentage = false

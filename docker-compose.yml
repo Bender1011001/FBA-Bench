@@ -74,24 +74,8 @@ services:
       timeout: 10s
       retries: 3
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: fba-frontend
-    environment:
-      VITE_API_URL: "${PUBLIC_APP_BASE_URL:-http://localhost:8000}"
-    ports:
-      - "5173:5173"
-    depends_on:
-      api:
-        condition: service_healthy
-    volumes:
-      - ./frontend:/app:ro
-      - /app/node_modules
-    networks:
-      - backend
-    restart: unless-stopped
+  # Note: Frontend GUI is now a Godot 4 application (see godot_gui/)
+  # Run with: python launch_godot_gui.py
 
 volumes:
   postgres_data:

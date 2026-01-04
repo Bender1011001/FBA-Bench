@@ -1,0 +1,142 @@
+[gd_scene load_steps=5 format=3 uid="uid://c8n6j5r3x2k5m"]
+
+[ext_resource type="Script" path="res://scenes/main/Main.gd" id="1_x8q1v"]
+[ext_resource type="PackedScene" path="res://scenes/simulation/SimulationViewer.tscn" id="2_sim"]
+[ext_resource type="PackedScene" path="res://scenes/leaderboard/Leaderboard.tscn" id="3_lb"]
+[ext_resource type="PackedScene" path="res://scenes/sandbox/Sandbox.tscn" id="4_sb"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_x8q1v")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0392157, 0.0392157, 0.054902, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopBar" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TopBar/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "FBA-BENCH ENTERPRISE"
+
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="NavButtons" type="HBoxContainer" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="SimulationBtn" type="Button" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons"]
+layout_mode = 2
+text = "SIMULATION"
+
+[node name="LeaderboardBtn" type="Button" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons"]
+layout_mode = 2
+text = "LEADERBOARD"
+
+[node name="SandboxBtn" type="Button" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons"]
+layout_mode = 2
+text = "SANDBOX"
+
+[node name="Spacer" type="Control" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusIndicator" type="HBoxContainer" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Dot" type="ColorRect" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/StatusIndicator"]
+custom_minimum_size = Vector2(12, 12)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(1, 0.2, 0.2, 1)
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/StatusIndicator"]
+layout_mode = 2
+text = "Disconnected"
+
+[node name="ThemeToggle" type="Button" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "◐"
+tooltip_text = "Toggle Theme"
+
+[node name="Content" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SimulationView" parent="VBoxContainer/Content" instance=ExtResource("2_sim")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="LeaderboardView" parent="VBoxContainer/Content" instance=ExtResource("3_lb")]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="SandboxView" parent="VBoxContainer/Content" instance=ExtResource("4_sb")]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="BottomBar" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/BottomBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_right = 15
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/BottomBar/MarginContainer"]
+layout_mode = 2
+
+[node name="LogLabel" type="Label" parent="VBoxContainer/BottomBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Initializing system..."
+
+[node name="Spacer" type="Control" parent="VBoxContainer/BottomBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VersionLabel" type="Label" parent="VBoxContainer/BottomBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "v1.0.0 | Godot 4.3"

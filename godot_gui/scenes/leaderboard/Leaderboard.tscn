@@ -1,0 +1,151 @@
+[gd_scene load_steps=2 format=3 uid="uid://d4xm2k7j3n1pq"]
+
+[ext_resource type="Script" path="res://scenes/leaderboard/Leaderboard.gd" id="1_lb"]
+
+[node name="Leaderboard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_lb")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.08, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="HeaderBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/HeaderBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "MODEL LEADERBOARD"
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/HeaderBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RefreshButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderBox"]
+layout_mode = 2
+text = "⟳ REFRESH"
+
+[node name="ExportButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderBox"]
+layout_mode = 2
+text = "📊 EXPORT"
+
+[node name="FilterBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="SearchLabel" type="Label" parent="MarginContainer/VBoxContainer/FilterBar"]
+layout_mode = 2
+text = "Search:"
+
+[node name="SearchInput" type="LineEdit" parent="MarginContainer/VBoxContainer/FilterBar"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+placeholder_text = "Filter by model name..."
+
+[node name="TierLabel" type="Label" parent="MarginContainer/VBoxContainer/FilterBar"]
+layout_mode = 2
+text = "Tier:"
+
+[node name="TierFilter" type="OptionButton" parent="MarginContainer/VBoxContainer/FilterBar"]
+layout_mode = 2
+
+[node name="MetricLabel" type="Label" parent="MarginContainer/VBoxContainer/FilterBar"]
+layout_mode = 2
+text = "Sort by:"
+
+[node name="MetricFilter" type="OptionButton" parent="MarginContainer/VBoxContainer/FilterBar"]
+layout_mode = 2
+
+[node name="VerifiedOnly" type="CheckBox" parent="MarginContainer/VBoxContainer/FilterBar"]
+layout_mode = 2
+text = "Verified Only"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TreeContainer" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LeaderboardTree" type="Tree" parent="MarginContainer/VBoxContainer/TreeContainer"]
+layout_mode = 2
+columns = 8
+column_titles_visible = true
+hide_root = true
+select_mode = 1
+
+[node name="DetailsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DetailsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="DetailsHeader" type="Label" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "SELECTED MODEL DETAILS"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="DetailsContent" type="HBoxContainer" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsColumn" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ModelName" type="Label" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent/StatsColumn"]
+layout_mode = 2
+text = "Model: (select from table)"
+
+[node name="SuccessRate" type="Label" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent/StatsColumn"]
+layout_mode = 2
+text = "Success Rate: --"
+
+[node name="AvgProfit" type="Label" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent/StatsColumn"]
+layout_mode = 2
+text = "Avg Profit: --"
+
+[node name="TokensUsed" type="Label" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent/StatsColumn"]
+layout_mode = 2
+text = "Tokens Used: --"
+
+[node name="ActionsColumn" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent"]
+layout_mode = 2
+
+[node name="CompareButton" type="Button" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent/ActionsColumn"]
+layout_mode = 2
+text = "Compare with..."
+
+[node name="ReplayButton" type="Button" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent/ActionsColumn"]
+layout_mode = 2
+text = "Replay Simulation"
+
+[node name="VerifyButton" type="Button" parent="MarginContainer/VBoxContainer/DetailsPanel/VBoxContainer/DetailsContent/ActionsColumn"]
+layout_mode = 2
+text = "Verify Result"

@@ -8,6 +8,10 @@ Key assets:
 - [Case Studies](case-studies/template.md): Reusable success story template.
 - [ROI Calculator](tools/roi_calculator.csv): Sample data for value quantification; see [tools/README.md](tools/README.md).
 
+## New Reports & Campaigns 🚀
+- **[Q1 2026 Benchmark Report](reports/2026_q1_benchmark.md)**: Analysis of Top Models (Grok, Claude, GPT-5).
+- **["Loss Porn" Stress Test](campaigns/loss_porn_teaser.md)**: Concept for the next-gen "Chaos" benchmark.
+
 ## 1) ICP Targets
 
 The [ICP Target List](targets/top20_icp.csv) provides 20 representative, anonymized entries across industries (SaaS, FinTech, etc.), regions (NA, EU, APAC), headcount (50-200, 200-1k, 1k-5k, 5k+), and tech stacks (e.g., Python/FastAPI, React/Stripe).

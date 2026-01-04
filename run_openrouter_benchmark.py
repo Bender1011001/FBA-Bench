@@ -141,6 +141,69 @@ Be specific and actionable.""",
     },
 ]
 
+def load_scenario_prompts(scenario_path: str) -> List[Dict[str, Any]]:
+    """
+    Loads a scenario YAML file and generates prompts based on the external events and constraints.
+    """
+    try:
+        import yaml
+    except ImportError:
+        logger.error("PyYAML is not installed. Cannot load scenario prompts.")
+        return []
+
+    if not os.path.exists(scenario_path):
+        logger.error(f"Scenario file not found: {scenario_path}")
+        return []
+
+    try:
+        with open(scenario_path, 'r') as f:
+            scenario_data = yaml.safe_load(f)
+    except Exception as e:
+        logger.error(f"Error reading scenario file: {e}")
+        return []
+
+    scenario_prompts = []
+    
+    # Extract Context
+    scenario_name = scenario_data.get("scenario_name", "Unknown Scenario")
+    constraints = scenario_data.get("agent_constraints", {})
+    initial_capital = constraints.get("initial_capital", "Unknown")
+    max_debt_ratio = constraints.get("max_debt_ratio", "Unknown")
+    
+    context_str = (
+        f"You are the CEO of a company in a '{scenario_name}' simulation.\n"
+        f"Your Initial Capital: ${initial_capital}\n"
+        f"Max Debt Ratio: {max_debt_ratio}\n"
+        "Your goal is to survive and remain solvent.\n"
+    )
+
+    # Generate prompts for each event
+    events = scenario_data.get("external_events", [])
+    for event in events:
+        event_name = event.get("name", "Unknown Event")
+        event_type = event.get("type", "Unknown Type")
+        impact = json.dumps(event.get("impact", {}), indent=2)
+        
+        prompt_text = (
+            f"{context_str}\n"
+            f"EVENT ALERT: {event_name} (Type: {event_type})\n\n"
+            f"Impact Data:\n{impact}\n\n"
+            "Task:\n"
+            "1. Analyze the immediate financial and operational risks.\n"
+            "2. Propose specific actions to mitigate loss (liquidity preservation, inventory management, etc.).\n"
+            "3. Predict the long-term consequence if no action is taken.\n\n"
+            "Respond with a decision-making log."
+        )
+        
+        scenario_prompts.append({
+            "name": f"scenario_{event_name.lower().replace(' ', '_')}",
+            "prompt": prompt_text,
+            "expected_elements": ["risk", "mitigate", "action", "liquidity", "consequence"],
+        })
+
+    logger.info(f"Loaded {len(scenario_prompts)} prompts from scenario: {scenario_name}")
+    return scenario_prompts
+
 
 class OpenRouterBenchmarkRunner:
     """Manages OpenRouter model benchmarking with comprehensive testing and tracking."""
@@ -464,8 +527,33 @@ async def main() -> int:
         elif getattr(args, 'all', False):
             models_to_test = OPENROUTER_TOP_MODELS + OPENROUTER_FREE_MODELS
             logger.info(f"Testing all {len(models_to_test)} models (top + free)")
-        else:
-            # Default to free models
+        # Parse Scenario if provided
+        if args.scenario:
+            scenario_matches = [
+                args.scenario,
+                os.path.join(os.getcwd(), args.scenario),
+                os.path.join(os.getcwd(), "src", "scenarios", os.path.basename(args.scenario)),
+                os.path.join(os.getcwd(), "configs", os.path.basename(args.scenario))
+            ]
+            
+            found_scenario = None
+            for p in scenario_matches:
+                if os.path.exists(p):
+                    found_scenario = p
+                    break
+            
+            if found_scenario:
+                logger.info(f"Loading scenario prompts from: {found_scenario}")
+                new_prompts = load_scenario_prompts(found_scenario)
+                if new_prompts:
+                    # Append new scenario prompts to the standard test suite
+                    TEST_PROMPTS.extend(new_prompts)
+                    logger.info(f"Added {len(new_prompts)} scenario-specific prompts to the test suite.")
+            else:
+                 logger.warning(f"Scenario file '{args.scenario}' not found in common locations.")
+
+        # Default to free models if none selected
+        if not 'models_to_test' in locals() or not models_to_test:
             models_to_test = OPENROUTER_FREE_MODELS
             logger.info(f"Testing {len(models_to_test)} free tier models")
 

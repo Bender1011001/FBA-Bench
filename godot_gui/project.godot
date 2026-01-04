@@ -1,0 +1,26 @@
+config_version=5
+
+[application]
+
+config/name="FBA-Bench-Enterprise-GUI"
+config/description="Immersive AI Agent Benchmarking Simulation"
+run/main_scene="res://scenes/main/Main.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+ApiClient="*res://autoload/ApiClient.gd"
+WebSocketClient="*res://autoload/WebSocketClient.gd"
+SimulationState="*res://autoload/SimulationState.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/vram_compression/import_etc2_astc=true
