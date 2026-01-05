@@ -5,6 +5,7 @@ Runs relevant pytest tests that perform golden master comparisons and exits non-
 Prints concise diff summaries from test output.
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -22,7 +23,7 @@ def main():
     # Ensure we're in project root
     scripts_dir = Path(__file__).parent
     project_root = scripts_dir.parent
-    project_root.chdir()
+    os.chdir(project_root)
     
     # Run pytest on relevant tests with verbose output for diffs, short traceback
     cmd = [

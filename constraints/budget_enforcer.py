@@ -264,6 +264,51 @@ class BudgetEnforcer:
 
         return {"exceeded": False, "usage_snapshot": self.get_usage_snapshot(agent_id)}
 
+    def can_afford(
+        self,
+        agent_id: str,
+        tool_name: Optional[str] = None,
+        estimated_tokens: int = 0,
+        estimated_cost_cents: int = 0,
+    ) -> bool:
+        """
+        Check if an agent can afford an operation without actually recording it.
+        Return True if all limits (tool-specific and overall) are satisfied.
+        """
+        self._ensure_agent(agent_id)
+        if tool_name:
+            self._ensure_tool(agent_id, tool_name)
+
+        # Check overall limits
+        for window in ("tick", "run"):
+            # Tokens
+            t_usage = self.usage[agent_id][window]["tokens"]
+            t_limit_key = f"total_tokens_per_{window}"
+            t_limit = self._meter_cfg["limits"].get(t_limit_key, 999_999_999)
+            if t_usage + estimated_tokens > t_limit:
+                return False
+
+            # Cost
+            c_usage = self.usage[agent_id][window]["cost_cents"]
+            c_limit_key = f"total_cost_cents_per_{window}"
+            c_limit = self._meter_cfg["limits"].get(c_limit_key, 999_999_999)
+            if c_usage + estimated_cost_cents > c_limit:
+                return False
+
+            # Tool-specific limits
+            if tool_name:
+                tool_calls = self.usage[agent_id][window]["per_tool"][tool_name]["calls"]
+                call_limit = self._get_tool_limit(tool_name, f"calls_per_{window}")
+                if call_limit is not None and tool_calls + 1 > call_limit:
+                    return False
+
+                tool_tokens = self.usage[agent_id][window]["per_tool"][tool_name]["tokens"]
+                token_limit = self._get_tool_limit(tool_name, f"tokens_per_{window}")
+                if token_limit is not None and tool_tokens + estimated_tokens > token_limit:
+                    return False
+
+        return True
+
     def get_usage_snapshot(self, agent_id: str) -> Dict[str, Any]:
         """
         Returns deep copy snapshot of counters for the agent.

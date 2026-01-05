@@ -25,22 +25,25 @@ jobs:
       - name: Install Python project and dependencies
         run: |
           pip install -r requirements.txt
+          pip install "fba-bench-core>=1.0.0"
+          pip install pytest pytest-cov ruff mypy
           pip install . # Installs the project for CI environment
-
-<<<<<<< HEAD
-      - name: Install linters and type checkers
-        run: |
-          pip install ruff mypy
-=======
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install "fba-bench-core>=1.0.0"
-        pip install pytest pytest-cov
->>>>>>> 9a6313da3bf53dcbc517cbc3450293242ae0c7bd
 
       - name: Run backend tests
         run: pytest -q
+
+      - name: Verify Golden Masters
+        run: python scripts/verify_golden_masters.py
+
+      - name: Upload Golden Master Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-master-artifacts
+          path: |
+            golden_masters/
+            *.log
+            tests/output/
 
       - name: Run ruff check
         run: ruff check .

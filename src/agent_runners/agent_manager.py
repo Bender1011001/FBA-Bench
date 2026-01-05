@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import uuid
@@ -22,6 +23,7 @@ from agents.skill_coordinator import SkillCoordinator
 from agents.skill_modules.base_skill import SkillAction
 from agents.skill_modules.product_sourcing import ProductSourcingSkill
 from fba_events.supplier import PlaceOrderCommand
+from fba_events.agent import AgentDecisionEvent
 
 # Import AgentRegistration, AgentRunnerDecisionError, AgentRunnerCleanupError from base_runner
 from .base_runner import (
@@ -33,35 +35,12 @@ from .base_runner import (
     AgentRunnerTimeoutError,
 )
 
-
-class AgentRegistration:
-    """Registration information for an agent."""
-
-    def __init__(
-        self, agent_id: str, runner: AgentRunner, framework: str, config: Dict[str, Any]
-    ):
-        self.agent_id = agent_id
-        self.runner = runner
-        self.framework = framework
-        self.config = config
-        self.is_active = True
-        self.created_at = datetime.now()
-        # Resiliency/health tracking
-        self.timeout_count: int = 0
-        self.last_timeout_at: Optional[datetime] = None
-        self.is_unresponsive: bool = False
-        # Failure cause tracking
-        self.failure_reason: Optional[str] = None
-
-
-# Back-compat mirror record used for tests expecting attributes on manager.agents[aid]
-@dataclass
-class BackCompatRegistration:
-    runner: Any
-    active: bool
-    created_at: datetime
-    total_decisions: int = 0
-    total_tool_calls: int = 0
+# Refactored: Moved AgentRegistration, BackCompatRegistration, and AgentRegistry to .agent_registry
+from .agent_registry import (
+    AgentRegistration,
+    AgentRegistry,
+    BackCompatRegistration,
+)
 
 
 if TYPE_CHECKING:
@@ -80,144 +59,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-
-# Moved AgentRegistry class definition to the top, before AgentManager
-class AgentRegistry:
-    """Manages the registration and state of individual agents for easy lookup."""
-
-    def __init__(self):
-        self._agents: Dict[str, AgentRegistration] = {}
-
-    def add_agent(
-        self, agent_id: str, runner: AgentRunner, framework: str, config: Dict[str, Any]
-    ):
-        if agent_id in self._agents:
-            logger.warning(f"Agent {agent_id} already exists in registry, overwriting.")
-        self._agents[agent_id] = AgentRegistration(agent_id, runner, framework, config)
-        logger.debug(f"Agent {agent_id} added to registry.")
-
-    def get_agent(
-        self, agent_id: str
-    ) -> Optional[AgentRegistration]:  # Changed return type to AgentRegistration
-        if (
-            agent_id in self._agents
-        ):  # Removed .is_active check from here, get_agent returns registration regardless
-            return self._agents[agent_id]
-        return None
-
-    def all_agents(self) -> Dict[str, AgentRegistration]:
-        return self._agents.copy()
-
-    def active_agents(self) -> Dict[str, AgentRegistration]:
-        return {
-            agent_id: reg for agent_id, reg in self._agents.items() if reg.is_active
-        }
-
-    def agent_count(self) -> int:
-        return len(self._agents)
-
-    def active_agent_count(self) -> int:
-        return len(self.active_agents())
-
-    def mark_agent_as_failed(self, agent_id: str, reason: str):
-        if agent_id in self._agents:
-            self._agents[agent_id].is_active = False
-            self._agents[agent_id].failure_reason = reason
-            logger.error(f"Agent {agent_id} marked as failed: {reason}")
-        else:
-            logger.warning(
-                f"Attempted to mark non-existent agent {agent_id} as failed."
-            )
-
-    def mark_agent_timeout(self, agent_id: str, *, threshold: int = 3) -> None:
-        """
-        Record a timeout for an agent. If consecutive timeouts exceed threshold, mark as unresponsive.
-        """
-        reg = self._agents.get(agent_id)
-        if not reg:
-            logger.warning(
-                f"Attempted to mark timeout for non-existent agent {agent_id}."
-            )
-            return
-        reg.timeout_count = int(getattr(reg, "timeout_count", 0)) + 1
-        reg.last_timeout_at = datetime.now()
-        if reg.timeout_count >= max(1, int(threshold)):
-            if not getattr(reg, "is_unresponsive", False):
-                logger.warning(
-                    f"Agent {agent_id} marked as unresponsive after {reg.timeout_count} timeouts."
-                )
-            reg.is_unresponsive = True
-        else:
-            logger.info(
-                f"Agent {agent_id} timeout recorded ({reg.timeout_count}/{threshold})."
-            )
-
-    def deregister(self, agent_id: str) -> bool:
-        """Remove the agent from the registry, disposing the associated runner if present.
-        Returns True if an agent was found and removed, False otherwise."""
-        if agent_id not in self._agents:
-            logger.debug(
-                f"Attempted to deregister non-existent agent {agent_id}. No-op."
-            )
-            return False
-
-        agent_registration = self._agents[agent_id]
-        if agent_registration.runner:
-            try:
-                # Prioritize synchronous cleanup methods
-                if hasattr(agent_registration.runner, "sync_cleanup") and callable(
-                    agent_registration.runner.sync_cleanup
-                ):
-                    agent_registration.runner.sync_cleanup()
-                    logger.debug(
-                        f"Synchronously cleaned up runner for agent {agent_id}."
-                    )
-                elif hasattr(agent_registration.runner, "close") and callable(
-                    agent_registration.runner.close
-                ):
-                    agent_registration.runner.close()
-                    logger.debug(f"Closed runner for agent {agent_id}.")
-                elif hasattr(agent_registration.runner, "cleanup") and callable(
-                    agent_registration.runner.cleanup
-                ):
-                    # Schedule async cleanup if only async is available and we're in a sync context.
-                    # This is a best-effort approach and relies on the event loop being active.
-                    try:
-                        loop = asyncio.get_event_loop()
-                        if loop.is_running():
-                            loop.create_task(agent_registration.runner.cleanup())
-                            logger.warning(
-                                f"Scheduled async cleanup for agent {agent_id}. Ensure event loop is active."
-                            )
-                        else:
-                            logger.warning(
-                                f"Cannot schedule async cleanup for agent {agent_id}: event loop not running."
-                            )
-                    except RuntimeError:
-                        logger.warning(
-                            f"Cannot schedule async cleanup for agent {agent_id}: no active event loop."
-                        )
-                else:
-                    logger.debug(
-                        f"No specific cleanup/close method found for runner of agent {agent_id}. Skipping runner disposal."
-                    )
-            except (AttributeError, RuntimeError, TypeError, ValueError, OSError, AgentRunnerCleanupError, asyncio.CancelledError):
-                # Specific handled exceptions
-                raise
-            except Exception as e:
-                # Keep deregistration resilient but log unexpected exceptions with full context
-                logger.error(
-                    f"Unexpected error during runner disposal for agent {agent_id} "
-                    f"(runner={getattr(agent_registration.runner, '__class__', type(None)).__name__}): "
-                    f"{type(e).__name__}: {e}",
-                    exc_info=True,
-                )
-
-        # Remove the agent entry
-        del self._agents[agent_id]
-        logger.info(f"Agent {agent_id} successfully deregistered.")
-        return True
 
 
 class AgentManager:
@@ -315,6 +156,13 @@ class AgentManager:
         # Statistics
         self.decision_cycles_completed = 0
         self.total_tool_calls = 0
+        self.total_decisions_skipped = 0
+        self.total_errors = 0
+
+        # Policy: how many consecutive decision timeouts before agent is considered unresponsive
+        self.timeout_unresponsive_threshold: int = int(
+            os.getenv("AGENT_TIMEOUT_THRESHOLD", "3") or "3"
+        )
 
     # -------------------------------------------------------------------------
     # Back-compat lightweight AgentManager surface expected by tests
@@ -418,15 +266,6 @@ class AgentManager:
         raise NotImplementedError(
             "Agent decision execution is not implemented in the stub manager."
         )
-        self.total_decisions_skipped = 0
-        self.total_errors = 0
-
-        # Policy: how many consecutive decision timeouts before agent is considered unresponsive
-        self.timeout_unresponsive_threshold: int = int(
-            os.getenv("AGENT_TIMEOUT_THRESHOLD", "3") or "3"
-        )
-
-        logger.info("AgentManager initialized with unified agent system.")
 
     async def start(self) -> None:
         """Start the AgentManager and its agents."""
@@ -580,93 +419,45 @@ class AgentManager:
     ) -> Any:
         """
         Registers a new agent runner with the manager.
-
         Returns the created runner for backward-compatibility with tests.
         """
-        # Prevent duplicate registration when a runner already exists
+        # Prevent duplicate registration
         existing = self.agent_registry.get_agent(agent_id)
-        if existing is not None and getattr(existing, "runner", None) is not None:
+        if existing is not None and existing.runner is not None:
             logger.warning(f"Agent {agent_id} already registered. Skipping.")
             return existing.runner
 
-        # Preferred path: use RunnerFactory (tests register custom 'mock' here)
+        runner = None
         try:
-            from agent_runners import RunnerFactory as _RF  # lazy proxy in __init__.py
+            # 1. Try RunnerFactory (preferred, supports test mocks)
+            try:
+                from agent_runners import RunnerFactory as _RF
+                runner = _RF.create_runner(framework, agent_id, config or {})
+                logger.info(f"Agent {agent_id} ({framework}) registered via RunnerFactory.")
+            except (ImportError, AttributeError, RuntimeError) as e:
+                logger.debug(f"RunnerFactory unavailable for '{framework}': {e}")
 
-            runner = _RF.create_runner(framework, agent_id, config or {})
-            self.agent_registry.add_agent(agent_id, runner, framework, config or {})
-            self.agents[agent_id] = BackCompatRegistration(
-                runner=runner,
-                active=True,
-                created_at=datetime.now(),
-                total_decisions=0,
-                total_tool_calls=0,
-            )
-            self.stats["total_agents"] = len(self.agents)
-            self.stats["active_agents"] = len(
-                [a for a in self.agents.values() if self._is_active(a)]  # type: ignore[attr-defined]
-            )
-            logger.info(
-                f"Custom framework agent {agent_id} ({framework}) registered via RunnerFactory (preferred)."
-            )
-            return runner
-        except (AttributeError, TypeError, ImportError, RuntimeError) as e:
-            logger.debug(f"RunnerFactory path unavailable for '{framework}': {e}")
+            # 2. Try direct registry lookup
+            if not runner:
+                from agent_runners import registry as _reg
+                fw_lower = (framework or "").lower()
+                entry = getattr(_reg, "RUNNER_REGISTRY", {}).get(fw_lower)
+                if entry:
+                    runner_cls = entry[0]
+                    runner = runner_cls(agent_id, config or {})
+                    logger.info(f"Agent {agent_id} created via direct registry lookup for '{framework}'.")
 
-        # Next: direct registry lookup for class (supports tests registering 'mock' at runtime)
-        try:
-            from agent_runners import registry as _reg  # type: ignore
+            # 3. Try registry.create_runner fallback
+            if not runner:
+                from agent_runners import registry as _reg
+                runner = _reg.create_runner(framework, config or {}, agent_id=agent_id)
+                logger.info(f"Agent {agent_id} created via registry.create_runner for '{framework}'.")
 
-            fw_lower = (framework or "").lower()
-            entry = getattr(_reg, "RUNNER_REGISTRY", {}).get(fw_lower)
-            if entry:
-                runner_cls = entry[0]
-                runner = runner_cls(agent_id, config or {})
-                self.agent_registry.add_agent(agent_id, runner, framework, config or {})
-                self.agents[agent_id] = BackCompatRegistration(
-                    runner=runner,
-                    active=True,
-                    created_at=datetime.now(),
-                    total_decisions=0,
-                    total_tool_calls=0,
-                )
-                self.stats["total_agents"] = len(self.agents)
-                self.stats["active_agents"] = len(
-                    [a for a in self.agents.values() if self._is_active(a)]  # type: ignore[attr-defined]
-                )
-                logger.info(
-                    f"Agent {agent_id} created via direct registry lookup for framework '{framework}'."
-                )
+            if runner:
+                self._add_to_registries(agent_id, runner, framework, config)
                 return runner
-        except (AttributeError, TypeError, ImportError, RuntimeError) as e:
-            logger.debug(f"Direct registry lookup failed for '{framework}': {e}")
 
-        # Fallback: attempt registry.create_runner
-        try:
-            from agent_runners import registry as _reg  # type: ignore
-
-            runner = _reg.create_runner(framework, config or {}, agent_id=agent_id)
-            self.agent_registry.add_agent(agent_id, runner, framework, config or {})
-            self.agents[agent_id] = BackCompatRegistration(
-                runner=runner,
-                active=True,
-                created_at=datetime.now(),
-                total_decisions=0,
-                total_tool_calls=0,
-            )
-            self.stats["total_agents"] = len(self.agents)
-            self.stats["active_agents"] = len(
-                [a for a in self.agents.values() if self._is_active(a)]  # type: ignore[attr-defined]
-            )
-            logger.info(
-                f"Custom framework agent {agent_id} ({framework}) registered via registry.create_runner."
-            )
-            return runner
-        except (AttributeError, TypeError, ImportError, RuntimeError) as e:
-            logger.debug(f"registry.create_runner failed for '{framework}': {e}")
-
-        # Unified agent system default path
-        try:
+            # 4. Unified agent system default path
             pydantic_config = self._create_pydantic_config_from_dict(
                 agent_id, framework, config or {}
             )
@@ -675,84 +466,99 @@ class AgentManager:
             )
             unified_runner = UnifiedAgentRunner(unified_agent)
             runner_wrapper = UnifiedAgentRunnerWrapper(unified_runner, agent_id)
-            self.agent_registry.add_agent(
-                agent_id, runner_wrapper, framework, config or {}
-            )
             self.unified_agent_runners[agent_id] = unified_runner
-
-            # Mirror into back-compat agents map
-            self.agents[agent_id] = BackCompatRegistration(
-                runner=runner_wrapper,
-                active=True,
-                created_at=datetime.now(),
-                total_decisions=0,
-                total_tool_calls=0,
-            )
-            self.stats["total_agents"] = len(self.agents)
-            self.stats["active_agents"] = len(
-                [a for a in self.agents.values() if a.get("active")]
-            )
-
-            logger.info(
-                f"Unified agent {agent_id} ({framework}) registered successfully."
-            )
+            
+            self._add_to_registries(agent_id, runner_wrapper, framework, config)
+            logger.info(f"Unified agent {agent_id} ({framework}) registered successfully.")
             return runner_wrapper
-        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
+
+        except (AttributeError, TypeError, ValueError, RuntimeError, ImportError) as e:
             logger.error(f"Failed to register agent {agent_id} ({framework}): {e}")
-            self.agent_registry.add_agent(agent_id, None, framework, config or {})
-            self.agent_registry.mark_agent_as_failed(agent_id, str(e))
-            # Mirror failure into back-compat map
-            self.agents[agent_id] = {
-                "runner": None,
-                "active": False,
-                "created_at": datetime.now(),
-                "total_decisions": 0,
-                "total_tool_calls": 0,
-                "failure_reason": str(e),
-            }
-            self.stats["total_agents"] = len(self.agents)
-            self.stats["active_agents"] = len(
-                [a for a in self.agents.values() if a.get("active")]
-            )
-            self.total_errors += 1
+            self._handle_registration_failure(agent_id, framework, config, e)
             return None
 
-    def deregister_agent(self, agent_id: str) -> None:
-        """
-        Deregisters an agent from the manager and its registry.
+    def _add_to_registries(self, agent_id: str, runner: Any, framework: str, config: Optional[Dict[str, Any]] = None) -> None:
+        """Internal helper to update both the modern registry and back-compat mirror."""
+        reg = self.agent_registry.add_agent(agent_id, runner, framework, config or {})
+        # Update back-compat mirror
+        self.agents[agent_id] = BackCompatRegistration(
+            runner=runner,
+            active=runner is not None,
+            created_at=reg.created_at,
+            total_decisions=0,
+            total_tool_calls=0,
+        )
+        self._update_stats()
 
-        Initiates cleanup of the associated runner and removes the agent from tracking.
-        """
-        was_deregistered = self.agent_registry.deregister(agent_id)
-        if was_deregistered:
-            # Also remove from unified_agent_runners if present, though registry.deregister handles runner cleanup
+    def _handle_registration_failure(self, agent_id: str, framework: str, config: Dict[str, Any], error: Exception) -> None:
+        """Handle registration failure by updating registries with failed state."""
+        self.agent_registry.add_agent(agent_id, None, framework, config or {})
+        self.agent_registry.mark_agent_as_failed(agent_id, str(error))
+        
+        # Mirror failure into back-compat map
+        self.agents[agent_id] = {
+            "runner": None,
+            "active": False,
+            "created_at": datetime.now(),
+            "total_decisions": 0,
+            "total_tool_calls": 0,
+            "failure_reason": str(error),
+        }
+        self._update_stats()
+        self.total_errors += 1
+
+    def _update_stats(self) -> None:
+        """Update manager stats dictionary."""
+        self.stats["total_agents"] = self.agent_registry.agent_count()
+        self.stats["active_agents"] = self.agent_registry.active_agent_count()
+
+    def deregister_agent(self, agent_id: str) -> None:
+        """Deregisters an agent from the manager and its registry."""
+        if self.agent_registry.deregister(agent_id):
             if agent_id in self.unified_agent_runners:
                 del self.unified_agent_runners[agent_id]
-            logger.info(f"Agent {agent_id} successfully deregistered from manager.")
+            if agent_id in self.agents:
+                del self.agents[agent_id]
+            self._update_stats()
+            logger.info(f"Agent {agent_id} successfully deregistered.")
         else:
-            logger.warning(
-                f"Agent {agent_id} not found in registry, cannot deregister."
-            )
+            logger.warning(f"Agent {agent_id} not found in registry, cannot deregister.")
 
     def get_agent_runner(self, agent_id: str) -> Optional[AgentRunner]:
-        """
-        Retrieve the AgentRunner instance for a registered agent.
-        Returns None if the agent is not found or has no active runner.
-        """
+        """Retrieve the AgentRunner instance for a registered agent."""
         reg = self.agent_registry.get_agent(agent_id)
         return reg.runner if reg else None
 
     async def run_decision_cycle(self) -> None:
-        """
-        Executes a decision-making cycle for all active agents using an optimized, shared state context.
-        """
-        if not self.agent_registry.active_agent_count() > 0:
+        """Executes a decision-making cycle for all active agents using an optimized, shared state context."""
+        active_regs = self.agent_registry.list_active_agents()
+        if not active_regs:
             logger.debug("No active agents to run decision cycle.")
             self.total_decisions_skipped += 1
             return
 
-        # Create a shared, read-only context to minimize memory duplication.
-        shared_context = {
+        shared_context = self._build_shared_context()
+        logger.debug(f"Running decision cycle for {len(active_regs)} agents at tick {shared_context['tick']}...")
+
+        # Create tasks for all active agents
+        decision_tasks = [
+            asyncio.create_task(self._get_agent_decision(reg.runner, shared_context))
+            for reg in active_regs
+            if reg.runner
+        ]
+
+        results = await asyncio.gather(*decision_tasks, return_exceptions=True)
+
+        # Process results
+        for reg, result in zip(active_regs, results):
+            await self._process_decision_result(reg.agent_id, result, shared_context)
+
+        self.decision_cycles_completed += 1
+        logger.debug(f"Decision cycle completed for tick {shared_context['tick']}.")
+
+    def _build_shared_context(self) -> Dict[str, Any]:
+        """Build a shared context for agent decisions."""
+        return {
             "tick": self.event_bus.get_current_tick() if self.event_bus else 0,
             "simulation_time": datetime.now(),
             "products": (
@@ -767,47 +573,100 @@ class AgentManager:
             ),
         }
 
-        logger.debug(
-            f"Running decision cycle for {self.agent_registry.active_agent_count()} agents at tick {shared_context['tick']}..."
-        )
+    async def _process_decision_result(self, agent_id: str, result: Any, context: Dict[str, Any]) -> None:
+        """Handle the result of an agent decision (success or failure)."""
+        if isinstance(result, Exception):
+            self._handle_decision_error(agent_id, result)
+            return
 
-        decision_tasks = [
-            asyncio.create_task(
-                self._get_agent_decision(agent_reg.runner, shared_context)
-            )
-            for agent_id, agent_reg in self.agent_registry.active_agents().items()
-            if agent_reg.runner
-        ]
+        # Emit AgentDecisionEvent for observability
+        await self._publish_decision_event(agent_id, result, context)
 
-        agent_decisions = await asyncio.gather(*decision_tasks, return_exceptions=True)
-
-        # Process decisions
-        for i, result in enumerate(agent_decisions):
-            agent_id = list(self.agent_registry.active_agents().keys())[i]
-            if isinstance(result, Exception):
-                if isinstance(result, AgentRunnerTimeoutError):
-                    logger.warning(f"Decision timeout from agent {agent_id}: {result}")
-                    # Increment timeout counter and possibly mark as unresponsive instead of failed
-                    self.agent_registry.mark_agent_timeout(
-                        agent_id, threshold=self.timeout_unresponsive_threshold
-                    )
-                elif isinstance(result, AgentRunnerDecisionError):
-                    logger.error(f"Decision error from agent {agent_id}: {result}")
-                    self.agent_registry.mark_agent_as_failed(agent_id, str(result))
-                    self.total_errors += 1
-                else:
-                    logger.error(
-                        f"Unexpected error getting decision from agent {agent_id}: {result}",
-                        exc_info=True,
-                    )
-                    self.agent_registry.mark_agent_as_failed(agent_id, str(result))
-                    self.total_errors += 1
+        # Run arbitration and dispatch
+        processed = await self._arbitrate_and_dispatch(agent_id, result)
+        
+        # Update statistics
+        reg = self.agent_registry.get_agent(agent_id)
+        if reg:
+            reg.total_decisions += 1
+            reg.total_tool_calls += processed
+        
+        if agent_id in self.agents:
+            mirror = self.agents[agent_id]
+            if isinstance(mirror, dict):
+                mirror["total_decisions"] = int(mirror.get("total_decisions", 0)) + 1
+                mirror["total_tool_calls"] = int(mirror.get("total_tool_calls", 0)) + processed
             else:
-                processed = await self._arbitrate_and_dispatch(agent_id, result)
-                self.total_tool_calls += processed
+                mirror.total_decisions += 1
+                mirror.total_tool_calls += processed
+        
+        self.total_tool_calls += processed
 
-        self.decision_cycles_completed += 1
-        logger.debug(f"Decision cycle completed for tick {shared_context['tick']}.")
+    def _handle_decision_error(self, agent_id: str, error: Exception) -> None:
+        """Handle errors during decision making."""
+        if isinstance(error, AgentRunnerTimeoutError):
+            logger.warning(f"Decision timeout from agent {agent_id}: {error}")
+            self.agent_registry.mark_agent_timeout(
+                agent_id, threshold=self.timeout_unresponsive_threshold
+            )
+        elif isinstance(error, AgentRunnerDecisionError):
+            logger.error(f"Decision error from agent {agent_id}: {error}")
+            self.agent_registry.mark_agent_as_failed(agent_id, str(error))
+            self.total_errors += 1
+        else:
+            logger.error(f"Unexpected error getting decision from agent {agent_id}: {error}", exc_info=True)
+            self.agent_registry.mark_agent_as_failed(agent_id, str(error))
+            self.total_errors += 1
+            
+        # Synchronize mirror
+        if agent_id in self.agents:
+            mirror = self.agents[agent_id]
+            if isinstance(mirror, dict):
+                mirror["active"] = False
+                mirror["failure_reason"] = str(error)
+            else:
+                mirror.active = False
+        self._update_stats()
+
+    async def _publish_decision_event(self, agent_id: str, tool_calls: List[ToolCall], context: Dict[str, Any]) -> None:
+        """Publish an AgentDecisionEvent for observability."""
+        reasoning = " ".join([tc.reasoning for tc in tool_calls if tc.reasoning])
+        if not reasoning:
+            reasoning = "Agent performing routine analysis."
+
+        usage_info = {}
+        if self.budget_enforcer:
+            try:
+                usage_snapshot = self.budget_enforcer.get_usage_snapshot(agent_id)
+                tick_usage = usage_snapshot.get("tick", {})
+                usage_info = {
+                    "prompt_tokens": tick_usage.get("tokens", 0),
+                    "completion_tokens": 0,
+                    "total_tokens": tick_usage.get("tokens", 0),
+                    "total_cost_usd": tick_usage.get("cost_cents", 0) / 100.0
+                }
+            except Exception as e:
+                logger.warning(f"Failed to get usage for {agent_id}: {e}")
+
+        decision_event = AgentDecisionEvent(
+            event_id=f"decision_{agent_id}_{uuid.uuid4()}",
+            timestamp=datetime.now(),
+            agent_id=agent_id,
+            turn=int(context.get("tick", 0)),
+            simulation_time=context.get("simulation_time", datetime.now()),
+            reasoning=reasoning,
+            tool_calls=[
+                {
+                    "function": {
+                        "name": tc.tool_name,
+                        "arguments": json.dumps(tc.parameters) if isinstance(tc.parameters, dict) else str(tc.parameters)
+                    }
+                } for tc in tool_calls
+            ],
+            llm_usage=usage_info,
+        )
+        await self.event_bus.publish(decision_event)
+
 
     async def _get_agent_decision(
         self, runner: AgentRunner, context: Dict[str, Any]
@@ -1021,14 +880,18 @@ class AgentManager:
 
         # In a real system, this would involve routing to the actual tool implementation
         # For now, we'll just log and acknowledge
-        if self.agent_gateway:  # Add null check for agent_gateway
+        if self.agent_gateway:
             # The agent gateway would validate and execute the tool call, publishing events
             logger.debug(
                 f"Tool call '{tool_call.tool_name}' for agent {agent_id} submitted to AgentGateway."
             )
-            await self.agent_gateway.process_tool_call(
+            allowed = await self.agent_gateway.process_tool_call(
                 agent_id, tool_call, self.world_store, self.event_bus
             )
+            if not allowed:
+                logger.warning(
+                    f"Tool call '{tool_call.tool_name}' for agent {agent_id} was BLOCKED by AgentGateway."
+                )
         else:
             logger.warning(
                 f"No AgentGateway configured, cannot process tool call: {tool_call.tool_name}"
@@ -1094,6 +957,7 @@ class AgentManager:
                 "budget_enforcer": self.budget_enforcer,
                 "trust_metrics": self.trust_metrics,
                 "agent_gateway": self.agent_gateway,
+                "event_bus": self.event_bus,
                 "openrouter_api_key": self.openrouter_api_key,
             }
         )

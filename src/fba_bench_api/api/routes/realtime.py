@@ -186,6 +186,8 @@ def _map_dashboard_snapshot() -> dict:
                             else "unknown"
                         ),
                         "last_reasoning": str(meta.get("last_reasoning", "")),
+                        "last_tool_calls": meta.get("last_tool_calls", []),
+                        "llm_usage": meta.get("llm_usage", {}),
                         "financials": meta.get("financials", {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0}),
                         "recent_events": meta.get("recent_events", []),
                     }
@@ -210,6 +212,8 @@ def _map_dashboard_snapshot() -> dict:
                             else "unknown"
                         ),
                         "last_reasoning": str(a.get("last_reasoning", "")),
+                        "last_tool_calls": a.get("last_tool_calls", []),
+                        "llm_usage": a.get("llm_usage", {}),
                         "financials": a.get("financials", {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0}),
                         "recent_events": a.get("recent_events", []),
                     }

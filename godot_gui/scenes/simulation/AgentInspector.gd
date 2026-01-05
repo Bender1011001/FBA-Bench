@@ -10,6 +10,8 @@ signal dump_requested(agent_id)
 @onready var role_lbl = $VBoxContainer/TabContainer/Status/RoleLabel
 @onready var state_lbl = $VBoxContainer/TabContainer/Status/StateLabel
 @onready var thought_text = $VBoxContainer/TabContainer/Status/ThoughtPanel/ThoughtText
+@onready var llm_stats = $VBoxContainer/TabContainer/Cognition/LLMStats
+@onready var tool_call_list = $VBoxContainer/TabContainer/Cognition/ToolCallList
 @onready var cash_val = $VBoxContainer/TabContainer/Financials/CashRow/Value
 @onready var inv_val = $VBoxContainer/TabContainer/Financials/InventoryRow/Value
 @onready var profit_val = $VBoxContainer/TabContainer/Financials/ProfitRow/Value
@@ -22,9 +24,15 @@ var current_agent_id: String = ""
 func _ready():
 	close_btn.pressed.connect(func(): close_requested.emit())
 	debug_btn.pressed.connect(func(): dump_requested.emit(current_agent_id))
+	
+	# Setup ToolCallList
+	tool_call_list.columns = 2
+	tool_call_list.set_column_title(0, "Tool")
+	tool_call_list.set_column_title(1, "Arguments")
+	tool_call_list.column_titles_visible = true
 
 func update_agent_data(agent_data: Dictionary):
-	current_agent_id = agent_data.get("id", "Unknown")
+	current_agent_id = agent_data.get("id", agent_data.get("slug", "Unknown"))
 	agent_name_lbl.text = "Agent: " + current_agent_id
 	
 	# Update Status
@@ -33,10 +41,15 @@ func update_agent_data(agent_data: Dictionary):
 	role_lbl.text = "[b]Role:[/b] " + role
 	state_lbl.text = "[b]State:[/b] " + _get_colored_state(state)
 	
-	# Update "Thought" / Reasoning
-	# Assuming the backend sends a "last_reasoning" field
+	# Update "Thought" / Reasoning (Primary Value Prop)
 	var thought = agent_data.get("last_reasoning", "No active train of thought.")
+	if thought.strip_edges() == "":
+		thought = "Wait... (Agent is contemplating next move)"
 	thought_text.text = thought
+	
+	# Update Cognition (Tool Calls & LLM Stats)
+	_update_llm_stats(agent_data.get("llm_usage", {}))
+	_update_tool_calls(agent_data.get("last_tool_calls", []))
 	
 	# Update Financials
 	var financials = agent_data.get("financials", {})
@@ -48,19 +61,55 @@ func update_agent_data(agent_data: Dictionary):
 	profit_val.add_theme_color_override("font_color", Color.GREEN if profit >= 0 else Color.RED)
 	
 	# Update Logs
-	# Assuming backend sends recent events
 	var events = agent_data.get("recent_events", [])
 	log_list.clear()
 	for evt in events:
-		log_list.add_item(evt)
+		log_list.add_item(str(evt))
+
+func _update_llm_stats(usage: Dictionary):
+	if usage.is_empty():
+		llm_stats.text = "[color=gray]No LLM activity recorded for this turn.[/color]"
+		return
+		
+	var prompt = usage.get("prompt_tokens", 0)
+	var completion = usage.get("completion_tokens", 0)
+	var total = usage.get("total_tokens", prompt + completion)
+	var cost = usage.get("total_cost_usd", 0.0)
+	
+	llm_stats.text = "[b]LLM Performance:[/b]\n" + \
+		"• Tokens: %d (P: %d, C: %d)\n" % [total, prompt, completion] + \
+		"• Est. Cost: [color=yellow]$%.4f[/color]" % cost
+
+func _update_tool_calls(calls: Array):
+	tool_call_list.clear()
+	var root = tool_call_list.create_item()
+	
+	if calls.is_empty():
+		var item = tool_call_list.create_item(root)
+		item.set_text(0, "None")
+		item.set_text(1, "No tool calls in last decision cycle.")
+		return
+		
+	for call in calls:
+		var item = tool_call_list.create_item(root)
+		var tool_name = call.get("function", {}).get("name", "unknown")
+		var args = call.get("function", {}).get("arguments", "{}")
+		
+		# If args is a stringified JSON, try to make it prettier
+		if args is String and args.length() > 50:
+			args = args.substr(0, 47) + "..."
+			
+		item.set_text(0, tool_name)
+		item.set_text(1, str(args))
+		item.set_tooltip_text(1, str(call.get("function", {}).get("arguments", "")))
 
 func _get_colored_state(state: String) -> String:
 	match state.to_lower():
-		"active", "buying", "selling":
+		"active", "buying", "selling", "deciding":
 			return "[color=green]" + state + "[/color]"
-		"bankrupt", "error":
+		"bankrupt", "error", "failed":
 			return "[color=red]" + state + "[/color]"
-		"idle", "waiting":
+		"idle", "waiting", "sleeping":
 			return "[color=yellow]" + state + "[/color]"
 		_:
 			return state

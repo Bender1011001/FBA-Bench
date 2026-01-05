@@ -30,6 +30,14 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate per-tenant .env and optional .tfvars files from templates."
     )
+    
+    # Determine project root and default paths relative to this script
+    script_dir = Path(__file__).resolve().parent
+    project_root = script_dir.parent.parent
+    
+    default_output_root = project_root / "deploy" / "tenants"
+    default_tfvars_out = project_root / "infrastructure" / "terraform" / "env"
+    
     parser.add_argument(
         "--tenant-id",
         required=True,
@@ -62,13 +70,13 @@ def main():
     )
     parser.add_argument(
         "--output-root",
-        default="repos/fba-bench-enterprise/deploy/tenants",
-        help="Output root for .env files (default: repos/fba-bench-enterprise/deploy/tenants)"
+        default=str(default_output_root),
+        help=f"Output root for .env files (default: {default_output_root})"
     )
     parser.add_argument(
         "--tfvars-out",
-        default="repos/fba-bench-enterprise/infrastructure/terraform/env",
-        help="Output directory for .tfvars files (default: repos/fba-bench-enterprise/infrastructure/terraform/env)"
+        default=str(default_tfvars_out),
+        help=f"Output directory for .tfvars files (default: {default_tfvars_out})"
     )
     parser.add_argument(
         "--no-tfvars",
@@ -84,7 +92,7 @@ def main():
     args = parser.parse_args()
 
     # Paths
-    templates_dir = Path("repos/fba-bench-enterprise/infrastructure/config/templates")
+    templates_dir = script_dir / "templates"
     backend_tpl = templates_dir / "backend.env.tpl"
     tfvars_tpl = templates_dir / "tenant.tfvars.tpl"
 
