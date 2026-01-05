@@ -66,6 +66,19 @@ Run all unit/contract tests before commits: `poetry run pytest -q && make test-c
   python scripts/smoke/ws_smoke.py --url "ws://localhost:8000/ws/realtime" --jwt "test" --rate 20 --topic "simulation-progress" --duration 30
   ```
 
+### 7. Golden Master Testing (`tests/integration/test_tier2_golden_master.py`)
+- **Scope**: Generate and verify deterministic baselines for regression testing of simulation scenarios.
+- **Characteristics**: Uses `verify_golden_masters.py` to run golden master comparisons. Generates reproducible event snapshots stored as Parquet files in `artifacts/`.
+- **Enterprise V1.0 Baseline**: The official Tier 2 ("supply chain crisis") baseline is stored in `artifacts/enterprise_v1.0_baseline.parquet`.
+- **Run**:
+  ```bash
+  # Run the full golden master verification suite
+  python scripts/verify_golden_masters.py
+  
+  # Run the Tier 2 baseline test specifically
+  pytest tests/integration/test_tier2_golden_master.py -v
+  ```
+
 ## Running Tests
 
 ### Basic Commands

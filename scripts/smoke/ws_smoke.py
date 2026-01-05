@@ -6,7 +6,11 @@ Requirements (install locally, not added to project dependencies):
   pip install websockets
 
 CLI:
-  python scripts/smoke/ws_smoke.py --url "ws://localhost:8000/ws/realtime?topic=health" --jwt "<TOKEN>"
+  # Probe connection
+  python scripts/smoke/ws_smoke.py --url "ws://localhost:8000/ws/realtime" --jwt "<TOKEN>"
+
+  # Flood test (e.g. for Godot GUI)
+  python scripts/smoke/ws_smoke.py --url "ws://localhost:8000/ws/realtime" --jwt "test" --rate 20 --topic "simulation-progress" --duration 30
 
 Behavior:
 - Sets Sec-WebSocket-Protocol to "auth.bearer.token.<JWT>" as required by the backend

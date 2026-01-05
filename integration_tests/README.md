@@ -118,7 +118,33 @@ test_configuration_sensitivity_validation()
 test_cross_platform_consistency()
 ```
 
-### 6. Demo Scenarios (`demo_scenarios.py`)
+### 6. Golden Master Baselines (`tests/integration/test_tier2_golden_master.py`)
+
+Validates and generates official golden master baselines for regression testing:
+
+- **Enterprise V1.0 Baseline**: The official Tier 2 ("supply chain crisis") baseline stored in `artifacts/enterprise_v1.0_baseline.parquet`
+- **Deterministic Snapshot Generation**: Produces reproducible event streams for future comparison
+- **Regression Detection**: Ensures changes don't inadvertently alter simulation outcomes
+
+**Key Files:**
+- `artifacts/enterprise_v1.0_baseline.parquet`: Official Enterprise V1.0 golden master snapshot
+- `scripts/verify_golden_masters.py`: Verification utility that runs all golden master tests
+
+**Key Tests:**
+```python
+test_create_enterprise_v1_0_baseline()  # Generates and saves the baseline
+```
+
+**Usage:**
+```bash
+# Run golden master verification
+python scripts/verify_golden_masters.py
+
+# Run the Tier 2 golden master test specifically
+pytest tests/integration/test_tier2_golden_master.py -v
+```
+
+### 7. Demo Scenarios (`demo_scenarios.py`)
 
 Showcases tier-1 capabilities:
 

@@ -40,13 +40,7 @@ async def test_create_enterprise_v1_0_baseline():
     
     # Let's try to do it cleanly using the orchestration classes directly 
     # to ensure we have full control over event injection.
-    
-    config = SimulationConfig(
-        seed=seed,
-        days=duration_days,
-        tick_interval_seconds=0.01,
-        time_acceleration=100.0
-    )
+  
     
     # We need a robust way to run the simulation logic.
     # IntegrationTestSuite.create_test_simulation is good but we need to inject the specific events 
@@ -116,5 +110,4 @@ async def test_create_enterprise_v1_0_baseline():
     # Also verify that we actually saved it
     snapshot_path = EventSnapshot.ARTIFACTS_DIR / f"{git_sha}_{run_id}.parquet"
     assert snapshot_path.exists(), "Snapshot file was not created!"
-    print(f"✅ Saved Enterprise V1.0 Baseline to {snapshot_path}")
-
+    print(f"[OK] Saved Enterprise V1.0 Baseline to {snapshot_path}")

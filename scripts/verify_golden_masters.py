@@ -63,11 +63,11 @@ def main():
     
     # Exit non-zero if tests failed (pytest returns non-zero on failure)
     if result.returncode != 0:
-        print("\n❌ Golden master verification FAILED. Mismatches detected in outputs.")
+        print("\n[FAILED] Golden master verification FAILED. Mismatches detected in outputs.")
         print("Review the diffs above and regenerate golden masters if intentional.")
         sys.exit(1)
     else:
-        print("\n✅ Golden master verification PASSED. All outputs match baselines.")
+        print("\n[PASSED] Golden master verification PASSED. All outputs match baselines.")
         sys.exit(0)
 
 if __name__ == "__main__":

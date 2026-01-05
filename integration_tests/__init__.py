@@ -165,7 +165,7 @@ class IntegrationTestSuite:
             config={}, fee_service=fee_service
         )  # Pass config and fee_service
         trust_service = TrustScoreService(config={})  # Pass config
-        financial_audit_service = FinancialAuditService(config={})  # Pass config
+        financial_audit_service = FinancialAuditService()  # Config removed to match shim
 
         # Initialize metrics
         metric_suite = MetricSuite(

@@ -29,6 +29,13 @@
 - [ ] Error handling: 4xx/5xx responses include helpful messages
 - [ ] Performance: Local demo loads <2s, no console errors
 
+## Golden Master Validation
+
+- [ ] Enterprise V1.0 Baseline exists: `artifacts/enterprise_v1.0_baseline.parquet` is present
+- [ ] Verification script runs: `python scripts/verify_golden_masters.py` completes without errors
+- [ ] Tier 2 golden master test passes: `pytest tests/integration/test_tier2_golden_master.py -v`
+- [ ] Event snapshot is reproducible: Running the same test twice produces identical Parquet files
+
 ## Sales Demo — Validation Checklist
 
 - [ ] Backend .env prepared (no real secrets in repo)

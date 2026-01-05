@@ -139,7 +139,8 @@ Low-level simulation control.
 - **POST /{id}/stop**: Stop → status "stopped" (200)
 - **GET /{id}**: Status (cached via Redis) (200)
 
-Subscribe to WebSocket topic for real-time progress (e.g., ws://localhost:8000/ws/{topic}).
+Subscribe to WebSocket topic for real-time progress via the `/ws/realtime` endpoint (send `{"type":"subscribe", "topic":"..."}`).
+Verify with `scripts/smoke/ws_smoke.py`.
 
 ### Medusa (/api/v1/medusa)
 

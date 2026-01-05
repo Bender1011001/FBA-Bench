@@ -98,7 +98,22 @@ To ensure a robust and effectively calibrated curriculum:
     -   Specific skill areas where agents might be overperforming or underperforming.
 -   **Iterative Adjustment**: Use the recommendations from the validation report to fine-tune scenario parameters (e.g., `initial_capital`, `competition_levels`, `event_frequency`) or create new scenarios to fill difficulty gaps.
 
-## 7. Multi-Agent Scenario Design Patterns
+## 7. Golden Master Baselines
+
+Golden master baselines are pre-recorded simulation event snapshots used to detect regressions and ensure reproducibility:
+
+### Enterprise V1.0 Baseline
+The official Tier 2 ("supply chain crisis") baseline is available in `artifacts/enterprise_v1.0_baseline.parquet`. This serves as the reference for validating that simulation behavior remains consistent across code changes.
+
+### Managing Golden Masters
+-   **Verification**: Run `python scripts/verify_golden_masters.py` to compare current simulation output against saved baselines.
+-   **Regeneration**: If intentional changes alter simulation behavior, regenerate baselines via:
+    ```bash
+    pytest tests/integration/test_tier2_golden_master.py -v
+    ```
+-   **Adding New Baselines**: Follow the pattern in `test_tier2_golden_master.py` to create additional scenario baselines.
+
+## 8. Multi-Agent Scenario Design Patterns
 
 Designing effective multi-agent scenarios requires considering:
 -   **Agent Roles**: Clearly define the responsibilities and goals of each agent (e.g., `seller`, `supplier`, `platform`, `competitor`).

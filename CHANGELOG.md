@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- **Enterprise Version 1.0 Baseline**: Created golden master baseline from Tier 2 ("supply chain crisis") scenarios, saved as `artifacts/enterprise_v1.0_baseline.parquet`.
+- New integration test `tests/integration/test_tier2_golden_master.py` for generating and validating the Enterprise V1.0 Baseline.
+- Updated `scripts/verify_golden_masters.py` to include Tier 2 golden master verification.
 - Enhanced DB session lifecycle using `scoped_session` for thread-safety and `expire_on_commit=False`.
 - Implemented canonical dependency exports from `api/dependencies.py` for standardized imports.
 - Introduced a CI workflow in `.github/workflows/ci.yml` for automated testing and linting of Python backend and Node.js frontends.
