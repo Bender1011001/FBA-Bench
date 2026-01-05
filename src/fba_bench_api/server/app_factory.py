@@ -26,6 +26,7 @@ from fba_bench_api.api.routes import (
     llm as llm_routes,
     medusa as medusa_router,
     metrics as metrics_routes,
+    public_leaderboard as public_leaderboard_routes,
     realtime as realtime_routes,
     root as root_routes,
     scenarios as scenarios_routes,
@@ -237,6 +238,11 @@ UNPROTECTED_PATHS = {
     "/docs",
     "/redoc",
     "/openapi.json",
+    # Public Performance Index endpoints (designed for external access)
+    "/api/v1/public/leaderboard",
+    "/api/v1/public/leaderboard/widget",
+    "/api/v1/public/leaderboard/embed",
+    "/api/v1/public/stats",
 }
 
 
@@ -643,6 +649,8 @@ def create_app() -> FastAPI:
     app.include_router(setup_routes.router)
     # Mount dashboard and demo routes
     app.include_router(leaderboard_routes.router)
+    # Public Performance Index API (no auth required for public endpoints)
+    app.include_router(public_leaderboard_routes.router)
     app.include_router(demo_routes.router)
     # Mount Benchmarks router with normalized prefix
     app.include_router(benchmarks_routes.router, prefix="/api/v1")

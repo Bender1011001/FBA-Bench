@@ -1,0 +1,14 @@
+{
+  "provider": "Deepseek",
+  "models": [
+    {
+      "provider_rank": 1,
+      "global_rank": 3,
+      "model_name": "deepseek-v3.2",
+      "quality_score": 0.9,
+      "success_rate": 1.0,
+      "total_runs": 7
+    }
+  ],
+  "generated_at": "January 05, 2026 at 04:40 UTC"
+}

@@ -712,19 +712,19 @@
     <section class="container">
         <div class="stats-bar glass">
             <div class="stat">
-                <div class="stat__value">5</div>
+                <div class="stat__value">{{ summary.total_models }}</div>
                 <div class="stat__label">Models Ranked</div>
             </div>
             <div class="stat">
-                <div class="stat__value">35</div>
+                <div class="stat__value">{{ summary.total_runs }}</div>
                 <div class="stat__label">Benchmark Runs</div>
             </div>
             <div class="stat">
-                <div class="stat__value">87.1%</div>
+                <div class="stat__value">{{ "%.1f"|format(summary.avg_quality * 100) }}%</div>
                 <div class="stat__label">Avg. Quality Score</div>
             </div>
             <div class="stat">
-                <div class="stat__value">5</div>
+                <div class="stat__value">{{ summary.total_providers }}</div>
                 <div class="stat__label">AI Providers</div>
             </div>
         </div>
@@ -736,7 +736,7 @@
             <div class="leaderboard__header">
                 <div>
                     <h2 class="leaderboard__title">Global Leaderboard</h2>
-                    <p class="leaderboard__meta">Last updated: January 05, 2026 at 04:40 UTC</p>
+                    <p class="leaderboard__meta">Last updated: {{ generated_at }}</p>
                 </div>
                 <div class="leaderboard__filters">
                     <button class="filter-btn active" data-filter="all">All</button>
@@ -760,212 +760,53 @@
                         </tr>
                     </thead>
                     <tbody>
-                        
-                        <tr data-tier="flagship">
+                        {% for model in rankings %}
+                        <tr data-tier="{{ model.tier }}">
                             <td>
-                                <span class="rank-badge rank-1">
-                                    1
+                                <span class="rank-badge {% if loop.index <= 3 %}rank-{{ loop.index }}{% endif %}">
+                                    {{ loop.index }}
                                 </span>
                             </td>
                             <td>
                                 <div class="model-cell">
                                     <div class="model-avatar">
-                                        🚀
-                                        
+                                        {% if 'gpt' in model.model_name|lower %}🧠
+                                        {% elif 'claude' in model.model_name|lower %}⚡
+                                        {% elif 'gemini' in model.model_name|lower %}✨
+                                        {% elif 'llama' in model.model_name|lower %}🦙
+                                        {% elif 'grok' in model.model_name|lower %}🚀
+                                        {% elif 'deepseek' in model.model_name|lower %}🔍
+                                        {% else %}🤖{% endif %}
                                     </div>
                                     <div class="model-info">
-                                        <span class="model-name">grok-4.1-fast</span>
-                                        <span class="model-provider">X-Ai</span>
+                                        <span class="model-name">{{ model.model_name }}</span>
+                                        <span class="model-provider">{{ model.provider }}</span>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="tier-badge tier-flagship">flagship</span>
+                                <span class="tier-badge tier-{{ model.tier }}">{{ model.tier }}</span>
                             </td>
                             <td class="score-cell">
-                                94.0%
+                                {{ "%.1f"|format(model.quality_score * 100) }}%
                             </td>
                             <td>
                                 <div class="metric">
-                                    <span class="metric__value">100%</span>
+                                    <span class="metric__value">{{ "%.0f"|format(model.success_rate * 100) }}%</span>
                                 </div>
                             </td>
                             <td>
                                 <div class="metric">
-                                    <span class="metric__value">14.9s</span>
+                                    <span class="metric__value">{{ "%.1f"|format(model.avg_response_time) }}s</span>
                                 </div>
                             </td>
                             <td>
                                 <div class="metric">
-                                    <span class="metric__value">13,024</span>
+                                    <span class="metric__value">{{ "{:,}".format(model.total_tokens) }}</span>
                                 </div>
                             </td>
                         </tr>
-                        
-                        <tr data-tier="flagship">
-                            <td>
-                                <span class="rank-badge rank-2">
-                                    2
-                                </span>
-                            </td>
-                            <td>
-                                <div class="model-cell">
-                                    <div class="model-avatar">
-                                        🧠
-                                        
-                                    </div>
-                                    <div class="model-info">
-                                        <span class="model-name">gpt-5.2</span>
-                                        <span class="model-provider">Openai</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="tier-badge tier-flagship">flagship</span>
-                            </td>
-                            <td class="score-cell">
-                                92.0%
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">100%</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">34.8s</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">12,180</span>
-                                </div>
-                            </td>
-                        </tr>
-                        
-                        <tr data-tier="standard">
-                            <td>
-                                <span class="rank-badge rank-3">
-                                    3
-                                </span>
-                            </td>
-                            <td>
-                                <div class="model-cell">
-                                    <div class="model-avatar">
-                                        🔍
-                                        
-                                    </div>
-                                    <div class="model-info">
-                                        <span class="model-name">deepseek-v3.2</span>
-                                        <span class="model-provider">Deepseek</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="tier-badge tier-standard">standard</span>
-                            </td>
-                            <td class="score-cell">
-                                90.0%
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">100%</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">43.8s</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">8,228</span>
-                                </div>
-                            </td>
-                        </tr>
-                        
-                        <tr data-tier="free">
-                            <td>
-                                <span class="rank-badge ">
-                                    4
-                                </span>
-                            </td>
-                            <td>
-                                <div class="model-cell">
-                                    <div class="model-avatar">
-                                        ✨
-                                        
-                                    </div>
-                                    <div class="model-info">
-                                        <span class="model-name">gemini-3-pro-preview</span>
-                                        <span class="model-provider">Google</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="tier-badge tier-free">free</span>
-                            </td>
-                            <td class="score-cell">
-                                81.3%
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">100%</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">21.8s</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">15,143</span>
-                                </div>
-                            </td>
-                        </tr>
-                        
-                        <tr data-tier="flagship">
-                            <td>
-                                <span class="rank-badge ">
-                                    5
-                                </span>
-                            </td>
-                            <td>
-                                <div class="model-cell">
-                                    <div class="model-avatar">
-                                        ⚡
-                                        
-                                    </div>
-                                    <div class="model-info">
-                                        <span class="model-name">claude-opus-4.5</span>
-                                        <span class="model-provider">Anthropic</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="tier-badge tier-flagship">flagship</span>
-                            </td>
-                            <td class="score-cell">
-                                78.3%
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">100%</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">22.2s</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="metric">
-                                    <span class="metric__value">9,186</span>
-                                </div>
-                            </td>
-                        </tr>
-                        
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
