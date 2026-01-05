@@ -18,6 +18,7 @@ def main():
         "tests/test_reproducibility.py",
         "tests/validation/functional_validation.py",
         "integration_tests/test_scientific_reproducibility.py",
+        "tests/integration/test_tier2_golden_master.py",
     ]
     
     # Ensure we're in project root

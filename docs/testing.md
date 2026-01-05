@@ -57,6 +57,15 @@ Run all unit/contract tests before commits: `poetry run pytest -q && make test-c
   - `tests/performance/test_llm_latency.py`: API response times.
 - **Run**: `poetry run pytest tests/performance/ --benchmark-only` (manual; resource-intensive).
 
+### 6. Real-time & WebSocket Stress Tests
+- **Scope**: Validate the stability and performance of the real-time WebSocket infrastructure (`/ws/realtime`).
+- **Characteristics**: Uses `scripts/smoke/ws_smoke.py` to flood channels with high-frequency updates (e.g., verifying Godot GUI responsiveness).
+- **Run**:
+  ```bash
+  # Flood simulation-progress topic at 20Hz for 30s
+  python scripts/smoke/ws_smoke.py --url "ws://localhost:8000/ws/realtime" --jwt "test" --rate 20 --topic "simulation-progress" --duration 30
+  ```
+
 ## Running Tests
 
 ### Basic Commands

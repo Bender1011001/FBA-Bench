@@ -88,6 +88,28 @@ def main():
         action="store_true",
         help="Overwrite existing files"
     )
+    
+    # Demo Package Arguments
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Generate a self-contained demo package (docker-compose + scripts)"
+    )
+    parser.add_argument(
+        "--postgres-port",
+        default="5432",
+        help="Host port for Postgres (demo mode only)"
+    )
+    parser.add_argument(
+        "--redis-port",
+        default="6379",
+        help="Host port for Redis (demo mode only)"
+    )
+    parser.add_argument(
+        "--api-port",
+        default="8000",
+        help="Host port for API (demo mode only)"
+    )
 
     args = parser.parse_args()
 
@@ -95,6 +117,7 @@ def main():
     templates_dir = script_dir / "templates"
     backend_tpl = templates_dir / "backend.env.tpl"
     tfvars_tpl = templates_dir / "tenant.tfvars.tpl"
+    demo_compose_tpl = templates_dir / "demo.docker-compose.yml.tpl"
 
     output_root = Path(args.output_root)
     tfvars_out = Path(args.tfvars_out)
@@ -111,6 +134,11 @@ def main():
         "environment": args.environment,
         "api_image_tag": args.api_image_tag,
         "frontend_image_tag": args.frontend_image_tag,
+        # Demo subs
+        "postgres_port": args.postgres_port,
+        "redis_port": args.redis_port,
+        "api_port": args.api_port,
+        "redis_password": f"{args.tenant_id}_redis_secret", # distinct per tenant in demo
     }
 
     generated = []
@@ -139,6 +167,79 @@ def main():
             print(f"Generated: {tfvars_file}")
     else:
         print("Skipped .tfvars generation (--no-tfvars)")
+
+    # Generate Demo Package if requested
+    if args.demo:
+        compose_file = tenant_dir / "docker-compose.yml"
+        start_script = tenant_dir / "start_demo.sh"
+        start_bat = tenant_dir / "start_demo.bat"
+        
+        # docker-compose.yml
+        if not args.force and compose_file.exists():
+             print(f"Skipping {compose_file}: file exists")
+        else:
+            compose_content = render_template(demo_compose_tpl, subs)
+            with open(compose_file, 'w') as f:
+                f.write(compose_content)
+            generated.append(str(compose_file))
+            print(f"Generated: {compose_file}")
+
+        # start_demo.sh
+        if not args.force and start_script.exists():
+            print(f"Skipping {start_script}: file exists")
+        else:
+            with open(start_script, 'w') as f:
+                f.write("#!/bin/bash\n")
+                f.write("echo 'Starting FBA-Bench Enterprise Demo...'\n")
+                f.write("docker compose up -d\n")
+                f.write("echo 'Services started.'\n")
+                f.write(f"echo 'API: http://localhost:{args.api_port}'\n")
+            
+            # Make executable (Windows ignores this but harmless)
+            try:
+                start_script.chmod(0o755)
+            except OSError:
+                pass
+            
+            generated.append(str(start_script))
+            print(f"Generated: {start_script}")
+
+        # start_demo.bat
+        if not args.force and start_bat.exists():
+            print(f"Skipping {start_bat}: file exists")
+        else:
+            with open(start_bat, 'w') as f:
+                f.write("@echo off\n")
+                f.write("echo Starting FBA-Bench Enterprise Demo...\n")
+                f.write("docker compose up -d\n")
+                f.write("echo Services started.\n")
+                f.write(f"echo API: http://localhost:{args.api_port}\n")
+                f.write("pause\n")
+            generated.append(str(start_bat))
+            print(f"Generated: {start_bat}")
+
+        # README.txt
+        readme_file = tenant_dir / "README.txt"
+        if not args.force and readme_file.exists():
+            print(f"Skipping {readme_file}: file exists")
+        else:
+            with open(readme_file, 'w') as f:
+                f.write(f"FBA-Bench Enterprise - Demo Package ({args.tenant_id})\n")
+                f.write("===================================================\n\n")
+                f.write("Instructions:\n")
+                f.write("1. START BACKEND SERVICES\n")
+                f.write("   Run 'start_demo.bat' (Windows) or './start_demo.sh' (Linux/Mac).\n")
+                f.write("   This will start Postgres, Redis, and the FBA-Bench API Server in Docker.\n\n")
+                f.write("2. VERIFY API\n")
+                f.write(f"   Open your browser to: http://localhost:{args.api_port}/api/v1/health\n")
+                f.write("   You should see 'status': 'ok'.\n\n")
+                f.write("3. LAUNCH GODOT GUI\n")
+                f.write("   Run the provided FBA_Bench_Client executable.\n")
+                f.write(f"   It is configured to connect to http://localhost:{args.api_port} by default.\n\n")
+                f.write("4. SHUT DOWN\n")
+                f.write("   Run 'docker compose down' in this directory.\n")
+            generated.append(str(readme_file))
+            print(f"Generated: {readme_file}")
 
     if generated:
         print("\nSummary:")

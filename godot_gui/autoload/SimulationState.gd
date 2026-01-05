@@ -9,12 +9,14 @@ signal simulation_finished(results: Dictionary)
 
 var current_sim_id: String = ""
 var last_tick: int = 0
+var tick_data: Dictionary = {}
 var tick_history: Array = []
 var active_agents: Array = []
 var world_state: Dictionary = {}
 
 func _ready():
 	WebSocketClient.message_received.connect(_on_socket_message)
+	WebSocketClient.tick_received.connect(_process_tick)
 
 func _on_socket_message(data: Dictionary):
 	# Handle explicit type field (legacy protocol)
@@ -47,6 +49,7 @@ func _on_socket_message(data: Dictionary):
 
 func _process_tick(data: Dictionary):
 	last_tick = data.get("tick", 0)
+	tick_data = data
 	world_state = data.get("world", {})
 	active_agents = data.get("agents", [])
 	
@@ -61,7 +64,7 @@ func _process_tick(data: Dictionary):
 func _process_snapshot(data: Dictionary):
 	# Map snapshot format to tick-like structure for UI consumption
 	var kpis = data.get("kpis", {})
-	var tick_data = {
+	var snapshot_tick_data = {
 		"tick": data.get("tick", last_tick),
 		"metrics": {
 			"total_revenue": kpis.get("revenue", 0.0),
@@ -72,7 +75,7 @@ func _process_snapshot(data: Dictionary):
 		"world": {},
 		"heatmap": []
 	}
-	_process_tick(tick_data)
+	_process_tick(snapshot_tick_data)
 
 func reset():
 	current_sim_id = ""
