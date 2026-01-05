@@ -15,9 +15,9 @@ from pydantic import Field, PositiveInt, confloat
 from benchmarking.agents.base import BaseAgent
 from benchmarking.core.results import AgentRunResult
 from benchmarking.scenarios.base import BaseScenario, ScenarioConfig
-from fba_bench_core.services.market_simulator import MarketSimulationService
-from fba_bench_core.services.supply_chain_service import SupplyChainService
-from fba_bench_core.services.world_store import WorldStore
+from services.market_simulator import MarketSimulationService
+from services.supply_chain_service import SupplyChainService
+from services.world_store import WorldStore
 from fba_events.supplier import PlaceOrderCommand
 
 logger = logging.getLogger(__name__)

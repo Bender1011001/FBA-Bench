@@ -6,8 +6,8 @@ from money import Money
 
 from event_bus import AsyncioQueueBackend, EventBus
 from events import WorldStateSnapshotEvent
-from src.fba_bench_core.services.toolbox_api_service import ToolboxAPIService
-from src.fba_bench_core.services.toolbox_schemas import (
+from services.toolbox_api_service import ToolboxAPIService
+from services.toolbox_schemas import (
     LaunchProductRequest,
     ObserveRequest,
     SetPriceRequest,

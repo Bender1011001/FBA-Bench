@@ -7,8 +7,8 @@ from money import Money
 from agents.baseline.baseline_agent_v1 import BaselineAgentV1
 from event_bus import AsyncioQueueBackend, EventBus
 from events import WorldStateSnapshotEvent
-from src.fba_bench_core.services.toolbox_api_service import ToolboxAPIService
-from src.fba_bench_core.services.toolbox_schemas import ObserveRequest
+from services.toolbox_api_service import ToolboxAPIService
+from services.toolbox_schemas import ObserveRequest
 
 
 @pytest.fixture

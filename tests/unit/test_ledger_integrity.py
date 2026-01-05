@@ -7,7 +7,7 @@ properly enforced and that violations are caught and reported.
 import pytest
 from money import Money
 
-from fba_bench_core.services.ledger import (
+from services.ledger import (
     Account,
     AccountType,
     AccountingError,
@@ -16,7 +16,7 @@ from fba_bench_core.services.ledger import (
     Transaction,
     TransactionType,
 )
-from fba_bench_core.services.ledger.core import LedgerCore
+from services.ledger.core import LedgerCore
 
 
 class TestLedgerIntegrity:

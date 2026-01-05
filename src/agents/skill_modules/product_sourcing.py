@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 from money import Money
 
 # WorldStore global accessor (read-only usage for catalog)
-from fba_bench_core.services.world_store import get_world_store
+from services.world_store import get_world_store
 from fba_events.base import BaseEvent
 from fba_events.time_events import TickEvent
 

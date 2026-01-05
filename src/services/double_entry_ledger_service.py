@@ -1,9 +1,6 @@
-"""
-Double Entry Ledger Service facade.
+"""Double-Entry Ledger Service for FBA-Bench v3 - Compatibility layer."""
 
-Re-exports the core ledger service and financial models.
-"""
-from fba_bench_core.services.double_entry_ledger_service import (
+from .ledger import (
     Account,
     AccountType,
     DoubleEntryLedgerService,

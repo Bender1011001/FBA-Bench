@@ -92,7 +92,7 @@ All endpoints use Pydantic for validation; auth via JWT (configurable expiry in 
 
 - **Core Dependencies**: `fba_bench_core` → `fba_events` (events), `llm_interface` (AI calls).
 - **API Layer**: Depends on all packages; injects via `dependency_injector`.
-- **Modularity**: Absolute imports from `src/` (e.g., `from src.fba_bench_core.services import ...`). Avoid cycles via layered design (core → api).
+- **Modularity**: Absolute imports from `src/` (e.g., `from services import ...`). Avoid cycles via layered design (core → api).
 - **Configs**: YAML in `config/` and `configs/` loaded via Pydantic Settings; overrides via `.env`.
 - **Testing**: Pytest in `tests/` with markers (`unit`, `integration`); fixtures in `tests/fixtures/`.
 

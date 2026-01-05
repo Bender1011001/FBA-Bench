@@ -2,7 +2,7 @@ import importlib
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
-from src.fba_events.base import EventBus
+from fba_events.base import EventBus
 
 
 def get_registry():

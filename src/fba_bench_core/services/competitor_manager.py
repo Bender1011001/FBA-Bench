@@ -15,7 +15,7 @@ from personas import CompetitorPersona  # New import
 
 if TYPE_CHECKING:
     from fba_bench_core.event_bus import EventBus
-    from fba_bench_core.services.world_store import WorldStore  # For type hinting only
+    from services.world_store import WorldStore  # For type hinting only
 
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class CompetitorManager:
         if world_store is None:
             # Lazy import to avoid import cycles and keep runtime deps minimal
             try:
-                from fba_bench_core.services.world_store import (
+                from services.world_store import (
                     InMemoryStorageBackend as _InMemBackend,
                     WorldStore as _WorldStore,  # type: ignore
                 )

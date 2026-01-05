@@ -6,10 +6,10 @@ This guide provides instructions for starting the FBA-Bench application. The pro
 
 Before starting, ensure the following are installed and configured:
 
-- **Docker Desktop**: Required for backend services (Postgres/SQLite, Redis, API). Download from [docker.com](https://www.docker.com/products/docker-desktop/). Start Docker and ensure it's running (check system tray).
+- **Docker Desktop**: Required for backend services (Postgres, Redis, API). Download from [docker.com](https://www.docker.com/products/docker-desktop/). Start Docker and ensure it's running (check system tray).
 - **Python 3.9+**: Required for the backend and launcher scripts.
 - **Poetry**: Python dependency manager for the backend. Install via `pip install poetry` or [official guide](https://python-poetry.org/docs/#installation). Verify: `poetry --version`.
-- **Godot 4.3+** (optional): For the immersive GUI. Download from [godotengine.org](https://godotengine.org/download). The GUI can also be exported as a standalone executable.
+- **Godot 4.5+**: For the immersive GUI. Download from [godotengine.org](https://godotengine.org/download). 
 - **Git**: To clone the repo if needed. Verify: `git --version`.
 
 **Hardware**: At least 4GB RAM free, 2 CPU cores.
@@ -42,18 +42,29 @@ cp .env.example .env
 
 ### 3. Start the Application
 
-**Option A: Using the Godot GUI Launcher (Recommended)**
+**Option A: Docker Compose (Recommended)**
 
 ```bash
-poetry run python launch_godot_gui.py
+docker compose up -d
 ```
 
-This starts the FastAPI backend and launches the Godot GUI application. The GUI provides:
-- Real-time simulation visualization
-- Interactive leaderboard with filtering
-- Sandbox mode for experiment configuration
+This starts the full backend stack (API, Postgres, Redis) on http://localhost:8000.
 
-**Option B: Backend Only (API Server)**
+> **Note**: If the Docker API container fails with import errors, you may need to manually install missing dependencies:
+> ```bash
+> docker exec fba-api pip install opentelemetry-api opentelemetry-sdk asyncpg prometheus_client
+> docker exec -d fba-api python api_server.py
+> ```
+
+**Option B: Using the Godot GUI Launcher**
+
+```bash
+python launch_godot_gui.py
+```
+
+This starts the FastAPI backend (if not already running) and attempts to launch the Godot GUI. The launcher will detect if the backend is already running on port 8000.
+
+**Option C: Backend Only (API Server)**
 
 ```bash
 poetry run python api_server.py
@@ -61,27 +72,49 @@ poetry run python api_server.py
 
 Access the API docs at http://localhost:8000/docs.
 
-**Option C: Docker Compose**
-
-```bash
-docker compose up -d
-```
-
-This starts the full backend stack (API, Postgres, Redis).
-
 ## Using the Godot GUI
 
-The Godot GUI is located in `godot_gui/`. To run it:
+The Godot GUI is located in `godot_gui/`. 
 
-1. **With Godot Editor**: Open the project in Godot 4.3+ and press F5
-2. **With the Launcher**: Run `python launch_godot_gui.py` (starts backend automatically)
+### Running the GUI
+
+1. **Open with Godot Editor**:
+   - Launch Godot 4.5+
+   - Click **Import** → Browse to `godot_gui/`
+   - Select `project.godot` → **Import & Edit**
+   - Press **F5** to run the simulation
+
+2. **With the Launcher** (if Godot is in PATH):
+   ```bash
+   python launch_godot_gui.py
+   ```
+
 3. **Standalone Export**: Export the project from Godot and run the executable
 
 ### GUI Features
 
-- **Simulation View**: Real-time 2D visualization of agent decisions, warehouse operations, and market dynamics
+- **Simulation View**: Real-time 2D visualization of agent decisions, warehouse operations with zone visualization (Receiving, Storage, Packing, Shipping)
 - **Leaderboard**: Sortable, filterable rankings of AI models with verification status
 - **Sandbox**: Configure experiments with custom scenarios, agent models, and parameters
+
+### GUI Navigation
+
+- **Top Bar**: Switch between Simulation, Leaderboard, and Sandbox views
+- **Status Indicator**: Shows connection status (Green = Connected, Red = Disconnected)
+- **Simulation Controls**: Start/Stop/Step buttons, speed slider, scenario/model dropdowns
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/health` | GET | Health check |
+| `/api/v1/simulation` | POST | Create new simulation |
+| `/api/v1/simulation/{id}/start` | POST | Start simulation |
+| `/api/v1/simulation/{id}/run` | POST | Run simulation (generates tick events) |
+| `/api/v1/scenarios` | GET | List available scenarios |
+| `/api/v1/llm/models` | GET | List available LLM models |
+| `/api/v1/leaderboard` | GET | Get leaderboard data |
+| `/ws/realtime` | WebSocket | Real-time event streaming |
 
 ## Verification
 
@@ -89,10 +122,10 @@ After startup, verify status:
 
 | Component       | Endpoint/Command                              | Expected Status                          |
 |-----------------|-----------------------------------------------|------------------------------------------|
-| API             | `curl http://localhost:8000/health`           | `{"status": "healthy", ...}` (200 OK)   |
-| Database        | `docker compose logs db`                      | No errors; connections accepted          |
-| Redis           | `docker exec fba-redis-1 redis-cli ping`      | `PONG`                                   |
-| Godot GUI       | Launch via `launch_godot_gui.py`              | Green "Connected" status indicator       |
+| API             | `curl http://localhost:8000/api/v1/health`    | `{"status": "healthy", ...}` or `{"status": "degraded"}` |
+| Database        | `docker compose logs fba-postgres`            | No errors; connections accepted          |
+| Redis           | `docker exec fba-redis redis-cli -a fba_dev_redis ping` | `PONG`                       |
+| Godot GUI       | Launch via Godot Editor                       | Green "Connected" status indicator       |
 
 ## Stopping and Cleanup
 
@@ -116,22 +149,31 @@ docker compose down -v
    - Error: "Bind address already in use"
    - Fix: Kill processes using the port or edit ports in `.env`.
 
-3. **Godot Not Found**:
-   - Warning: "Godot not found in PATH"
-   - Fix: Install Godot 4.3+ or add it to your PATH. The backend still runs without Godot.
+3. **Godot Project Won't Open**:
+   - Error: Parse errors in GDScript files
+   - Fix: Clear the `.godot/` cache folder and reimport the project.
 
-4. **WebSocket Connection Failed**:
+4. **Godot Not Found**:
+   - Warning: "Godot not found in PATH"
+   - Fix: Open Godot manually and import the `godot_gui/` project.
+
+5. **WebSocket Connection Failed**:
    - Symptom: GUI shows "Disconnected"
    - Fix: Ensure the backend is running on port 8000. Check firewall settings.
 
-5. **API Health Check Fails**:
-   - Fix: Check backend logs: `docker compose logs api`. Ensure `.env` is configured.
+6. **API Health Check Fails**:
+   - Fix: Check backend logs: `docker compose logs fba-api`. Ensure `.env` is configured.
+
+7. **Docker Container Import Errors**:
+   - Error: "Could not import fba_bench_api"
+   - Fix: See the Docker note in Quick Start section for manual dependency installation.
 
 ### Advanced Troubleshooting
 
 - **Full Restart**: `docker compose down -v && docker compose up -d`
-- **Logs**: `docker compose logs api | tail -50`
+- **Logs**: `docker compose logs fba-api --tail 50`
 - **Debug Mode**: Set `UVICORN_RELOAD=true` in `.env`
+- **Clear Godot Cache**: Delete `godot_gui/.godot/` folder
 
 For issues, check [CONTRIBUTING.md](CONTRIBUTING.md) or open a GitHub issue with logs.
 

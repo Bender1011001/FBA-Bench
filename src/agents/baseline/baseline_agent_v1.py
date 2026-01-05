@@ -6,8 +6,8 @@ from typing import Optional
 
 from money import Money
 
-from src.fba_bench_core.services.toolbox_api_service import ToolboxAPIService
-from src.fba_bench_core.services.toolbox_schemas import (
+from services.toolbox_api_service import ToolboxAPIService
+from services.toolbox_schemas import (
     ObserveRequest,
     SetPriceRequest,
     SetPriceResponse,

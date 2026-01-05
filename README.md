@@ -64,9 +64,16 @@ This executes a learning scenario, tracks metrics, and outputs results to `resul
 
 For API server:
 ```
-poetry run uvicorn src.fba_bench_api.main:app --reload --host 0.0.0.0 --port 8000
+python api_server.py
 ```
 Access docs at http://localhost:8000/docs.
+
+For the Godot GUI:
+```
+# Option 1: Open Godot 4.5+, import godot_gui/, press F5
+# Option 2: Use the launcher (starts backend automatically)
+python launch_godot_gui.py
+```
 
 ## Development Setup
 See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile commands for linting (`make lint`), testing (`make test-all`), and local CI (`make ci-local`).

@@ -20,8 +20,8 @@ from typing import Any, Dict, List, Optional
 from money import Money
 
 from fba_bench_core.domain.market.customer import Customer, CustomerPool
-from fba_bench_core.services.trust_score_service import TrustScoreService
-from fba_bench_core.services.world_store import WorldStore
+from services.trust_score_service import TrustScoreService
+from services.world_store import WorldStore
 from fba_events.bus import EventBus, get_event_bus
 from fba_events.competitor import CompetitorPricesUpdated
 from fba_events.inventory import InventoryUpdate

@@ -18,7 +18,7 @@ from ..metrics.extensible_metrics import MetricResult
 
 # Import services for dependency injection
 try:
-    from fba_bench_core.services import services
+    from services import services
 except ImportError:
     # Fallback for testing or when services module is not available
     services = None

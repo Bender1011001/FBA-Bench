@@ -5,7 +5,7 @@ No modifications to behavior; purely for import neutralization during test colle
 """
 
 # Re-export all public symbols from the real ledger package
-from fba_bench_core.services.ledger import (
+from services.ledger import (
     Account,
     AccountType,
     DoubleEntryLedgerService,

@@ -67,7 +67,30 @@ size_flags_vertical = 3
 [node name="ThoughtText" type="RichTextLabel" parent="VBoxContainer/TabContainer/Status/ThoughtPanel"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
+bbcode_enabled = true
 text = "Analyzing market volatility... competitor prices dropped by 5%. Deciding to hold inventory to avoid margin squeeze."
+
+[node name="Cognition" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LLMStats" type="RichTextLabel" parent="VBoxContainer/TabContainer/Cognition"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[b]LLM Usage:[/b] 0 tokens ($0.00)"
+fit_content = true
+
+[node name="ToolCallsLabel" type="Label" parent="VBoxContainer/TabContainer/Cognition"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "TOOL CALLS:"
+
+[node name="ToolCallList" type="Tree" parent="VBoxContainer/TabContainer/Cognition"]
+layout_mode = 2
+size_flags_vertical = 3
+hide_root = true
 
 [node name="Financials" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
 visible = false

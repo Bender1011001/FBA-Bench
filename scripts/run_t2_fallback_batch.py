@@ -71,9 +71,9 @@ except Exception:
 
 # Prefer src package imports for core services
 try:
-    from fba_bench_core.services.sales_service import SalesService
-    from fba_bench_core.services.trust_score_service import TrustScoreService
-    from fba_bench_core.services.world_store import WorldStore
+    from services.sales_service import SalesService
+    from services.trust_score_service import TrustScoreService
+    from services.world_store import WorldStore
 except Exception as e:
     print(f"Could not import core services from src: {e}", file=sys.stderr)
     raise

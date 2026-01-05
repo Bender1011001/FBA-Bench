@@ -31,7 +31,7 @@ from typing import Dict, List, Optional
 from money import Money
 
 from fba_bench_core.event_bus import EventBus, get_event_bus
-from fba_bench_core.services.world_store import WorldStore
+from services.world_store import WorldStore
 from fba_events.inventory import InventoryUpdate
 from fba_events.supplier import PlaceOrderCommand
 from fba_events.time_events import TickEvent

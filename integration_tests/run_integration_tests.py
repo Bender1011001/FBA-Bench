@@ -81,9 +81,9 @@ class IntegrationTestRunner:
                 # Fallback: Run T0 with OpenRouterBot (LLM testing) even without agent_runners
                 logger.info("DemoScenarios not available (agent_runners missing). Running T0 with OpenRouterBot.")
                 from baseline_bots.bot_factory import BotFactory
-                from fba_bench_core.services.sales_service import SalesService
-                from fba_bench_core.services.trust_score_service import TrustScoreService
-                from fba_bench_core.services.world_store import WorldStore
+                from services.sales_service import SalesService
+                from services.trust_score_service import TrustScoreService
+                from services.world_store import WorldStore
                 from fba_events.bus import get_event_bus
                 from financial_audit import FinancialAuditService
                 from metrics.metric_suite import MetricSuite
@@ -224,9 +224,9 @@ class IntegrationTestRunner:
                 # and forces more frequent LLM decisions to simulate stress/behavioral checks.
                 logger.info("DemoScenarios not available (agent_runners missing). Running minimal T2 fallback with LLM-powered agent.")
                 from baseline_bots.bot_factory import BotFactory
-                from fba_bench_core.services.sales_service import SalesService
-                from fba_bench_core.services.trust_score_service import TrustScoreService
-                from fba_bench_core.services.world_store import WorldStore
+                from services.sales_service import SalesService
+                from services.trust_score_service import TrustScoreService
+                from services.world_store import WorldStore
                 from fba_events.bus import get_event_bus
                 from financial_audit import FinancialAuditService
                 from metrics.metric_suite import MetricSuite

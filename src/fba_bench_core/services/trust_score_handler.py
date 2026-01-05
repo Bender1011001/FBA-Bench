@@ -7,7 +7,7 @@ from src.fba_bench_core.event_bus import EventBus
 from src.fba_bench_core.events import SaleProcessedEvent
 from src.fba_bench_core.models.sales_result import SalesResult
 from src.fba_bench_core.money import Money
-from src.fba_bench_core.services.trust_score_service import TrustScoreService
+from services.trust_score_service import TrustScoreService
 
 logger = logging.getLogger(__name__)
 
