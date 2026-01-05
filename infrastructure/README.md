@@ -15,17 +15,10 @@ The skeleton enables dry-run planning for sandbox environments, generating compu
 - Bash (macOS/Linux) or PowerShell (Windows) for scripts.
 - Git for version control (`.gitignore` excludes state files and sensitive vars).
 
-## Files Overview
-
-- `terraform/`:
-  - [`providers.tf`](terraform/providers.tf): Configures local/random/null providers (no cloud providers).
-  - [`variables.tf`](terraform/variables.tf): Input variables with defaults and placeholders.
-  - [`main.tf`](terraform/main.tf): Minimal resources (`random_id` for tenant suffix, `null_resource` for plan-time summary).
-  - [`outputs.tf`](terraform/outputs.tf): Non-sensitive summary output (excludes secrets like `jwt_secret`).
-  - [`terraform.tfvars.example`](terraform/terraform.tfvars.example): Template for variable values—copy to `tenant.tfvars` and customize.
-- `scripts/`:
-  - [`deploy_sandbox.sh`](scripts/deploy_sandbox.sh): Bash script for init/validate/plan (run from repo root).
-  - [`deploy_sandbox.ps1`](scripts/deploy_sandbox.ps1): PowerShell equivalent.
+- `config/`:
+  - [`generate_tenant_env.sh`](config/generate_tenant_env.sh): Unified generator for tenant configs and portable demo packages.
+  - [`generate_tenant_env.py`](config/generate_tenant_env.py): Core Python logic for template rendering and file generation.
+  - `templates/`: J2/Template files for `.env`, `.tfvars`, and Docker Compose.
 
 ## Variables Reference
 
@@ -72,28 +65,25 @@ Run from the repository root (`c:/Users/admin/Downloads/fba` or equivalent).
 
 Expected: A plan showing 2 resources to add (`random_id.tenant_suffix`, `null_resource.sandbox_summary`) with no changes/destroys. Outputs preview the sandbox summary.
 
-### Using Scripts (Recommended)
+### Using the Unified Generator
 
-Run from repository root. Scripts handle directory changes, var file setup, and output instructions.
+Run from repository root. The script handles environment variable generation and optional portable demo packaging.
 
-#### macOS/Linux (Bash)
+#### Generate Standard Tenant Config (Bash/WSL)
 ```bash
-bash repos/fba-bench-enterprise/infrastructure/scripts/deploy_sandbox.sh [tenant.tfvars]
-# Example: bash .../deploy_sandbox.sh tenant.tfvars
-# Defaults to tenant.tfvars if omitted; creates from example if missing.
+./infrastructure/config/generate_tenant_env.sh --tenant-id demo --domain demo.local
 ```
 
-#### Windows (PowerShell)
+#### Generate Standard Tenant Config (Windows/Direct)
 ```powershell
-powershell -ExecutionPolicy Bypass -File repos/fba-bench-enterprise/infrastructure/scripts/deploy_sandbox.ps1 -VarFile tenant.tfvars
-# Defaults to tenant.tfvars if omitted; creates from example if missing.
+python infrastructure/config/generate_tenant_env.py --tenant-id demo --domain demo.local
 ```
 
-Scripts output:
-- Init: Downloads providers (random, null, local).
-- Validate: Confirms syntax.
-- Plan: Generates `plan.out` with compact warnings.
-- Instructions: How to show/apply (apply not executed).
+#### Generate Portable Demo Package
+```bash
+./infrastructure/config/generate_tenant_env.sh --tenant-id demo --domain demo.local --demo
+```
+This outputs a self-contained Docker package to `deploy/tenants/demo/backend/`.
 
 ## Safety Notes
 
@@ -107,7 +97,7 @@ For next phases (e.g., cloud providers, per-tenant generation), see project road
 
 ## Per-tenant Config Generation
 
-This section covers generating tenant-specific configuration files (.env and terraform.tfvars) from templates using the provided scripts. These files are output to `infrastructure/tenants/<tenant_slug>/` and are git-ignored to prevent committing sensitive data.
+This section covers generating tenant-specific configuration files (`.env` and `terraform.tfvars`) from templates using the unified generator. These files are output to `deploy/tenants/<tenant_slug>/` (.env) and `infrastructure/terraform/env/` (.tfvars) and are git-ignored to prevent committing sensitive data.
 
 ### Variables Explanation and Defaults
 
@@ -132,60 +122,37 @@ Templates use `${VAR}` placeholders. Unknown placeholders remain unsubstituted t
 
 Run from the repository root.
 
-#### Bash
+#### Unified Command
 ```bash
-./infrastructure/scripts/generate_tenant_configs.sh demo --domain=demo.example.com --api-url=http://localhost:8000 --web-url=http://localhost:5173 --stripe-public-key=pk_test_CHANGE_ME --price-id=price_123CHANGE_ME --jwt-secret=CHANGE_ME_DEV
+./infrastructure/config/generate_tenant_env.sh \
+    --tenant-id demo \
+    --domain demo.example.com \
+    --environment sandbox \
+    --api-image-tag latest \
+    --frontend-image-tag latest
 ```
 
-#### PowerShell
-```powershell
-./infrastructure/scripts/generate_tenant_configs.ps1 -Tenant demo -Domain demo.example.com -ApiUrl http://localhost:8000 -WebUrl http://localhost:5173 -StripePublicKey pk_test_CHANGE_ME -PriceId price_123CHANGE_ME -JwtSecret CHANGE_ME_DEV
-```
+- `deploy/tenants/demo/backend/.env`
+- `infrastructure/terraform/env/demo.tfvars`
 
-#### Python Direct
-```bash
-python infrastructure/scripts/generate_tenant_configs.py --tenant demo --domain demo.example.com --api-url http://localhost:8000 --web-url http://localhost:5173 --stripe-public-key pk_test_CHANGE_ME --price-id price_123CHANGE_ME --jwt-secret CHANGE_ME_DEV
-```
-
-### Outputs
-- `infrastructure/tenants/demo/.env`
-- `infrastructure/tenants/demo/terraform.tfvars`
-
-### Safety Notes
-- Do not commit generated files; `tenants/` is git-ignored (with `.gitkeep` to preserve the directory).
+- Do not commit generated files; `deploy/tenants/` and `infrastructure/terraform/env/*.tfvars` are git-ignored.
 - Secrets must be provided via environment variables or secure vaults in production; values here are placeholders only.
 - Generation is idempotent: skips existing files unless `--force` is used.
-- Verify generated `terraform.tfvars` with `terraform plan -var-file=../tenants/demo/terraform.tfvars` in the `infrastructure/terraform/` directory.
+- Verify generated `.tfvars` with `terraform plan -var-file=env/demo.tfvars` in the `infrastructure/terraform/` directory.
 
-## Demo Provisioning Playbook (Dry-run)
-
-### Overview
-One-command demo dry-run that generates tenant config and runs a no-op Terraform plan using the local/null/random providers.
-
-### Prerequisites
-- Terraform >= 1.4, on PATH.
-- Python 3.9+, on PATH.
-
-### Bash Usage Examples
-```bash
-./scripts/provision_demo_tenant.sh
-```
-```bash
-./scripts/provision_demo_tenant.sh --tenant=demo-na --domain=demo.na.example.com --api-url=http://localhost:8000 --web-url=http://localhost:5173 --stripe-public-key=pk_test_CHANGE_ME --price-id=price_123CHANGE_ME --jwt-secret=CHANGE_ME_DEV --force
-```
-
-### PowerShell Usage Examples
-```powershell
-./scripts/provision_demo_tenant.ps1
-```
-```powershell
-./scripts/provision_demo_tenant.ps1 -Tenant demo-eu -Domain demo.eu.example.com -ApiUrl http://localhost:8000 -WebUrl http://localhost:5173 -StripePublicKey pk_test_CHANGE_ME -PriceId price_123CHANGE_ME -JwtSecret CHANGE_ME_DEV -Force
-```
+### Provisioning Steps
+1. **Generate Environment**: Use `./infrastructure/config/generate_tenant_env.sh` (see above).
+2. **Review/Edit**: Customize `deploy/tenants/<tenant>/backend/.env` or `infrastructure/terraform/env/<tenant>.tfvars`.
+3. **Plan Infrastructure**:
+   ```bash
+   cd infrastructure/terraform
+   terraform plan -var-file=env/<tenant>.tfvars
+   ```
 
 ### What it Does
-- Generates tenant configs under [`infrastructure/tenants/<tenant>/`](repos/fba-bench-enterprise/infrastructure/tenants/.gitkeep)
-- Executes Terraform init/validate/plan using [`infrastructure/terraform/`](repos/fba-bench-enterprise/infrastructure/terraform/providers.tf)
-- Produces plan-<tenant>.out (not applied)
+- Generates tenant configs under `deploy/tenants/<tenant>/` and `infrastructure/terraform/env/`.
+- Prepares logic for portable Docker packages (if `--demo` is used).
+- Supports dry-run validation via subsequent Terraform commands.
 
 ### Safety Notes
 - No real cloud providers are configured; only local/null/random resources.

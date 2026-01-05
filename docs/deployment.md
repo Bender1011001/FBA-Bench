@@ -54,6 +54,25 @@ Use `docker-compose.prod.yml` for secure, scaled deployment.
    - Nginx config in docker-compose.prod.yml (certbot or mount certs).
    - OTLP: TLS enforced (see observability.md).
 
+6. **Domain Configuration (fbabench.com)**:
+   The production domain is configured in `config/config.yaml`:
+   ```yaml
+   app:
+     name: "FBA-Bench Enterprise"
+     version: "1.0.0"
+     domain: "fbabench.com"
+   
+   server:
+     host: "0.0.0.0"
+     port: 8000
+     cors_origins:
+       - "http://localhost:8080"  # Godot Local
+       - "https://fbabench.com"   # Production Domain
+       - "https://www.fbabench.com"
+   ```
+   - Ensure DNS points to your server/load balancer.
+   - CORS is pre-configured for both local Godot development and production.
+
 ### Environment-Specific
 
 - **Staging**: Use docker-compose.staging.yml (similar to prod, test data).

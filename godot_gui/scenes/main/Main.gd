@@ -32,6 +32,18 @@ func _ready():
 	WebSocketClient.connect_to_server()
 	_check_api_health()
 
+	# Add disclaimer footer
+	var disclaimer = Label.new()
+	disclaimer.text = "FBA-Bench is a simulation tool. Not financial advice. © 2026 Proprietary."
+	disclaimer.add_theme_font_size_override("font_size", 10)
+	disclaimer.add_theme_color_override("font_color", Color(1, 1, 1, 0.5))
+	
+	# Position at bottom right
+	disclaimer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	disclaimer.position -= Vector2(10, 10) # Padding
+	
+	add_child(disclaimer)
+
 func _setup_animations():
 	# Simple glow animation for status dot
 	var tween = create_tween().set_loops()

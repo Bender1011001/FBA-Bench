@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Resolve repo root: walk up from script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Change to repo root
 cd "$REPO_ROOT"
@@ -40,14 +40,22 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check dependencies
-if ! command -v python &> /dev/null; then
+if ! command -v python3 &> /dev/null; then
     echo "Error: Python is required but not found in PATH."
     exit 1
 fi
 
+# Check Terraform
+TERRAFORM_CMD="terraform"
 if ! command -v terraform &> /dev/null; then
-    echo "Error: Terraform is required but not found in PATH."
-    exit 1
+    # Check parent directory for terraform.exe (Windows/Git Bash common setup)
+    if [ -f "$REPO_ROOT/../terraform.exe" ]; then
+        TERRAFORM_CMD="$REPO_ROOT/../terraform.exe"
+        echo "Found terraform at $TERRAFORM_CMD"
+    else
+        echo "Error: Terraform is required but not found in PATH."
+        exit 1
+    fi
 fi
 
 # Generate tenant configs
@@ -57,7 +65,7 @@ if [ "$FORCE" = true ]; then
 fi
 
 echo "Generating tenant configs for '$TENANT'..."
-python "infrastructure/scripts/generate_tenant_configs.py" \
+python3 "infrastructure/scripts/generate_tenant_configs.py" \
     --tenant "$TENANT" \
     --domain "$DOMAIN" \
     --api-url "$API_URL" \
@@ -74,13 +82,13 @@ TF_DIR="infrastructure/terraform"
 cd "$TF_DIR"
 
 echo "Initializing Terraform..."
-terraform init -upgrade
+"$TERRAFORM_CMD" init -upgrade
 
 echo "Validating Terraform configuration..."
-terraform validate
+"$TERRAFORM_CMD" validate
 
 echo "Running Terraform plan..."
-terraform plan \
+"$TERRAFORM_CMD" plan \
     -var-file="../tenants/$TENANT/terraform.tfvars" \
     -out "plan-$TENANT.out" \
     -compact-warnings

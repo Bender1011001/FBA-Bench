@@ -12,4 +12,4 @@ if [[ ! -f "$PYTHON_SCRIPT" ]]; then
   exit 1
 fi
 
-python "$PYTHON_SCRIPT" "$@"
+python3 "$PYTHON_SCRIPT" "$@"

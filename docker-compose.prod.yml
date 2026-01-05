@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "80:8000"
     env_file:
       - .env.prod
     depends_on:
@@ -14,13 +14,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      otel-collector:
-        condition: service_healthy
     volumes:
       - ./ssl:/etc/nginx/ssl:ro
-    command: ["/start.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/nginx-health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -77,11 +74,11 @@ services:
 
   redis:
     image: redis:7-alpine
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "redis_password_dev", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "redis_password_dev", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -133,7 +130,6 @@ services:
         soft: 65536
         hard: 65536
     depends_on:
-      - app
       - postgres
       - redis
     deploy:
@@ -254,7 +250,9 @@ services:
         max-size: "10m"
         max-file: "5"
     ulimits:
-      nofile: 65536:65536
+      nofile:
+        soft: 65536
+        hard: 65536
     deploy:
       resources:
         limits:

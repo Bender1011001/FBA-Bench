@@ -1,27 +1,7 @@
-# terraform.tfvars template - matches variables.tf inputs
-#
-# Generated per-tenant via config generation script. Do not commit real values
-# or generated files to version control. Use placeholders during local dev;
-# in production, inject secure values via Terraform variables, env vars, or vaults.
-# This template assumes variables.tf defines all listed vars with appropriate types/descriptions.
-#
-# Substituted variables (defaults applied during generation):
-# - DOMAIN_NAME: example.com
-# - ENVIRONMENT: sandbox
-# - API_IMAGE_TAG: latest
-# - WEB_IMAGE_TAG: latest
-# - API_PUBLIC_BASE_URL: http://localhost:8000
-# - FRONTEND_BASE_URL: http://localhost:5173
-# - STRIPE_PUBLIC_KEY: pk_test_CHANGE_ME
-# - STRIPE_PRICE_ID_DEFAULT: price_123CHANGE_ME
-# - JWT_SECRET: CHANGE_ME_DEV (generate secure random; never commit real)
-
-domain_name = "${DOMAIN_NAME}"
-environment = "${ENVIRONMENT}"
-api_image_tag = "${API_IMAGE_TAG}"
-web_image_tag = "${WEB_IMAGE_TAG}"
-api_public_base_url = "${API_PUBLIC_BASE_URL}"
-frontend_base_url = "${FRONTEND_BASE_URL}"
-stripe_public_key = "${STRIPE_PUBLIC_KEY}"
-stripe_price_id_default = "${STRIPE_PRICE_ID_DEFAULT}"
-jwt_secret = "${JWT_SECRET}"
+environment = "${environment}"
+domain_name = "${domain}"
+public_app_base_url = "${public_app_base_url}"
+api_image_tag = "${api_image_tag}"
+frontend_image_tag = "${frontend_image_tag}"
+jwt_secret = "CHANGE_ME_${tenant}"
+stripe_secret_key = "sk_test_CHANGE_ME"

@@ -16,8 +16,8 @@ Link references:
 - Frontend client: [frontend/src/api/authClient.ts](repos/fba-bench-enterprise/frontend/src/api/authClient.ts)
 - Billing page: [web/src/components/BillingPage.tsx](repos/fba-bench-enterprise/web/src/components/BillingPage.tsx)
 - Terraform skeleton: [infrastructure/terraform/providers.tf](repos/fba-bench-enterprise/infrastructure/terraform/providers.tf)
-- Tenant generator: [infrastructure/scripts/generate_tenant_configs.py](repos/fba-bench-enterprise/infrastructure/scripts/generate_tenant_configs.py)
-- Demo provision wrappers: [infrastructure/scripts/provision_demo_tenant.sh](repos/fba-bench-enterprise/infrastructure/scripts/provision_demo_tenant.sh), [infrastructure/scripts/provision_demo_tenant.ps1](repos/fba-bench-enterprise/infrastructure/scripts/provision_demo_tenant.ps1)
+- Tenant generator: [infrastructure/config/generate_tenant_env.sh](repos/fba-bench-enterprise/infrastructure/config/generate_tenant_env.sh) (Wraps `.py` generator)
+
 
 ## Prerequisites and Environment Setup
 - **Tools**: Python 3.10+, Node 18+, Terraform ≥1.4, Stripe CLI (optional).
@@ -31,12 +31,21 @@ Link references:
   - Backend: [/.env.example](repos/fba-bench-enterprise/.env.example)
   - Web: [web/.env.example](repos/fba-bench-enterprise/web/.env.example)
 
-## One-Command Sandbox Dry-Run (No Apply)
-- **Bash**: `./infrastructure/scripts/provision_demo_tenant.sh --tenant=demo`
-- **PowerShell**: `./infrastructure/scripts/provision_demo_tenant.ps1 -Tenant demo`
+## One-Command Tenant Provisioning
+- **Bash**: `./infrastructure/config/generate_tenant_env.sh --tenant-id demo --domain demo.local --environment dev`
 - **Resulting files**:
-  - Tenant .env, tfvars under [infrastructure/tenants/demo/](repos/fba-bench-enterprise/infrastructure/tenants/.gitkeep)
-  - Terraform plan in [infrastructure/terraform/](repos/fba-bench-enterprise/infrastructure/terraform/providers.tf)
+  - Tenant .env in `deploy/tenants/demo/backend/.env`
+  - Terraform .tfvars in `infrastructure/terraform/env/demo.tfvars`
+
+## Generating Portable Demo Package
+To create a self-contained Docker package for off-line/local client demos:
+- **Command**: `./infrastructure/config/generate_tenant_env.sh --tenant-id client_name --domain client.demo --demo`
+- **Output**: `deploy/tenants/client_name/backend/`
+- **Artifacts**:
+  - `docker-compose.yml`: Custom ports/secrets.
+  - `start_demo.bat` / `start_demo.sh`: One-click launchers.
+  - `README.txt`: Instructions for the client.
+
 
 ## Timeboxed Talk Track (18–20 Minutes Total)
 - **0–2m: Framing** — Problem and outcomes: "FBA Bench Enterprise solves secure, scalable AI benchmarking for teams. Today, we'll demo auth, billing, and sandbox setup to show how it qualifies leads and drives revenue."
@@ -45,7 +54,7 @@ Link references:
 - **6–11m: Billing (Two Paths)**:
   - With test Stripe keys: "Click 'Subscribe' to create Checkout Session (URL returned), optionally open; 'Manage Billing' shows portal if a customer exists."
   - Without keys: "Show graceful 'Billing unavailable' messages; explain env-gating and secure defaults for production."
-- **11–15m: Managed Sandbox** — Walk through dry-run infra plan (local/null/random only): "Provision isolated environments via Terraform—dry-run generates configs without deployment."
+- **11–15m: Managed Sandbox / Demo Package** — Show one-click tenant generation: "Provision isolated environments or generate portable demo packages for on-premise trials."
 - **15–18m: Q&A and Next Steps** — "Questions? Let's discuss POC, sandbox access, and security compliance."
 
 Timing cues: Presenter signals transitions (e.g., "Next, billing..."); SE drives UI; monitor clock for 20m cap.
@@ -56,7 +65,7 @@ Timing cues: Presenter signals transitions (e.g., "Next, billing..."); SE drives
 3. **Register Test User → Login → Show Account**: Use UI forms; confirm profile loads via /auth/me.
 4. **(Optional) Set Stripe Test Vars → Subscribe (Checkout) → Portal (if Customer Exists)**: Trigger endpoints; show session URLs.
 5. **(Optional) Webhook Simulation**: Use Stripe CLI if configured (see below).
-6. **Run Sandbox Dry-Run Script**: Execute provision command; show generated tfvars and plan file.
+6. **Run Tenant Generator**: Execute `generate_tenant_env.sh` (with or without `--demo`); show generated package/assets.
 
 ## Optional: Webhook Simulation (Only if STRIPE_WEBHOOK_SECRET Configured)
 - Install Stripe CLI: Download from Stripe docs.
@@ -77,5 +86,5 @@ Roles: Primary (Presenter) narrates; Secondary (Driver/SE) executes steps; inlin
 - Backend: `uvicorn api.server:app --reload`; `alembic upgrade head`.
 - Web: `cd web && npm run dev`; `npm test`.
 - Tests: `pytest`; `cd web && npm test`.
-- Sandbox: See dry-run above; full plan: `cd infrastructure/terraform && terraform plan -var-file=../tenants/demo/terraform.tfvars`.
+- Sandbox: See generating steps above; full plan: `cd infrastructure/terraform && terraform plan -var-file=env/demo.tfvars`.
 - Links to CI: [/.github/workflows/ci.yml](repos/fba-bench-enterprise/.github/workflows/ci.yml)

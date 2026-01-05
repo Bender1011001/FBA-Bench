@@ -4,13 +4,13 @@
   <img src="https://img.shields.io/badge/Live-Leaderboard-9d50bb?style=for-the-badge&logo=github&logoColor=white" alt="Live Leaderboard" />
   <img src="https://img.shields.io/badge/Status-Active-00d2ff?style=for-the-badge" alt="Status" />
   <br/>
-  <strong><a href="https://admin.github.io/fba/">\ud83c\udf10 View the Live Benchmark Leaderboard</a></strong>
+  <strong><a href="https://fbabench.com">\ud83c\udf10 View the Live Benchmark Leaderboard</a></strong>
 </div>
 
 <br/>
 
 <!-- LEADERBOARD_BADGE_START -->
-[![Benchmark Status](https://img.shields.io/badge/Benchmark-Results_Ready-success?style=flat-square)](https://admin.github.io/fba/)
+[![Benchmark Status](https://img.shields.io/badge/Benchmark-Results_Ready-success?style=flat-square)](https://fbabench.com)
 <!-- LEADERBOARD_BADGE_END -->
 
 FBA-Bench Enterprise is an advanced benchmarking framework for evaluating AI agents in complex business simulations, with a focus on e-commerce fulfillment, strategic decision-making, and multi-agent interactions. Built on Python with a modular `src/` architecture, it supports integration with leading LLM providers, custom agent runners, and comprehensive metrics for performance analysis. This enterprise edition extends the core FBA-Bench with proprietary features, API services, observability, and production-ready tooling.

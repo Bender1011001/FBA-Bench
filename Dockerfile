@@ -16,17 +16,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # System dependencies for common wheels (e.g., cryptography) and build
 RUN apt-get update -y \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      build-essential \
-      curl \
-      libffi-dev \
-      libpq-dev \
-      gcc \
- && rm -rf /var/lib/apt/lists/*
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libffi-dev \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
 RUN python -m pip install --upgrade pip setuptools wheel \
- && python -m pip install "poetry==${POETRY_VERSION}"
+    && python -m pip install "poetry==${POETRY_VERSION}"
 
 WORKDIR /app
 ENV PYTHONPATH=/app/src
@@ -48,8 +48,8 @@ COPY api_server.py ./
 
 # Create an unprivileged user and writable data dir
 RUN useradd -ms /bin/bash appuser \
- && mkdir -p /data /app/logs \
- && chown -R appuser:appuser /app /data
+    && mkdir -p /data /app/logs \
+    && chown -R appuser:appuser /app /data
 USER appuser
 
 EXPOSE 8000

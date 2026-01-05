@@ -89,14 +89,18 @@ docker-compose -f "$COMPOSE_FILE" up -d --no-deps app  # Update app first
 sleep 10  # Initial wait
 
 # Wait for app healthcheck
+HEALTHY=false
 for i in {1..30}; do
   if docker-compose -f "$COMPOSE_FILE" ps app | grep -q "healthy"; then
     echo -e "${GREEN}App healthy.${NC}"
+    HEALTHY=true
     break
   fi
   echo -e "${YELLOW}Waiting for app health... ($i/30)${NC}"
   sleep 10
-else
+done
+
+if [ "$HEALTHY" = false ]; then
   echo -e "${RED}Error: App failed healthcheck.${NC}"
   docker-compose -f "$COMPOSE_FILE" logs app
   exit 1
