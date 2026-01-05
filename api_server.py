@@ -18,9 +18,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 try:
     from fba_bench_api.server.app_factory import create_app
-except ImportError:
+except ImportError as e:
     # Fallback if src isn't structued as expected or dependencies missing
-    print("Error: Could not import fba_bench_api. Ensure dependencies are installed.")
+    print(f"Error: Could not import fba_bench_api. Detail: {e}")
+    import traceback
+    traceback.print_exc()
     sys.exit(1)
 
 # Create the application instance for uvicorn to discover
@@ -29,12 +31,12 @@ app = create_app()
 if __name__ == "__main__":
     host = os.getenv("UVICORN_HOST", "0.0.0.0")
     port = int(os.getenv("UVICORN_PORT", "8000"))
-    reload = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
+    # reload = os.getenv("UVICORN_RELOAD", "false").lower() == "true" 
+    # Reload not supported when passing app instance
 
     uvicorn.run(
-        "api_server:app",
+        app,
         host=host,
         port=port,
-        reload=reload,
         log_level="info",
     )

@@ -21,23 +21,17 @@ extends Control
 @onready var progress_bar = $MarginContainer/HSplitContainer/ResultsPanel/VBoxContainer/ProgressBar
 
 var is_running: bool = false
+var pending_simulation_id: String = ""
+var current_websocket_topic: String = ""
 
 func _ready():
-	_setup_dropdowns()
 	_connect_signals()
+	_fetch_initial_data()
 
-func _setup_dropdowns():
-	scenario_dropdown.clear()
-	scenario_dropdown.add_item("tier_0_baseline.yaml")
-	scenario_dropdown.add_item("tier_1_moderate.yaml")
-	scenario_dropdown.add_item("tier_2_advanced.yaml")
-	scenario_dropdown.add_item("tier_3_expert.yaml")
-	
-	agent_dropdown.clear()
-	agent_dropdown.add_item("gpt-4o")
-	agent_dropdown.add_item("claude-3-5-sonnet")
-	agent_dropdown.add_item("gemini-2.0-flash")
-	agent_dropdown.add_item("greedy-baseline")
+func _fetch_initial_data():
+	_log("Fetching configuration from backend...")
+	ApiClient.get_scenarios()
+	ApiClient.get_models()
 
 func _connect_signals():
 	volatility_slider.value_changed.connect(_on_volatility_changed)
@@ -45,8 +39,66 @@ func _connect_signals():
 	run_btn.pressed.connect(_on_run_pressed)
 	save_btn.pressed.connect(_on_save_pressed)
 	
+	ApiClient.request_completed.connect(_on_api_request_completed)
+	ApiClient.request_failed.connect(_on_api_request_failed)
+	
 	SimulationState.simulation_updated.connect(_on_tick_received)
 	SimulationState.simulation_finished.connect(_on_experiment_finished)
+
+func _on_api_request_completed(endpoint: String, response: Variant):
+	if endpoint == "/api/v1/scenarios":
+		_populate_scenarios(response)
+	elif endpoint == "/api/v1/llm/models":
+		_populate_models(response)
+	elif endpoint == "/api/v1/simulation":
+		# Step 1 complete: Simulation created, now start it
+		if response is Dictionary and response.has("id"):
+			pending_simulation_id = response["id"]
+			current_websocket_topic = response.get("websocket_topic", "")
+			_log("Simulation created: %s" % pending_simulation_id)
+			_log("Starting simulation...")
+			ApiClient.start_simulation_by_id(pending_simulation_id)
+		else:
+			_log("[color=red]Failed to create simulation: Invalid response[/color]")
+			_reset_run_state()
+	elif endpoint.ends_with("/start"):
+		# Step 2 complete: Simulation started, now trigger run and connect WebSocket
+		_log("[color=green]Simulation started![/color]")
+		_log("Triggering simulation run...")
+		ApiClient.run_simulation_by_id(pending_simulation_id)
+	elif endpoint.ends_with("/run"):
+		# Step 3 complete: Simulation running, connect WebSocket
+		_log("[color=cyan]Simulation running! Subscribing to topic: %s[/color]" % current_websocket_topic)
+		WebSocketClient.connect_to_server()
+		WebSocketClient.subscribe_topic(current_websocket_topic)
+
+func _on_api_request_failed(endpoint: String, error: String):
+	_log("[color=red]Error fetching %s: %s[/color]" % [endpoint, error])
+	if endpoint == "/api/v1/simulation" or endpoint.ends_with("/start"):
+		_reset_run_state()
+
+func _reset_run_state():
+	is_running = false
+	run_btn.disabled = false
+	pending_simulation_id = ""
+
+func _populate_scenarios(data: Variant):
+	scenario_dropdown.clear()
+	if data is Dictionary and data.has("scenarios"):
+		for scenario in data["scenarios"]:
+			scenario_dropdown.add_item(scenario.get("id", "unknown"))
+	elif data is Array:
+		for scenario in data:
+			if scenario is Dictionary:
+				scenario_dropdown.add_item(scenario.get("id", "unknown"))
+	_log("Scenarios loaded.")
+
+func _populate_models(data: Variant):
+	agent_dropdown.clear()
+	if data is Dictionary and data.has("models"):
+		for model in data["models"]:
+			agent_dropdown.add_item(model.get("id", "unknown"))
+	_log("Models loaded.")
 
 func _on_volatility_changed(value: float):
 	volatility_label.text = "%.2f" % value
@@ -67,8 +119,8 @@ func _on_run_pressed():
 	var config = _build_config()
 	_log("Config: " + JSON.stringify(config))
 	
-	ApiClient.start_simulation(config)
-	WebSocketClient.connect_to_server()
+	# Step 1: Create simulation with config as metadata
+	ApiClient.create_simulation(config)
 
 func _build_config() -> Dictionary:
 	return {
@@ -112,8 +164,14 @@ func _on_experiment_finished(results: Dictionary):
 
 func _on_save_pressed():
 	var config = _build_config()
-	# Future: Save config to file
-	_log("[i]Config saved (not implemented)[/i]")
+	var file_path = "user://sandbox_config.json"
+	var file = FileAccess.open(file_path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(config, "\t"))
+		file.close()
+		_log("[color=green]Config saved to %s[/color]" % ProjectSettings.globalize_path(file_path))
+	else:
+		_log("[color=red]Failed to save config![/color]")
 
 func _log(text: String):
 	results_log.append_text(text + "\n")

@@ -72,7 +72,12 @@ class GodotGUILauncher:
         return None
 
     def start_backend(self):
-        """Start the FastAPI backend server."""
+        """Start the FastAPI backend server or use existing one."""
+        # Check if backend is already running
+        if self._check_backend_ready():
+            logger.info("✓ Backend already running on http://localhost:8000")
+            return True
+
         logger.info("Starting FastAPI backend...")
         
         env = os.environ.copy()
@@ -88,14 +93,32 @@ class GodotGUILauncher:
         )
         
         # Wait for backend to be ready
-        time.sleep(2)
+        for _ in range(10):
+            if self._check_backend_ready():
+                logger.info("✓ Backend started on http://localhost:8000")
+                return True
+            time.sleep(1)
         
-        if self.backend_process.poll() is None:
-            logger.info("✓ Backend started on http://localhost:8000")
-            return True
-        else:
+        if self.backend_process.poll() is not None:
             logger.error("✗ Backend failed to start")
             return False
+        
+        return True
+
+    def _check_backend_ready(self) -> bool:
+        """Check if backend API key endpoints are responsive."""
+        try:
+            import urllib.request
+            resp = urllib.request.urlopen("http://localhost:8000/api/v1/health", timeout=1)
+            return resp.status == 200
+        except Exception:
+            try:
+                 # Fallback for old health endpoint or just root check
+                 import urllib.request
+                 resp = urllib.request.urlopen("http://localhost:8000/docs", timeout=1)
+                 return resp.status == 200
+            except Exception:
+                return False
 
     def start_godot(self):
         """Launch the Godot GUI application."""

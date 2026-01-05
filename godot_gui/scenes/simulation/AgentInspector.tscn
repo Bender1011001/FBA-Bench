@@ -1,0 +1,136 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx82m5k3n1pq"]
+
+[ext_resource type="Script" path="res://scenes/simulation/AgentInspector.gd" id="1_ai"]
+
+[node name="AgentInspector" type="PanelContainer"]
+custom_minimum_size = Vector2(300, 400)
+offset_right = 300.0
+offset_bottom = 400.0
+script = ExtResource("1_ai")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"HeaderPanel"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Header"]
+layout_mode = 2
+
+[node name="AgentName" type="Label" parent="VBoxContainer/Header/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = null
+text = "Agent-001"
+
+[node name="CloseButton" type="Button" parent="VBoxContainer/Header/HBoxContainer"]
+layout_mode = 2
+text = "×"
+flat = true
+
+[node name="TabContainer" type="TabContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Status" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RoleLabel" type="RichTextLabel" parent="VBoxContainer/TabContainer/Status"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[b]Role:[/b] Fulfillment Manager"
+fit_content = true
+
+[node name="StateLabel" type="RichTextLabel" parent="VBoxContainer/TabContainer/Status"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[b]Current State:[/b] [color=green]Active[/color]"
+fit_content = true
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/TabContainer/Status"]
+layout_mode = 2
+
+[node name="LatestThought" type="Label" parent="VBoxContainer/TabContainer/Status"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "LATEST REASONING:"
+
+[node name="ThoughtPanel" type="PanelContainer" parent="VBoxContainer/TabContainer/Status"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ThoughtText" type="RichTextLabel" parent="VBoxContainer/TabContainer/Status/ThoughtPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Analyzing market volatility... competitor prices dropped by 5%. Deciding to hold inventory to avoid margin squeeze."
+
+[node name="Financials" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CashRow" type="HBoxContainer" parent="VBoxContainer/TabContainer/Financials"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TabContainer/Financials/CashRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cash on Hand:"
+
+[node name="Value" type="Label" parent="VBoxContainer/TabContainer/Financials/CashRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+text = "$12,450.00"
+
+[node name="InventoryRow" type="HBoxContainer" parent="VBoxContainer/TabContainer/Financials"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TabContainer/Financials/InventoryRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Inventory Value:"
+
+[node name="Value" type="Label" parent="VBoxContainer/TabContainer/Financials/InventoryRow"]
+layout_mode = 2
+text = "$5,200.00"
+
+[node name="ProfitRow" type="HBoxContainer" parent="VBoxContainer/TabContainer/Financials"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TabContainer/Financials/ProfitRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Net Profit (YTD):"
+
+[node name="Value" type="Label" parent="VBoxContainer/TabContainer/Financials/ProfitRow"]
+layout_mode = 2
+text = "+$1,150.00"
+
+[node name="AuditLog" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="LogList" type="ItemList" parent="VBoxContainer/TabContainer/AuditLog"]
+layout_mode = 2
+size_flags_vertical = 3
+item_count = 3
+item_0/text = "T+45: Sold 10 units @ $50"
+item_1/text = "T+42: Restocked 50 units"
+item_2/text = "T+30: Adjusted price to $52"
+
+[node name="Actions" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="BanButton" type="Button" parent="VBoxContainer/Actions"]
+layout_mode = 2
+text = "BAN"
+
+[node name="DebugButton" type="Button" parent="VBoxContainer/Actions"]
+layout_mode = 2
+text = "DUMP STATE"

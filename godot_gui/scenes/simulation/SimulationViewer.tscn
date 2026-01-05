@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b7nk3m8x5v2pq"]
+[gd_scene load_steps=3 format=3 uid="uid://b7nk3m8x5v2pq"]
 
 [ext_resource type="Script" path="res://scenes/simulation/SimulationViewer.gd" id="1_sim"]
+[ext_resource type="PackedScene" uid="uid://cx82m5k3n1pq" path="res://scenes/simulation/AgentInspector.tscn" id="2_insp"]
 
 [node name="SimulationViewer" type="Control"]
 layout_mode = 3
@@ -149,6 +150,19 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+
+[node name="AgentInspector" parent="HSplitContainer/CenterPanel/OverlayUI" instance=ExtResource("2_insp")]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -320.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 420.0
+grow_horizontal = 0
 
 [node name="ZoomControls" type="VBoxContainer" parent="HSplitContainer/CenterPanel/OverlayUI"]
 layout_mode = 1

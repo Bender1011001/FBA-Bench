@@ -31,9 +31,13 @@ ENV PYTHONPATH=/app/src
 
 # Leverage Docker layer caching: copy manifestation first
 COPY pyproject.toml ./
+COPY README.md ./
 
 # Install ALL dependencies (main + dev + test)
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-interaction --no-ansi --no-root
+
+# Manually install missing dependencies
+RUN pip install opentelemetry-api opentelemetry-sdk opentelemetry-instrumentation-fastapi
 
 # Copy source code and configuration
 COPY src/ ./src/

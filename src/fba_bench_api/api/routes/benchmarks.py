@@ -40,8 +40,11 @@ class BenchmarkService:
         self.completed_runs: Dict[str, RunMetrics] = {}
         self.run_lock = asyncio.Lock()
         self.worker_task = None
-        if os.getenv("TESTING") != "true":
+    async def start(self):
+        """Start the background worker."""
+        if os.getenv("TESTING") != "true" and self.worker_task is None:
             self.worker_task = asyncio.create_task(self._worker())
+
 
     async def _worker(self):
         """Background worker to process queued runs."""

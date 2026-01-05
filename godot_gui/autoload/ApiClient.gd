@@ -49,10 +49,25 @@ func _on_request_completed(result: int, response_code: int, headers: PackedStrin
 
 # Specific helper methods for FBA-Bench endpoints
 func get_simulation_status() -> void:
-	get_request("/api/simulation/status")
+	get_request("/api/v1/simulation/snapshot")
 
 func get_leaderboard() -> void:
-	get_request("/api/leaderboard")
+	get_request("/api/v1/leaderboard")
 
-func start_simulation(config: Dictionary) -> void:
-	post_request("/api/simulation/start", config)
+# Step 1: Create a simulation record (returns ID and websocket_topic)
+func create_simulation(metadata: Dictionary = {}) -> void:
+	post_request("/api/v1/simulation", {"metadata": metadata})
+
+# Step 2: Start a previously created simulation by its ID
+func start_simulation_by_id(simulation_id: String) -> void:
+	post_request("/api/v1/simulation/%s/start" % simulation_id, {})
+
+# Step 3: Run simulation (triggers background tick generation)
+func run_simulation_by_id(simulation_id: String) -> void:
+	post_request("/api/v1/simulation/%s/run" % simulation_id, {})
+
+func get_scenarios() -> void:
+	get_request("/api/v1/scenarios")
+
+func get_models() -> void:
+	get_request("/api/v1/llm/models")

@@ -26,63 +26,44 @@ func _ready():
 	_connect_signals()
 	_update_nav_buttons()
 	_update_log("GUI Initialized. Connecting to backend...")
+	_setup_animations()
 	
 	# Attempt initial connection
 	WebSocketClient.connect_to_server()
 	_check_api_health()
 
-func _connect_signals():
-	WebSocketClient.connected.connect(_on_socket_connected)
-	WebSocketClient.disconnected.connect(_on_socket_disconnected)
-	ApiClient.request_failed.connect(_on_api_failed)
-	
-	sim_btn.pressed.connect(_show_simulation)
-	leaderboard_btn.pressed.connect(_show_leaderboard)
-	sandbox_btn.pressed.connect(_show_sandbox)
-	theme_toggle.pressed.connect(_toggle_theme)
+func _setup_animations():
+	# Simple glow animation for status dot
+	var tween = create_tween().set_loops()
+	tween.tween_property(status_dot, "modulate:a", 0.4, 1.0).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(status_dot, "modulate:a", 1.0, 1.0).set_trans(Tween.TRANS_SINE)
 
-func _check_api_health():
-	ApiClient.get_simulation_status()
-
-func _on_socket_connected():
-	status_dot.color = Color(0.2, 1.0, 0.4)
-	status_label.text = "Connected"
-	_update_log("Real-time stream established.")
-
-func _on_socket_disconnected():
-	status_dot.color = Color(1.0, 0.2, 0.2)
-	status_label.text = "Disconnected"
-	_update_log("Connection lost. Retrying...")
-
-func _on_api_failed(endpoint: String, error: String):
-	_update_log("API Error [" + endpoint + "]: " + error)
-
-func _update_log(msg: String):
-	log_label.text = msg
-	print("[Main] ", msg)
+func _switch_view(to_view: Control):
+	var views = [simulation_view, leaderboard_view, sandbox_view]
+	for v in views:
+		if v == to_view:
+			v.visible = true
+			v.modulate.a = 0
+			create_tween().tween_property(v, "modulate:a", 1.0, 0.3)
+		else:
+			v.visible = false
 
 # Navigation
 func _show_simulation():
 	current_view = "simulation"
-	simulation_view.visible = true
-	leaderboard_view.visible = false
-	sandbox_view.visible = false
+	_switch_view(simulation_view)
 	_update_nav_buttons()
 	_update_log("Viewing: Simulation")
 
 func _show_leaderboard():
 	current_view = "leaderboard"
-	simulation_view.visible = false
-	leaderboard_view.visible = true
-	sandbox_view.visible = false
+	_switch_view(leaderboard_view)
 	_update_nav_buttons()
 	_update_log("Viewing: Leaderboard")
 
 func _show_sandbox():
 	current_view = "sandbox"
-	simulation_view.visible = false
-	leaderboard_view.visible = false
-	sandbox_view.visible = true
+	_switch_view(sandbox_view)
 	_update_nav_buttons()
 	_update_log("Viewing: Sandbox")
 
@@ -95,3 +76,27 @@ func _toggle_theme():
 	is_dark_theme = !is_dark_theme
 	# Future: Apply theme resource
 	_update_log("Theme toggled (not fully implemented)")
+
+func _connect_signals():
+	sim_btn.pressed.connect(_show_simulation)
+	leaderboard_btn.pressed.connect(_show_leaderboard)
+	sandbox_btn.pressed.connect(_show_sandbox)
+	theme_toggle.pressed.connect(_toggle_theme)
+	WebSocketClient.connected.connect(_on_ws_connected)
+	WebSocketClient.disconnected.connect(_on_ws_disconnected)
+
+func _update_log(message: String):
+	log_label.text = message
+
+func _check_api_health():
+	ApiClient.get_request("/api/v1/health")
+
+func _on_ws_connected():
+	status_dot.color = Color(0.2, 1.0, 0.2, 1.0)  # Green
+	status_label.text = "Connected"
+	_update_log("WebSocket connected to backend")
+
+func _on_ws_disconnected():
+	status_dot.color = Color(1.0, 0.2, 0.2, 1.0)  # Red
+	status_label.text = "Disconnected"
+	_update_log("WebSocket disconnected")

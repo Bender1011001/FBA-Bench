@@ -108,3 +108,58 @@ async def test_llm(req: LLMTestRequest) -> LLMTestResponse:
     return LLMTestResponse(
         ok=True, model=req.model, content=content, raw=resp, message="LLM test ok"
     )
+
+
+@router.get("/models", description="List supported LLM models for agents")
+async def list_models():
+    """
+    Returns a list of supported LLM models.
+    In the future, this could be fetched from OpenRouter or a dynamic configuration.
+    """
+    # Curated list of models known to work well with FBA-Bench
+    return {
+        "models": [
+            {
+                "id": "gpt-4o",
+                "name": "GPT-4o (OpenAI)",
+                "provider": "openrouter",
+                "is_free": False,
+            },
+            {
+                "id": "openai/gpt-4o-mini",
+                "name": "GPT-4o Mini",
+                "provider": "openrouter",
+                "is_free": False,
+            },
+            {
+                "id": "anthropic/claude-3.5-sonnet",
+                "name": "Claude 3.5 Sonnet",
+                "provider": "openrouter",
+                "is_free": False,
+            },
+            {
+                "id": "google/gemini-2.0-flash-001",
+                "name": "Gemini 2.0 Flash",
+                "provider": "openrouter",
+                "is_free": False,
+            },
+            {
+                "id": "deepseek/deepseek-chat",
+                "name": "DeepSeek V3",
+                "provider": "openrouter",
+                "is_free": False,
+            },
+            {
+                "id": "deepseek/deepseek-chat-v3.1:free",
+                "name": "DeepSeek V3 (Free)",
+                "provider": "openrouter",
+                "is_free": True,
+            },
+            {
+                "id": "greedy-baseline",
+                "name": "Greedy Baseline (No LLM)",
+                "provider": "builtin",
+                "is_free": True,
+            },
+        ]
+    }

@@ -151,6 +151,104 @@ async def stop_simulation(
     return Simulation(**updated)  # type: ignore[arg-type]
 
 
+import asyncio
+from fastapi import BackgroundTasks
+
+# Store for running background simulation tasks
+_running_simulations: dict = {}
+
+
+async def _run_simulation_loop(simulation_id: str, max_ticks: int = 100):
+    """Background task that generates mock tick events and publishes to Redis."""
+    try:
+        redis = await get_redis()
+        topic = _topic(simulation_id)
+        
+        for tick in range(1, max_ticks + 1):
+            if simulation_id not in _running_simulations:
+                break  # Simulation was stopped
+            
+            # Generate mock tick data
+            import random
+            tick_data = {
+                "type": "tick",
+                "tick": tick,
+                "metrics": {
+                    "total_revenue": 1000.0 + tick * random.uniform(50, 150),
+                    "inventory_count": max(0, 500 - tick * random.randint(1, 5)),
+                    "pending_orders": random.randint(0, 20),
+                },
+                "agents": [
+                    {
+                        "id": "Agent-GPT4",
+                        "role": "Strategic Planner",
+                        "x": 200 + tick * 2 + random.uniform(-10, 10),
+                        "y": 300 + random.uniform(-20, 20),
+                        "state": random.choice(["Active", "Idle", "Buying"]),
+                    },
+                    {
+                        "id": "Agent-Claude",
+                        "role": "Analyst",
+                        "x": 400 + random.uniform(-30, 30),
+                        "y": 250 + tick + random.uniform(-10, 10),
+                        "state": random.choice(["Active", "Selling", "Waiting"]),
+                    },
+                ],
+                "heatmap": [],
+                "world": {},
+            }
+            
+            await redis.publish(topic, json.dumps(tick_data))
+            await asyncio.sleep(0.1)  # 10 ticks/second
+        
+        # Mark completed
+        if simulation_id in _running_simulations:
+            del _running_simulations[simulation_id]
+            end_data = {"type": "simulation_end", "results": {"overall_score": 75.0}}
+            await redis.publish(topic, json.dumps(end_data))
+            
+    except Exception as e:
+        logger.error(f"Simulation loop error for {simulation_id}: {e}")
+        if simulation_id in _running_simulations:
+            del _running_simulations[simulation_id]
+
+
+@router.post(
+    "/{simulation_id}/run",
+    response_model=dict,
+    description="Run a simulation (background tick generation for demo)",
+)
+async def run_simulation(
+    simulation_id: str,
+    background_tasks: BackgroundTasks,
+    pm: AsyncPersistenceManager = Depends(get_pm),
+):
+    """
+    Start a simulation run with mock tick generation.
+    This is a demo endpoint that publishes tick events to Redis for the GUI.
+    """
+    current = await pm.simulations().get(simulation_id)
+    if not current:
+        raise SimulationNotFoundError(simulation_id)
+    
+    if current["status"] != "running":
+        raise SimulationStateError(
+            simulation_id, expected="running", actual=current.get("status", "unknown")
+        )
+    
+    if simulation_id in _running_simulations:
+        return {"ok": True, "message": "Simulation already running", "simulation_id": simulation_id}
+    
+    # Get max_ticks from metadata if available
+    metadata = current.get("metadata", {})
+    max_ticks = metadata.get("max_ticks", 100)
+    
+    _running_simulations[simulation_id] = True
+    background_tasks.add_task(_run_simulation_loop, simulation_id, max_ticks)
+    
+    return {"ok": True, "message": "Simulation run started", "simulation_id": simulation_id}
+
+
 @router.get(
     "/{simulation_id}", response_model=Simulation, description="Get simulation status"
 )

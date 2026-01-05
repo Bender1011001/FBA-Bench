@@ -49,6 +49,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: fba-api
+    command: ["sleep", "infinity"]
     environment:
       DATABASE_URL: "postgresql+asyncpg://${POSTGRES_USER:-fba}:${POSTGRES_PASSWORD:-fba_dev_password}@postgres:5432/${POSTGRES_DB:-fba_bench}"
       FBA_BENCH_REDIS_URL: "redis://:${REDIS_PASSWORD:-fba_dev_redis}@redis:6379/0"
@@ -65,6 +66,7 @@ services:
     volumes:
       - api_data:/data
       - ./src:/app/src:ro  # Mount source for development
+      - ./api_server.py:/app/api_server.py:ro # Mount runner for live debugging
     networks:
       - backend
     restart: unless-stopped

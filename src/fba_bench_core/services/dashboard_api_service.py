@@ -18,7 +18,9 @@ from fba_bench_core.event_bus import EventBus
 from fba_events.competitor import CompetitorPricesUpdated
 from fba_events.pricing import ProductPriceUpdated, SetPriceCommand
 from fba_events.sales import SaleOccurred
+from fba_events.sales import SaleOccurred
 from fba_events.time_events import TickEvent
+from fba_events.agent import AgentDecisionEvent
 
 
 class DashboardAPIService:
@@ -127,6 +129,7 @@ class DashboardAPIService:
             ProductPriceUpdated, self._handle_product_price_updated
         )
         await self.event_bus.subscribe(SetPriceCommand, self._handle_set_price_command)
+        await self.event_bus.subscribe(AgentDecisionEvent, self._handle_agent_decision_event)
 
         # Start fee aggregator if provided (it subscribes to SaleOccurred itself)
         if self.fee_aggregator is not None:
@@ -395,6 +398,39 @@ class DashboardAPIService:
         self.simulation_state["event_stats"]["last_event_time"] = datetime.now(
             timezone.utc
         ).isoformat()
+
+    async def _handle_agent_decision_event(self, event: AgentDecisionEvent) -> None:
+        """Process AgentDecisionEvent to track agent reasoning and logs."""
+        # Ensure agent entry exists
+        if event.agent_id not in self.simulation_state["agents"]:
+            self.simulation_state["agents"][event.agent_id] = {
+                "command_count": 0,
+                "last_command_time": None,
+                "strategy": "unknown",
+                "total_price_changes_cents": 0,
+                "avg_price_change_pct": 0,
+                "last_reasoning": "",
+                "recent_events": [],
+                "financials": {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0} # Placeholder
+            }
+        
+        agent = self.simulation_state["agents"][event.agent_id]
+        
+        # Update reasoning
+        agent["last_reasoning"] = event.reasoning
+        
+        # Add to recent events log for this agent
+        log_entry = f"[{event.timestamp.strftime('%H:%M:%S')}] Decision: {event.reasoning[:50]}..."
+        if "recent_events" not in agent:
+            agent["recent_events"] = []
+        agent["recent_events"].insert(0, log_entry)
+        # Keep last 10 events per agent
+        agent["recent_events"] = agent["recent_events"][:10]
+
+        self.events_processed_count += 1
+        self.simulation_state["event_stats"][
+            "events_processed"
+        ] = self.events_processed_count
 
     def _money_to_cents(self, money: Money) -> int:
         """Convert Money object to cents for JSON serialization."""

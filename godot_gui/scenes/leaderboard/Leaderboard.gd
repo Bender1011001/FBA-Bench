@@ -76,7 +76,7 @@ func _load_leaderboard():
 	ApiClient.get_leaderboard()
 
 func _on_leaderboard_received(endpoint: String, data: Variant):
-	if endpoint != "/api/leaderboard":
+	if endpoint != "/api/v1/leaderboard":
 		return
 	
 	if data is Array:
