@@ -90,7 +90,7 @@ See [Testing Strategy](docs/testing.md) for types and commands. Tests must pass 
 
 - Update inline docs (docstrings) for new public APIs.
 - Add examples in `examples/` or `docs/guides/`.
-- For major changes, update [architecture.md](docs/architecture.md), [api.md](docs/api.md), or README.
+- For major changes, update [architecture.md](docs/architecture.md), [API.md](docs/API.md), or README.
 - Use Markdown with consistent headers, code blocks (```python), and links.
 
 ## Pull Requests (PRs)

@@ -28,7 +28,7 @@ As part of Phase 0 Foundations, we need to select an Identity and Access Managem
   - Trade-offs: Monthly cost post-free tier (~$23/mo base), but value in reduced dev time. Fallback: Cognito if AWS hosting chosen.
 
 - **Queue Technology: Celery with Redis Backend**
-  - Reasoning: Builds on existing Celery dep (poetry deps include celery ^5.3.0) and Redis setup (docker-compose.test.yml). Redis as broker/result backend is lightweight, performant for job queuing, and already portable. Supports async benchmarks (e.g., enqueue in API routers like medusa.py, workers in src/services). Easy to scale workers horizontally and monitor with Flower or Sentry.
+  - Reasoning: Builds on existing Celery dep (poetry deps include celery ^5.3.0) and Redis setup (docker-compose.test.yml). Redis as broker/result backend is lightweight, performant for job queuing, and already portable. Supports async benchmarks (e.g., enqueue in API routes like medusa.py, workers in src/services). Easy to scale workers horizontally and monitor with Flower or Sentry.
   - Trade-offs: Redis single point of failure (mitigate with Redis Sentinel/cluster in Phase 2). Simpler than SQS for local dev. No major rewrite needed for job flows in src/scenarios or src/benchmarking.
 
 ## Consequences

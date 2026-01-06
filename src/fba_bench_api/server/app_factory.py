@@ -47,6 +47,7 @@ except ImportError:
 import time
 
 from starlette.middleware.base import BaseHTTPMiddleware
+from fba_bench_api.core.database_async import async_engine
 
 from prometheus_client import Counter, Gauge, Histogram
 

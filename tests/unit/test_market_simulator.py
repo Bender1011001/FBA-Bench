@@ -6,7 +6,7 @@ from money import Money
 from services.market_simulator import MarketSimulationService
 from services.world_store import WorldStore
 
-from events import TickEvent
+from fba_events.time_events import TickEvent
 from fba_events.bus import InMemoryEventBus as EventBus, set_event_bus
 from fba_events.pricing import SetPriceCommand
 

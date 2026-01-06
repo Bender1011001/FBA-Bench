@@ -14,7 +14,7 @@ The system is organized into core packages under `src/`, each handling specific 
 
 - **fba_bench_api**: FastAPI-based web services for external interactions.
   - **Main App**: Entry point at `src/fba_bench_api/main.py`, serving endpoints for simulations, experiments, and metrics.
-  - **Routers**: Modular endpoints (e.g., `/simulations`, `/experiments`, `/metrics`) in `src/fba_bench_api/routers/`.
+  - **Routers**: Modular endpoints (e.g., `/simulations`, `/experiments`, `/metrics`) in `src/fba_bench_api/api/routes/`.
   - **Dependencies**: Uses `dependency_injector` for DI (`src/dependency_injector/`).
   - Relationships: Integrates with `fba_bench_core` for business logic; exposes `agents` and `benchmarking` via API. Database interactions via Alembic-migrated schemas.
 

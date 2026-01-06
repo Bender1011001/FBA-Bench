@@ -19,7 +19,7 @@ Using STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, Denial o
 - **Impact**: High – Corrupted analytics, unfair leaderboards.
 - **Mitigations**:
   - RLS policies on all tenant-owned tables (e.g., benchmarks, agent_runs): `CREATE POLICY tenant_isolation ON benchmarks USING (tenant_id = current_setting('app.current_tenant_id')) WITH CHECK (tenant_id = current_setting('app.current_tenant_id'))`. Set GUC in DB session via SQLAlchemy event listener in app startup.
-  - Input validation/sanitization with Pydantic in API routers (e.g., [src/fba_bench_api/api/routers/medusa.py](src/fba_bench_api/api/routers/medusa.py)).
+  - Input validation/sanitization with Pydantic in API routers (e.g., [src/fba_bench_api/api/routes/medusa.py](src/fba_bench_api/api/routes/medusa.py)).
   - Idempotency keys for job submissions; audit logs of all mutations with tenant/user context.
 
 ### 3. Repudiation (Non-Reputable Actions)

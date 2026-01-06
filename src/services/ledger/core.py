@@ -1,8 +1,8 @@
 """Core ledger operations for the double-entry system."""
 
+import asyncio
 import logging
 import uuid
-import threading
 from typing import Any, Dict, List
 
 from money import Money
@@ -34,8 +34,8 @@ class LedgerCore:
         self.accounts: Dict[str, Account] = {}
         self.transactions: Dict[str, Transaction] = {}
         self.unposted_transactions: List[Transaction] = []
-        # CRITICAL: RLock for thread-safe ledger access
-        self._lock = threading.RLock()
+        # CRITICAL: Lock for thread-safe ledger access
+        self._lock = asyncio.Lock()
 
     async def initialize_chart_of_accounts(self) -> None:
         """Initialize the standard chart of accounts."""
@@ -227,7 +227,7 @@ class LedgerCore:
             AccountingError: If posting would violate accounting equation.
         """
         # CRITICAL: Thread-safe transaction posting
-        with self._lock:
+        async with self._lock:
             # Track changes for rollback
             balance_changes: Dict[str, Money] = {}
             
@@ -305,8 +305,8 @@ class LedgerCore:
     
                 # 6. Verify trial balance still holds (optional strict check)
                 if strict_validation:
-                    if not self.is_trial_balance_balanced():
-                        diff = self.get_trial_balance_difference()
+                    if not self._is_trial_balance_balanced():
+                        diff = self._get_trial_balance_difference()
                         raise AccountingError(
                             f"Transaction {transaction.transaction_id} would break "
                             f"trial balance by {diff}"
@@ -357,63 +357,73 @@ class LedgerCore:
 
         logger.info("All unposted transactions posted successfully")
 
-    def get_account_balance(self, account_id: str) -> Money:
+    async def get_account_balance(self, account_id: str) -> Money:
         """Get the current balance of an account."""
-        with self._lock:
+        async with self._lock:
             account = self.accounts.get(account_id)
             if not account:
                 raise ValueError(f"Account {account_id} not found")
             return account.balance
 
-    def get_all_account_balances(self) -> Dict[str, Money]:
+    def _get_all_account_balances(self) -> Dict[str, Money]:
+        """Internal unlocked version."""
+        return {
+            account_id: account.balance for account_id, account in self.accounts.items()
+        }
+
+    async def get_all_account_balances(self) -> Dict[str, Money]:
         """Get balances for all accounts."""
-        with self._lock:
-            return {
-                account_id: account.balance for account_id, account in self.accounts.items()
-            }
+        async with self._lock:
+            return self._get_all_account_balances()
 
-    def trial_balance(self) -> Dict[str, Money]:
+    async def trial_balance(self) -> Dict[str, Money]:
         """Generate a trial balance of all accounts."""
-        # get_all_account_balances is already locked
-        return self.get_all_account_balances()
+        async with self._lock:
+            return self._get_all_account_balances()
 
-    def is_trial_balance_balanced(self) -> bool:
+    def _is_trial_balance_balanced(self) -> bool:
+        """Internal unlocked check."""
+        balances = self._get_all_account_balances()
+        total_debits = Money.zero()
+        total_credits = Money.zero()
+
+        for account_id, balance in balances.items():
+            account = self.accounts[account_id]
+            if account.normal_balance == "debit":
+                total_debits += balance
+            else:
+                total_credits += balance
+
+        return total_debits.cents == total_credits.cents
+
+    async def is_trial_balance_balanced(self) -> bool:
         """Check if the trial balance is balanced (debits = credits)."""
-        with self._lock:
-            balances = self.trial_balance()
+        async with self._lock:
+            return self._is_trial_balance_balanced()
 
-            total_debits = Money.zero()
-            total_credits = Money.zero()
+    def _get_trial_balance_difference(self) -> Money:
+        """Internal unlocked difference calculation."""
+        balances = self._get_all_account_balances()
+        total_debits = Money.zero()
+        total_credits = Money.zero()
 
-            for account_id, balance in balances.items():
-                account = self.accounts[account_id]
-                if account.normal_balance == "debit":
-                    total_debits += balance
-                else:
-                    total_credits += balance
+        for account_id, balance in balances.items():
+            account = self.accounts[account_id]
+            if account.normal_balance == "debit":
+                total_debits += balance
+            else:
+                total_credits += balance
 
-            return total_debits.cents == total_credits.cents
+        return total_debits - total_credits
 
-    def get_trial_balance_difference(self) -> Money:
+    async def get_trial_balance_difference(self) -> Money:
         """Get the difference between total debits and credits."""
-        with self._lock:
-            balances = self.trial_balance()
+        async with self._lock:
+            return self._get_trial_balance_difference()
 
-            total_debits = Money.zero()
-            total_credits = Money.zero()
-
-            for account_id, balance in balances.items():
-                account = self.accounts[account_id]
-                if account.normal_balance == "debit":
-                    total_debits += balance
-                else:
-                    total_credits += balance
-
-            return total_debits - total_credits
-
-    def get_transaction_history(self, limit: int = 100) -> List[Transaction]:
+    async def get_transaction_history(self, limit: int = 100) -> List[Transaction]:
         """Get the transaction history, limited to the specified number of transactions."""
-        with self._lock:
+        async with self._lock:
             # Sort transactions by timestamp (most recent first)
             sorted_transactions = sorted(
                 self.transactions.values(), key=lambda t: t.timestamp, reverse=True
@@ -421,20 +431,20 @@ class LedgerCore:
 
             return sorted_transactions[:limit]
 
-    def get_transactions_by_type(
+    async def get_transactions_by_type(
         self, transaction_type: TransactionType
     ) -> List[Transaction]:
         """Get all transactions of a specific type."""
-        with self._lock:
+        async with self._lock:
             return [
                 transaction
                 for transaction in self.transactions.values()
                 if transaction.transaction_type == transaction_type
             ]
 
-    def get_transactions_by_account(self, account_id: str) -> List[Transaction]:
+    async def get_transactions_by_account(self, account_id: str) -> List[Transaction]:
         """Get all transactions that affect a specific account."""
-        with self._lock:
+        async with self._lock:
             return [
                 transaction
                 for transaction in self.transactions.values()
@@ -444,15 +454,16 @@ class LedgerCore:
                 )
             ]
 
-    def get_ledger_statistics(self) -> Dict[str, Any]:
+    async def get_ledger_statistics(self) -> Dict[str, Any]:
         """Get ledger service statistics."""
-        with self._lock:
+        async with self._lock:
+            trial_balance_diff = self._get_trial_balance_difference()
             return {
                 "total_accounts": len(self.accounts),
             "total_transactions": len(self.transactions),
             "unposted_transactions": len(self.unposted_transactions),
-            "trial_balance_balanced": self.is_trial_balance_balanced(),
-            "trial_balance_difference": str(self.get_trial_balance_difference()),
+            "trial_balance_balanced": self._is_trial_balance_balanced(),
+            "trial_balance_difference": str(trial_balance_diff),
             "last_transaction_time": (
                 max(t.timestamp for t in self.transactions.values())
                 if self.transactions
@@ -504,9 +515,9 @@ class LedgerCore:
         """
         return await self.inject_equity(amount, description="Initial capital injection")
 
-    def get_cash_balance(self) -> Money:
+    async def get_cash_balance(self) -> Money:
         """Return current cash account balance."""
-        return self.get_account_balance("cash")
+        return await self.get_account_balance("cash")
 
     def verify_integrity(self, raise_on_failure: bool = True) -> bool:
         """Verify the fundamental accounting equation: Assets = Liabilities + Equity.

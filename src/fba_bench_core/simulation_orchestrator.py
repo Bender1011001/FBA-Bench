@@ -144,7 +144,14 @@ class SimulationOrchestrator:
                 await self._event_bus.publish(ev)
                 error_count = 0  # Reset on success
             except Exception as e:
-                # Circuit breaker pattern
+                # Check for critical logic errors that should not be retried
+                if isinstance(e, (NameError, TypeError, SyntaxError, AttributeError, ImportError, NotImplementedError)):
+                    logger.critical(f"Critical logic error in simulation tick {tick}: {e}", exc_info=True)
+                    self._is_running = False
+                    self._statistics["stopped_at"] = datetime.now(timezone.utc).isoformat()
+                    return # Or raise e to propagate
+
+                # Circuit breaker pattern for transient errors
                 error_count += 1
                 logger.error(f"Error in simulation tick {tick} (Attempt {error_count}/{MAX_ERRORS}): {e}", exc_info=True)
                 if error_count >= MAX_ERRORS:

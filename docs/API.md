@@ -144,7 +144,7 @@ Verify with `scripts/smoke/ws_smoke.py`.
 
 ### Medusa (/api/v1/medusa)
 
-Endpoints for managing the Medusa trainer process, implemented in [src/fba_bench_api/api/routers/medusa.py](src/fba_bench_api/api/routers/medusa.py). All under `/api/v1/medusa`. No authentication required in dev mode.
+Endpoints for managing the Medusa trainer process, implemented in [src/fba_bench_api/api/routes/medusa.py](src/fba_bench_api/api/routes/medusa.py). All under `/api/v1/medusa`. No authentication required in dev mode.
 
 - **POST /medusa/start**
   Launches the Medusa trainer as a background subprocess (poetry run python medusa_trainer.py). Includes single-instance guard (409 if already running).

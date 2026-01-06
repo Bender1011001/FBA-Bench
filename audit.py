@@ -83,7 +83,7 @@ class RunAudit:
     violations: List[str]  # filled by the harness if discovered
 
 
-def run_and_audit(sim, days: int) -> RunAudit:
+async def run_and_audit(sim, days: int) -> RunAudit:
     """Runs the simulation and produces an immutable audit structure suitable for golden snapshots."""
     # Precompute immutable signatures for baseline validation and optional caching
     pre_config_hash = _generate_config_hash(sim)
@@ -119,7 +119,7 @@ def run_and_audit(sim, days: int) -> RunAudit:
         return cached
 
     # Store initial state
-    initial_equity = _get_equity_from_ledger(sim.ledger)
+    initial_equity = await _get_equity_from_ledger(sim.ledger)
     owner_contributions = Decimal("10000.00")  # Initial seed capital
     owner_distributions = Decimal("0.00")
 
@@ -127,11 +127,11 @@ def run_and_audit(sim, days: int) -> RunAudit:
     violations: List[str] = []
 
     for day in range(days):
-        pre_tick_equity = _get_equity_from_ledger(sim.ledger)
+        pre_tick_equity = await _get_equity_from_ledger(sim.ledger)
         sim.tick_day()
 
-        balance_sheet = balance_sheet_from_ledger(sim.ledger)
-        trial_balance_result = trial_balance(sim.ledger)
+        balance_sheet = await balance_sheet_from_ledger(sim.ledger)
+        trial_balance_result = await trial_balance(sim.ledger)
 
         assets = sum(v for k, v in balance_sheet.items() if k in ["Cash", "Inventory"])
         liabilities = sum(v for k, v in balance_sheet.items() if k.startswith("Liability"))
@@ -139,7 +139,7 @@ def run_and_audit(sim, days: int) -> RunAudit:
         debit_sum = trial_balance_result[0]
         credit_sum = trial_balance_result[1]
 
-        income_statement = income_statement_from_ledger(sim.ledger, 0, day + 1)
+        income_statement = await income_statement_from_ledger(sim.ledger, 0, day + 1)
         net_income_to_date = income_statement.get("Net Income", Decimal("0"))
 
         initial_equity_balance = balance_sheet.get("Equity", Decimal("0"))
@@ -184,8 +184,8 @@ def run_and_audit(sim, days: int) -> RunAudit:
                 f"Day {day + 1}: Accounting identity violation - A={assets} != L+E={liabilities + closing_equity}"
             )
 
-    final_balance_sheet = balance_sheet_from_ledger(sim.ledger)
-    final_income_statement = income_statement_from_ledger(sim.ledger, 0, days)
+    final_balance_sheet = await balance_sheet_from_ledger(sim.ledger)
+    final_income_statement = await income_statement_from_ledger(sim.ledger, 0, days)
     final_ledger_hash = hash_ledger_slice(sim.ledger, 0, days)
 
     config_hash = pre_config_hash
@@ -217,9 +217,9 @@ def run_and_audit(sim, days: int) -> RunAudit:
     return result
 
 
-def _get_equity_from_ledger(ledger) -> Decimal:
+async def _get_equity_from_ledger(ledger) -> Decimal:
     """Extract equity balance from ledger."""
-    balance = ledger.balance("Equity")
+    balance = await ledger.get_account_balance("Equity")
     if isinstance(balance, Money):
         return balance.to_decimal()
     else:

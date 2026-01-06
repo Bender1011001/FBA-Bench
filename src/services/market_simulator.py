@@ -11,6 +11,7 @@ Initial coherent world model step for FBA-Bench.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import random
 from dataclasses import dataclass
@@ -18,6 +19,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from money import Money
+from collections import deque
 
 from fba_bench_core.domain.market.customer import Customer, CustomerPool
 from services.trust_score_service import TrustScoreService
@@ -91,7 +93,7 @@ class MarketSimulationService:
             )
 
         # Internal caches
-        self._competitors_by_asin: Dict[str, List[CompetitorSnapshot]] = {}
+        self._competitors_by_asin: Dict[str, deque[CompetitorSnapshot]] = {}
         self._price_reference_by_asin: Dict[str, Money] = {}
 
         # Services
@@ -140,13 +142,9 @@ class MarketSimulationService:
             # If the target product ASIN equals competitor.asin, it represents alternate sellers on same listing;
             # otherwise it represents related SKUs/close substitutes (future refinement).
             for comp in updated:
-                self._competitors_by_asin.setdefault(comp.asin, [])
-                # Keep last N competitor snapshots (bounded)
+                if comp.asin not in self._competitors_by_asin:
+                    self._competitors_by_asin[comp.asin] = deque(maxlen=25)
                 self._competitors_by_asin[comp.asin].append(comp)
-                if len(self._competitors_by_asin[comp.asin]) > 50:
-                    self._competitors_by_asin[comp.asin] = self._competitors_by_asin[
-                        comp.asin
-                    ][-25:]
         except (TypeError, AttributeError, ValueError) as e:
             logger.error(f"Error handling CompetitorPricesUpdated: {e}", exc_info=True)
 
@@ -172,7 +170,8 @@ class MarketSimulationService:
         if comps:
             # Use average competitor price across most recent snapshots for this ASIN
             # Consider last up to 10 snapshots for smoothing
-            window = comps[-10:] if len(comps) > 10 else comps
+            # Deque doesn't support slicing directly, but is efficient to iterate
+            window = list(comps)[-10:]
             if window:
                 avg_cents = sum(c.price.cents for c in window) / len(window)
                 avg_price = Money(int(round(avg_cents)))
@@ -203,16 +202,22 @@ class MarketSimulationService:
         
         try:
             if p_ref <= 0:
-                ratio = 1.0
+                ratio = Decimal("1.0")
             else:
-                ratio = float(p / p_ref) # Power function typically needs float for non-integer exponent
+                ratio = p / p_ref
         except (TypeError, ValueError, ZeroDivisionError):
-             ratio = 1.0
+             ratio = Decimal("1.0")
 
         # clamp ratio to avoid extremes
-        if ratio <= 0.0:
-            ratio = 0.01
-        quantity = self.base_demand * (ratio ** (-self.demand_elasticity))
+        if ratio <= Decimal("0.0"):
+            ratio = Decimal("0.01")
+            
+        # Power function with Decimal: x**y where y is float is supported but keeping y as Decimal is better if possible.
+        # However, demand_elasticity is likely float.
+        # Decimal(ratio) ** Decimal(float) is valid.
+        
+        elasticity = Decimal(str(self.demand_elasticity))
+        quantity = Decimal(self.base_demand) * (ratio ** (-elasticity))
         # integer demand
         return max(0, int(round(quantity)))
 
@@ -478,22 +483,21 @@ class MarketSimulationService:
                 },
                 customer_segment=None,
             )
-            await self.event_bus.publish(sale)
-
-            # Update inventory after sale
-            new_qty = max(0, inventory_qty - units_sold)
             inv_update = InventoryUpdate(
                 event_id=f"inv_{asin}_{int(datetime.now().timestamp()*1000)}",
                 timestamp=datetime.now(),
                 asin=asin,
-                new_quantity=new_qty,
+                new_quantity=inventory_qty - units_sold,
                 previous_quantity=inventory_qty,
                 change_reason="sale",
-                agent_id="market_simulator",
-                command_id=None,
-                cost_basis=self.world_store.get_product_cost_basis(asin),
+                agent_id=product.last_agent_id if product else None,
             )
-            await self.event_bus.publish(inv_update)
+
+            # Parallelize event publishing for performance
+            await asyncio.gather(
+                self.event_bus.publish(sale),
+                self.event_bus.publish(inv_update)
+            )
 
             logger.info(
                 f"MarketSimulationService processed ASIN {asin}: price={current_price}, "

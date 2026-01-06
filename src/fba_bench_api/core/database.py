@@ -1,9 +1,8 @@
 import json
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.types import TEXT, TypeDecorator
 
 # Centralized database URL resolution via centralized settings with sensible default for development
 from fba_bench_core.config import get_settings
@@ -23,73 +22,12 @@ else:
 # Session factory bound to the engine
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
-class JSONEncodedDict(TypeDecorator):
-    """Enables proper storage and retrieval of JSON metadata."""
-
-    impl = TEXT
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            return json.dumps(value)
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            return json.loads(value)
-        return value
-
-
-class ExperimentConfigDB(Base):
-    __tablename__ = "experiment_configs"
-
-    experiment_id = Column(String, primary_key=True, index=True)
-    experiment_name = Column(String, index=True)
-    description = Column(String, nullable=True)
-    config_data = Column(JSONEncodedDict, nullable=False)
-    status = Column(String, default="created")
-    total_runs = Column(Integer)
-    completed_runs = Column(Integer, default=0)
-    successful_runs = Column(Integer, default=0)
-    failed_runs = Column(Integer, default=0)
-    progress_percentage = Column(Float, default=0.0)
-    start_time = Column(DateTime, default=datetime.utcnow)
-    end_time = Column(DateTime, nullable=True)
-    current_run_details = Column(JSONEncodedDict, nullable=True)
-    message = Column(String, nullable=True)
-
-
-class SimulationConfigDB(Base):
-    __tablename__ = "simulation_configs"
-
-    config_id = Column(String, primary_key=True, index=True)
-    name = Column(String, index=True)
-    description = Column(String, nullable=True)
-    tick_interval_seconds = Column(Float)
-    max_ticks = Column(Integer, nullable=True)
-    start_time = Column(DateTime, nullable=True)
-    time_acceleration = Column(Float)
-    seed = Column(Integer, nullable=True)
-    base_parameters = Column(JSONEncodedDict, nullable=False)
-    agent_configs = Column(JSONEncodedDict, nullable=False)  # Store as JSON
-    llm_settings = Column(JSONEncodedDict, nullable=False)  # Store as JSON
-    constraints = Column(JSONEncodedDict, nullable=False)  # Store as JSON
-    experiment_settings = Column(JSONEncodedDict, nullable=True)  # Store as JSON
-    original_frontend_config = Column(JSONEncodedDict, nullable=True)  # Store as JSON
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-
-
-class TemplateDB(Base):
-    __tablename__ = "templates"
-
-    template_name = Column(String, primary_key=True, index=True)
-    description = Column(String, nullable=True)
-    config_data = Column(JSONEncodedDict, nullable=False)  # Store the full config JSON
-    created_at = Column(DateTime, default=datetime.utcnow)
-
+# Note: Old ExperimentConfigDB, SimulationConfigDB, and TemplateDB models have been removed
+# as they were legacy/orphan code not used by the persistence layer.
+# See fba_bench_api/models/ for active ORM models.
 
 def create_db_tables():
+    """DEPRECATED: Prefer create_db_tables_async in database_async.py"""
     Base.metadata.create_all(bind=engine)
 
 

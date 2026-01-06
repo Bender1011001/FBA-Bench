@@ -11,8 +11,8 @@ This runbook is for Sales teams, Systems Engineers (SEs), and Founders conductin
 - **Tenant Configs**: Automated generator for multi-tenant setups.
 
 Link references:
-- Auth endpoints: [api/routers/auth.py](repos/fba-bench-enterprise/api/routers/auth.py)
-- Billing endpoints: [api/routers/billing.py](repos/fba-bench-enterprise/api/routers/billing.py)
+- Auth endpoints: Managed by Core API (`/auth/*`)
+- Billing endpoints: Managed by Core API (`/billing/*`)
 - Frontend client: [frontend/src/api/authClient.ts](repos/fba-bench-enterprise/frontend/src/api/authClient.ts)
 - Billing page: [web/src/components/BillingPage.tsx](repos/fba-bench-enterprise/web/src/components/BillingPage.tsx)
 - Terraform skeleton: [infrastructure/terraform/providers.tf](repos/fba-bench-enterprise/infrastructure/terraform/providers.tf)

@@ -12,12 +12,19 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
+import sys
+from pathlib import Path
+
+# Add 'src' to path so we can import fba_bench_api
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+
 # Load environment variables
 load_dotenv()
 
 # Import application's SQLAlchemy metadata
-from api.db import Base
-from api.models import *  # Import all models to register tables with metadata
+from fba_bench_api.models.base import Base
+# Import all models to register tables with metadata
+from fba_bench_api.models import agent, experiment, simulation, user
 
 target_metadata = Base.metadata
 

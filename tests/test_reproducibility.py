@@ -72,10 +72,11 @@ def sim_factory(basic_simulation_seed_factory):
 
 
 @pytest.mark.golden
-def test_golden_run_matches_snapshot(sim_factory, data_regression):
+@pytest.mark.asyncio
+async def test_golden_run_matches_snapshot(sim_factory, data_regression):
     """Test that a deterministic run produces identical results."""
-    sim = sim_factory(seed=42, days=30)
-    audit = sim.run_and_audit(days=30)
+    sim = await sim_factory(seed=42, days=30)
+    audit = await sim.run_and_audit(days=30)
 
     # Serialize to stable format
     snapshot_data = serialize_run_audit(audit)
@@ -85,10 +86,11 @@ def test_golden_run_matches_snapshot(sim_factory, data_regression):
 
 
 @pytest.mark.golden
-def test_golden_run_365_days_snapshot(sim_factory, data_regression):
+@pytest.mark.asyncio
+async def test_golden_run_365_days_snapshot(sim_factory, data_regression):
     """Test longer run for comprehensive drift detection."""
-    sim = sim_factory(seed=42, days=365)
-    audit = sim.run_and_audit(days=365)
+    sim = await sim_factory(seed=42, days=365)
+    audit = await sim.run_and_audit(days=365)
 
     # For longer runs, focus on key hashes to keep snapshots manageable
     snapshot_data = {
@@ -143,7 +145,7 @@ def test_golden_run_365_days_snapshot(sim_factory, data_regression):
 async def test_different_seeds_produce_different_results(sim_factory, seed):
     """Test that different seeds produce different but deterministic results."""
     sim = await sim_factory(seed=seed, days=10)  # Await sim_factory
-    audit = sim.run_and_audit(days=10)
+    audit = await sim.run_and_audit(days=10)
 
     # Each seed should produce consistent results
     assert audit.seed == seed
@@ -152,7 +154,7 @@ async def test_different_seeds_produce_different_results(sim_factory, seed):
 
     # Results should be deterministic for the same seed
     sim2 = await sim_factory(seed=seed, days=10)  # Await sim_factory
-    audit2 = sim2.run_and_audit(days=10)
+    audit2 = await sim2.run_and_audit(days=10)
 
     assert audit.final_ledger_hash == audit2.final_ledger_hash
     assert [t.ledger_tick_hash for t in audit.ticks] == [
@@ -170,7 +172,7 @@ async def test_hash_stability_across_runs(sim_factory):
     runs = []
     for _ in range(3):
         sim = await sim_factory(seed=42, days=5)  # Await sim_factory
-        audit = sim.run_and_audit(days=5)
+        audit = await sim.run_and_audit(days=5)
         runs.append(audit)
 
     # All runs should produce identical hashes
@@ -200,7 +202,7 @@ async def test_configuration_change_detection(sim_factory, data_regression):
     """Test that configuration changes are detected via hash changes."""
     # This test will fail if fee configuration changes without updating version
     sim = await sim_factory(seed=42, days=5)  # Await sim_factory
-    audit = sim.run_and_audit(days=5)
+    audit = await sim.run_and_audit(days=5)
 
     config_snapshot = {
         "config_hash": audit.config_hash,
@@ -214,10 +216,11 @@ async def test_configuration_change_detection(sim_factory, data_regression):
 
 
 @pytest.mark.golden
-def test_minimal_run_snapshot(sim_factory, data_regression):
+@pytest.mark.asyncio
+async def test_minimal_run_snapshot(sim_factory, data_regression):
     """Test minimal 1-day run for quick verification."""
-    sim = sim_factory(seed=42, days=1)
-    audit = sim.run_and_audit(days=1)
+    sim = await sim_factory(seed=42, days=1)
+    audit = await sim.run_and_audit(days=1)
 
     # Detailed snapshot for single day
     snapshot_data = {
@@ -261,7 +264,7 @@ async def test_golden_event_stream_matches_snapshot(sim_factory, data_regression
     sim = await sim_factory(
         seed=seed, days=5
     )  # Run for a shorter period for event stream manageability
-    audit = sim.run_and_audit(days=5)
+    audit = await sim.run_and_audit(days=5)
 
     recorded_events = event_bus.get_recorded_events()
     event_bus.stop_recording()  # Stop recording events
@@ -290,7 +293,7 @@ async def test_ci_reproducibility_check(sim_factory, seed):
     event_bus.start_recording()
 
     sim = await sim_factory(seed=seed, days=5)
-    sim.run_and_audit(days=5)
+    await sim.run_and_audit(days=5)
 
     current_events = event_bus.get_recorded_events()
     event_bus.stop_recording()

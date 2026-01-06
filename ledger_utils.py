@@ -13,7 +13,7 @@ from money import Money
 class LedgerLike(Protocol):
     """Minimal protocol describing the ledger used by these utilities."""
 
-    def trial_balance(self) -> Mapping[str, Union[Money, Decimal, float, int]]:
+    async def trial_balance(self) -> Mapping[str, Union[Money, Decimal, float, int]]:
         ...
 
     entries: Sequence[Any]  # sequence of txns with attributes used by hash_ledger_slice
@@ -114,7 +114,7 @@ def _canonicalize_for_json(obj: Any) -> Any:
     return obj
 
 
-def balance_sheet(ledger: LedgerLike) -> Dict[str, Decimal]:
+async def balance_sheet(ledger: LedgerLike) -> Dict[str, Decimal]:
     """
     Generate a per-account balance sheet presentation.
     Assets (debit-normal) are presented as signed Decimals (contra accounts may be negative).
@@ -122,7 +122,7 @@ def balance_sheet(ledger: LedgerLike) -> Dict[str, Decimal]:
     Revenue and Expense accounts are excluded from the balance sheet.
     """
     balances: Dict[str, Decimal] = {}
-    trial_balances = ledger.trial_balance()
+    trial_balances = await ledger.trial_balance()
     for account, balance in trial_balances.items():
         decimal_balance = _balance_to_decimal(balance)
         if account in ASSET_ACCOUNTS:
@@ -134,17 +134,17 @@ def balance_sheet(ledger: LedgerLike) -> Dict[str, Decimal]:
     return balances
 
 
-def balance_sheet_from_ledger(ledger: LedgerLike) -> Dict[str, Decimal]:
+async def balance_sheet_from_ledger(ledger: LedgerLike) -> Dict[str, Decimal]:
     """Deprecated: use balance_sheet(ledger) instead. This function will be removed in version 4.0.0."""
     warnings.warn(
         "balance_sheet_from_ledger is deprecated and will be removed in version 4.0.0. Use balance_sheet instead.",
         DeprecationWarning,
         stacklevel=2,
     )
-    return balance_sheet(ledger)
+    return await balance_sheet(ledger)
 
 
-def income_statement(
+async def income_statement(
     ledger: LedgerLike, start_tick: int = 0, end_tick: Optional[int] = None
 ) -> Dict[str, Decimal]:
     """
@@ -152,7 +152,7 @@ def income_statement(
     Note: start_tick and end_tick are reserved for period filtering when supported by the ledger.
     """
     statement: Dict[str, Decimal] = {}
-    trial_balances = ledger.trial_balance()
+    trial_balances = await ledger.trial_balance()
 
     total_revenue = Decimal("0")
     total_expenses = Decimal("0")
@@ -178,7 +178,7 @@ def income_statement(
     return statement
 
 
-def income_statement_from_ledger(
+async def income_statement_from_ledger(
     ledger: LedgerLike, start_tick: int = 0, end_tick: Optional[int] = None
 ) -> Dict[str, Decimal]:
     """Deprecated: use income_statement(ledger, start_tick, end_tick) instead. This function will be removed in version 4.0.0."""
@@ -187,12 +187,12 @@ def income_statement_from_ledger(
         DeprecationWarning,
         stacklevel=2,
     )
-    return income_statement(ledger, start_tick, end_tick)
+    return await income_statement(ledger, start_tick, end_tick)
 
 
-def trial_balance(ledger: LedgerLike, tick: Optional[int] = None) -> Tuple[Decimal, Decimal]:
+async def trial_balance(ledger: LedgerLike, tick: Optional[int] = None) -> Tuple[Decimal, Decimal]:
     """Calculate trial balance returning (total_debits, total_credits)."""
-    balances = ledger.trial_balance()
+    balances = await ledger.trial_balance()
 
     total_debits = Decimal("0")
     total_credits = Decimal("0")

@@ -7,44 +7,7 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Set
 
-try:
-    import jwt  # type: ignore
-except ModuleNotFoundError:
-    # Minimal fallback shim for tests
-    class _InvalidTokenError(Exception):
-        pass
-
-    class _ExpiredSignatureError(_InvalidTokenError):
-        pass
-
-    class _Exceptions:
-        InvalidTokenError = _InvalidTokenError
-        ExpiredSignatureError = _ExpiredSignatureError
-
-    class _JWT:
-        exceptions = _Exceptions()
-
-        @staticmethod
-        def encode(payload, key, algorithm="HS256", headers=None):
-            return "stub.jwt.token"
-
-        @staticmethod
-        def decode(
-            token,
-            key,
-            algorithms=None,
-            options=None,
-            audience=None,
-            issuer=None,
-            leeway=0,
-        ):
-            return {"sub": "test", "aud": audience, "iss": issuer}
-
-        @staticmethod
-        def get_unverified_header(token):
-            return {"alg": "none", "typ": "JWT"}
-
-    jwt = _JWT()
+import jwt
 
 from fastapi import (
     APIRouter,
@@ -58,23 +21,16 @@ from fastapi import (
 from fba_bench_api.core.redis_client import RedisClient
 from fba_bench_api.core.state import dashboard_service
 from fba_bench_api.models.api import RecentEventsResponse, SimulationSnapshot
+from fba_bench_api.core.security import (
+    AUTH_ENABLED,
+    AUTH_JWT_PUBLIC_KEYS,
+)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["simulation"])
 
 
-def _get_jwt_env():
-    """Read JWT verification environment."""
-    public_key = os.getenv("AUTH_JWT_PUBLIC_KEY")
-    alg = os.getenv("AUTH_JWT_ALG", "RS256")
-    issuer = os.getenv("AUTH_JWT_ISSUER")
-    audience = os.getenv("AUTH_JWT_AUDIENCE")
-    try:
-        leeway = int(os.getenv("AUTH_JWT_CLOCK_SKEW", "60") or "60")
-    except Exception:
-        leeway = 60
-    return public_key, alg, issuer, audience, leeway
 
 
 def _extract_ws_token(websocket: WebSocket) -> dict:
@@ -108,13 +64,10 @@ def _extract_ws_token(websocket: WebSocket) -> dict:
 #   {"type":"error","error":"message"}
 
 
-def _now_iso() -> str:
-    """UTC ISO-8601 timestamp."""
-    return datetime.now(tz=timezone.utc).isoformat()
 
 
 def _current_status() -> str:
-    """Best-effort simulation status derived from available services."""
+    """Best-effort simulation status."""
     try:
         return (
             "running"
@@ -124,111 +77,8 @@ def _current_status() -> str:
     except Exception:
         return "idle"
 
-
-def _default_snapshot() -> dict:
-    """Stable, minimal snapshot shape when no engine is available."""
-    return {
-        "status": "idle",
-        "tick": 0,
-        "kpis": {
-            "revenue": 0.0,
-            "profit": 0.0,
-            "units_sold": 0,
-        },
-        "agents": [],
-        "timestamp": _now_iso(),
-    }
-
-
-def _map_dashboard_snapshot() -> dict:
-    """
-    Map dashboard service snapshot (if available) to the canonical shape.
-
-    Expected output:
-    {
-      "status": "idle" | "running" | "stopped",
-      "tick": int,
-      "kpis": {"revenue": float, "profit": float, "units_sold": int},
-      "agents": [{"slug": str, "display_name": str, "state": str}],
-      "timestamp": ISO-8601 string
-    }
-    """
-    try:
-        raw = dashboard_service.get_simulation_snapshot() if dashboard_service else None
-        if not isinstance(raw, dict):
-            return _default_snapshot()
-
-        status = _current_status()
-        tick = int(raw.get("current_tick", 0))
-        fin = raw.get("financial_summary", {}) or {}
-        kpis = {
-            "revenue": float(fin.get("total_revenue", 0.0) or 0.0),
-            "profit": float(fin.get("total_profit", 0.0) or 0.0),
-            "units_sold": int(fin.get("total_units_sold", 0) or 0),
-        }
-
-        agents_raw = raw.get("agents", {}) or {}
-        agents_list = []
-        # agents may be dict keyed by slug or list; normalize to list
-        if isinstance(agents_raw, dict):
-            for slug, meta in agents_raw.items():
-                agents_list.append(
-                    {
-                        "slug": str(slug),
-                        "display_name": (
-                            str(meta.get("display_name", slug))
-                            if isinstance(meta, dict)
-                            else str(slug)
-                        ),
-                        "state": (
-                            str(meta.get("state", "unknown"))
-                            if isinstance(meta, dict)
-                            else "unknown"
-                        ),
-                        "last_reasoning": str(meta.get("last_reasoning", "")),
-                        "last_tool_calls": meta.get("last_tool_calls", []),
-                        "llm_usage": meta.get("llm_usage", {}),
-                        "financials": meta.get("financials", {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0}),
-                        "recent_events": meta.get("recent_events", []),
-                    }
-                )
-        elif isinstance(agents_raw, list):
-            for a in agents_raw:
-                agents_list.append(
-                    {
-                        "slug": (
-                            str(a.get("slug", "agent"))
-                            if isinstance(a, dict)
-                            else "agent"
-                        ),
-                        "display_name": (
-                            str(a.get("display_name", a.get("slug", "agent")))
-                            if isinstance(a, dict)
-                            else "agent"
-                        ),
-                        "state": (
-                            str(a.get("state", "unknown"))
-                            if isinstance(a, dict)
-                            else "unknown"
-                        ),
-                        "last_reasoning": str(a.get("last_reasoning", "")),
-                        "last_tool_calls": a.get("last_tool_calls", []),
-                        "llm_usage": a.get("llm_usage", {}),
-                        "financials": a.get("financials", {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0}),
-                        "recent_events": a.get("recent_events", []),
-                    }
-                )
-
-        return {
-            "status": status,
-            "tick": tick,
-            "kpis": kpis,
-            "agents": agents_list,
-            "timestamp": _now_iso(),
-        }
-    except Exception:
-        # On any error, fall back to a deterministic idle snapshot
-        return _default_snapshot()
+def _now_iso() -> str: # Keep as helper for other functions
+    return datetime.now(tz=timezone.utc).isoformat()
 
 
 @router.get(
@@ -249,7 +99,8 @@ async def get_simulation_snapshot():
     """
     try:
         # Prefer mapped dashboard snapshot when available; otherwise idle default
-        return _map_dashboard_snapshot() if dashboard_service else _default_snapshot()
+        raw = dashboard_service.get_simulation_snapshot() if dashboard_service else {}
+        return SimulationSnapshot.from_dashboard_data(raw, _current_status())
     except Exception as e:
         # Structured 500
         raise HTTPException(status_code=500, detail=f"Failed to fetch snapshot: {e}")
@@ -302,39 +153,50 @@ async def websocket_realtime(
     - Error:        {"type":"error","error":"..."}
     """
     # Authentication (require JWT if configured; allow anonymous only when no public key configured)
-    public_key, alg, issuer, audience, leeway = _get_jwt_env()
+    # DISCARDED: public_key, alg, issuer, audience, leeway = _get_jwt_env()
     proto = _extract_ws_token(websocket)
     effective_token = token or proto.get("token")
     selected_subprotocol = proto.get("subprotocol")
 
-    if public_key:
+    # Security: Authenticate if enabled
+    # Centralized auth check using app_factory settings
+    if AUTH_ENABLED:
         if not effective_token:
-            # FIX: Do not allow bypass. Close connection.
             logger.error("WS connection missing token. Closing.")
-            await websocket.close(code=1008) # Policy Violation
+            await websocket.close(code=1008)  # Policy Violation
             return
-        else:
-            try:
-                options = {
-                    "require": ["exp", "iat"],
-                    "verify_signature": True,
-                    "verify_exp": True,
-                    "verify_aud": bool(audience),
-                    "verify_iss": bool(issuer),
-                }
-                jwt.decode(
-                    effective_token,
-                    public_key,
-                    algorithms=[alg],
-                    audience=audience,
-                    issuer=issuer,
-                    leeway=leeway,
-                    options=options,
-                )
-            except Exception as e:
-                logger.error(f"WS JWT verification failed: {e}")
+
+        try:
+            # Use centralized keys from app_factory
+            # We trust the app_factory to load keys correctly. 
+            key = AUTH_JWT_PUBLIC_KEYS[0] if AUTH_JWT_PUBLIC_KEYS else None
+            if not key:
+                 # Fallback/Safety: If enabled but no keys, we can't verify. Fail closed.
+                 logger.error("Auth enabled but no keys configured. Closing.")
+                 await websocket.close(code=1008)
+                 return
+
+            payload = jwt.decode(
+                effective_token,
+                key=key,
+                algorithms=["RS256"],
+                options={"verify_signature": True}
+            )
+            
+            agent_id = payload.get("sub")
+            if not agent_id:
+                logger.error("WS token missing subject (agent_id). Closing.")
                 await websocket.close(code=1008)
                 return
+                
+            logger.info(f"WS Authenticated agent: {agent_id}")
+
+        except jwt.PyJWTError as e:
+             logger.error(f"WS token validation failed: {e}. Closing.")
+             await websocket.close(code=1008)
+             return
+    else:
+        logger.warning("WS Authentication DISABLED - Allowing anonymous connection.")
 
     # Accept connection after auth; echo back chosen subprotocol if any
     logger.info("Accepting WebSocket connection (origin=%s)", origin)
@@ -408,7 +270,7 @@ async def websocket_realtime(
         except WebSocketDisconnect:
             pass
         except Exception as exc:
-            logger.error("Listener loop error: %s", exc)
+            logger.exception("Listener loop error: %s", exc)
             try:
                 await _send_safe({"type": "error", "error": "listener_error"})
             except Exception:
@@ -418,7 +280,8 @@ async def websocket_realtime(
                 if pubsub:
                     await pubsub.close()
             except Exception:
-                pass
+                 # Best effort close
+                 pass
 
     # Initialize Redis pubsub
     try:

@@ -105,6 +105,9 @@ Simulation (read-only)
 - GET /api/v1/simulation/events?event_type={sales|commands}&limit=20&since_tick=0
   - [python.function get_recent_events()](../../fba_bench_api/api/routes/realtime.py:223)
 
+Medusa
+Endpoints for managing the Medusa trainer process, implemented in [src/fba_bench_api/api/routes/medusa.py](src/fba_bench_api/api/routes/medusa.py). All under `/api/v1/medusa`. No authentication required in dev mode.
+
 Agents
 Prefix: /api/v1/agents (see [python.module agents](../../fba_bench_api/api/routes/agents.py:1))
 - GET /frameworks — list supported frameworks

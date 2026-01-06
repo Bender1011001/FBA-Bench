@@ -3,7 +3,7 @@
 ## Repository Overview
 - **[src/fba_bench_core/](src/fba_bench_core)**: Core business logic package for FBA simulation framework. Includes models (e.g., product.py, sales_result.py), services (e.g., sales_service.py, trust_score_service.py), and utilities like event_bus.py (compatibility shim for event handling), money.py (financial calculations), and simulation_orchestrator.py (orchestrates simulation flows).
 - **[src/fba_bench_core/event_bus.py](src/fba_bench_core/event_bus.py)**: Legacy compatibility module bridging to fba_events.bus. Provides EventBus singleton, subscribe/publish APIs, and backends (InMemoryEventBus, AsyncioQueueBackend shim) for typed event dispatching in simulations and services.
-- **[src/fba_bench_api/](src/fba_bench_api)**: FastAPI-based API layer for the benchmark system. Contains routers (e.g., experiments.py, medusa.py), models (e.g., experiment.py, simulation.py), core persistence (database.py, redis_client.py), and server setup (app_factory.py). Handles endpoints for simulations, leaderboards, and metrics.
+- **[src/fba_bench_api/](src/fba_bench_api)**: FastAPI-based API layer for the benchmark system. Contains routes (e.g., experiments.py, medusa.py), models (e.g., experiment.py, simulation.py), core persistence (database.py, redis_client.py), and server setup (app_factory.py). Handles endpoints for simulations, leaderboards, and metrics.
 - **[godot_gui/](godot_gui)**: Godot 4 GUI application for immersive simulation visualization. Includes autoload singletons (ApiClient.gd, WebSocketClient.gd, SimulationState.gd), scenes (SimulationViewer, Leaderboard, Sandbox), and real-time data streaming via WebSocket. Replaces the deprecated React frontend.
 - **[Makefile](Makefile)**: Build and development orchestration. Defines targets for linting (ruff/black), testing (pytest contracts/all), type-checking (mypy), migrations (alembic), and CI parity (ci-local). Includes legacy shims (be-migrate) and deployment (deploy-prod).
 - **[.github/workflows/ci.yml](.github/workflows/ci.yml)**: GitHub Actions workflow for CI/CD. Runs on push/PR to main/master; tests Python 3.9/3.10 with Poetry, pre-commit, lint/format/type checks, pytest (contracts/coverage), pip-audit, and uploads artifacts (coverage.xml, quality-gate-results.json). Enforces 80% coverage threshold.
@@ -17,7 +17,7 @@ src/
 │   ├── models/ (product.py, sales_result.py)
 │   └── services/ (sales_service.py, trust_score_service.py, world_store/)
 ├── fba_bench_api/
-│   ├── api/routers/ (experiments.py, medusa.py)
+│   ├── api/routes/ (experiments.py, medusa.py)
 │   ├── core/ (database.py, redis_client.py)
 │   └── models/ (experiment.py, simulation.py)
 godot_gui/

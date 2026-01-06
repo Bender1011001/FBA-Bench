@@ -22,11 +22,11 @@ Core entities are defined primarily in [src/fba_bench_api/models/](src/fba_bench
 - Many-to-many (via junction): ExperimentRun to Agent via ExperimentRunParticipant (unique per run-agent, CASCADE/RESTRICT).
 - No direct relationships for Scenarios (file-driven) or Templates (standalone).
 
-**API Usage** (cross-references from [src/fba_bench_api/api/routers/](src/fba_bench_api/api/routers)):
-- [experiments.py](src/fba_bench_api/api/routers/experiments.py): Read/write Experiments, ExperimentRuns, Participants (create/status/progress/results endpoints).
-- [medusa.py](src/fba_bench_api/api/routers/medusa.py): Interacts with Experiments/Simulations for ML training workflows.
-- [templates.py](src/fba_bench_api/api/routers/templates.py): Manages Templates for config reuse.
-- [stats.py](src/fba_bench_api/api/routers/stats.py), [leaderboard.py](src/fba_bench_api/api/routers/leaderboard.py): Query ExperimentRuns/metrics for aggregation.
+**API Usage** (cross-references from [src/fba_bench_api/api/routes/](src/fba_bench_api/api/routes)):
+- [experiments.py](src/fba_bench_api/api/routes/experiments.py): Read/write Experiments, ExperimentRuns, Participants (create/status/progress/results endpoints).
+- [medusa.py](src/fba_bench_api/api/routes/medusa.py): Interacts with Experiments/Simulations for ML training workflows.
+- [templates.py](src/fba_bench_api/api/routes/templates.py): Manages Templates for config reuse.
+- [stats.py](src/fba_bench_api/api/routes/stats.py), [leaderboard.py](src/fba_bench_api/api/routes/leaderboard.py): Query ExperimentRuns/metrics for aggregation.
 
 **ER Overview** (text-based):
 - Agents ←[one-to-many]→ Experiments ←[one-to-many]→ Simulations
@@ -52,7 +52,7 @@ Validation layers: Pydantic BaseModels in [src/fba_bench_api/models/](src/fba_be
 - **Missing Tenancy/Billing**: No tenant_id FKs or billing entities; risks data leakage in multi-user SaaS. Scenarios/templates lack DB persistence (file-based, no versioning/ACLs).
 - **Denormalization/Duplication**: JSON params/metrics may duplicate core sim state; no dedicated metrics table for querying.
 - **Constraints Gaps**: Nullable scenario_id in Experiments (unsafe if required); missing indexes on FKs (e.g., experiment_id in runs) for join perf; no unique on agent names.
-- **Coverage Issues**: [src/fba_bench_api/core/database.py](src/fba_bench_api/core/database.py) models (e.g., ExperimentConfigDB) not in main models/ or migrations; potential sync. Routers like [clearml.py](src/fba_bench_api/api/routers/clearml.py) may reference unmodeled entities.
+- **Coverage Issues**: [src/fba_bench_api/core/database.py](src/fba_bench_api/core/database.py) models (e.g., ExperimentConfigDB) not in main models/ or migrations; potential sync. Routes like [clearml.py](src/fba_bench_api/api/routes/clearml.py) may reference unmodeled entities.
 - **Async/Sync Drift**: Dual setups risk inconsistency; no explicit tenant context in sessions.
 - **Validation Limits**: Pydantic forbids extra fields but lacks deep JSON schema validation for configs.
 
@@ -60,5 +60,5 @@ Validation layers: Pydantic BaseModels in [src/fba_bench_api/models/](src/fba_be
 - Audit/align [src/fba_bench_api/core/database.py](src/fba_bench_api/core/database.py) models to [src/fba_bench_api/models/](src/fba_bench_api/models); autogenerate migration for integration (target: 100% model-migration sync).
 - Add tenant_id to all entities (FK to new Tenants table); implement RLS policies; write integration tests for isolation (coverage >80% on new auth/tenant deps).
 - Migrate scenarios to DB (add ScenarioORM); add missing indexes/constraints via Alembic (e.g., composite on experiment_id+status).
-- Enhance validation: Deep Pydantic for JSON configs; unit tests for enums/invariants (aim: 90% coverage on models/routers).
+- Enhance validation: Deep Pydantic for JSON configs; unit tests for enums/invariants (aim: 90% coverage on models/routes).
 - Stabilize CI: Add make targets for migration linting (alembic check), DB schema diffs; run full suite post-changes.

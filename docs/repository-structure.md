@@ -18,7 +18,6 @@ This document provides an overview of the repository's folder structure after th
 ### API & Services
 | Folder | Purpose |
 |--------|---------|
-| `api/` | Legacy API routers (transitioning to `src/fba_bench_api/`) |
 | `dashboard/` | Dashboard service API |
 | `leaderboard/` | Leaderboard functionality |
 | `metrics/` | Metrics collection |
@@ -111,6 +110,7 @@ The following folders were removed during the 2026-01-05 cleanup:
 | `infra/` | Merged | `main.tf` moved to `infrastructure/terraform/` |
 | `llm_interface/` (root) | Deleted | Duplicate of `src/llm_interface/` |
 | `context-code/` | Moved | Content moved to `docs/planning/` |
+| `src/fba_bench_api/api/routers/` | Merged | Consolidated into `src/fba_bench_api/api/routes/` |
 
 ## File Organization Guidelines
 
