@@ -94,6 +94,13 @@ class SimulationOrchestrator:
         assert (
             self._event_bus is not None
         ), "EventBus must be set before starting the orchestrator"
+        
+        # Configure robust execution
+        import logging
+        logger = logging.getLogger(__name__)
+        MAX_ERRORS = 5
+        error_count = 0
+        
         cfg = self._config
         base_sim_time = datetime.now(timezone.utc)
 
@@ -126,14 +133,28 @@ class SimulationOrchestrator:
                 metadata.update(cfg.metadata)
 
             # Create and publish the TickEvent
-            ev = TickEvent(
-                event_id=f"tick-{tick}",
-                timestamp=now,
-                tick_number=tick,
-                simulation_time=sim_time,
-                metadata=metadata,
-            )
-            await self._event_bus.publish(ev)
+            try:
+                ev = TickEvent(
+                    event_id=f"tick-{tick}",
+                    timestamp=now,
+                    tick_number=tick,
+                    simulation_time=sim_time,
+                    metadata=metadata,
+                )
+                await self._event_bus.publish(ev)
+                error_count = 0  # Reset on success
+            except Exception as e:
+                # Circuit breaker pattern
+                error_count += 1
+                logger.error(f"Error in simulation tick {tick} (Attempt {error_count}/{MAX_ERRORS}): {e}", exc_info=True)
+                if error_count >= MAX_ERRORS:
+                    logger.critical(f"Too many consecutive errors ({MAX_ERRORS}). Aborting simulation.")
+                    self._is_running = False
+                    self._statistics["stopped_at"] = datetime.now(timezone.utc).isoformat()
+                    return
+                # Backoff slightly
+                await asyncio.sleep(1.0)
+                continue
 
             # Update counters
             self._current_tick = tick + 1

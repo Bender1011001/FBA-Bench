@@ -12,8 +12,22 @@ from pydantic import BaseModel
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT Configuration
-SECRET_KEY = secrets.token_urlsafe(32)  # In production, load from environment
-ALGORITHM = "HS256"
+import os
+
+# JWT Configuration
+# CRITICAL: Fail safely if SECRET_KEY is missing in production
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    # Allow loose defaults ONLY in non-production if explicitly flagged, otherwise fail
+    if os.getenv("ENVIRONMENT") == "production":
+        raise RuntimeError("FATAL: SECRET_KEY must be set in production!")
+    else:
+        # Fallback for local dev only - still risky but better than silent random
+        import logging
+        logging.getLogger(__name__).warning("Using unsafe default SECRET_KEY for development.")
+        SECRET_KEY = "dev-secret-change-me" 
+
+ALGORITHM = os.environ.get("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 

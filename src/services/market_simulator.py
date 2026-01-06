@@ -196,9 +196,19 @@ class MarketSimulationService:
         Compute integer units demanded with elasticity.
         demand = base_demand * (p / p_ref)^(-elasticity)
         """
-        p = float(price.cents) / 100.0
-        p_ref = float(ref_price.cents) / 100.0
-        ratio = self._safe_div(p, p_ref, default=1.0)
+        from decimal import Decimal
+        
+        p = Decimal(price.cents) / Decimal("100.0")
+        p_ref = Decimal(ref_price.cents) / Decimal("100.0")
+        
+        try:
+            if p_ref <= 0:
+                ratio = 1.0
+            else:
+                ratio = float(p / p_ref) # Power function typically needs float for non-integer exponent
+        except (TypeError, ValueError, ZeroDivisionError):
+             ratio = 1.0
+
         # clamp ratio to avoid extremes
         if ratio <= 0.0:
             ratio = 0.01

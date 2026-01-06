@@ -308,10 +308,11 @@ async def websocket_realtime(
     selected_subprotocol = proto.get("subprotocol")
 
     if public_key:
-        # Allow local/dev environments to bypass strict auth if token is missing or invalid
-        # This is critical for demos where auth might not be fully configured
         if not effective_token:
-            logger.warning("WS connection missing token; allowing for dev/demo (public_key configured)")
+            # FIX: Do not allow bypass. Close connection.
+            logger.error("WS connection missing token. Closing.")
+            await websocket.close(code=1008) # Policy Violation
+            return
         else:
             try:
                 options = {
@@ -331,10 +332,9 @@ async def websocket_realtime(
                     options=options,
                 )
             except Exception as e:
-                logger.warning("WS JWT verification failed: %s; allowing for dev/demo", e)
-                # In strict production, we would close:
-                # await websocket.close(code=4401)
-                # return
+                logger.error(f"WS JWT verification failed: {e}")
+                await websocket.close(code=1008)
+                return
 
     # Accept connection after auth; echo back chosen subprotocol if any
     logger.info("Accepting WebSocket connection (origin=%s)", origin)

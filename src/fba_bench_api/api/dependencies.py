@@ -40,14 +40,17 @@ def get_current_user(token: str = Depends(security)) -> Optional[Dict[str, Any]]
     """
     Get current user dependency. In test mode (AUTH_ENABLED=false), returns anonymous user.
     """
-    if os.getenv("AUTH_ENABLED", "false").lower() != "true":
-        return {"sub": "anonymous", "roles": []}
-    
+    """
+    Get current user dependency. 
+    REMOVED: Unsafe 'AUTH_ENABLED' bypass. Auth is now mandatory.
+    """
     if not token:
         raise HTTPException(status_code=401, detail="Authentication required")
         
     try:
-        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        # Pydantic/FastAPI might pass the object, extract credentials
+        token_str = token.credentials if hasattr(token, "credentials") else str(token)
+        payload = jwt.decode(token_str, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
