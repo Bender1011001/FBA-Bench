@@ -101,3 +101,7 @@ class TrustScoreEventHandler:
             )
         except (TypeError, AttributeError, ValueError, RuntimeError):
             logger.exception("Error handling sale.processed event")
+
+
+# Backward-compatible alias (services/__init__.py imports TrustScoreHandler)
+TrustScoreHandler = TrustScoreEventHandler

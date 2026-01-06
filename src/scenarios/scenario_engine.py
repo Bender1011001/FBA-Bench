@@ -355,15 +355,27 @@ class ScenarioEngine:
                 # Diminishing returns
                 bonus_score = normalized**gamma if normalized > 0.0 else 0.0
 
-                # Optional risk adjustment (placeholder volatility = 0.0 until tracked)
+                # Optional risk adjustment using volatility from profit history
                 risk_cfg = bonus_policy.get("risk_adjustment", {})
                 if risk_cfg and bool(risk_cfg.get("enabled", False)):
-                    # Future: compute volatility or drawdown from sim history
                     lambda_param = float(risk_cfg.get("lambda", 0.1))
-                    volatility_or_drawdown = 0.0  # No volatility tracked yet
+                    
+                    # Compute volatility from profit history if available
+                    profit_history = final_state.get("profit_history", [])
+                    volatility_or_drawdown = 0.0
+                    if len(profit_history) > 1:
+                        try:
+                            import statistics
+                            volatility_or_drawdown = statistics.stdev(profit_history)
+                            # Normalize volatility by mean profit for scale-invariance
+                            mean_profit = statistics.mean(profit_history)
+                            if mean_profit > 0:
+                                volatility_or_drawdown = volatility_or_drawdown / mean_profit
+                        except (statistics.StatisticsError, ZeroDivisionError):
+                            volatility_or_drawdown = 0.0
+                    
                     try:
-                        import math  # local import to avoid global dependency if unused
-
+                        import math
                         bonus_score *= math.exp(
                             -lambda_param * max(0.0, volatility_or_drawdown)
                         )
@@ -496,6 +508,9 @@ class ScenarioEngine:
                 _profit_min_target / float(max(1, total_ticks))
             ) * 1.05
 
+        # Track profit history for volatility calculation in risk-adjusted scoring
+        profit_history: List[float] = []
+        
         event_schedule = scenario_config.config_data.get("external_events", [])
         for tick in range(1, total_ticks + 1):
             logging.debug(f"Simulation Tick: {tick}/{total_ticks}")
@@ -511,6 +526,9 @@ class ScenarioEngine:
             # Apply deterministic profit gain toward target (if configured)
             if per_tick_profit_gain:
                 sim_metrics["profit"] += per_tick_profit_gain
+            
+            # Track profit history for volatility calculation
+            profit_history.append(sim_metrics["profit"])
 
             # Dummy updates to sim_metrics for analysis
             if "boom_and_bust" in scenario_file:
@@ -556,6 +574,8 @@ class ScenarioEngine:
         final_state = {
             # Include canonical profit metric
             "profit": sim_metrics["profit"],
+            # Include profit history for volatility-based risk adjustment
+            "profit_history": profit_history,
             # Backward-compatibility: legacy objectives read from 'profit_target' key
             "profit_target": sim_metrics["profit"],
             # If scenarios use 'profit_target_min' objective name, they will read actual profit from this key

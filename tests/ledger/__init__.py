@@ -1,4 +1,4 @@
-"""Test-local shim for ledger package, re-exporting from real fba_bench_core.services.ledger.
+"""Test-local shim for ledger package, re-exporting from real services.ledger.
 
 This allows 'from ledger import Account' etc. to succeed by proxying to the production implementation.
 No modifications to behavior; purely for import neutralization during test collection.

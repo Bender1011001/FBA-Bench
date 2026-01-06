@@ -128,3 +128,30 @@ node_modules/
 
 # Corrupt learning data
 learning_data/*.corrupt
+learning_data/**/*.json
+
+# Runtime artifact directories
+data/
+logs/
+temp/
+audit_trails/
+version_manifests/
+ssl/
+agents/
+scenarios/
+
+# Deploy tenant configs (generated)
+deploy/tenants/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Parquet artifacts (keep golden masters though)
+artifacts/*.parquet
+
+# Test output files
+test_output*.txt
+verification_output.txt
+godot_output.txt

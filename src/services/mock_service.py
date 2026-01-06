@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from ..registry.global_variables import global_variables
+from benchmarking.registry.global_variables import global_variables
 
 logger = logging.getLogger(__name__)
 
@@ -969,3 +969,6 @@ class ServiceManager:
 
 # Global instance of the service manager
 service_manager = ServiceManager()
+
+# Backward-compatible alias (services/__init__.py imports MockService)
+MockService = ProductionService

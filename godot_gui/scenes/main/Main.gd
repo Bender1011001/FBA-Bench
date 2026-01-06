@@ -86,8 +86,21 @@ func _update_nav_buttons():
 
 func _toggle_theme():
 	is_dark_theme = !is_dark_theme
-	# Future: Apply theme resource
-	_update_log("Theme toggled (not fully implemented)")
+	var theme_name = "Dark" if is_dark_theme else "Light"
+	
+	# Apply theme-based styling to main container
+	var bg_color = Color(0.11, 0.11, 0.14, 1.0) if is_dark_theme else Color(0.95, 0.95, 0.97, 1.0)
+	var text_color = Color(1, 1, 1, 1) if is_dark_theme else Color(0.1, 0.1, 0.1, 1)
+	
+	# Try to load theme resource if available
+	var theme_path = "res://themes/%s_theme.tres" % theme_name.to_lower()
+	if ResourceLoader.exists(theme_path):
+		self.theme = load(theme_path)
+		_update_log("Theme: %s (loaded)" % theme_name)
+	else:
+		# Fallback: Apply visual changes directly
+		self.modulate = Color(1, 1, 1, 1) if is_dark_theme else Color(0.9, 0.9, 0.95, 1)
+		_update_log("Theme: %s" % theme_name)
 
 func _connect_signals():
 	sim_btn.pressed.connect(_show_simulation)

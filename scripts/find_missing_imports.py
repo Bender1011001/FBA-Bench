@@ -60,25 +60,25 @@ def find_all_missing_imports():
     # Test individual service imports that are commonly missing
     print("\n📦 Testing individual service imports...")
     service_modules = [
-        'fba_bench_core.services.fee_calculation_service',
-        'fba_bench_core.services.world_store',
-        'fba_bench_core.services.market_simulator',
-        'fba_bench_core.services.supply_chain_service',
-        'fba_bench_core.services.sales_service',
-        'fba_bench_core.services.marketing_service',
-        'fba_bench_core.services.customer_event_service',
-        'fba_bench_core.services.customer_reputation_service',
-        'fba_bench_core.services.trust_score_service',
-        'fba_bench_core.services.dispute_service',
-        'fba_bench_core.services.double_entry_ledger_service',
-        'fba_bench_core.services.cost_tracking_service',
-        'fba_bench_core.services.outcome_analysis_service',
-        'fba_bench_core.services.competitor_manager',
-        'fba_bench_core.services.bsr_engine_v3',
-        'fba_bench_core.services.dashboard_api_service',
-        'fba_bench_core.services.toolbox_api_service',
-        'fba_bench_core.services.external_service',
-        'fba_bench_core.services.mock_service',
+        'services.fee_calculation_service',
+        'services.world_store',
+        'services.market_simulator',
+        'services.supply_chain_service',
+        'services.sales_service',
+        'services.marketing_service',
+        'services.customer_event_service',
+        'services.customer_reputation_service',
+        'services.trust_score_service',
+        'services.dispute_service',
+        'services.double_entry_ledger_service',
+        'services.cost_tracking_service',
+        'services.outcome_analysis_service',
+        'services.competitor_manager',
+        'services.bsr_engine_v3',
+        'services.dashboard_api_service',
+        'services.toolbox_api_service',
+        'services.external_service',
+        'services.mock_service',
         'financial_audit',
     ]
     
@@ -107,8 +107,8 @@ def generate_copy_commands(missing_modules):
     print("\n📋 Suggested copy commands from C:\\Users\\admin\\Downloads\\fba:")
     
     for module in missing_modules:
-        if module.startswith('fba_bench_core.services.'):
-            service_name = module.replace('fba_bench_core.services.', '')
+        if module.startswith('services.'):
+            service_name = module.replace('services.', '')
             print(f"copy C:\\Users\\admin\\Downloads\\fba\\fba_bench_core\\services\\{service_name}.py fba_bench_core\\services\\")
         elif module == 'financial_audit':
             print(f"copy C:\\Users\\admin\\Downloads\\fba\\{module}.py .")

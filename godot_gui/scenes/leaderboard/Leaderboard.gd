@@ -156,17 +156,87 @@ func _update_details_panel():
 	verify_btn.disabled = selected_model.get("verified", false)
 
 func _export_data():
-	# Future: Export filtered leaderboard to CSV
-	print("Export triggered")
+	# Export filtered leaderboard to CSV
+	var filtered = _apply_filters(leaderboard_data)
+	if filtered.is_empty():
+		push_warning("No data to export")
+		return
+	
+	# Build CSV content
+	var csv_lines = ["Rank,Model,Provider,Score,Success Rate,Avg Profit,Tokens,Verified"]
+	var rank = 1
+	for model in filtered:
+		var line = "%d,%s,%s,%.2f,%.1f%%,$%.2f,%d,%s" % [
+			rank,
+			model.get("model_name", "Unknown").replace(",", ";"),
+			model.get("provider", "").replace(",", ";"),
+			model.get("overall_score", 0.0),
+			model.get("success_rate", 0.0) * 100,
+			model.get("avg_profit", 0.0),
+			model.get("total_tokens", 0),
+			"Yes" if model.get("verified", false) else "No"
+		]
+		csv_lines.append(line)
+		rank += 1
+	
+	# Save to user data directory
+	var timestamp = Time.get_datetime_string_from_system().replace(":", "-")
+	var filename = "user://leaderboard_export_%s.csv" % timestamp
+	var file = FileAccess.open(filename, FileAccess.WRITE)
+	if file:
+		file.store_string("\n".join(csv_lines))
+		file.close()
+		print("Exported to: ", ProjectSettings.globalize_path(filename))
+	else:
+		push_error("Failed to save CSV export")
+
+signal compare_requested(model_data: Dictionary)
+signal replay_requested(simulation_id: String)
+signal verify_requested(model_name: String)
 
 func _on_compare_pressed():
-	# Future: Open comparison view
-	print("Compare: ", selected_model.get("model_name", ""))
+	# Emit signal for comparison view (parent scene handles navigation)
+	if selected_model.is_empty():
+		return
+	compare_requested.emit(selected_model)
+	print("Compare requested: ", selected_model.get("model_name", ""))
 
 func _on_replay_pressed():
-	# Future: Navigate to simulation replay
-	print("Replay: ", selected_model.get("simulation_id", ""))
+	# Emit signal to navigate to simulation replay
+	var sim_id = selected_model.get("simulation_id", "")
+	if sim_id.is_empty():
+		push_warning("No simulation ID available for replay")
+		return
+	replay_requested.emit(sim_id)
+	print("Replay requested: ", sim_id)
 
 func _on_verify_pressed():
-	# Future: Trigger reproducibility verification
-	print("Verify: ", selected_model.get("model_name", ""))
+	# Trigger reproducibility verification via API
+	var model_name = selected_model.get("model_name", "")
+	if model_name.is_empty():
+		return
+	
+	verify_btn.disabled = true
+	verify_btn.text = "Verifying..."
+	
+	# Call verification API endpoint
+	ApiClient.request_completed.connect(_on_verify_completed, CONNECT_ONE_SHOT)
+	ApiClient.post_request("/api/v1/verify", {"model_name": model_name})
+	verify_requested.emit(model_name)
+	print("Verification requested: ", model_name)
+
+func _on_verify_completed(endpoint: String, data: Variant):
+	if endpoint != "/api/v1/verify":
+		return
+	
+	verify_btn.text = "Verify"
+	if data is Dictionary and data.get("success", false):
+		verify_btn.disabled = true
+		# Mark model as verified in local data
+		selected_model["verified"] = true
+		_populate_tree()
+		print("Verification successful")
+	else:
+		verify_btn.disabled = false
+		push_warning("Verification failed")
+
