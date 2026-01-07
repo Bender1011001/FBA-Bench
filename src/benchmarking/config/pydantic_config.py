@@ -137,6 +137,18 @@ class BaseConfig(BaseModel):
     def dict(self, *args, **kwargs) -> Dict[str, Any]:  # type: ignore[override]
         return self.model_dump(mode="json")
 
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert config to dictionary."""
+        return self.dict()
+
+    def to_yaml(self) -> str:
+        """Convert config to YAML string."""
+        return yaml.dump(self.to_dict(), sort_keys=False)
+
+    def to_json(self) -> str:
+        """Convert config to JSON string."""
+        return json.dumps(self.to_dict(), indent=2)
+
 
 class LLMConfig(BaseConfig):
     """LLM configuration using Pydantic."""
@@ -675,6 +687,9 @@ class UnifiedAgentRunnerConfig(BaseConfig):
     )
     custom_config: Dict[str, Any] = Field(
         default_factory=dict, description="Additional custom configuration"
+    )
+    parameters: Dict[str, Any] = Field(
+        default_factory=dict, description="Arbitrary parameters for DIY or custom agents"
     )
 
     @model_validator(mode="before")

@@ -30,6 +30,7 @@ from .base_runner import (
     AgentRunner,
     AgentRunnerCleanupError,
     AgentRunnerDecisionError,
+    AgentRunnerError,
     AgentRunnerInitializationError,
     AgentRunnerStatus,
     AgentRunnerTimeoutError,
@@ -429,62 +430,51 @@ class AgentManager:
 
         runner = None
         try:
-            # 1. Try RunnerFactory (preferred, supports test mocks)
+            # 1. Try modern registry/factory path
             try:
-                from agent_runners import RunnerFactory as _RF
-                runner = _RF.create_runner(framework, agent_id, config or {})
-                logger.info(f"Agent {agent_id} ({framework}) registered via RunnerFactory.")
-            except (ImportError, AttributeError, RuntimeError) as e:
-                logger.debug(f"RunnerFactory unavailable for '{framework}': {e}")
+                from .registry import create_runner as _create_runner
+                runner = _create_runner(framework, config or {}, agent_id=agent_id)
+                logger.info(f"Agent {agent_id} ({framework}) created via registry.")
+            except (ImportError, AttributeError, ValueError, AgentRunnerError) as e:
+                logger.debug(f"Primary registry path failed for '{framework}': {e}")
 
-            # 2. Try direct registry lookup
-            if not runner:
-                from agent_runners import registry as _reg
-                fw_lower = (framework or "").lower()
-                entry = getattr(_reg, "RUNNER_REGISTRY", {}).get(fw_lower)
-                if entry:
-                    runner_cls = entry[0]
-                    runner = runner_cls(agent_id, config or {})
-                    logger.info(f"Agent {agent_id} created via direct registry lookup for '{framework}'.")
-
-            # 3. Try registry.create_runner fallback
-            if not runner:
-                from agent_runners import registry as _reg
-                runner = _reg.create_runner(framework, config or {}, agent_id=agent_id)
-                logger.info(f"Agent {agent_id} created via registry.create_runner for '{framework}'.")
+            # 2. Unified agent system fallback
+            if not runner and self.use_unified_agents and self.unified_agent_factory:
+                try:
+                    pydantic_config = self._create_pydantic_config_from_dict(
+                        agent_id, framework, config or {}
+                    )
+                    unified_agent = self.unified_agent_factory.create_agent(
+                        agent_id, pydantic_config
+                    )
+                    from benchmarking.agents.unified_agent import UnifiedAgentRunner
+                    unified_runner = UnifiedAgentRunner(unified_agent)
+                    runner = UnifiedAgentRunnerWrapper(unified_runner, agent_id)
+                    self.unified_agent_runners[agent_id] = unified_runner
+                    logger.info(f"Unified agent {agent_id} ({framework}) registered successfully.")
+                except Exception as e:
+                    logger.warning(f"Unified agent system fallback failed for {agent_id}: {e}")
 
             if runner:
                 self._add_to_registries(agent_id, runner, framework, config)
                 return runner
 
-            # 4. Unified agent system default path
-            pydantic_config = self._create_pydantic_config_from_dict(
-                agent_id, framework, config or {}
-            )
-            unified_agent = self.unified_agent_factory.create_agent(
-                agent_id, pydantic_config
-            )
-            unified_runner = UnifiedAgentRunner(unified_agent)
-            runner_wrapper = UnifiedAgentRunnerWrapper(unified_runner, agent_id)
-            self.unified_agent_runners[agent_id] = unified_runner
-            
-            self._add_to_registries(agent_id, runner_wrapper, framework, config)
-            logger.info(f"Unified agent {agent_id} ({framework}) registered successfully.")
-            return runner_wrapper
+            raise RuntimeError(f"No suitable runner found for framework '{framework}'")
 
-        except (AttributeError, TypeError, ValueError, RuntimeError, ImportError) as e:
+        except Exception as e:
             logger.error(f"Failed to register agent {agent_id} ({framework}): {e}")
             self._handle_registration_failure(agent_id, framework, config, e)
             return None
 
     def _add_to_registries(self, agent_id: str, runner: Any, framework: str, config: Optional[Dict[str, Any]] = None) -> None:
         """Internal helper to update both the modern registry and back-compat mirror."""
-        reg = self.agent_registry.add_agent(agent_id, runner, framework, config or {})
+        self.agent_registry.add_agent(agent_id, runner, framework, config or {})
         # Update back-compat mirror
         self.agents[agent_id] = BackCompatRegistration(
+            agent_id=agent_id,
             runner=runner,
-            active=runner is not None,
-            created_at=reg.created_at,
+            active=True,
+            created_at=datetime.now(),
             total_decisions=0,
             total_tool_calls=0,
         )
@@ -585,20 +575,14 @@ class AgentManager:
         # Run arbitration and dispatch
         processed = await self._arbitrate_and_dispatch(agent_id, result)
         
-        # Update statistics
+        # Update statistics in primary registry
         reg = self.agent_registry.get_agent(agent_id)
         if reg:
             reg.total_decisions += 1
             reg.total_tool_calls += processed
         
-        if agent_id in self.agents:
-            mirror = self.agents[agent_id]
-            if isinstance(mirror, dict):
-                mirror["total_decisions"] = int(mirror.get("total_decisions", 0)) + 1
-                mirror["total_tool_calls"] = int(mirror.get("total_tool_calls", 0)) + processed
-            else:
-                mirror.total_decisions += 1
-                mirror.total_tool_calls += processed
+        # Sync with back-compat mirror
+        self._sync_back_compat_mirror(agent_id, decisions_inc=1, tools_inc=processed)
         
         self.total_tool_calls += processed
 
@@ -609,24 +593,43 @@ class AgentManager:
             self.agent_registry.mark_agent_timeout(
                 agent_id, threshold=self.timeout_unresponsive_threshold
             )
-        elif isinstance(error, AgentRunnerDecisionError):
-            logger.error(f"Decision error from agent {agent_id}: {error}")
-            self.agent_registry.mark_agent_as_failed(agent_id, str(error))
-            self.total_errors += 1
         else:
-            logger.error(f"Unexpected error getting decision from agent {agent_id}: {error}", exc_info=True)
+            if isinstance(error, AgentRunnerDecisionError):
+                logger.error(f"Decision error from agent {agent_id}: {error}")
+            else:
+                logger.error(f"Unexpected error getting decision from agent {agent_id}: {error}", exc_info=True)
             self.agent_registry.mark_agent_as_failed(agent_id, str(error))
             self.total_errors += 1
             
         # Synchronize mirror
-        if agent_id in self.agents:
-            mirror = self.agents[agent_id]
-            if isinstance(mirror, dict):
-                mirror["active"] = False
-                mirror["failure_reason"] = str(error)
-            else:
-                mirror.active = False
+        self._sync_back_compat_mirror(agent_id, active=False, failure_reason=str(error))
         self._update_stats()
+
+    def _sync_back_compat_mirror(
+        self, 
+        agent_id: str, 
+        active: Optional[bool] = None, 
+        failure_reason: Optional[str] = None,
+        decisions_inc: int = 0,
+        tools_inc: int = 0
+    ) -> None:
+        """Internal helper to synchronize the back-compat 'agents' mirror with registry state."""
+        if agent_id not in self.agents:
+            return
+            
+        mirror = self.agents[agent_id]
+        if isinstance(mirror, dict):
+            if active is not None: mirror["active"] = active
+            if failure_reason is not None: mirror["failure_reason"] = failure_reason
+            mirror["total_decisions"] = int(mirror.get("total_decisions", 0)) + decisions_inc
+            mirror["total_tool_calls"] = int(mirror.get("total_tool_calls", 0)) + tools_inc
+        else:
+            # BackCompatRegistration dataclass
+            if active is not None: mirror.active = active
+            if hasattr(mirror, "failure_reason") and failure_reason is not None:
+                mirror.failure_reason = failure_reason
+            mirror.total_decisions += decisions_inc
+            mirror.total_tool_calls += tools_inc
 
     async def _publish_decision_event(self, agent_id: str, tool_calls: List[ToolCall], context: Dict[str, Any]) -> None:
         """Publish an AgentDecisionEvent for observability."""
@@ -1021,7 +1024,7 @@ class AgentManager:
                 # This could be more refined, but for basic health, active is 'not failed'.
                 pass
 
-        return {
+        stats = {
             "status": "operational" if total_agents == active_agents else "degraded",
             "timestamp_utc": datetime.now(timezone.utc).isoformat() + "Z",
             "total_registered_agents": total_agents,
@@ -1030,6 +1033,20 @@ class AgentManager:
             "running_agents_experimental": running_count,
             "decision_cycles_completed": self.decision_cycles_completed,
             "total_errors_encountered": self.total_errors,
+        }
+        # Build agent status map for tests
+        agent_map = {}
+        for agent_id, agent_reg in self.agent_registry.all_agents().items():
+            agent_map[agent_id] = {
+                "active": agent_reg.is_active,
+                "status": getattr(agent_reg.runner, "status", "unknown") if agent_reg.runner else "failed",
+                "total_decisions": agent_reg.total_decisions,
+            }
+
+        return {
+            **stats,
+            "agents": agent_map,
+            "manager_stats": stats
         }
 
     async def get_agent_info(self, agent_id: str) -> Dict[str, Any]:

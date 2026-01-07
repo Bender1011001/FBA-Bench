@@ -86,6 +86,11 @@ class DependencyManager:
         if framework in self._availability_cache:
             return self._availability_cache[framework]
 
+        # Built-in frameworks are always available
+        if framework.lower() in {"diy", "direct"}:
+            self._availability_cache[framework] = True
+            return True
+
         if framework not in self.FRAMEWORK_DEPENDENCIES:
             logger.warning(f"Unknown framework: {framework}")
             return False

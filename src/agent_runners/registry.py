@@ -194,28 +194,77 @@ def get_framework_info(name: str) -> Dict[str, Any]:
     }
 
 
-def validate_config(framework: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
+def validate_config(
+    framework: Union[str, Dict[str, Any]], cfg: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
-    Explicit config validation facade exposed for RunnerFactory proxy.
-    Adds a small DIY sanity check expected by tests.
+    Explicit config validation facade.
+    Supports both (framework, cfg) and (full_config_dict) signatures.
     """
-    nk = (framework or "").strip().lower()
-    if nk == "diy":
-        agent_type = (cfg or {}).get("agent_type")
-        # Accept common DIY types
-        if agent_type not in {"advanced", "baseline", None}:
-            from .base_runner import (
-                AgentRunnerError,  # local import to avoid cycles at module import
-            )
+    if cfg is None and isinstance(framework, dict):
+        # Single-argument call with full config dict
+        cfg = framework
+        framework = str(cfg.get("framework") or "")
 
+    nk = (str(framework) or "").strip().lower()
+    if nk == "diy":
+        # DIY-specific sanity check expected by legacy tests
+        agent_type = (cfg or {}).get("agent_type")
+        if agent_type and agent_type not in {"advanced", "baseline"}:
+            from .base_runner import AgentRunnerError
             raise AgentRunnerError(f"Invalid DIY agent_type: {agent_type!r}")
+
     # Defer to registry-specific validators when available
-    return _validate_config(nk, cfg or {})
+    validated_dict = _validate_config(nk, cfg or {})
+    
+    # Ensure mandatory fields for AgentRunnerConfig are present
+    if "agent_id" not in validated_dict:
+        validated_dict["agent_id"] = (cfg or {}).get("agent_id") or "default"
+    if "framework" not in validated_dict:
+        validated_dict["framework"] = nk or "diy"
+
+    # Return as AgentRunnerConfig object for test compatibility
+    from .configs.config_schema import AgentRunnerConfig
+    return AgentRunnerConfig.from_dict(validated_dict)
+
+
+class AgentBuilder:
+    """
+    Builder pattern for creating and optionally initializing agent runners.
+    Used primarily in tests and high-level scripting entry points.
+    """
+
+    def __init__(self, framework: str, agent_id: str):
+        self.framework = framework
+        self.agent_id = agent_id
+        self.config: Dict[str, Any] = {}
+
+    def with_config(self, **kwargs) -> AgentBuilder:
+        """Update the agent configuration."""
+        self.config.update(kwargs)
+        return self
+
+    def build(self) -> AgentRunner:
+        """Create the agent runner instance without initializing it."""
+        return create_runner(self.framework, self.config, agent_id=self.agent_id)
+
+    async def build_and_initialize(self) -> AgentRunner:
+        """Create and initialize the agent runner instance."""
+        runner = self.build()
+        await runner.initialize(self.config)
+        return runner
+
+
+def create_agent_builder(framework: str, agent_id: str) -> AgentBuilder:
+    """Factory function for AgentBuilder."""
+    return AgentBuilder(framework, agent_id)
 
 
 __all__ = [
     "RUNNER_REGISTRY",
+    "AgentBuilder",
     "create_runner",
+    "create_agent_builder",
     "supported_runners",
     "register_runner",
     "is_framework_available",

@@ -38,6 +38,7 @@ class AgentRegistration:
 @dataclass
 class BackCompatRegistration:
     """Back-compat mirror record used for tests expecting attributes on manager.agents[aid]"""
+    agent_id: str
     runner: Any
     active: bool
     created_at: datetime

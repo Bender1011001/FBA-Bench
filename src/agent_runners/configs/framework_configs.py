@@ -33,13 +33,26 @@ class DIYConfig:
         agent_id: str, target_asin: str = "B0DEFAULT"
     ) -> UnifiedAgentRunnerConfig:
         """Configuration for event-driven advanced-style DIY agent using parameters."""
+        params = {
+            "agent_type": "advanced",
+            "target_asin": target_asin,
+            "strategy": "profit_maximizer",
+            "price_sensitivity": 0.1,
+            "reaction_speed": 1,
+        }
+        from benchmarking.config.pydantic_config import AgentConfig
+        
         return UnifiedAgentRunnerConfig(
             name=f"{agent_id}_runner",
             description="Event-driven DIY agent with advanced strategies",
             agent_id=agent_id,
             framework=FrameworkType.DIY,
-            # Pydantic AgentConfig expects formal fields; we prefer parameters for DIY variants.
-            agent_config=None,
+            # Populate agent_config for tests that expect it
+            agent_config=AgentConfig(
+                agent_id=agent_id,
+                framework=FrameworkType.DIY,
+                **params
+            ),
             llm_config=None,
             memory_config=None,
             crew_config=None,
@@ -48,24 +61,28 @@ class DIYConfig:
             timeout_seconds=30,
             custom_tools=[],
             custom_config={},
-            parameters={
-                "agent_type": "advanced",
-                "target_asin": target_asin,
-                "strategy": "profit_maximizer",
-                "price_sensitivity": 0.1,
-                "reaction_speed": 1,
-            },
+            parameters=params,
         )
 
     @staticmethod
     def baseline_greedy(agent_id: str) -> UnifiedAgentRunnerConfig:
         """Configuration for greedy baseline DIY bot."""
+        params = {
+            "agent_type": "baseline",
+            "strategy": "greedy",
+        }
+        from benchmarking.config.pydantic_config import AgentConfig
+
         return UnifiedAgentRunnerConfig(
             name=f"{agent_id}_runner",
             description="Greedy baseline DIY pricing bot",
             agent_id=agent_id,
             framework=FrameworkType.DIY,
-            agent_config=None,
+            agent_config=AgentConfig(
+                agent_id=agent_id,
+                framework=FrameworkType.DIY,
+                **params
+            ),
             llm_config=None,
             memory_config=None,
             crew_config=None,
@@ -76,10 +93,7 @@ class DIYConfig:
                 "reorder_threshold": 10,
                 "reorder_quantity": 50,
             },
-            parameters={
-                "agent_type": "baseline",
-                "strategy": "greedy",
-            },
+            parameters=params,
         )
 
     @staticmethod

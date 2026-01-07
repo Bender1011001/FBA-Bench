@@ -142,6 +142,25 @@ class AgentRunnerConfig:
         # Set defaults based on framework
         self._set_framework_defaults()
 
+    def __getitem__(self, key: str) -> Any:
+        """Allow dict-like access for backward compatibility with tests."""
+        if hasattr(self, key):
+            return getattr(self, key)
+        # Check in nested agent_config for DIY-style fields
+        if self.agent_config and hasattr(self.agent_config, key):
+            return getattr(self.agent_config, key)
+        if key in self.custom_config:
+            return self.custom_config[key]
+        raise KeyError(key)
+
+    def __contains__(self, key: str) -> bool:
+        """Allow 'in' operator for backward compatibility."""
+        if hasattr(self, key):
+            return True
+        if self.agent_config and hasattr(self.agent_config, key):
+            return True
+        return key in self.custom_config
+
     def _set_framework_defaults(self):
         """Set framework-specific defaults."""
         if self.framework == Framework.DIY.value:
@@ -174,32 +193,43 @@ class AgentRunnerConfig:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "AgentRunnerConfig":
-        """Create configuration from dictionary."""
+        """Create configuration from dictionary with robust field filtering."""
+        import inspect
+
+        def _filter_kwargs(target_cls, d: Dict[str, Any]) -> Dict[str, Any]:
+            if not d or not isinstance(d, dict):
+                return {}
+            sig = inspect.signature(target_cls)
+            return {k: v for k, v in d.items() if k in sig.parameters}
+
         # Extract nested configurations
         llm_config = None
         if data.get("llm_config"):
-            llm_config = LLMConfig(**data["llm_config"])
+            llm_config = LLMConfig(**_filter_kwargs(LLMConfig, data["llm_config"]))
 
         memory_config = None
         if data.get("memory_config"):
-            memory_config = MemoryConfig(**data["memory_config"])
+            memory_config = MemoryConfig(**_filter_kwargs(MemoryConfig, data["memory_config"]))
 
         agent_config = None
         if data.get("agent_config"):
-            agent_config = AgentConfig(**data["agent_config"])
+            # Special case for DIY bots that might put extra fields in agent_config
+            agent_config_data = data["agent_config"]
+            if isinstance(agent_config_data, dict):
+                agent_config = AgentConfig(**_filter_kwargs(AgentConfig, agent_config_data))
 
         crew_config = None
         if data.get("crew_config"):
-            crew_config = CrewConfig(**data["crew_config"])
+            crew_config = CrewConfig(**_filter_kwargs(CrewConfig, data["crew_config"]))
 
         # Create main config
-        config_data = data.copy()
-        config_data["llm_config"] = llm_config
-        config_data["memory_config"] = memory_config
-        config_data["agent_config"] = agent_config
-        config_data["crew_config"] = crew_config
+        main_kwargs = _filter_kwargs(cls, data)
+        main_kwargs["llm_config"] = llm_config
+        main_kwargs["memory_config"] = memory_config
+        main_kwargs["agent_config"] = agent_config
+        main_kwargs["crew_config"] = crew_config
 
-        return cls(**config_data)
+        return cls(**main_kwargs)
 
     @classmethod
     def from_yaml(cls, yaml_str: str) -> "AgentRunnerConfig":

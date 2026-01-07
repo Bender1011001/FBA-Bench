@@ -14,7 +14,7 @@ Older versions are not supported and may have unpatched vulnerabilities.
 If you discover a security vulnerability in FBA-Bench Enterprise, please report it to us as soon as possible so that we can address it. We ask that you use the contact information provided below.
 
 **Contact:**
-Email: security@example.com (replace with actual security contact email)
+Email: security@fba-bench.com
 
 Please include as much of the following information as possible:
 *   The affected version of the project.

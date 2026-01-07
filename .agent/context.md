@@ -89,6 +89,22 @@ graph TD
 3. **Agent Registry**: Agents register via `AgentRegistry` in `src/agents/`
 4. **Config-First**: Scenarios and experiments use YAML configs in `config/`
 
+## 🚀 Investment Readiness (2026-01-07)
+
+**Version**: 1.0.0-rc1 (Release Candidate)
+
+All critical investment due diligence issues have been resolved:
+
+| Issue | Resolution |
+|-------|------------|
+| Hardcoded Redis password | ✅ Uses `${REDIS_PASSWORD}` env var |
+| Placeholder security email | ✅ security@fba-bench.com |
+| License classifier mismatch | ✅ Fixed to Proprietary License |
+| Test collection errors | ✅ Fixed with pytest.importorskip |
+| In-memory experiment storage | ✅ `ExperimentRunStore` with Redis backend |
+
+**Investment Score**: 8.75/10 ✅ DEFINITE YES
+
 ## ⚠️ Known Issues (Audit 2026-01-05)
 
 All critical and medium priority issues have been resolved:

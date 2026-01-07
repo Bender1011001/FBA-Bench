@@ -1,0 +1,1 @@
+2026-01-05 23:59:43 | src/agent_runners/__init__.py | PROCESSED | Fixed lazy loading __getattr__ to correctly resolve all items in __all__ from candidate modules and added agent_registry to candidates.
