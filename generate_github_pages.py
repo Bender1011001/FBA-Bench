@@ -4,23 +4,35 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent
 DATA_PATH = ROOT_DIR / "top_models_benchmark.json"
+LEADERBOARD_PATH = ROOT_DIR / "artifacts" / "leaderboard.json"
 OUTPUT_PATH = ROOT_DIR / "docs" / "index.html"
 
 def generate_html(data):
     # Adapt to different input formats
     summary = data.get("summary", {})
-    if "model_rankings" in summary:
+    if "rankings" in data and "verified_models_count" in summary:
+         # New LeaderboardManager format
+         rankings = data["rankings"]
+         is_financial = True # LeaderboardManager tracks scores/profit
+    elif "model_rankings" in summary:
         rankings = summary["model_rankings"]
+        is_financial = False # Qualitative
     else:
         # Default/Legacy format (top-level rankings key)
         rankings = data.get("rankings", [])
+        is_financial = False
         
     if not rankings:
         print("Warning: No rankings found in data.")
         return
         
-    generated_at = data.get("benchmark_info", {}).get("timestamp") or data.get("generated_at")
-    last_updated = datetime.fromisoformat(generated_at).strftime("%B %d, %Y") if generated_at else "Unknown"
+    generated_at = data.get("benchmark_info", {}).get("timestamp") or data.get("generated_at") or data.get("last_updated")
+    last_updated = "Unknown"
+    if generated_at:
+        try:
+             last_updated = datetime.fromisoformat(generated_at.replace("Z", "+00:00")).strftime("%B %d, %Y")
+        except:
+             last_updated = str(generated_at)
     
     rows_html = ""
     for idx, entry in enumerate(rankings):
@@ -28,11 +40,26 @@ def generate_html(data):
         rank_class = f"rank-{rank}" if rank <= 3 else ""
         
         # Determine attributes based on benchmark type
-        model_name = entry.get('model', 'Unknown')
+        model_name = entry.get('model') or entry.get('bot_name', 'Unknown')
+        verified = entry.get('verified', False)
+        
+        verified_badge = ""
+        if verified:
+            verified_badge = """
+            <span style="display:inline-flex; align-items:center; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.3); padding:2px 8px; border-radius:12px; font-size:0.7em; margin-left:8px; font-weight:700;">
+                \u2713 VERIFIED
+            </span>
+            """
         
         # Check for financial metrics vs qualitative metrics
-        if 'net_profit' in entry:
-            # Financial Benchmark
+        if 'score' in entry: # LeaderboardManager uses 'score'
+             metric_1_label = f"${entry['score']:,.2f}"
+             metric_1_sub = "Net Profit"
+             metric_2_label = f"{entry.get('consistency', 0)*100:.0f}%"
+             metric_2_sub = "Consistency"
+             tier = entry.get('tier', 'Standard')
+        elif 'net_profit' in entry:
+            # Financial Benchmark (Legacy)
             metric_1_label = f"${entry['net_profit']:,.2f}"
             metric_1_sub = f"ROI: {entry.get('roi', 0)}%"
             metric_2_label = f"${entry.get('revenue', 0):,.2f}"
@@ -55,7 +82,10 @@ def generate_html(data):
         <tr>
             <td><span class="rank-badge {rank_class}">{rank}</span></td>
             <td>
-                <div style="font-weight: 600;">{model_name}</div>
+                <div style="font-weight: 600; display:flex; align-items:center;">
+                    {model_name}
+                    {verified_badge}
+                </div>
             </td>
             <td>
                 <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">{metric_1_label}</div>
@@ -66,7 +96,7 @@ def generate_html(data):
                 <div style="font-size: 0.75rem; color: var(--text-muted);">{metric_2_sub}</div>
             </td>
             <td><span class="badge {tier_class}">{tier}</span></td>
-            <td>{entry.get('total_tokens', 0)} toks</td>
+            <td>{entry.get('total_tokens', entry.get('runs_completed', 0))} {('runs' if 'score' in entry else 'toks')}</td>
         </tr>
         """
 
@@ -255,11 +285,19 @@ def generate_docs_page():
         f.write(html_content)
 
 if __name__ == "__main__":
-    if DATA_PATH.exists():
-        with open(DATA_PATH, "r", encoding="utf-8") as f:
+    if LEADERBOARD_PATH.exists():
+        with open(LEADERBOARD_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
+        print(f"Loading data from {LEADERBOARD_PATH}")
         generate_html(data)
         generate_docs_page()
-        print(f"\u2705 Generated GitHub Pages at docs/index.html and docs/docs.html")
+        print(f"\u2705 Generated GitHub Pages at docs/index.html and docs/docs.html using {LEADERBOARD_PATH.name}")
+    elif DATA_PATH.exists():
+        with open(DATA_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        print(f"Loading data from {DATA_PATH}")
+        generate_html(data)
+        generate_docs_page()
+        print(f"\u2705 Generated GitHub Pages at docs/index.html and docs/docs.html using {DATA_PATH.name}")
     else:
-        print(f"\u274c Error: openrouter_benchmark_results.json not found.")
+        print(f"\u274c Error: Neither openrouter_benchmark_results.json nor leaderboard.json found.")

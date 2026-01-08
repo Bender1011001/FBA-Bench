@@ -76,6 +76,13 @@ class LangChainRunnerConfig(BaseModel):
     verbose: Optional[bool] = Field(
         default=False, description="Enable verbose logging for LangChain operations"
     )
+    # OpenRouter / custom endpoint support
+    base_url: Optional[str] = Field(
+        default=None, description="Base URL for OpenAI-compatible API (e.g., OpenRouter)"
+    )
+    api_key: Optional[str] = Field(
+        default=None, description="API key (falls back to OPENAI_API_KEY env var)"
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -87,6 +94,12 @@ class LangChainRunnerConfig(BaseModel):
                     "memory": False,
                     "system_prompt": "Pricing specialist; output strictly JSON.",
                     "agent_name": "lc_pricing_agent_1",
+                },
+                {
+                    "model": "openai/gpt-4o",
+                    "base_url": "https://openrouter.ai/api/v1",
+                    "api_key": "sk-or-...",
+                    "temperature": 0.0,
                 }
             ]
         }
@@ -223,12 +236,19 @@ class LangChainRunner(AgentRunner):
             )
             model_kwargs = {"response_format": {"type": "json_object"}}
 
-        self._llm = ChatOpenAI(
-            model=self._cfg.model or "gpt-4o-mini",
-            temperature=self._cfg.temperature or 0.3,
-            max_tokens=self._cfg.max_tokens or 2048,
-            model_kwargs=model_kwargs,
-        )
+        # Build ChatOpenAI with optional base_url/api_key for OpenRouter support
+        llm_kwargs: Dict[str, Any] = {
+            "model": self._cfg.model or "gpt-4o-mini",
+            "temperature": self._cfg.temperature or 0.3,
+            "max_tokens": self._cfg.max_tokens or 2048,
+            "model_kwargs": model_kwargs,
+        }
+        if self._cfg.base_url:
+            llm_kwargs["base_url"] = self._cfg.base_url
+        if self._cfg.api_key:
+            llm_kwargs["api_key"] = self._cfg.api_key
+
+        self._llm = ChatOpenAI(**llm_kwargs)
 
         # Build a tools-enabled agent if tools are available; otherwise keep None
         try:
