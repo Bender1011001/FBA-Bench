@@ -43,6 +43,8 @@ class CompetitorState:
     price: Money
     bsr: int
     sales_velocity: float
+    inventory: int = 5000
+    is_out_of_stock: bool = False
 
     # Back-compat alias expected by tests
     @property

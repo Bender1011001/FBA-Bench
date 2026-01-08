@@ -383,6 +383,17 @@ class AgentRunner:
         # Default no-op implementation; subclasses may override to implement learning.
         return None
 
+    async def consolidate_memory(self, context: Dict[str, Any]) -> None:
+        """
+        Consolidate memory by processing recent events and updating long-term memory.
+        This roughly mimics 'sleep' or 'nightly processing' in biological agents.
+        
+        Args:
+            context: Context information for memory consolidation
+        """
+        # Default no-op implementation; subclasses may override to implement memory consolidation.
+        return None
+
     def update_context(self, context_update: Dict[str, Any]) -> None:
         """
         Update the agent's context.
@@ -550,15 +561,6 @@ class AgentRunner:
         framework-specific cleanup.
         """
         # Default implementation does nothing
-
-    async def async_cleanup(self) -> None:
-        """
-        Asynchronous cleanup method for compatibility with asynchronous contexts.
-
-        This method provides an asynchronous interface to the cleanup functionality,
-        allowing it to be called from asynchronous code when needed.
-        """
-        self.cleanup()
 
     def to_dict(self) -> Dict[str, Any]:
         """

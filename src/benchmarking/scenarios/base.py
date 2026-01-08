@@ -20,8 +20,10 @@ from ..core.results import (
 )  # Scenarios produce AgentRunResults
 
 
-@dataclass
-class ScenarioConfig:
+from pydantic import BaseModel, Field
+
+
+class ScenarioConfig(BaseModel):
     """Configuration for a benchmark scenario (aligned with tests)."""
 
     # Required by tests
@@ -29,12 +31,14 @@ class ScenarioConfig:
     description: str
     domain: str
     duration_ticks: int
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: Dict[str, Any] = Field(default_factory=dict)
     enabled: bool = True
 
     # Optional/legacy fields used by parts of the engine/UI
     id: Optional[str] = None
     priority: int = 1
+
+    model_config = {"extra": "allow"}
 
     def ensure_id(self) -> str:
         """Return a stable id, generating one if absent."""
@@ -43,6 +47,10 @@ class ScenarioConfig:
             base = (self.name or "scenario").strip().lower().replace(" ", "_")
             self.id = f"{base}-{uuid.uuid4().hex[:8]}"
         return self.id
+
+    def model_dump(self, **kwargs) -> Dict[str, Any]:
+        """Compatibility shim for Pydantic v2."""
+        return super().model_dump(**kwargs)
 
 
 @dataclass
@@ -123,6 +131,8 @@ class BaseScenario(abc.ABC):
         # Compatibility flags/counters exposed in tests
         self.is_setup: bool = False
         self.current_tick: int = 0
+        # Execution history tracking for compatibility with some test expectations
+        self.execution_history: List[Dict[str, Any]] = []
         # Expose duration_ticks at instance level for convenience in tests/templates
         try:
             self.duration_ticks: int = int(getattr(config, "duration_ticks", 0))
@@ -223,8 +233,8 @@ class BaseScenario(abc.ABC):
                 errors.append("duration_ticks must be a positive integer")
             # Domain-specific validation
             vfn = getattr(self, "_validate_domain_parameters", None)
-            if callable(vfn):
-                more = vfn()
+            if vfn and callable(vfn):
+                more = vfn()  # pylint: disable=not-callable
                 if isinstance(more, list):
                     errors.extend(more)
         except Exception as e:
@@ -293,6 +303,12 @@ class BaseScenario(abc.ABC):
                 if asyncio.iscoroutine(maybe_coro):
                     await maybe_coro
                 interactions.append({"type": "tick", "tick": tick})
+
+                # Optional memory consolidation hook
+                if hasattr(agent, "consolidate_memory") and callable(agent.consolidate_memory):
+                    maybe_mem = agent.consolidate_memory(state)
+                    if asyncio.iscoroutine(maybe_mem):
+                        await maybe_mem
 
         # Simulate one agent input/action path if agent exposes methods
         response = None

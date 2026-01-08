@@ -119,6 +119,7 @@ class SkillCoordinator:
             self.config,
             self.conflict_log,
             self.skill_metrics,
+            self.resource_allocation,
         )
         self.dispatch_manager = DispatchManager(
             self.event_bus,

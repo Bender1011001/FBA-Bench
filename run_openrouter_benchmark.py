@@ -35,8 +35,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Add the project root to Python path
+# Add the project root and src to Python path
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # from instrumentation.clearml_tracking import ClearMLTracker  # Disabled for standalone run
 

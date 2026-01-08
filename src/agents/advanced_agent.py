@@ -34,6 +34,7 @@ from typing import Any, Dict, List, Optional
 from fba_bench.core.types import SimulationState, ToolCall
 
 from config.model_config import get_model_params
+from .base import BaseAgent
 
 
 # Backwards-compat lightweight AgentConfig expected by some tests
@@ -76,7 +77,7 @@ class PriceMemory:
         return sum(items) / max(len(items), 1)
 
 
-class AdvancedAgent:
+class AdvancedAgent(BaseAgent):
     """
     Advanced heuristic agent for FBA-Bench DIY framework.
 
@@ -142,6 +143,10 @@ class AdvancedAgent:
             )
             self.budget_enforcer = budget_enforcer
             self.event_bus = event_bus
+        
+        # Ensure base class is initialized
+        super().__init__(self.agent_id, self.event_bus)
+        
         self.target_asin: str = params.get("target_asin", "B0DEFAULT")
 
         # Centralized model params
@@ -228,6 +233,10 @@ class AdvancedAgent:
     def shutdown(self) -> None:
         self._shutdown = True
         logger.info(f"AdvancedAgent[{self.agent_id}] shutdown")
+
+    def get_config(self) -> Dict[str, Any]:
+        """Return the agent's configuration."""
+        return self._raw_config
 
     # Core decision API expected by DIYAdapter
     async def decide(self, state: SimulationState) -> List[ToolCall]:

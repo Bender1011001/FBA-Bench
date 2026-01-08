@@ -16,13 +16,12 @@ class ScenarioRegistry:
     """
 
     _instance = None
+    _scenarios: Dict[str, Type[Any]]
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ScenarioRegistry, cls).__new__(cls)
-            cls._instance._scenarios: Dict[str, Type[Any]] = (
-                {}
-            )  # Store scenario classes
+            cls._instance._scenarios = {}  # Store scenario classes
         return cls._instance
 
     def register(self, scenario_id: str, scenario_class: Type[Any]):

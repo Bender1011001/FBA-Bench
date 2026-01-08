@@ -137,7 +137,7 @@ class SupplyChainDisruptionScenario(BaseScenario):
         else:
             self.current_supply_per_tick = self.original_supply_per_tick
 
-        # Simulate demand placeholder (for metrics); MarketSimulationService computes realized sales
+        # Core demand simulation: MarketSimulationService computes realized sales based on this
         actual_demand = self.demand_per_tick
 
         # Agent decides on actions (e.g., place replenishment orders)

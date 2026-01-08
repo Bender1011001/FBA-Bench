@@ -104,10 +104,10 @@ class BaseConfig(BaseModel):
     description: str = Field("", description="Description of the configuration")
     enabled: bool = Field(True, description="Whether this configuration is enabled")
     metadata: Dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata"
+        default_factory=lambda: {}, description="Additional metadata"
     )
 
-    model_config = ConfigDict(extra="forbid", use_enum_values=True)
+    model_config = ConfigDict(extra="allow", use_enum_values=True)
 
     @model_validator(mode="before")
     @classmethod
@@ -180,6 +180,7 @@ class LLMConfig(BaseConfig):
         return values
 
     @field_validator("api_key", mode="before")
+    @classmethod
     def validate_api_key(cls, v):
         """Validate API key from environment if not provided."""
         if v is None:
@@ -233,6 +234,7 @@ class AgentConfig(BaseConfig):
     )
 
     @model_validator(mode="before")
+    @classmethod
     def validate_agent_config(cls, values):
         """Validate/normalize agent configuration for DIY and legacy inputs."""
         # Normalize framework from 'type' when provided
@@ -319,6 +321,7 @@ class MemoryConfig(BaseConfig):
     )
 
     @field_validator("type")
+    @classmethod
     def validate_memory_type(cls, v):
         if v not in ["buffer", "summary", "none"]:
             raise ValueError("Memory type must be 'buffer', 'summary', or 'none'")
@@ -347,6 +350,7 @@ class CrewConfig(BaseConfig):
     allow_delegation: bool = Field(True, description="Whether to allow task delegation")
 
     @field_validator("process")
+    @classmethod
     def validate_process(cls, v):
         if v not in ["sequential", "hierarchical"]:
             raise ValueError("Process must be 'sequential' or 'hierarchical'")
@@ -355,6 +359,8 @@ class CrewConfig(BaseConfig):
 
 class ExecutionConfig(BaseConfig):
     """Execution configuration using Pydantic."""
+
+    model_config = ConfigDict(extra="allow", use_enum_values=True)
 
     # Provide a default name to satisfy BaseConfig requirement in tests using default_factory
     name: str = Field("execution", description="Name of the execution configuration")
@@ -369,9 +375,25 @@ class ExecutionConfig(BaseConfig):
         False, description="Whether to save intermediate results"
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def _map_legacy_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Map legacy YAML fields to new Pydantic fields."""
+        if isinstance(values, dict):
+            # Map runs_per_scenario -> num_runs
+            if "runs_per_scenario" in values and "num_runs" not in values:
+                values["num_runs"] = values.pop("runs_per_scenario")
+            # Map timeout -> timeout_seconds
+            if "timeout" in values and "timeout_seconds" not in values:
+                values["timeout_seconds"] = values.pop("timeout")
+            # Note: max_duration exists in both, but if it's in a sub-config it might be moved.
+        return values
+
 
 class MetricsCollectionConfig(BaseConfig):
     """Metrics collection configuration."""
+
+    model_config = ConfigDict(extra="allow", use_enum_values=True)
 
     # Provide a default name to satisfy BaseConfig requirement in tests using default_factory
     name: str = Field("metrics", description="Name of the metrics configuration")
@@ -389,6 +411,15 @@ class MetricsCollectionConfig(BaseConfig):
     aggregation_method: str = Field(
         "average", description="Method for aggregating metrics"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _map_categories_to_enabled_metrics(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Map legacy 'categories' field to 'enabled_metrics'."""
+        if isinstance(values, dict):
+            if "categories" in values and "enabled_metrics" not in values:
+                values["enabled_metrics"] = values.pop("categories")
+        return values
 
 
 class ScenarioConfig(BaseConfig):
@@ -419,8 +450,8 @@ class BenchmarkConfig(BaseConfig):
     model_config = ConfigDict(extra="allow", use_enum_values=True)
 
     benchmark_id: str = Field(..., description="Unique identifier for the benchmark")
-    environment: EnvironmentType = Field(
-        EnvironmentType.DEVELOPMENT, description="Environment type"
+    environment: Any = Field(
+        EnvironmentType.DEVELOPMENT, description="Environment type or configuration"
     )
     log_level: LogLevel = Field(LogLevel.INFO, description="Log level")
 
@@ -501,6 +532,7 @@ class BenchmarkConfig(BaseConfig):
             return str(v)
 
     @model_validator(mode="before")
+    @classmethod
     def validate_benchmark_config(cls, values):
         """Validate and normalize benchmark configuration."""
         # Default name and benchmark_id for legacy tests that omit them
@@ -575,6 +607,20 @@ class BenchmarkConfig(BaseConfig):
         except Exception:
             # Do not fail validation solely due to env var format
             pass
+
+        # Normalize environment if it's a dict
+        env = values.get("environment")
+        if isinstance(env, dict):
+            # Move known fields to execution if needed
+            exec_cfg = values.get("execution") or {}
+            # If it's already a model, we might need to be careful
+            if isinstance(exec_cfg, dict):
+                for k in ["parallel_execution", "max_workers"]:
+                    if k in env and k not in exec_cfg:
+                        exec_cfg[k] = env[k]
+                values["execution"] = exec_cfg
+            # Reset environment to a valid enum value for the model
+            values["environment"] = EnvironmentType.DEVELOPMENT
 
         # ---- Legacy alias normalization (compat with tests) ----
         # Map agent_configs -> agents
@@ -693,6 +739,7 @@ class UnifiedAgentRunnerConfig(BaseConfig):
     )
 
     @model_validator(mode="before")
+    @classmethod
     def set_framework_defaults(cls, values):
         """Set framework-specific defaults and validate configuration."""
         framework = values.get("framework")
@@ -747,6 +794,7 @@ class EnvironmentConfig(BaseConfig):
     )
 
     @field_validator("database_url", mode="before")
+    @classmethod
     def validate_database_url(cls, v):
         """Validate database URL from environment if not provided."""
         if v is None:
@@ -756,6 +804,7 @@ class EnvironmentConfig(BaseConfig):
         return v
 
     @field_validator("redis_url", mode="before")
+    @classmethod
     def validate_redis_url(cls, v):
         """Validate Redis URL from environment if not provided."""
         if v is None:
@@ -933,7 +982,7 @@ class ConfigurationManager:
                 with open(env_file) as f:
                     data = yaml.safe_load(f)
                 env_config = EnvironmentConfig(**data)
-                self._environments[env_config.environment.value] = env_config
+                self._environments[env_config.environment.value] = env_config  # pylint: disable=no-member
             except Exception as e:
                 print(f"Failed to load environment {env_file}: {e}")
 

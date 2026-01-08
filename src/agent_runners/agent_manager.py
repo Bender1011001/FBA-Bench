@@ -20,7 +20,7 @@ from money import Money
 
 from agents.multi_domain_controller import MultiDomainController
 from agents.skill_coordinator import SkillCoordinator
-from agents.skill_modules.base_skill import SkillAction
+from agents.skill_modules.base_skill import SkillAction, SkillOutcome
 from agents.skill_modules.product_sourcing import ProductSourcingSkill
 from fba_events.supplier import PlaceOrderCommand
 from fba_events.agent import AgentDecisionEvent
@@ -521,7 +521,7 @@ class AgentManager:
 
     async def run_decision_cycle(self) -> None:
         """Executes a decision-making cycle for all active agents using an optimized, shared state context."""
-        active_regs = self.agent_registry.list_active_agents()
+        active_regs = list(self.agent_registry.active_agents().values())
         if not active_regs:
             logger.debug("No active agents to run decision cycle.")
             self.total_decisions_skipped += 1
@@ -667,6 +667,7 @@ class AgentManager:
                 } for tc in tool_calls
             ],
             llm_usage=usage_info,
+            prompt_metadata={},
         )
         await self.event_bus.publish(decision_event)
 
@@ -968,8 +969,8 @@ class AgentManager:
         # Import at runtime to ensure availability when TYPE_CHECKING is False
         try:
             from benchmarking.agents.unified_agent import PydanticAgentConfig  # type: ignore
-        except (ImportError, AttributeError, TypeError):
-            raise RuntimeError(f"PydanticAgentConfig unavailable: {e}")
+        except (ImportError, AttributeError, TypeError) as e:
+            raise RuntimeError(f"PydanticAgentConfig unavailable: {e}") from e
         return PydanticAgentConfig(
             agent_id=agent_id,
             framework=framework,
@@ -1174,7 +1175,7 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
                 agent_learn = getattr(agent_obj, "learn", None)
                 if callable(agent_learn):
                     await agent_learn(outcome)
-        except (AttributeError, TypeError, ValueError, RuntimeError):
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             logger.warning(
                 f"Unified agent {self.agent_id} learn() forwarding failed: {e}"
             )

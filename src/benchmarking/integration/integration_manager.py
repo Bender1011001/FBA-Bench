@@ -13,9 +13,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-from ...agent_runners.agent_manager import AgentManager
-from ...agent_runners.runner_factory import RunnerFactory
-from ...services.external_service import ExternalServiceManager, ServiceConfig
+from agent_runners.agent_manager import AgentManager
+from agent_runners.runner_factory import RunnerFactory
+from services.external_service import ExternalServiceManager, ServiceConfig
 from ..config.schema_manager import SchemaManager
 from ..registry.global_registry import GlobalRegistry, RegistryEntry
 from ..registry.global_variables import global_variables
@@ -325,7 +325,14 @@ class IntegrationManager:
         Returns:
             Agent ID
         """
-        return self.agent_manager.create_agent(agent_id, framework, config)
+        # Wrap configuration for sync create_agent call
+        from types import SimpleNamespace
+        agent_config = SimpleNamespace(
+            agent_id=agent_id, 
+            framework=framework, 
+            **(config or {})
+        )
+        return self.agent_manager.create_agent(agent_config)
 
     def get_agent(self, agent_id: str):
         """
@@ -337,7 +344,7 @@ class IntegrationManager:
         Returns:
             Agent instance
         """
-        return self.agent_manager.get_agent(agent_id)
+        return self.agent_manager.get_agent_runner(agent_id)
 
     def list_agents(self) -> List[str]:
         """
@@ -346,7 +353,7 @@ class IntegrationManager:
         Returns:
             List of agent IDs
         """
-        return self.agent_manager.list_agents()
+        return list(self.agent_manager.get_registered_agents().keys())
 
     def remove_agent(self, agent_id: str) -> bool:
         """
@@ -564,8 +571,20 @@ class IntegrationManager:
         # Shutdown external services
         self.external_service_manager.close_all()
 
-        # Shutdown agent manager
-        self.agent_manager.shutdown()
+        # AgentManager stop/cleanup are async; use best-effort sync approach
+        try:
+            import asyncio
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # Can't easily block, but we can schedule it
+                    asyncio.create_task(self.agent_manager.stop())
+                else:
+                    loop.run_until_complete(self.agent_manager.stop())
+            except RuntimeError:
+                asyncio.run(self.agent_manager.stop())
+        except Exception as e:
+            logger.debug(f"Non-fatal error during AgentManager shutdown: {e}")
 
         # Set status to shutdown
         self.status = IntegrationStatus.SHUTDOWN

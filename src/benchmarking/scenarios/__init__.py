@@ -8,51 +8,42 @@ and a registry for scenario implementations.
 
 # Ensure that necessary components from other modules are importable for scenarios
 from ..agents.base import BaseAgent
-from ..core.results import AgentRunResult
+from ..core.results import AgentRunResult, MetricResult
 from .base import BaseScenario, ScenarioConfig
-from .demand_forecasting import DemandForecastingScenario
+from .demand_forecasting import DemandForecastingScenario, DemandForecastingScenarioConfig
 from .marketing_campaign import MarketingCampaignScenario
 from .price_optimization import PriceOptimizationScenario
 
 # Refined scenarios framework
-from .refined_scenarios import (  # Context and config; Types and enums
-    ScenarioConfig,
+from .refined_scenarios import (
+    ScenarioDifficulty,
+    ScenarioType,
+    ScenarioMetrics,
+    ScenarioContext,
 )
 from .registry import ScenarioRegistry, scenario_registry
 from .supply_chain_disruption import SupplyChainDisruptionScenario
 
 __all__ = [
-    # Legacy scenarios
+    # Refined scenarios framework types
+    "ScenarioDifficulty",
+    "ScenarioType",
+    "ScenarioMetrics",
+    "ScenarioContext",
+    # Registry and Results
     "ScenarioRegistry",
     "scenario_registry",
     "BaseScenario",
     "ScenarioConfig",
+    "AgentRunResult",
+    "MetricResult",
+    # Scenario Implementations
     "MarketingCampaignScenario",
-    "MarketingCampaignScenarioConfig",
     "PriceOptimizationScenario",
-    "PriceOptimizationScenarioConfig",
     "DemandForecastingScenario",
     "DemandForecastingScenarioConfig",
     "SupplyChainDisruptionScenario",
-    "SupplyChainDisruptionConfig",
-    "BaseAgent",  # Exposed as it's a common dependency for scenario development
-    "AgentRunResult",  # Exposed as scenario's run method returns this.
-    # Refined scenarios framework
-    "ScenarioComponentType",
-    "ComponentStatus",
-    "ScenarioVersion",
-    "ComponentContext",
-    "ComponentResult",
-    "ScenarioManifest",
-    "BaseScenarioComponent",
-    "PreconditionComponent",
-    "ActionComponent",
-    "ObservationComponent",
-    "ValidationComponent",
-    "CleanupComponent",
-    "ComposableScenario",
-    "RefinedScenarioRegistry",
-    "refined_scenario_registry",
+    "BaseAgent",
 ]
 
 

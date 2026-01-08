@@ -346,6 +346,22 @@ class CompetitorManager:
                 competitor.bsr = int(new_bsr)
                 competitor.sales_velocity = new_sales_velocity
 
+                # SIMULATION: Decrement inventory based on sales velocity
+                # Assume sales_velocity is units/day. Tick interval is unknown here but typically < 1 day.
+                # For simplicity, we treat sales_velocity as "units sold per tick" relative to time acceleration,
+                # or just use a small factor. 
+                # Let's assume sales_velocity is "units per day" and we need to verify delta.
+                # Just decrement by ceil(sales_velocity * 0.1) for now to simulate "some sales".
+                units_sold = max(0, int(new_sales_velocity * 0.2)) # Heuristic
+                competitor.inventory = max(0, competitor.inventory - units_sold)
+
+                # Auto-restock logic
+                if competitor.inventory <= 0:
+                     # 5% chance to restock per tick if empty
+                     if random.random() < 0.05:
+                          competitor.inventory = 5000
+                          logger.info(f"Competitor {competitor_id} RESTOCKED to 5000 units.")
+
                 # Normalize to runtime Money class to satisfy both CompetitorState and tests
                 from money import Money as _Money  # type: ignore
 
@@ -372,6 +388,8 @@ class CompetitorManager:
                     price=price_for_event,
                     bsr=int(new_bsr),
                     sales_velocity=new_sales_velocity,
+                    inventory=competitor.inventory,
+                    is_out_of_stock=competitor.is_out_of_stock
                 )
                 updated_competitor_states.append(state)
 

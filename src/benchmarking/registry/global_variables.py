@@ -291,7 +291,7 @@ class GlobalVariables:
 
     def __init__(self):
         """Initialize global variables."""
-        if self._initialized:
+        if getattr(self, "_initialized", False):
             return
 
         # Initialize configuration objects

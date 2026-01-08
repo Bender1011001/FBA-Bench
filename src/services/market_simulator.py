@@ -23,6 +23,7 @@ from collections import deque
 
 from fba_bench_core.domain.market.customer import Customer, CustomerPool
 from services.trust_score_service import TrustScoreService
+from services.fee_calculation_service import FeeCalculationService
 from services.world_store import WorldStore
 from fba_events.bus import EventBus, get_event_bus
 from fba_events.competitor import CompetitorPricesUpdated
@@ -39,6 +40,7 @@ class CompetitorSnapshot:
     price: Money
     bsr: Optional[int] = None
     sales_velocity: Optional[float] = None
+    is_out_of_stock: bool = False
 
 
 class MarketSimulationService:
@@ -69,6 +71,7 @@ class MarketSimulationService:
         event_bus: Optional[EventBus] = None,
         base_demand: int = 100,
         demand_elasticity: float = 1.5,
+        fee_config: Optional[Dict] = None,  # Configuration for fee service
         # Agent-based mode parameters
         use_agent_mode: bool = False,
         customers_per_tick: int = 100,
@@ -98,6 +101,7 @@ class MarketSimulationService:
 
         # Services
         self._trust_service = TrustScoreService()
+        self._fee_service = FeeCalculationService(fee_config or {})
 
         # Control flags
         self._started = False
@@ -135,6 +139,7 @@ class MarketSimulationService:
                         price=comp.price,
                         bsr=getattr(comp, "bsr", None),
                         sales_velocity=getattr(comp, "sales_velocity", None),
+                        is_out_of_stock=getattr(comp, "is_out_of_stock", False),
                     )
                 )
             # We don't know mapping from product ASIN -> competitor list here; this event likely contains many competitor ASINs.
@@ -173,10 +178,23 @@ class MarketSimulationService:
             # Deque doesn't support slicing directly, but is efficient to iterate
             window = list(comps)[-10:]
             if window:
-                avg_cents = sum(c.price.cents for c in window) / len(window)
-                avg_price = Money(int(round(avg_cents)))
-                # Reference is min of prior ref and avg competitor (aggressive market pressure)
-                ref = avg_price if avg_price.cents < ref.cents else ref
+                # Filter out OOS competitors from influencing the reference price
+                active_window = [c for c in window if not c.is_out_of_stock]
+                
+                if active_window:
+                    avg_cents = sum(c.price.cents for c in active_window) / len(active_window)
+                    avg_price = Money(int(round(avg_cents)))
+                    # Reference is min of prior ref and avg competitor (aggressive market pressure)
+                    ref = avg_price if avg_price.cents < ref.cents else ref
+                else:
+                     # If all competitors are OOS, we have pricing power.
+                     # Slowly drift reference price upwards to our current price (or slightly above).
+                     if window:
+                         drift_target = current_price
+                         current_ref_cents = ref.cents
+                         target_cents = drift_target.cents
+                         new_cents = int(current_ref_cents + (target_cents - current_ref_cents) * 0.05)
+                         ref = Money(new_cents)
 
         # Cache and return
         self._price_reference_by_asin[asin] = ref
@@ -393,7 +411,14 @@ class MarketSimulationService:
 
 
             revenue = current_price * units_sold
-            total_fees = Money.zero()  # integrate FeeCalculationService later
+            
+            # Calculate REAL fees using FeeCalculationService
+            # We pass empty context for now, but could include storage duration/prep info if available in simulation state
+            fee_breakdown = self._fee_service.calculate_comprehensive_fees(product, current_price)
+            # Fee service returns total_fees for a SINGLE unit. We need total for units_sold.
+            unit_fees = fee_breakdown.total_fees
+            total_fees = unit_fees * units_sold
+            
             # WorldStore returns per-unit average cost basis as Money; enforce consistent Money usage
             cost_basis = self.world_store.get_product_cost_basis(asin)
             total_cost = cost_basis * units_sold
@@ -475,7 +500,11 @@ class MarketSimulationService:
                     if units_demanded > 0
                     else 0.0
                 ),
-                fee_breakdown={},
+                fee_breakdown={
+                    "unit_fees": str(unit_fees),
+                    "referral_fee": str(next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "referral"), Money.zero())),
+                    "fba_fee": str(next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "fba"), Money.zero())),
+                },
                 market_conditions={
                     "reference_price": str(ref_price),
                     "elasticity": self.demand_elasticity,

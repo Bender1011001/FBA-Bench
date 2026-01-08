@@ -514,35 +514,64 @@ class ScenarioEngine:
         event_schedule = scenario_config.config_data.get("external_events", [])
         for tick in range(1, total_ticks + 1):
             logging.debug(f"Simulation Tick: {tick}/{total_ticks}")
-            # Step the environment and agents if integrated
-            # self.environment.step()
-            # for agent in self.agents.values():
-            #     agent.step()
-            self.inject_scenario_events(tick, event_schedule)
-            self.track_scenario_progress(
-                self.agents, scenario_config.config_data["success_criteria"]
-            )
+            # Process scheduled events dynamically
+            active_events = self.inject_scenario_events(tick, event_schedule)
+            
+            # Apply event impacts to simulation state
+            for event in active_events:
+                impact = event.get("impact", {})
+                logging.info(f"Processing impact for event '{event.get('name')}': {impact}")
+                
+                # Apply financial shocks
+                if "cost_increase_percent" in impact:
+                    # Increase costs implicitly reduces profit margin
+                    # Simplistic model: reduce current profit accumulation rate 
+                    # or apply a one-time hit if appropriate.
+                    # Here we simulate a sustained margin squeeze.
+                    cost_hike = float(impact["cost_increase_percent"])
+                    # Assume base cost was ~50% of revenue, so 30% cost hike = 15% profit reduction
+                    sim_metrics["profit"] *= (1.0 - (cost_hike * 0.5))
+                
+                if "tariffs_increase_percent" in impact:
+                    tariff_hike = float(impact["tariffs_increase_percent"])
+                    sim_metrics["profit"] *= (1.0 - (tariff_hike * 0.4))
+                    
+                # Apply visibility/demand shocks
+                if "visibility_reduction_percent" in impact:
+                    vis_drop = float(impact["visibility_reduction_percent"])
+                    sim_metrics["market_share"] *= (1.0 - vis_drop)
+                    sim_metrics["profit"] *= (1.0 - vis_drop) # Sales drop proportional to visibility
+
+                # Apply operational shocks
+                if "international_shipping_disruption_level" in impact:
+                    severity = impact["international_shipping_disruption_level"]
+                    if severity == "severe":
+                         sim_metrics["on_time_delivery_rate"] -= 0.20
+                         sim_metrics["customer_satisfaction"] -= 0.15
+                    elif severity == "moderate":
+                         sim_metrics["on_time_delivery_rate"] -= 0.10
+                
+                # Apply market manipulation events
+                if impact.get("price_collusion_detected"):
+                     # Competitors undercut or fix prices
+                     sim_metrics["market_share"] -= 0.05
+                
+                if impact.get("compliance_cost_increase"):
+                    cost = float(impact["compliance_cost_increase"])
+                    sim_metrics["profit"] -= (sim_metrics["profit"] * cost)
 
             # Apply deterministic profit gain toward target (if configured)
+            # Use current market share and satisfaction as multipliers to make it dynamic
             if per_tick_profit_gain:
-                sim_metrics["profit"] += per_tick_profit_gain
+                growth_factor = (
+                    (sim_metrics["market_share"] / 0.1) * 
+                    (sim_metrics["customer_satisfaction"] / 0.9)
+                )
+                adjusted_gain = per_tick_profit_gain * max(0.2, growth_factor)
+                sim_metrics["profit"] += adjusted_gain
             
             # Track profit history for volatility calculation
             profit_history.append(sim_metrics["profit"])
-
-            # Dummy updates to sim_metrics for analysis
-            if "boom_and_bust" in scenario_file:
-                if 180 <= tick <= 360:  # Recession period
-                    sim_metrics["profit"] -= random.uniform(500, 1000)
-                    sim_metrics["cash_reserve_min"] = min(
-                        sim_metrics["cash_reserve_min"], random.uniform(5000, 15000)
-                    )
-                elif tick > 360:  # Recovery
-                    sim_metrics["profit"] += random.uniform(200, 500)
-
-            if "supply_chain_crisis" in scenario_file and tick == 45:
-                sim_metrics["on_time_delivery_rate"] = 0.70  # Simulate drop from event
-                sim_metrics["customer_satisfaction"] = 0.75
 
             # Report metrics to ClearML (if enabled)
             try:

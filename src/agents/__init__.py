@@ -20,8 +20,11 @@ from benchmarking.agents.unified_agent import (
     agent_factory,
 )
 
+from .advanced_agent import AdvancedAgent
 from .base import AgentConfig, BaseAgent
+from .baseline.baseline_agent_v1 import BaselineAgentV1
 from .registry import AgentRegistry, registry as agent_registry
+from .skill_coordinator import SkillCoordinator
 
 __all__ = [
     # Legacy agents
@@ -42,14 +45,16 @@ __all__ = [
     "AgentFactory",
     "agent_factory",
     "SkillCoordinator",
+    "AdvancedAgent",
+    "BaselineAgentV1",
 ]
 
 
 # Auto-register built-in agents if needed
 def _register_builtin_agents():
     """Register built-in agents on module import."""
-    # Placeholder for future registrations
-    pass
+    agent_registry.register("advanced_agent", AdvancedAgent)
+    agent_registry.register("baseline_v1", BaselineAgentV1)
 
 
 _register_builtin_agents()

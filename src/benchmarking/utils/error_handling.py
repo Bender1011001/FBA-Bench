@@ -18,7 +18,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from ..registry.global_variables import global_variables
+from benchmarking.registry.global_variables import global_variables
 
 # Set up logger
 logger = logging.getLogger(__name__)

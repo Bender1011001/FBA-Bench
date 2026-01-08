@@ -174,12 +174,29 @@ class SupplyChainService:
         """
         try:
             extra_lead = self._lead_time_increase if self._disruption_active else 0
+            
+            # Apply Black Swan multiplier
+            bs_multiplier = self.get_current_lead_time_multiplier(
+                getattr(event, "supplier_id", None)
+            )
+            
+            # Apply stochastic variance
+            variance = self.sample_lead_time_variance()
+            self._stats["total_lead_time_variance"] += abs(variance)
+            
             # Prefer supplier-specific lead time from WorldStore catalog when available
             supplier_lt = self.world_store.get_supplier_lead_time(
                 getattr(event, "supplier_id", None)
             )
             base_lt = supplier_lt if supplier_lt is not None else self.base_lead_time
-            arrival_tick = self._current_tick + base_lt + extra_lead
+            
+            # Calculate final lead time
+            # Formula: (Base + Extra) * Multiplier + Variance
+            final_lt = int((base_lt + extra_lead) * bs_multiplier) + variance
+            final_lt = max(1, final_lt) # Minimum 1 tick
+            
+            arrival_tick = self._current_tick + final_lt
+            
             pending = PendingOrder(
                 order_id=event.event_id or f"order_{uuid.uuid4()}",
                 supplier_id=event.supplier_id,
@@ -187,16 +204,19 @@ class SupplyChainService:
                 quantity=event.quantity,
                 max_price=event.max_price,
                 arrival_tick=arrival_tick,
+                variance_applied=variance,
             )
             self._pending.append(pending)
             logger.info(
-                "SupplyChainService scheduled order: asin=%s qty=%d arrival_tick=%d supplier=%s (base_lt=%d extra_lead=%d)",
+                "SupplyChainService scheduled order: asin=%s qty=%d arrival_tick=%d supplier=%s (base=%d, extra=%d, mult=%.2f, var=%d)",
                 pending.asin,
                 pending.quantity,
                 pending.arrival_tick,
                 pending.supplier_id,
                 base_lt,
                 extra_lead,
+                bs_multiplier,
+                variance,
             )
         except (TypeError, AttributeError, ValueError) as e:
             logger.error(
@@ -206,10 +226,16 @@ class SupplyChainService:
 
     async def _on_tick(self, event: TickEvent) -> None:
         """
-        Update current tick and process arrivals.
+        Update current tick, process stochastic events, and process arrivals.
         """
         try:
             self._current_tick = int(getattr(event, "tick_number", self._current_tick))
+            
+            # Check for new stochastic disruptions
+            new_swan = self._check_for_black_swan()
+            if new_swan:
+                self._active_black_swans.append(new_swan)
+                
             await self.process_tick()
         except (TypeError, AttributeError, ValueError) as e:
             logger.error(

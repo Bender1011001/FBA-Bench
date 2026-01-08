@@ -35,6 +35,7 @@ from fba_bench_api.api.routes import (
     simulation as sim_routes,
     stack as stack_routes,
     templates as templates_routes,
+    wargames as wargames_routes,
 )
 from fba_bench_api.core.container import AppContainer
 from fba_bench_api.core.lifespan import lifespan
@@ -658,6 +659,8 @@ def create_app() -> FastAPI:
     app.include_router(templates_routes.router, prefix="/api/v1")
     app.include_router(medusa_router.router, prefix="/api/v1", tags=["Medusa"])
     app.include_router(templates_routes.router, prefix="/api/v1", tags=["Templates"])
+    # War Games API - connects React frontend to simulation engine
+    app.include_router(wargames_routes.router)
     # Mount ClearML stack routes only in non-protected environments (isolation)
     if not protected:
         app.include_router(stack_routes.router)

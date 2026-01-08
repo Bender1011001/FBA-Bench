@@ -3,8 +3,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.fba_bench_core.models.sales_result import SalesResult
-from src.fba_bench_core.money import Money
+from fba_bench_core.models.sales_result import SalesResult
+from fba_bench_core.money import Money
 
 
 class Event(BaseModel):

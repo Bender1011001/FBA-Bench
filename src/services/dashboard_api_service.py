@@ -291,6 +291,8 @@ class DashboardAPIService:
                 "price": str(competitor.price),
                 "bsr": competitor.bsr,
                 "sales_velocity": competitor.sales_velocity,
+                "inventory": getattr(competitor, "inventory", 0),  # New fidelity field
+                "is_out_of_stock": getattr(competitor, "is_out_of_stock", False), # New fidelity field
                 "last_updated": event.timestamp.isoformat(),
             }
 
@@ -410,11 +412,36 @@ class DashboardAPIService:
                 "avg_price_change_pct": 0,
                 "last_reasoning": "",
                 "recent_events": [],
-                "financials": {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0} # Placeholder
+                "financials": {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0}
             }
         
         agent = self.simulation_state["agents"][event.agent_id]
         
+        # Update financials if ledger exists
+        if self.ledger_service:
+            try:
+                # Use get_financial_position() which returns Dict[str, Any]
+                pos = self.ledger_service.get_financial_position()
+                
+                # Helper to convert Money/cents to float
+                def to_float(val: Any) -> float:
+                    if hasattr(val, "cents"):
+                        return float(val.cents) / 100.0
+                    return float(val or 0.0)
+
+                cash = to_float(pos.get("cash"))
+                inv_val = to_float(pos.get("inventory_value"))
+                equity = to_float(pos.get("total_equity"))
+                capital = to_float(pos.get("owner_equity"))
+                
+                agent["financials"] = {
+                    "cash": cash,
+                    "inventory_value": inv_val,
+                    "net_profit": round(equity - capital, 2)
+                }
+            except Exception as e:
+                logger.warning(f"Failed to update agent financials from ledger: {e}")
+
         # Update reasoning and detailed stats
         agent["last_reasoning"] = event.reasoning
         agent["last_tool_calls"] = event.tool_calls

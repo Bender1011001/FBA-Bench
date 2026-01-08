@@ -150,7 +150,7 @@ def evaluate(
         eff_exp = _extract_by_path(ctx.expected_output, ctx.field_path)
 
         # Exact mode: deep equality for dict/list else string equality (normalized if case_insensitive)
-        mode = ctx.mode.lower().strip()
+        mode = ctx.mode.lower().strip()  # pylint: disable=no-member
         if mode == "exact":
             if isinstance(eff_out, (dict, list)) or isinstance(eff_exp, (dict, list)):
                 acc = 1.0 if eff_out == eff_exp else 0.0

@@ -32,6 +32,8 @@ func _ready():
 	WebSocketClient.connect_to_server()
 	_check_api_health()
 
+	_play_boot_sequence()
+
 	# Add disclaimer footer
 	var disclaimer = Label.new()
 	disclaimer.text = "FBA-Bench is a simulation tool. Not financial advice. © 2026 Proprietary."
@@ -43,6 +45,54 @@ func _ready():
 	disclaimer.position -= Vector2(10, 10) # Padding
 	
 	add_child(disclaimer)
+
+func _play_boot_sequence():
+	# Hide main UI initially
+	$VBoxContainer.visible = false
+	
+	# Create boot overlay
+	var overlay = ColorRect.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0.05, 0.05, 0.08, 1.0)
+	add_child(overlay)
+	
+	var center_box = VBoxContainer.new()
+	center_box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	overlay.add_child(center_box)
+	
+	var label = Label.new()
+	label.text = "Initializing Kernel..."
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_color", Color(0.0, 0.8, 1.0))
+	center_box.add_child(label)
+	
+	var progress = ProgressBar.new()
+	progress.custom_minimum_size = Vector2(300, 4)
+	progress.show_percentage = false
+	center_box.add_child(progress)
+	
+	# Animation Sequence
+	var tween = create_tween()
+	
+	# 0% -> 40% : Initializing Kernel
+	tween.tween_property(progress, "value", 40.0, 0.6).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_callback(func(): label.text = "Loading Market Data...")
+	
+	# 40% -> 80% : Loading Market Data
+	tween.tween_property(progress, "value", 80.0, 0.8).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_callback(func(): label.text = "Connecting to Neural Engine...")
+	
+	# 80% -> 100% : Connecting...
+	tween.tween_property(progress, "value", 100.0, 0.6).set_trans(Tween.TRANS_CUBIC)
+	
+	# Finish
+	tween.tween_callback(func():
+		overlay.queue_free()
+		$VBoxContainer.visible = true
+		$VBoxContainer.modulate.a = 0.0
+		create_tween().tween_property($VBoxContainer, "modulate:a", 1.0, 0.5)
+	)
 
 func _setup_animations():
 	# Simple glow animation for status dot

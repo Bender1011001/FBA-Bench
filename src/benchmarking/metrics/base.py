@@ -265,8 +265,15 @@ class BusinessMetrics(BaseMetric):
 
         roi = (profit / revenue) if revenue > 0 else 0.0
         efficiency = 1.0 - min(1.0, (ad_spend / revenue) if revenue > 0 else 1.0)
-        # Placeholder for strategy alignment, assume neutral-positive
-        strategic_alignment = 0.7
+        # Strategy alignment: ratio of completed goals to total goals (baseline 0.5 if no goals)
+        goal_events = [e for e in events if e.get("type") == "AgentGoalStatusUpdateEvent"]
+        if goal_events:
+            completed = sum(1 for e in goal_events if e.get("status") == "completed")
+            failed = sum(1 for e in goal_events if e.get("status") == "failed")
+            total_goals = completed + failed
+            strategic_alignment = (completed / total_goals) if total_goals > 0 else 0.5
+        else:
+            strategic_alignment = 0.7  # neutral-positive fallback
 
         # Aggregate score: simple mean of subdimensions
         raw = max(

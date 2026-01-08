@@ -75,13 +75,27 @@ class CustomerEventService:
 
     Combines clean architecture from fba_bench_good_sim with
     comprehensive event tracking and financial accuracy from FBA-bench-main.
+    
+    Uses seeded random number generator for reproducible simulations.
     """
 
-    def __init__(self, config: Dict):
-        """Initialize customer event service with configuration."""
+    def __init__(self, config: Dict, seed: int = None):
+        """
+        Initialize customer event service with configuration.
+        
+        Args:
+            config: Service configuration dictionary
+            seed: Optional random seed for reproducible results. If None, uses config["seed"]
+                  or defaults to system random.
+        """
         self.config = config
         self.events: List[CustomerEvent] = []
         self.customer_profiles: Dict[str, CustomerBehaviorProfile] = {}
+        
+        # Initialize seeded random number generator for reproducibility
+        rng_seed = seed if seed is not None else config.get("seed", None)
+        self._rng = random.Random(rng_seed)
+        self._np_rng = np.random.default_rng(rng_seed)
 
         # Event generation parameters
         self.base_event_rate = config.get("base_event_rate", 10.0)  # Events per hour
@@ -174,86 +188,86 @@ class CustomerEventService:
         # Select segment based on distribution
         segments = list(self.segment_distribution.keys())
         weights = list(self.segment_distribution.values())
-        segment = CustomerSegment(random.choices(segments, weights=weights)[0])
+        segment = CustomerSegment(self._rng.choices(segments, weights=weights)[0])
 
         # Generate segment-specific characteristics
         if segment == CustomerSegment.PRICE_SENSITIVE:
             profile = CustomerBehaviorProfile(
                 customer_id=customer_id,
                 segment=segment,
-                price_sensitivity=random.uniform(0.8, 1.0),
-                quality_sensitivity=random.uniform(0.3, 0.6),
-                brand_loyalty=random.uniform(0.1, 0.4),
-                purchase_frequency=random.uniform(0.5, 2.0),
-                average_order_value=Money.from_dollars(random.uniform(15.0, 50.0)),
-                return_rate=random.uniform(0.08, 0.15),
-                review_likelihood=random.uniform(0.15, 0.30),
-                complaint_threshold=random.uniform(0.6, 0.8),
+                price_sensitivity=self._rng.uniform(0.8, 1.0),
+                quality_sensitivity=self._rng.uniform(0.3, 0.6),
+                brand_loyalty=self._rng.uniform(0.1, 0.4),
+                purchase_frequency=self._rng.uniform(0.5, 2.0),
+                average_order_value=Money.from_dollars(self._rng.uniform(15.0, 50.0)),
+                return_rate=self._rng.uniform(0.08, 0.15),
+                review_likelihood=self._rng.uniform(0.15, 0.30),
+                complaint_threshold=self._rng.uniform(0.6, 0.8),
             )
         elif segment == CustomerSegment.QUALITY_FOCUSED:
             profile = CustomerBehaviorProfile(
                 customer_id=customer_id,
                 segment=segment,
-                price_sensitivity=random.uniform(0.2, 0.5),
-                quality_sensitivity=random.uniform(0.8, 1.0),
-                brand_loyalty=random.uniform(0.6, 0.9),
-                purchase_frequency=random.uniform(0.3, 1.0),
-                average_order_value=Money.from_dollars(random.uniform(50.0, 200.0)),
-                return_rate=random.uniform(0.03, 0.08),
-                review_likelihood=random.uniform(0.40, 0.70),
-                complaint_threshold=random.uniform(0.3, 0.5),
+                price_sensitivity=self._rng.uniform(0.2, 0.5),
+                quality_sensitivity=self._rng.uniform(0.8, 1.0),
+                brand_loyalty=self._rng.uniform(0.6, 0.9),
+                purchase_frequency=self._rng.uniform(0.3, 1.0),
+                average_order_value=Money.from_dollars(self._rng.uniform(50.0, 200.0)),
+                return_rate=self._rng.uniform(0.03, 0.08),
+                review_likelihood=self._rng.uniform(0.40, 0.70),
+                complaint_threshold=self._rng.uniform(0.3, 0.5),
             )
         elif segment == CustomerSegment.CONVENIENCE_FOCUSED:
             profile = CustomerBehaviorProfile(
                 customer_id=customer_id,
                 segment=segment,
-                price_sensitivity=random.uniform(0.4, 0.7),
-                quality_sensitivity=random.uniform(0.5, 0.8),
-                brand_loyalty=random.uniform(0.3, 0.6),
-                purchase_frequency=random.uniform(1.0, 3.0),
-                average_order_value=Money.from_dollars(random.uniform(25.0, 100.0)),
-                return_rate=random.uniform(0.05, 0.12),
-                review_likelihood=random.uniform(0.10, 0.25),
-                complaint_threshold=random.uniform(0.7, 0.9),
+                price_sensitivity=self._rng.uniform(0.4, 0.7),
+                quality_sensitivity=self._rng.uniform(0.5, 0.8),
+                brand_loyalty=self._rng.uniform(0.3, 0.6),
+                purchase_frequency=self._rng.uniform(1.0, 3.0),
+                average_order_value=Money.from_dollars(self._rng.uniform(25.0, 100.0)),
+                return_rate=self._rng.uniform(0.05, 0.12),
+                review_likelihood=self._rng.uniform(0.10, 0.25),
+                complaint_threshold=self._rng.uniform(0.7, 0.9),
             )
         elif segment == CustomerSegment.BRAND_LOYAL:
             profile = CustomerBehaviorProfile(
                 customer_id=customer_id,
                 segment=segment,
-                price_sensitivity=random.uniform(0.1, 0.4),
-                quality_sensitivity=random.uniform(0.7, 0.9),
-                brand_loyalty=random.uniform(0.8, 1.0),
-                purchase_frequency=random.uniform(0.8, 2.5),
-                average_order_value=Money.from_dollars(random.uniform(40.0, 150.0)),
-                return_rate=random.uniform(0.02, 0.06),
-                review_likelihood=random.uniform(0.50, 0.80),
-                complaint_threshold=random.uniform(0.2, 0.4),
+                price_sensitivity=self._rng.uniform(0.1, 0.4),
+                quality_sensitivity=self._rng.uniform(0.7, 0.9),
+                brand_loyalty=self._rng.uniform(0.8, 1.0),
+                purchase_frequency=self._rng.uniform(0.8, 2.5),
+                average_order_value=Money.from_dollars(self._rng.uniform(40.0, 150.0)),
+                return_rate=self._rng.uniform(0.02, 0.06),
+                review_likelihood=self._rng.uniform(0.50, 0.80),
+                complaint_threshold=self._rng.uniform(0.2, 0.4),
             )
         elif segment == CustomerSegment.IMPULSE_BUYER:
             profile = CustomerBehaviorProfile(
                 customer_id=customer_id,
                 segment=segment,
-                price_sensitivity=random.uniform(0.5, 0.8),
-                quality_sensitivity=random.uniform(0.3, 0.6),
-                brand_loyalty=random.uniform(0.2, 0.5),
-                purchase_frequency=random.uniform(1.5, 4.0),
-                average_order_value=Money.from_dollars(random.uniform(10.0, 75.0)),
-                return_rate=random.uniform(0.10, 0.20),
-                review_likelihood=random.uniform(0.05, 0.15),
-                complaint_threshold=random.uniform(0.8, 1.0),
+                price_sensitivity=self._rng.uniform(0.5, 0.8),
+                quality_sensitivity=self._rng.uniform(0.3, 0.6),
+                brand_loyalty=self._rng.uniform(0.2, 0.5),
+                purchase_frequency=self._rng.uniform(1.5, 4.0),
+                average_order_value=Money.from_dollars(self._rng.uniform(10.0, 75.0)),
+                return_rate=self._rng.uniform(0.10, 0.20),
+                review_likelihood=self._rng.uniform(0.05, 0.15),
+                complaint_threshold=self._rng.uniform(0.8, 1.0),
             )
         else:  # RESEARCHER
             profile = CustomerBehaviorProfile(
                 customer_id=customer_id,
                 segment=segment,
-                price_sensitivity=random.uniform(0.6, 0.9),
-                quality_sensitivity=random.uniform(0.8, 1.0),
-                brand_loyalty=random.uniform(0.4, 0.7),
-                purchase_frequency=random.uniform(0.2, 0.8),
-                average_order_value=Money.from_dollars(random.uniform(30.0, 120.0)),
-                return_rate=random.uniform(0.03, 0.07),
-                review_likelihood=random.uniform(0.30, 0.60),
-                complaint_threshold=random.uniform(0.4, 0.6),
+                price_sensitivity=self._rng.uniform(0.6, 0.9),
+                quality_sensitivity=self._rng.uniform(0.8, 1.0),
+                brand_loyalty=self._rng.uniform(0.4, 0.7),
+                purchase_frequency=self._rng.uniform(0.2, 0.8),
+                average_order_value=Money.from_dollars(self._rng.uniform(30.0, 120.0)),
+                return_rate=self._rng.uniform(0.03, 0.07),
+                review_likelihood=self._rng.uniform(0.30, 0.60),
+                complaint_threshold=self._rng.uniform(0.4, 0.6),
             )
 
         self.customer_profiles[customer_id] = profile
@@ -295,8 +309,8 @@ class CustomerEventService:
         trust_adjustment = 0.5 + (trust_score * 0.5)  # Scale from 0.5 to 1.0
         final_rate = adjusted_rate * trust_adjustment
 
-        # Generate events
-        num_events = max(0, int(np.random.poisson(final_rate)))
+        # Generate events using seeded RNG
+        num_events = max(0, int(self._np_rng.poisson(final_rate)))
 
         for _ in range(num_events):
             event = self._generate_single_event(product, market_conditions)
@@ -334,7 +348,7 @@ class CustomerEventService:
         confidence = self._calculate_event_confidence(event_type, market_conditions)
 
         return CustomerEvent(
-            event_id=f"{customer_id}_{int(datetime.now().timestamp())}_{random.randint(1000, 9999)}",
+            event_id=f"{customer_id}_{int(datetime.now().timestamp())}_{self._rng.randint(1000, 9999)}",
             customer_id=customer_id,
             product_id=product.product_id,
             event_type=event_type,
@@ -348,10 +362,10 @@ class CustomerEventService:
     def _select_customer(self) -> str:
         """Select an existing customer or create a new one."""
         # 70% chance to use existing customer, 30% chance for new customer
-        if self.customer_profiles and random.random() < 0.7:
-            return random.choice(list(self.customer_profiles.keys()))
+        if self.customer_profiles and self._rng.random() < 0.7:
+            return self._rng.choice(list(self.customer_profiles.keys()))
         else:
-            return f"customer_{len(self.customer_profiles) + 1}_{random.randint(1000, 9999)}"
+            return f"customer_{len(self.customer_profiles) + 1}_{self._rng.randint(1000, 9999)}"
 
     def _select_event_type(self, profile: CustomerBehaviorProfile) -> CustomerEventType:
         """Select event type based on customer profile."""
@@ -359,7 +373,7 @@ class CustomerEventService:
         event_types = list(probabilities.keys())
         weights = list(probabilities.values())
 
-        return random.choices(event_types, weights=weights)[0]
+        return self._rng.choices(event_types, weights=weights)[0]
 
     def _calculate_event_financial_impact(
         self,
@@ -412,13 +426,13 @@ class CustomerEventService:
         if event_type == CustomerEventType.PURCHASE:
             metadata.update(
                 {
-                    "payment_method": random.choice(
+                    "payment_method": self._rng.choice(
                         ["credit_card", "debit_card", "gift_card"]
                     ),
-                    "shipping_speed": random.choice(
+                    "shipping_speed": self._rng.choice(
                         ["standard", "expedited", "overnight"]
                     ),
-                    "is_repeat_customer": random.random() < 0.6,
+                    "is_repeat_customer": self._rng.random() < 0.6,
                 }
             )
 
@@ -427,14 +441,14 @@ class CustomerEventService:
             base_rating = 3.5
             quality_adjustment = (profile.quality_sensitivity - 0.5) * 2  # -1 to 1
             rating = max(
-                1, min(5, base_rating + quality_adjustment + random.uniform(-0.5, 0.5))
+                1, min(5, base_rating + quality_adjustment + self._rng.uniform(-0.5, 0.5))
             )
 
             metadata.update(
                 {
                     "rating": round(rating, 1),
-                    "has_text": random.random() < 0.7,
-                    "verified_purchase": random.random() < 0.8,
+                    "has_text": self._rng.random() < 0.7,
+                    "verified_purchase": self._rng.random() < 0.8,
                 }
             )
 
@@ -450,9 +464,9 @@ class CustomerEventService:
 
             metadata.update(
                 {
-                    "return_reason": random.choices(reasons, weights=weights)[0],
-                    "days_since_purchase": random.randint(1, 30),
-                    "condition": random.choice(["new", "used", "damaged"]),
+                    "return_reason": self._rng.choices(reasons, weights=weights)[0],
+                    "days_since_purchase": self._rng.randint(1, 30),
+                    "condition": self._rng.choice(["new", "used", "damaged"]),
                 }
             )
 
@@ -466,9 +480,9 @@ class CustomerEventService:
             ]
             metadata.update(
                 {
-                    "complaint_type": random.choice(complaint_types),
-                    "severity": random.choice(["low", "medium", "high"]),
-                    "resolution_requested": random.choice(
+                    "complaint_type": self._rng.choice(complaint_types),
+                    "severity": self._rng.choice(["low", "medium", "high"]),
+                    "resolution_requested": self._rng.choice(
                         ["refund", "replacement", "explanation", "compensation"]
                     ),
                 }

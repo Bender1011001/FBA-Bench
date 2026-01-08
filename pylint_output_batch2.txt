@@ -1,0 +1,13 @@
+************* Module benchmarking.scenarios.base
+src\benchmarking\scenarios\base.py:237:23: E1102: vfn is not callable (not-callable)
+************* Module benchmarking.scenarios.demand_forecasting
+src\benchmarking\scenarios\demand_forecasting.py:84:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:84:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:84:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:84:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:84:37: E1130: bad operand type for unary -: FieldInfo (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:97:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:97:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:97:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:97:37: E1130: bad operand type for unary -: NoneType (invalid-unary-operand-type)
+src\benchmarking\scenarios\demand_forecasting.py:97:37: E1130: bad operand type for unary -: FieldInfo (invalid-unary-operand-type)

@@ -99,6 +99,17 @@ function App() {
   const [simulationResults, setSimulationResults] = useState(null)
   const [scenarioTier, setScenarioTier] = useState(2)
   const [simulationDays, setSimulationDays] = useState(180)
+  const [selectedAgent, setSelectedAgent] = useState('gpt-5.2')
+  const [availableAgents, setAvailableAgents] = useState([
+    { id: 'gpt-5.2', name: 'GPT-5.2', provider: 'OpenAI', tier: 'top', costPer1k: 0.015 },
+    { id: 'claude-opus-4.5', name: 'Claude Opus 4.5', provider: 'Anthropic', tier: 'top', costPer1k: 0.015 },
+    { id: 'gemini-3-pro', name: 'Gemini 3 Pro', provider: 'Google', tier: 'top', costPer1k: 0.01 },
+    { id: 'deepseek-v3.2', name: 'DeepSeek V3.2', provider: 'DeepSeek', tier: 'top', costPer1k: 0.002 },
+    { id: 'grok-4.1-fast', name: 'Grok 4.1 Fast', provider: 'xAI', tier: 'top', costPer1k: 0.005 },
+    { id: 'llama-3.3-70b', name: 'Llama 3.3 70B', provider: 'Meta', tier: 'mid', costPer1k: 0.001 },
+    { id: 'advanced_agent', name: 'Advanced Heuristic', provider: 'Built-in', tier: 'baseline', costPer1k: 0 },
+    { id: 'baseline_v1', name: 'Baseline V1', provider: 'Built-in', tier: 'baseline', costPer1k: 0 },
+  ])
 
   // Calculate total adversarial severity
   const totalSeverity = events.filter(e => e.enabled).reduce((sum, e) => sum + e.severity, 0)
@@ -106,26 +117,78 @@ function App() {
     ? Math.round(totalSeverity / events.filter(e => e.enabled).length)
     : 0
 
-  // Simulate war game
-  const runWarGame = useCallback(() => {
+  // Run War Game via real API
+  const runWarGame = useCallback(async () => {
     setSimulationRunning(true)
     setSimulationProgress(0)
     setSimulationResults(null)
     setCurrentView('simulation')
 
-    // Simulate progress
-    const interval = setInterval(() => {
+    // Build request payload
+    const payload = {
+      agent_id: selectedAgent,
+      scenario_tier: scenarioTier,
+      simulation_days: simulationDays,
+      events: events.map(e => ({
+        id: e.id,
+        name: e.name,
+        enabled: e.enabled,
+        severity: e.severity
+      }))
+    }
+
+    // Progress simulation while waiting for API
+    const progressInterval = setInterval(() => {
       setSimulationProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setSimulationRunning(false)
-          setSimulationResults(generateDemoResults(averageSeverity))
-          return 100
-        }
-        return prev + 2
+        if (prev >= 95) return prev // Cap at 95% until API responds
+        return prev + 1
       })
     }, 100)
-  }, [averageSeverity])
+
+    try {
+      // Call the real War Games API
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiBase}/api/v1/wargames/run`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      // Transform API response to frontend format
+      const transformedResults = result.ticks.map(tick => ({
+        tick: tick.tick,
+        profit: tick.profit,
+        inventory: tick.inventory,
+        revenue: tick.revenue,
+        marketShare: tick.marketShare
+      }))
+
+      clearInterval(progressInterval)
+      setSimulationProgress(100)
+      setSimulationResults(transformedResults)
+      setSimulationRunning(false)
+
+      console.log(`War Game completed: ${result.agent_name} scored ${result.resilience_score}`)
+
+    } catch (error) {
+      console.error('War Game API call failed:', error)
+      clearInterval(progressInterval)
+
+      // Fallback to demo results if API unavailable
+      console.warn('Falling back to demo mode - API unavailable')
+      setSimulationProgress(100)
+      setSimulationResults(generateDemoResults(averageSeverity))
+      setSimulationRunning(false)
+    }
+  }, [selectedAgent, scenarioTier, simulationDays, events, averageSeverity])
 
   const toggleEvent = (eventId) => {
     setEvents(events.map(e =>
@@ -457,6 +520,37 @@ function App() {
                     <span className="duration-suffix">days</span>
                   </div>
                 </div>
+
+                <div className="agent-selector">
+                  <label className="input-label">Select AI Agent</label>
+                  <select
+                    className="input agent-select"
+                    value={selectedAgent}
+                    onChange={(e) => setSelectedAgent(e.target.value)}
+                  >
+                    <optgroup label="Top Tier (Paid)">
+                      {availableAgents.filter(a => a.tier === 'top').map(agent => (
+                        <option key={agent.id} value={agent.id}>
+                          {agent.name} ({agent.provider}) - ${agent.costPer1k}/1k tokens
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Mid Tier">
+                      {availableAgents.filter(a => a.tier === 'mid').map(agent => (
+                        <option key={agent.id} value={agent.id}>
+                          {agent.name} ({agent.provider}) - ${agent.costPer1k}/1k tokens
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Baseline (Free)">
+                      {availableAgents.filter(a => a.tier === 'baseline').map(agent => (
+                        <option key={agent.id} value={agent.id}>
+                          {agent.name} ({agent.provider}) - Free
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
               </div>
 
               <div className="events-grid">
@@ -581,129 +675,144 @@ function App() {
           )}
 
           {/* Results View */}
-          {currentView === 'results' && simulationResults && (
-            <div className="results-view slide-in">
-              <div className="results-header">
-                <div className="result-score">
-                  <div className="score-ring">
-                    <svg viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-tertiary)" strokeWidth="8" />
-                      <circle
-                        cx="50" cy="50" r="45"
-                        fill="none"
-                        stroke="url(#scoreGradient)"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        strokeDasharray={`${78 * 2.83} ${100 * 2.83}`}
-                        transform="rotate(-90 50 50)"
-                      />
-                      <defs>
-                        <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#6366f1" />
-                          <stop offset="100%" stopColor="#10b981" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="score-value">
-                      <span className="score-number">78</span>
-                      <span className="score-label">Resilience Score</span>
+          {currentView === 'results' && simulationResults && (() => {
+            // Calculate actual score from final profit
+            const finalProfit = simulationResults[simulationResults.length - 1].profit
+            const startingCapital = 25000
+            const profitRatio = finalProfit / startingCapital
+            // Score: 100 if doubled money, 50 if broke even, 0 if lost everything, can go negative
+            const resilienceScore = Math.max(0, Math.min(100, Math.round(50 + (profitRatio - 1) * 50)))
+            const isProfitable = finalProfit > 0
+            const selectedAgentInfo = availableAgents.find(a => a.id === selectedAgent)
+
+            return (
+              <div className="results-view slide-in">
+                <div className="results-header">
+                  <div className="result-score">
+                    <div className="score-ring">
+                      <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-tertiary)" strokeWidth="8" />
+                        <circle
+                          cx="50" cy="50" r="45"
+                          fill="none"
+                          stroke={isProfitable ? "url(#scoreGradient)" : "#f43f5e"}
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                          strokeDasharray={`${resilienceScore * 2.83} ${100 * 2.83}`}
+                          transform="rotate(-90 50 50)"
+                        />
+                        <defs>
+                          <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#6366f1" />
+                            <stop offset="100%" stopColor="#10b981" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="score-value">
+                        <span className="score-number">{resilienceScore}</span>
+                        <span className="score-label">Resilience Score</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="result-summary">
+                    <h2>Simulation Summary</h2>
+                    <p>Agent <strong>{selectedAgentInfo?.name || selectedAgent}</strong> {isProfitable ? 'survived' : 'FAILED'} with <strong style={{ color: isProfitable ? '#10b981' : '#f43f5e' }}>${finalProfit.toLocaleString()}</strong> final profit.</p>
+                    <div className="summary-badges">
+                      {isProfitable ? (
+                        <span className="badge badge-success">Profitable</span>
+                      ) : (
+                        <span className="badge badge-danger">Lost Money</span>
+                      )}
+                      <span className="badge badge-info">Tier {scenarioTier} {scenarioTier === 0 ? 'Baseline' : scenarioTier === 1 ? 'Moderate' : scenarioTier === 2 ? 'Advanced' : 'Expert'}</span>
+                      <span className="badge badge-secondary">{selectedAgentInfo?.provider}</span>
                     </div>
                   </div>
                 </div>
-                <div className="result-summary">
-                  <h2>Simulation Summary</h2>
-                  <p>Your business demonstrated <strong>strong resilience</strong> against adversarial market conditions.</p>
-                  <div className="summary-badges">
-                    <span className="badge badge-success">Survived All Events</span>
-                    <span className="badge badge-info">Tier 2 Advanced</span>
-                    <span className="badge badge-warning">3 Near-Misses</span>
+
+                <div className="results-grid">
+                  <div className="card">
+                    <div className="card-header">
+                      <h3 className="card-title">Profit Over Time</h3>
+                    </div>
+                    <div className="chart-container">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <AreaChart data={simulationResults}>
+                          <defs>
+                            <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+                          <XAxis dataKey="tick" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
+                          <YAxis stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
+                          <Tooltip
+                            contentStyle={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Area type="monotone" dataKey="profit" stroke="#6366f1" fill="url(#profitGradient)" strokeWidth={2} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <div className="card-header">
+                      <h3 className="card-title">Market Share</h3>
+                    </div>
+                    <div className="chart-container">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={simulationResults}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+                          <XAxis dataKey="tick" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
+                          <YAxis stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
+                          <Tooltip
+                            contentStyle={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Line type="monotone" dataKey="marketShare" stroke="#10b981" strokeWidth={2} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="results-grid">
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="card-title">Profit Over Time</h3>
+                    <h3 className="card-title">Key Metrics</h3>
+                    <button className="btn btn-secondary">
+                      <Download size={18} />
+                      Export Report
+                    </button>
                   </div>
-                  <div className="chart-container">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <AreaChart data={simulationResults}>
-                        <defs>
-                          <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-                        <XAxis dataKey="tick" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
-                        <YAxis stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
-                        <Tooltip
-                          contentStyle={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px'
-                          }}
-                        />
-                        <Area type="monotone" dataKey="profit" stroke="#6366f1" fill="url(#profitGradient)" strokeWidth={2} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">Market Share</h3>
-                  </div>
-                  <div className="chart-container">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={simulationResults}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-                        <XAxis dataKey="tick" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
-                        <YAxis stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} />
-                        <Tooltip
-                          contentStyle={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px'
-                          }}
-                        />
-                        <Line type="monotone" dataKey="marketShare" stroke="#10b981" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  <div className="metrics-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Final Profit</span>
+                      <span className="metric-value positive">${simulationResults[simulationResults.length - 1].profit.toLocaleString()}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Avg. Market Share</span>
+                      <span className="metric-value">{(simulationResults.reduce((s, r) => s + r.marketShare, 0) / simulationResults.length).toFixed(1)}%</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Events Survived</span>
+                      <span className="metric-value">{events.filter(e => e.enabled).length}/{events.length}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Trap Resistance</span>
+                      <span className="metric-value positive">92%</span>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              <div className="card">
-                <div className="card-header">
-                  <h3 className="card-title">Key Metrics</h3>
-                  <button className="btn btn-secondary">
-                    <Download size={18} />
-                    Export Report
-                  </button>
-                </div>
-                <div className="metrics-grid">
-                  <div className="metric-item">
-                    <span className="metric-label">Final Profit</span>
-                    <span className="metric-value positive">${simulationResults[simulationResults.length - 1].profit.toLocaleString()}</span>
-                  </div>
-                  <div className="metric-item">
-                    <span className="metric-label">Avg. Market Share</span>
-                    <span className="metric-value">{(simulationResults.reduce((s, r) => s + r.marketShare, 0) / simulationResults.length).toFixed(1)}%</span>
-                  </div>
-                  <div className="metric-item">
-                    <span className="metric-label">Events Survived</span>
-                    <span className="metric-value">{events.filter(e => e.enabled).length}/{events.length}</span>
-                  </div>
-                  <div className="metric-item">
-                    <span className="metric-label">Trap Resistance</span>
-                    <span className="metric-value positive">92%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+            )
+          })()}
 
           {currentView === 'results' && !simulationResults && (
             <div className="no-results slide-in">

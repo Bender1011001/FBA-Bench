@@ -81,7 +81,7 @@ class DemandForecastingScenario(BaseScenario):
                 base_sales
                 * (
                     1
-                    + random.uniform(-self.demand_variability, self.demand_variability)
+                    + random.uniform(-self.demand_variability, self.demand_variability)  # pylint: disable=invalid-unary-operand-type
                 )
             )
             self.historical_sales.append(
@@ -94,7 +94,7 @@ class DemandForecastingScenario(BaseScenario):
                 base_sales
                 * (
                     1
-                    + random.uniform(-self.demand_variability, self.demand_variability)
+                    + random.uniform(-self.demand_variability, self.demand_variability)  # pylint: disable=invalid-unary-operand-type
                 )
             )
             self.actual_sales_future.append(

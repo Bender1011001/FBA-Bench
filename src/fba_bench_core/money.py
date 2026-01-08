@@ -137,6 +137,14 @@ class Money(_Money):  # type: ignore[misc]
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             )
 
+    def abs(self) -> Money:
+        """Return a new Money instance with the absolute value of cents."""
+        return Money(abs(self.cents), getattr(self, "currency", "USD"))
+
+    def __abs__(self) -> Money:
+        """Support the built-in abs() function."""
+        return self.abs()
+
 
 __all__ = [
     "Money",

@@ -64,6 +64,13 @@ func _ready():
 	agent_inspector.close_requested.connect(_on_inspector_closed)
 	# Initialize inspector hidden
 	agent_inspector.visible = false
+	
+	# Create dynamic container for competitors if not present
+	if not warehouse_container.has_node("CompetitorContainer"):
+		var comp_cont = Node2D.new()
+		comp_cont.name = "CompetitorContainer"
+		warehouse_container.add_child(comp_cont)
+		
 	print("[SimViewer] Ready - Dropdowns populated")
 
 func _draw_warehouse_grid():
@@ -229,6 +236,7 @@ func _on_simulation_tick(data: Dictionary):
 		
 	# Update visualization
 	_update_agents(data.get("agents", []))
+	_update_competitors(data.get("competitors", []))
 	_update_heatmap(data.get("heatmap", []))
 	
 	# If inspector is open, update its data if it matches the current agent
@@ -240,15 +248,156 @@ func _on_simulation_tick(data: Dictionary):
 				agent_inspector.update_agent_data(agent)
 				break
 
-func _update_agents(agents: Array):
-	# Clear existing agent visuals
-	for child in agent_container.get_children():
-		child.queue_free()
+func _update_competitors(competitors: Array):
+	var comp_container = warehouse_container.get_node("CompetitorContainer")
+	var current_asins = {}
 	
-	# Draw agent positions
+	# Layout constants
+	var start_x = 50
+	var start_y = 50
+	var spacing_x = 120
+	
+	var idx = 0
+	for comp_data in competitors:
+		var asin = comp_data.get("asin", "")
+		if asin == "": continue
+		
+		current_asins[asin] = true
+		var comp_node = comp_container.get_node_or_null(asin)
+		
+		# Determine visual state
+		var inventory = int(comp_data.get("inventory", 0))
+		var is_oos = bool(comp_data.get("is_out_of_stock", false))
+		var price = comp_data.get("price", "?.??")
+		
+		if not comp_node:
+			comp_node = _create_competitor_visual(asin)
+			comp_node.name = asin
+			comp_container.add_child(comp_node)
+			# Initial placement
+			comp_node.position = Vector2(start_x + (idx * spacing_x), start_y)
+		
+		# Update Label
+		var lbl = comp_node.get_node("Label")
+		lbl.text = "%s\n$%s" % [asin, price]
+		
+		# Update Inventory Bar / OOS Status
+		var inv_bar = comp_node.get_node("InventoryBar")
+		var inv_fill = inv_bar.get_node("Fill")
+		var status_lbl = comp_node.get_node("StatusLabel")
+		
+		if is_oos:
+			comp_node.modulate = Color.DIM_GRAY # Fade out OOS competitors
+			status_lbl.text = "SOLD OUT"
+			status_lbl.modulate = Color(1.0, 0.2, 0.2) # Red text
+			inv_fill.scale.x = 0
+		else:
+			comp_node.modulate = Color.WHITE
+			status_lbl.text = "Inv: %d" % inventory
+			status_lbl.modulate = Color.WHITE
+			# Heuristic: Max inventory 5000 for bar scale
+			var pct = clamp(float(inventory) / 5000.0, 0.0, 1.0)
+			inv_fill.scale.x = pct
+			
+		idx += 1
+	
+	# Cleanup removed competitors
+	for child in comp_container.get_children():
+		if not current_asins.has(child.name):
+			child.queue_free()
+
+func _create_competitor_visual(asin: String) -> Node2D:
+	var visual = Node2D.new()
+	
+	# Shape: Inverted Red Triangle (Enemy)
+	var poly = Polygon2D.new()
+	poly.polygon = PackedVector2Array([
+		Vector2(-15, -15), 
+		Vector2(15, -15), 
+		Vector2(0, 15)
+	])
+	poly.color = Color(0.9, 0.3, 0.3) # Hostile Red
+	visual.add_child(poly)
+	
+	# ASIN Label
+	var label = Label.new()
+	label.name = "Label"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 10)
+	label.position = Vector2(-40, -45)
+	label.custom_minimum_size = Vector2(80, 0)
+	visual.add_child(label)
+	
+	# Status Label (Inventory Count or SOLD OUT)
+	var status = Label.new()
+	status.name = "StatusLabel"
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status.add_theme_font_size_override("font_size", 12)
+	status.add_theme_color_override("font_color", Color.WHITE)
+	status.position = Vector2(-40, 20)
+	status.custom_minimum_size = Vector2(80, 0)
+	visual.add_child(status)
+	
+	# Inventory Bar Background
+	var bar_bg = ColorRect.new()
+	bar_bg.name = "InventoryBar"
+	bar_bg.color = Color(0.2, 0.2, 0.2)
+	bar_bg.size = Vector2(60, 6)
+	bar_bg.position = Vector2(-30, 38)
+	visual.add_child(bar_bg)
+	
+	# Inventory Bar Fill
+	var bar_fill = ColorRect.new()
+	bar_fill.name = "Fill"
+	bar_fill.color = Color.GREEN
+	bar_fill.size = Vector2(60, 6)
+	bar_bg.add_child(bar_fill)
+	
+	return visual
+
+func _update_agents(agents: Array):
+	var current_agent_ids = {}
+	
 	for agent_data in agents:
-		var agent_visual = _create_agent_visual(agent_data)
-		agent_container.add_child(agent_visual)
+		# Get agent ID, ensuring it's a string
+		var raw_id = agent_data.get("id", "")
+		if str(raw_id) == "":
+			continue
+			
+		var agent_id = str(raw_id)
+		current_agent_ids[agent_id] = true
+		
+		var target_pos = Vector2(agent_data.get("x", 0), agent_data.get("y", 0))
+		var agent_node = agent_container.get_node_or_null(agent_id)
+		
+		if agent_node:
+			# Agent exists: Smoothly interpolate to new position
+			# First, kill any active tween on this agent to prevent conflicts
+			if agent_node.has_meta("movement_tween"):
+				var old_tween = agent_node.get_meta("movement_tween")
+				if old_tween and old_tween.is_valid():
+					old_tween.kill()
+			
+			var tween = create_tween()
+			tween.tween_property(agent_node, "position", target_pos, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			agent_node.set_meta("movement_tween", tween)
+			
+			# Update visual data (in case role/color changed, though unlikely)
+			# If you want to update other properties dynamically, do it here.
+			
+		else:
+			# New agent: Create and place immediately
+			var new_agent = _create_agent_visual(agent_data)
+			new_agent.name = agent_id
+			agent_container.add_child(new_agent)
+			# Ensure it starts at the correct position
+			new_agent.position = target_pos
+
+	# Cleanup: Remove agents that are no longer in the simulation
+	for child in agent_container.get_children():
+		if not current_agent_ids.has(child.name):
+			# Use queue_free to safely remove
+			child.queue_free()
 
 func _update_heatmap(heatmap_data: Array):
 	if heatmap_data.is_empty():

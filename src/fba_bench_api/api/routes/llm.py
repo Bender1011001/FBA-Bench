@@ -161,5 +161,11 @@ async def list_models():
                 "provider": "builtin",
                 "is_free": True,
             },
+            {
+                "id": "human-manual",
+                "name": "Human Strategy (Manual)",
+                "provider": "user",
+                "is_free": True,
+            },
         ]
     }

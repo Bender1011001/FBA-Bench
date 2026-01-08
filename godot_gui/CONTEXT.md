@@ -1,6 +1,6 @@
 # Godot GUI - Context
 
-> **Last Updated**: 2026-01-05
+> **Last Updated**: 2026-01-08
 
 ## Purpose
 
@@ -34,11 +34,11 @@ godot_gui/
 │   └── SimulationState.gd # State management (2.5KB)
 └── scenes/
     ├── main/              # Main application controller
-    │   └── Main.gd        # Navigation, status, theme toggle
+    │   └── Main.gd        # Navigation, status, theme toggle, boot sequence (2s progress bar)
     ├── simulation/        # Simulation visualization
-    │   ├── SimulationViewer.gd  # Main viewer (12KB)
+    │   ├── SimulationViewer.gd  # Main viewer (12KB) - Smooth agent tweening implemented. NEW: Competitor visualization.
     │   ├── AgentInspector.gd    # Agent details panel
-    │   └── PerformanceChart.gd  # Real-time charts
+    │   └── PerformanceChart.gd  # Real-time charts (Bloomberg-style: gradients, grid, currency labels)
     ├── leaderboard/       # Leaderboard view
     └── sandbox/           # Sandbox experimentation
 ```

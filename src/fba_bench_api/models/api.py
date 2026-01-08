@@ -38,11 +38,24 @@ class KpiSnapshot(BaseModel):
         )
 
 
+class CompetitorSnapshot(BaseModel):
+    asin: str
+    price: str
+    bsr: Optional[int]
+    sales_velocity: Optional[int]
+    inventory: int = 0
+    is_out_of_stock: bool = False
+
+    class Config:
+        extra = "ignore"
+
+
 class SimulationSnapshot(BaseModel):
     status: SimStatus = Field(..., description="Simulation status")
     tick: int = Field(..., ge=0)
     kpis: KpiSnapshot
     agents: List[AgentSnapshot] = Field(default_factory=list)
+    competitors: List[CompetitorSnapshot] = Field(default_factory=list, description="Competitor landscape")
     timestamp: datetime = Field(..., description="UTC ISO timestamp")
 
     @classmethod
@@ -81,11 +94,26 @@ class SimulationSnapshot(BaseModel):
                 )
             )
 
+        # Map Competitors
+        comps_raw = raw.get("competitors", {}) or {}
+        comps_list = []
+        if isinstance(comps_raw, dict):
+            for asin, cdata in comps_raw.items():
+                comps_list.append(CompetitorSnapshot(
+                    asin=str(asin),
+                    price=str(cdata.get("price", "0.00")),
+                    bsr=cdata.get("bsr"),
+                    sales_velocity=cdata.get("sales_velocity"),
+                    inventory=int(cdata.get("inventory", 0)),
+                    is_out_of_stock=bool(cdata.get("is_out_of_stock", False))
+                ))
+
         return cls(
-            status=status, # type: ignore
+            status=status,
             tick=int(raw.get("current_tick", 0)),
             kpis=kpis,
             agents=agents_list,
+            competitors=comps_list,
             timestamp=datetime.now(timezone.utc),
         )
 
@@ -93,10 +121,11 @@ class SimulationSnapshot(BaseModel):
     def _default(cls, status: str = "idle") -> "SimulationSnapshot":
         from datetime import datetime, timezone
         return cls(
-            status=status, # type: ignore
+            status=status,
             tick=0,
             kpis=KpiSnapshot(revenue=0.0, profit=0.0, units_sold=0),
             agents=[],
+            competitors=[],
             timestamp=datetime.now(timezone.utc),
         )
 

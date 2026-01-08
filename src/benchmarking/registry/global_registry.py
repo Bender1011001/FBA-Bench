@@ -160,7 +160,7 @@ class GlobalRegistry:
 
     def __init__(self):
         """Initialize the global registry."""
-        if self._initialized:
+        if getattr(self, "_initialized", False):
             return
 
         # Registry storage

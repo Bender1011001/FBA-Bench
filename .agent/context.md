@@ -105,16 +105,21 @@ All critical investment due diligence issues have been resolved:
 
 **Investment Score**: 8.75/10 ✅ DEFINITE YES
 
-## ⚠️ Known Issues (Audit 2026-01-05)
+## ⚠️ Known Issues (Audit 2026-01-08)
 
-All critical and medium priority issues have been resolved:
+All critical and medium priority issues resolved in hostile audit:
 
 | Issue | Location | Status |
 |-------|----------|--------|
-| Test collection errors | `src/services/mock_service.py`, `trust_score_handler.py` | ✅ Fixed |
-| Leaderboard stubs | `godot_gui/scenes/leaderboard/Leaderboard.gd` | ✅ Implemented |
-| Theme toggle | `godot_gui/scenes/main/Main.gd` | ✅ Implemented |
-| Volatility tracking | `src/scenarios/scenario_engine.py` | ✅ Implemented |
+| Mock simulation endpoints | `src/fba_bench_api/api/routes/simulation.py` | ✅ Real simulation engine integrated |
+| Fake leaderboard scoring | `src/fba_bench_api/api/routes/leaderboard.py` | ✅ Metrics-based scoring |
+| Hardcoded experiment metrics | `src/fba_bench_api/api/routes/experiments.py` | ✅ Dynamic calculation |
+| Unseeded random in CustomerEventService | `src/services/customer_event_service.py` | ✅ Seeded RNG |
+| MockService naming | `src/services/__init__.py` | ✅ ProductionService is primary |
+| Disabled orchestrator | `simulation.py` | ✅ RealSimulationRunner integrated |
+
+**New files created**:
+- `src/fba_bench_api/core/simulation_runner.py` - Production simulation runner
 
 ## Related Files
 
@@ -127,3 +132,4 @@ All critical and medium priority issues have been resolved:
 ---
 
 *See `.agent/context_template.md` for the subdirectory context file format.*
+

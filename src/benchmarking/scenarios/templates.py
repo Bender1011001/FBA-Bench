@@ -7,6 +7,7 @@ including e-commerce, healthcare, finance, legal, and scientific research.
 
 import logging
 import random
+import statistics
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 

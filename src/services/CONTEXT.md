@@ -1,10 +1,16 @@
 # Services - Context
 
-> **Last Updated**: 2026-01-05
+> **Last Updated**: 2026-01-08
 
 ## Purpose
 
 Central business logic layer for FBA-Bench. All domain services are unified here to provide a single source of truth for simulation operations, financial tracking, market dynamics, and external integrations.
+
+## Simulation Fidelity (New in Audit 2026-01-07)
+- **Competitors**: Now have finite `inventory` and go `out_of_stock`. Reference price calculation ignores OOS competitors (Supply Shock mechanics).
+- **Supply Chain**: "Black Swan" events and stochastic lead time variance are now **active**. Orders can be delayed by port congestion/customs.
+- **Fees**: `MarketSimulationService` now uses `FeeCalculationService` for accurate FBA/Referral/Storage fees instead of placeholders.
+
 
 ## Key Files
 

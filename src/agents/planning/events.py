@@ -6,6 +6,8 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from fba_events.base import BaseEvent
+from fba_bench_core.event_bus import EventBus
+from .models import StrategicObjective, PlanType, TacticalAction
 
 
 @dataclass

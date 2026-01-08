@@ -1,8 +1,12 @@
 """
 Production-Ready Service Implementation for FBA-Bench.
 
-This module provides real implementations of external services for production use.
-These services connect to actual APIs and handle authentication, rate limiting, and error handling.
+NOTE: This file is named 'mock_service.py' for historical reasons only.
+It provides REAL implementations of external services for production use,
+including proper authentication, rate limiting, caching, and error handling.
+
+The 'MockService' alias at the end of this file points to ProductionService
+for backward compatibility.
 """
 
 import base64

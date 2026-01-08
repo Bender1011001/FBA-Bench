@@ -10,7 +10,7 @@ Typed registry and explicit helper for agent runner creation.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 # Core base API
 from .base_runner import AgentRunner, AgentRunnerError

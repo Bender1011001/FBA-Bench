@@ -144,12 +144,14 @@ class OperationsMetrics:
         inventory_turnover = self.calculate_inventory_turnover()
         stockout_percentage = self.calculate_stockout_percentage()
 
-        # Simple overall score heuristic: higher turnover is good, lower stockout is good.
-        # This is a placeholder logic for overall_score to avoid missing key errors downstream.
+        # Composite score algorithm:
+        # - Inventory turnover contribution: min(50, turnover * 5) - rewards efficient inventory movement
+        # - Stockout penalty: max(0, 50 - stockout%) - penalizes product unavailability
+        # Total score range: 0-100, where 100 represents perfect operations
         overall_score = 0.0
         if inventory_turnover > 0:
-             overall_score += min(50.0, inventory_turnover * 5) # Cap contribution
-        overall_score += max(0.0, 50.0 - stockout_percentage) # Cap contribution
+             overall_score += min(50.0, inventory_turnover * 5)  # Cap turnover contribution at 50
+        overall_score += max(0.0, 50.0 - stockout_percentage)  # Cap stockout contribution at 50
 
         return {
             "overall_score": overall_score,

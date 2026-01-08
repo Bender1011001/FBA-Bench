@@ -7,6 +7,8 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+from money import Money
+
 from ..skill_modules.base_skill import SkillAction
 from .models import CoordinationStrategy, CoordinatorTuning, ResourceAllocation
 from .utils import get_expected_roi_baseline

@@ -75,6 +75,18 @@ class MetricRegistry:
     def list_metrics(self) -> List[str]:
         return list(self._metrics.keys())
 
+    def get_metrics_by_category(self, category: str) -> Dict[str, BaseMetric]:
+        """
+        Get all metrics belonging to a specific category.
+        This provides a dictionary-like view expected by the benchmark engine.
+        """
+        return {
+            name: metric
+            for name, metric in self._metrics.items()
+            if getattr(metric, "category", None) == category
+            or getattr(getattr(metric, "metadata", None), "category", None) == category
+        }
+
 
 # Backwards-compat class alias expected by tests
 MetricsRegistry = MetricRegistry

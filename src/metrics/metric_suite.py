@@ -185,17 +185,33 @@ class MetricSuite:
                 datetime.now()
             )  # Mark start of evaluation on first event
 
-        handler = self._event_handlers.get(event.event_type)
+        # Support both .event_type (BaseEvent) and .type (legacy/dict-shim)
+        etype = getattr(event, "event_type", getattr(event, "type", None))
+        handler = self._event_handlers.get(etype)
         if handler:
             handler(event)
         else:
             logger.debug(
-                f"Unhandled event type: {event.event_type}. No specific metric update."
+                f"Unhandled event type: {etype}. No specific metric update."
             )
 
         self.current_tick = (
             event.tick_number if hasattr(event, "tick_number") else self.current_tick
         )  # Update tick
+
+    def _handle_general_event(self, event_type: str, event: Any) -> None:
+        """
+        Legacy/integration entry point for event handling.
+        """
+        # Ensure event-like object has the type information if it doesn't already
+        if not hasattr(event, "event_type") and not hasattr(event, "type"):
+            try:
+                setattr(event, "event_type", event_type)
+            except (AttributeError, TypeError):
+                # Fallback for immutable objects or those that don't support attribute assignment
+                pass
+        
+        self._dispatch_event(event)
 
     # --- Individual Event Handlers for clarity and modularity ---
     def _handle_sale_event(self, event: BaseEvent) -> None:

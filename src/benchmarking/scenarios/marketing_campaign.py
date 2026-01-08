@@ -7,7 +7,7 @@ and measures its effectiveness based on various marketing metrics.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from money import Money
 
@@ -25,7 +25,20 @@ class MarketingCampaignScenario(BaseScenario):
     Simulates a marketing campaign and measures its effectiveness.
     """
 
-    def __init__(self, config: ScenarioConfig):
+    def __init__(self, config: Union[ScenarioConfig, Dict[str, Any]]):
+        if isinstance(config, dict):
+            # Wrap dict in object-like structure or ScenarioConfig if possible
+            from types import SimpleNamespace
+            if "parameters" not in config:
+                config["parameters"] = {}
+            try:
+                config = ScenarioConfig(**config)
+            except Exception:
+                 cfg = SimpleNamespace(**config)
+                 if not hasattr(cfg, "parameters"):
+                     cfg.parameters = {}
+                 config = cfg
+
         super().__init__(config)
         self.campaign_budget: float = config.parameters.get("campaign_budget", 1000.0)
         self.target_audience: str = config.parameters.get("target_audience", "all")
@@ -44,7 +57,7 @@ class MarketingCampaignScenario(BaseScenario):
         Initialize marketing budget, target audience, and other campaign parameters.
         """
         logger.info(f"Setting up Marketing Campaign Scenario: {self.scenario_id}")
-        # Placeholder for more complex setup: e.g., loading historical data, setting up external ad platforms
+        # Core setup: initialize campaign state and stats
         self.current_tick = 0
         self.campaign_active = False
         self.impressions = 0

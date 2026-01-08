@@ -505,4 +505,95 @@ def create_example_config(
                 raise ValueError("api_key is required for LangChain")
             return LangChainConfig.analytical_agent(agent_id, api_key)
 
+    elif framework == "leaderboard":
+        if config_type == "gpt4o_champion":
+            if not api_key:
+                raise ValueError("api_key is required for Leaderboard models")
+            return LeaderboardConfig.gpt4o_champion(agent_id, api_key)
+        elif config_type == "claude35_sonnet_champion":
+            if not api_key:
+                raise ValueError("api_key is required for Leaderboard models")
+            return LeaderboardConfig.claude35_sonnet_champion(agent_id, api_key)
+
     raise ValueError(f"Unknown configuration: {framework}.{config_type}")
+
+
+class LeaderboardConfig:
+    """High-performance configurations for Leaderboard contenders."""
+
+    @staticmethod
+    def gpt4o_champion(agent_id: str, api_key: str) -> UnifiedAgentRunnerConfig:
+        """
+        Optimized GPT-4o configuration for leaderboard dominance.
+        Features: Low temperature, Chain-of-Thought prompting, JSON mode.
+        """
+        return UnifiedAgentRunnerConfig(
+            name=f"{agent_id}_gpt4o_champ",
+            description="GPT-4o Champion Recommendation",
+            agent_id=agent_id,
+            framework=FrameworkType.LANGCHAIN,
+            agent_config=None,
+            llm_config=LLMConfig(
+                name=f"{agent_id}_llm",
+                provider="openai",
+                model="gpt-4o-2024-08-06",  # Correct 4o model
+                temperature=0.0,  # Strict adherence
+                api_key=api_key,
+                max_tokens=4096,
+                top_p=0.9,
+            ),
+            memory_config=MemoryConfig(
+                name=f"{agent_id}_memory",
+                type="summary",  # Use summary memory to simulate long-term tracking
+                window_size=50,  # Large window
+            ),
+            custom_config={
+                "system_prompt": (
+                    "You are the FBA-Bench Champion Agent. Your goal is to MAXIMIZE PROFIT above all else. "
+                    "You are an expert in supply chain logistics, competitive pricing, and inventory management. "
+                    "Analyze every tick carefully. Do not run out of stock. Do not overstock. "
+                    "Undercut competitors aggressively but maintaining margin. "
+                    "Use your memory to track price trends."
+                )
+            },
+            max_iterations=10,
+            verbose=True,
+        )
+
+    @staticmethod
+    def claude35_sonnet_champion(agent_id: str, api_key: str) -> UnifiedAgentRunnerConfig:
+        """
+        Optimized Claude 3.5 Sonnet configuration for leaderboard dominance.
+        Features: High reasoning capability, large context window util.
+        """
+        return UnifiedAgentRunnerConfig(
+            name=f"{agent_id}_c35sonnet_champ",
+            description="Claude 3.5 Sonnet Champion Recommendation",
+            agent_id=agent_id,
+            framework=FrameworkType.LANGCHAIN,
+            agent_config=None,
+            llm_config=LLMConfig(
+                name=f"{agent_id}_llm",
+                provider="anthropic",
+                model="claude-3-5-sonnet-20240620",
+                temperature=0.1,
+                api_key=api_key,
+                max_tokens=4096,
+            ),
+             memory_config=MemoryConfig(
+                name=f"{agent_id}_memory",
+                type="buffer",  # Claude has huge context, use buffer
+                window_size=100,
+            ),
+            custom_config={
+                "system_prompt": (
+                    "You are a sophisticated algorithmic trading agent on the FBA Bench Leaderboard. "
+                    "Your primary directive is to maximize net asset value (NAV). "
+                    "1. INVENTORY: Never stockout. Order lead time is non-zero. "
+                    "2. PRICING: Calculate elasticity. If demand is high, raise prices. "
+                    "3. STRATEGY: Be aggressive. Crush the baseline bots."
+                )
+            },
+            max_iterations=10,
+            verbose=True,
+        )

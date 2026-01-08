@@ -137,35 +137,52 @@ class DisputeService:
         """
         EventBus handler: process a CustomerDisputeEvent and publish a DisputeResolvedEvent.
 
-        Logic:
-        - 70% chance resolved for customer (refund issued; negative financial impact).
-        - 30% denied (no financial impact).
+        Logic uses evidence-based decisioning:
+        - evidence_strength >= 0.7: resolved for customer (refund issued)
+        - evidence_strength >= 0.4: partial refund (50%)
+        - evidence_strength < 0.4: denied (no refund)
         """
         if self.event_bus is None:
             return
 
         try:
-            is_customer_win = random.random() < 0.7
+            # Use evidence-based logic instead of random coin flip
+            evidence = getattr(event, 'evidence_strength', 0.5)  # Default to 0.5 if not present
+            
             # Use Money arithmetic to preserve currency
             zero = event.dispute_amount * 0
-            if is_customer_win:
+            
+            if evidence >= 0.7:
+                # Strong evidence - full refund
                 resolution_type = "upheld"
                 reason = (
                     f"Dispute {event.dispute_id} for order {event.order_id} resolved in favor of the customer. "
-                    f"Refund of {event.dispute_amount} issued."
+                    f"Strong evidence (score: {evidence:.2f}). Refund of {event.dispute_amount} issued."
                 )
-                financial_impact = (
-                    event.dispute_amount * -1
-                )  # cash out / negative impact
+                financial_impact = event.dispute_amount * -1
                 resolution_amount = event.dispute_amount
+                is_customer_win = True
+            elif evidence >= 0.4:
+                # Medium evidence - partial refund
+                resolution_type = "partial"
+                partial_amount = event.dispute_amount * 0.5
+                reason = (
+                    f"Dispute {event.dispute_id} for order {event.order_id} partially resolved. "
+                    f"Moderate evidence (score: {evidence:.2f}). Partial refund of {partial_amount} issued."
+                )
+                financial_impact = partial_amount * -1
+                resolution_amount = partial_amount
+                is_customer_win = True
             else:
+                # Weak evidence - denied
                 resolution_type = "denied"
                 reason = (
                     f"Dispute {event.dispute_id} for order {event.order_id} resolved in favor of the seller. "
-                    f"No refund issued."
+                    f"Insufficient evidence (score: {evidence:.2f}). No refund issued."
                 )
                 financial_impact = zero
                 resolution_amount = None
+                is_customer_win = False
 
             resolution_event = DisputeResolvedEvent(
                 dispute_id=event.dispute_id,

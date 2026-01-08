@@ -7,7 +7,7 @@ to maximize revenue or profit over a simulated period.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from money import Money  # Assuming Money class is available
 
@@ -23,11 +23,30 @@ class PriceOptimizationScenario(BaseScenario):
     Simulates a price optimization challenge for an agent.
     """
 
-    def __init__(self, config: ScenarioConfig):
+    def __init__(self, config: Union[ScenarioConfig, Dict[str, Any]]):
+        if isinstance(config, dict):
+            # Wrap dict in object-like structure or ScenarioConfig if possible, 
+            # but simpler to just use SimpleNamespace for compatibility logic below
+            from types import SimpleNamespace
+            # Ensure parameters exists
+            if "parameters" not in config:
+                config["parameters"] = {}
+            # If we can't fully emulate ScenarioConfig, we might fail validation later, 
+            # but here we just need .parameters access.
+            # Best is to convert to ScenarioConfig if not already. 
+            try:
+                config = ScenarioConfig(**config)
+            except Exception:
+                 # Fallback: create object with .parameters
+                 cfg = SimpleNamespace(**config)
+                 if not hasattr(cfg, "parameters"):
+                     cfg.parameters = {}
+                 config = cfg
+
         super().__init__(config)
-        self.initial_product_price: Money = Money(
-            config.parameters.get("initial_product_price", 25.00)
-        )
+        self.initial_product_price = float(config.parameters.get("initial_product_price", 25.00))
+        self.current_price = self.initial_product_price
+        self.total_revenue = 0.0
         self.simulation_duration_ticks: int = config.parameters.get(
             "simulation_duration_ticks", 10
         )

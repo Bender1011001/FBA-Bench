@@ -120,6 +120,17 @@ class Competitor:
             # Pass-through any optional fields used by flows (e.g., persona)
             if "persona" in kwargs:
                 self.persona = kwargs["persona"]
+            
+            # Inventory tracking for War Games (finite resources)
+            try:
+                self.inventory: int = int(kwargs.get("inventory", 5000))
+            except (TypeError, ValueError):
+                self.inventory = 5000
+
+    @property
+    def is_out_of_stock(self) -> bool:
+        return self.inventory <= 0
+
 
     def to_dict(self) -> Dict[str, Any]:
         return {

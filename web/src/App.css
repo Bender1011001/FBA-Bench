@@ -392,6 +392,28 @@
   color: var(--text-secondary);
 }
 
+/* Agent Selector */
+.agent-selector {
+  min-width: 300px;
+}
+
+.agent-select {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.agent-select optgroup {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.agent-select option {
+  padding: 0.5rem;
+}
+
 /* Events Grid */
 .events-grid {
   display: grid;

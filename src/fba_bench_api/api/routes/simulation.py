@@ -145,6 +145,20 @@ async def stop_simulation(
         raise SimulationStateError(
             simulation_id, expected="running", actual=current.get("status", "unknown")
         )
+    
+    # Stop the real simulation runner if it exists
+    # (imported after the function definitions below to avoid circular import)
+    try:
+        from fba_bench_api.core.simulation_runner import get_simulation as get_runner, cleanup_simulation
+        runner = get_runner(simulation_id)
+        if runner:
+            await cleanup_simulation(simulation_id)
+            logger.info(f"Stopped real simulation runner for {simulation_id}")
+    except ImportError:
+        pass  # Runner module not available
+    except Exception as e:
+        logger.warning(f"Error stopping simulation runner: {e}")
+    
     updates = {"status": "stopped", "updated_at": _now()}
     updated = await pm.simulations().update(simulation_id, updates)
     await _publish_status(simulation_id, "stopped")
@@ -154,69 +168,86 @@ async def stop_simulation(
 import asyncio
 from fastapi import BackgroundTasks
 
-# Store for running background simulation tasks
+# Import the real simulation runner
+from fba_bench_api.core.simulation_runner import (
+    RealSimulationRunner,
+    get_simulation,
+    register_simulation,
+    unregister_simulation,
+    cleanup_simulation,
+)
+
+# Store for running background simulation tasks (legacy compatibility)
 _running_simulations: dict = {}
 
 
-async def _run_simulation_loop(simulation_id: str, max_ticks: int = 100):
-    """Background task that generates mock tick events and publishes to Redis."""
+async def _run_real_simulation(
+    simulation_id: str,
+    config: dict,
+) -> None:
+    """
+    Background task that runs a REAL simulation using the production engine.
+    
+    This uses:
+    - SimulationOrchestrator for tick generation
+    - WorldStore for canonical state management
+    - MarketSimulationService for demand calculation (elasticity + agent-based)
+    - EventBus for typed event pub/sub
+    
+    All results are deterministic when seeded and based on actual economic models.
+    """
+    runner = None
     try:
+        # Get Redis client for publishing updates
         redis = await get_redis()
-        topic = _topic(simulation_id)
         
-        for tick in range(1, max_ticks + 1):
-            if simulation_id not in _running_simulations:
-                break  # Simulation was stopped
-            
-            # Generate mock tick data
-            import random
-            tick_data = {
-                "type": "tick",
-                "tick": tick,
-                "metrics": {
-                    "total_revenue": 1000.0 + tick * random.uniform(50, 150),
-                    "inventory_count": max(0, 500 - tick * random.randint(1, 5)),
-                    "pending_orders": random.randint(0, 20),
-                },
-                "agents": [
-                    {
-                        "id": "Agent-GPT4",
-                        "role": "Strategic Planner",
-                        "x": 200 + tick * 2 + random.uniform(-10, 10),
-                        "y": 300 + random.uniform(-20, 20),
-                        "state": random.choice(["Active", "Idle", "Buying"]),
-                    },
-                    {
-                        "id": "Agent-Claude",
-                        "role": "Analyst",
-                        "x": 400 + random.uniform(-30, 30),
-                        "y": 250 + tick + random.uniform(-10, 10),
-                        "state": random.choice(["Active", "Selling", "Waiting"]),
-                    },
-                ],
-                "heatmap": [],
-                "world": {},
-            }
-            
-            await redis.publish(topic, json.dumps(tick_data))
-            await asyncio.sleep(0.1)  # 10 ticks/second
+        # Create and register the real simulation runner
+        runner = RealSimulationRunner(
+            simulation_id=simulation_id,
+            config=config,
+            redis_client=redis,
+        )
+        register_simulation(runner)
+        _running_simulations[simulation_id] = runner
         
-        # Mark completed
-        if simulation_id in _running_simulations:
-            del _running_simulations[simulation_id]
-            end_data = {"type": "simulation_end", "results": {"overall_score": 75.0}}
-            await redis.publish(topic, json.dumps(end_data))
-            
+        # Start the simulation (runs until completion or stop)
+        await runner.start()
+        
+        # Wait for completion
+        while runner.get_state().status == "running":
+            await asyncio.sleep(0.5)
+        
+        logger.info(
+            f"Simulation {simulation_id} completed with status: {runner.get_state().status}"
+        )
+        
     except Exception as e:
-        logger.error(f"Simulation loop error for {simulation_id}: {e}")
+        logger.error(f"Real simulation error for {simulation_id}: {e}", exc_info=True)
+        
+        # Publish error to Redis
+        try:
+            redis = await get_redis()
+            topic = _topic(simulation_id)
+            error_data = {
+                "type": "simulation_error",
+                "error": str(e),
+                "simulation_id": simulation_id,
+            }
+            await redis.publish(topic, json.dumps(error_data))
+        except Exception:
+            pass
+    finally:
+        # Cleanup
         if simulation_id in _running_simulations:
             del _running_simulations[simulation_id]
+        if runner:
+            unregister_simulation(simulation_id)
 
 
 @router.post(
     "/{simulation_id}/run",
     response_model=dict,
-    description="Run a simulation (background tick generation for demo)",
+    description="Run simulation with real business logic",
 )
 async def run_simulation(
     simulation_id: str,
@@ -224,8 +255,15 @@ async def run_simulation(
     pm: AsyncPersistenceManager = Depends(get_pm),
 ):
     """
-    Start a simulation run with mock tick generation.
-    This is a demo endpoint that publishes tick events to Redis for the GUI.
+    Start a simulation run with REAL economic simulation.
+    
+    This endpoint integrates with the production simulation engine:
+    - Uses MarketSimulationService with demand elasticity and customer agent pools
+    - WorldStore handles canonical state management and command arbitration
+    - SimulationOrchestrator generates deterministic tick events
+    
+    All results are reproducible when the same seed is used.
+    Publishes real-time updates to Redis for GUI consumption.
     """
     current = await pm.simulations().get(simulation_id)
     if not current:
@@ -239,14 +277,34 @@ async def run_simulation(
     if simulation_id in _running_simulations:
         return {"ok": True, "message": "Simulation already running", "simulation_id": simulation_id}
     
-    # Get max_ticks from metadata if available
+    # Build simulation configuration from metadata
     metadata = current.get("metadata", {})
-    max_ticks = metadata.get("max_ticks", 100)
+    config = {
+        "max_ticks": metadata.get("max_ticks", 100),
+        "seed": metadata.get("seed", 42),
+        "tick_interval": metadata.get("tick_interval", 0.1),
+        "base_demand": metadata.get("base_demand", 100),
+        "elasticity": metadata.get("elasticity", 1.5),
+        "use_agent_mode": metadata.get("use_agent_mode", True),
+        "customers_per_tick": metadata.get("customers_per_tick", 200),
+        "asins": metadata.get("asins", ["ASIN001", "ASIN002", "ASIN003"]),
+        "initial_products": metadata.get("initial_products", None),
+    }
     
-    _running_simulations[simulation_id] = True
-    background_tasks.add_task(_run_simulation_loop, simulation_id, max_ticks)
+    # Start the real simulation in background
+    background_tasks.add_task(_run_real_simulation, simulation_id, config)
     
-    return {"ok": True, "message": "Simulation run started", "simulation_id": simulation_id}
+    return {
+        "ok": True,
+        "message": "Real simulation started",
+        "simulation_id": simulation_id,
+        "config": {
+            "max_ticks": config["max_ticks"],
+            "seed": config["seed"],
+            "use_agent_mode": config["use_agent_mode"],
+            "products": len(config["asins"]),
+        },
+    }
 
 
 @router.get(
