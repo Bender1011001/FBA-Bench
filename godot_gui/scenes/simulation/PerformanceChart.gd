@@ -24,7 +24,8 @@ func _draw():
 	if range_v == 0: range_v = 1.0
 
 	var grid_color = Color(0.5, 0.5, 0.5, 0.2)
-	var font = ThemeDB.get_project_default_font()
+	# Use the default font from the Control's theme context
+	var font = get_theme_default_font()
 	var font_size = 10
 	
 	# Vertical grid lines

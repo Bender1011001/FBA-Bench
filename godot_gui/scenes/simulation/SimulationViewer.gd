@@ -52,6 +52,13 @@ func _ready():
 	_setup_charts()
 	_draw_warehouse_grid()
 	
+	# Apply premium theme
+	var theme = load("res://UITheme.tres")
+	if theme:
+		self.theme = theme
+		$Background.color = Color("#0f172a") # Ensure background matches theme concept
+
+	
 	# Add fallback items if dropdowns are empty
 	if scenario_dropdown.item_count == 0:
 		scenario_dropdown.add_item("tier1_basic")
@@ -74,40 +81,77 @@ func _ready():
 	print("[SimViewer] Ready - Dropdowns populated")
 
 func _draw_warehouse_grid():
-	# Draw a simple grid background in the warehouse
+	# Draw a "Cyberpunk Blueprint" grid
 	var grid = Node2D.new()
 	grid.name = "WarehouseGrid"
 	warehouse_container.add_child(grid)
 	
-	# Draw grid lines
-	for x in range(0, 801, 50):
+	# Background tint (deep technical blue)
+	var bg_tint = ColorRect.new()
+	bg_tint.color = Color(0.05, 0.08, 0.15, 0.3)
+	bg_tint.size = Vector2(800, 600)
+	grid.add_child(bg_tint)
+	
+	# Minor grid lines (every 25px, faint)
+	for x in range(0, 801, 25):
 		var line = Line2D.new()
 		line.points = [Vector2(x, 0), Vector2(x, 600)]
-		line.default_color = Color(0.2, 0.2, 0.3, 0.5)
+		line.default_color = Color(0.2, 0.3, 0.4, 0.1) # Very faint blue
 		line.width = 1
 		grid.add_child(line)
-	for y in range(0, 601, 50):
+	for y in range(0, 601, 25):
 		var line = Line2D.new()
 		line.points = [Vector2(0, y), Vector2(800, y)]
-		line.default_color = Color(0.2, 0.2, 0.3, 0.5)
+		line.default_color = Color(0.2, 0.3, 0.4, 0.1)
+		line.width = 1
+		grid.add_child(line)
+
+	# Major grid lines (every 100px, brighter)
+	for x in range(0, 801, 100):
+		var line = Line2D.new()
+		line.points = [Vector2(x, 0), Vector2(x, 600)]
+		line.default_color = Color(0.3, 0.5, 0.7, 0.2)
+		line.width = 1
+		grid.add_child(line)
+	for y in range(0, 601, 100):
+		var line = Line2D.new()
+		line.points = [Vector2(0, y), Vector2(800, y)]
+		line.default_color = Color(0.3, 0.5, 0.7, 0.2)
 		line.width = 1
 		grid.add_child(line)
 	
-	# Add warehouse zones placeholder
-	var zone_labels = ["RECEIVING", "STORAGE", "PACKING", "SHIPPING"]
-	var zone_colors = [Color.DARK_BLUE, Color.DARK_GREEN, Color.DARK_ORANGE, Color.DARK_RED]
-	for i in range(4):
-		var zone = ColorRect.new()
-		zone.color = zone_colors[i]
-		zone.color.a = 0.2
-		zone.size = Vector2(180, 280)
-		zone.position = Vector2(20 + i * 195, 160)
-		grid.add_child(zone)
+	# Warehouse Zones - Technical Look
+	var zone_configs = [
+		{"name": "RECEIVING", "col": Color(0.2, 0.6, 1.0), "pos": Vector2(20, 160)},
+		{"name": "STORAGE",   "col": Color(0.2, 0.8, 0.4), "pos": Vector2(215, 160)},
+		{"name": "PACKING",   "col": Color(0.9, 0.6, 0.2), "pos": Vector2(410, 160)},
+		{"name": "SHIPPING",  "col": Color(1.0, 0.3, 0.3), "pos": Vector2(605, 160)}
+	]
+	
+	for z in zone_configs:
+		var zone_box = ReferenceRect.new() # Hollow rect with border
+		zone_box.border_color = z.col
+		zone_box.border_width = 1.5
+		zone_box.editor_only = false # Ensure visible in game
+		zone_box.size = Vector2(180, 280)
+		zone_box.position = z.pos
+		grid.add_child(zone_box)
+		
+		# Glow effect (color rect with low alpha)
+		var glow = ColorRect.new()
+		glow.color = z.col
+		glow.color.a = 0.05
+		glow.size = zone_box.size
+		glow.position = z.pos
+		grid.add_child(glow)
 		
 		var label = Label.new()
-		label.text = zone_labels[i]
-		label.position = Vector2(20 + i * 195 + 50, 140)
-		label.add_theme_font_size_override("font_size", 14)
+		label.text = z.name
+		label.position = Vector2(z.pos.x, z.pos.y - 25)
+		label.size = Vector2(180, 25)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.add_theme_color_override("font_color", z.col)
+		label.add_theme_font_size_override("font_size", 12)
 		grid.add_child(label)
 
 func _setup_charts():
@@ -424,49 +468,84 @@ func _on_heatmap_draw():
 func _create_agent_visual(agent_data: Dictionary) -> Node2D:
 	var visual = Node2D.new()
 	
-	# Body
-	var circle = Polygon2D.new()
-	var points: PackedVector2Array = []
-	var radius = 12.0
-	for i in range(32):
-		var angle = i * TAU / 32.0
-		points.append(Vector2(cos(angle), sin(angle)) * radius)
-	circle.polygon = points
+	# High-tech Agent Visual
+	var radius = 14.0
 	
-	# Multi-colored agents based on role
+	# Determine color based on role
 	var role = agent_data.get("role", "").to_lower()
-	if "strategic" in role: circle.color = Color.CYAN
-	elif "analyst" in role: circle.color = Color.GREEN_YELLOW
-	elif "logistics" in role: circle.color = Color.ORANGE
-	else: circle.color = Color.NAVY_BLUE
+	var base_color = Color.CYAN
+	if "strategic" in role: base_color = Color("#38bdf8") # Sky blue
+	elif "analyst" in role: base_color = Color("#a3e635") # Lime
+	elif "logistics" in role: base_color = Color("#fb923c") # Orange
+	else: base_color = Color("#818cf8") # Indigo
 	
-	visual.add_child(circle)
-	
-	# Glow effect
-	var glow = Polygon2D.new()
-	var glow_points: PackedVector2Array = []
-	for i in range(32):
+	# 1. Pulsing Outer Ring (Animation handled by tween/shader usually, simple implementation here)
+	var outer_ring = Line2D.new()
+	var ring_points = []
+	for i in range(33):
 		var angle = i * TAU / 32.0
-		glow_points.append(Vector2(cos(angle), sin(angle)) * (radius + 4))
-	glow.polygon = glow_points
-	glow.color = circle.color
-	glow.color.a = 0.2
-	visual.add_child(glow)
+		ring_points.append(Vector2(cos(angle), sin(angle)) * (radius + 4))
+	outer_ring.points = PackedVector2Array(ring_points)
+	outer_ring.default_color = base_color
+	outer_ring.default_color.a = 0.4
+	outer_ring.width = 1.5
+	visual.add_child(outer_ring)
 	
-	# ID Label
+	# 2. Main Body Hexagon (Tech look) using Circle logic for simplicity but sharper
+	var body = Polygon2D.new()
+	var body_points = []
+	for i in range(6): # Hexagon
+		var angle = i * TAU / 6.0
+		body_points.append(Vector2(cos(angle), sin(angle)) * radius)
+	body.polygon = PackedVector2Array(body_points)
+	body.color = base_color
+	body.color.a = 0.2
+	visual.add_child(body)
+	
+	# 3. Inner Core (Solid)
+	var core = Polygon2D.new()
+	var core_points = []
+	for i in range(6):
+		var angle = i * TAU / 6.0
+		core_points.append(Vector2(cos(angle), sin(angle)) * (radius * 0.4))
+	core.polygon = PackedVector2Array(core_points)
+	core.color = base_color
+	visual.add_child(core)
+
+	# 4. Animated "Scan" Line (Rotator)
+	var scanner = Line2D.new()
+	scanner.points = PackedVector2Array([Vector2.ZERO, Vector2(radius + 2, 0)])
+	scanner.default_color = Color.WHITE
+	scanner.default_color.a = 0.6
+	scanner.width = 1.0
+	visual.add_child(scanner)
+	
+	# Rotate the scanner forever
+	var tween = visual.create_tween().set_loops()
+	tween.tween_property(scanner, "rotation", TAU, 2.0).from(0.0)
+
+	# 5. ID Label (Floating)
 	var label = Label.new()
 	label.text = agent_data.get("id", "?")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 10)
-	label.position = Vector2(-50, radius + 2)
+	label.add_theme_color_override("font_color", Color.WHITE)
+	# Add background for readability
+	var lbl_style = StyleBoxFlat.new()
+	lbl_style.bg_color = Color(0,0,0,0.5)
+	lbl_style.corner_radius_top_left = 3
+	lbl_style.corner_radius_top_right = 3
+	label.add_theme_stylebox_override("normal", lbl_style)
+	
+	label.position = Vector2(-50, radius + 6)
 	label.custom_minimum_size = Vector2(100, 0)
 	visual.add_child(label)
 	
 	# Click area
 	var btn = Button.new()
 	btn.flat = true
-	btn.custom_minimum_size = Vector2(radius * 2, radius * 2)
-	btn.position = Vector2(-radius, -radius)
+	btn.custom_minimum_size = Vector2(radius * 3, radius * 3)
+	btn.position = Vector2(-radius * 1.5, -radius * 1.5)
 	btn.pressed.connect(func(): _on_agent_clicked(agent_data))
 	visual.add_child(btn)
 	

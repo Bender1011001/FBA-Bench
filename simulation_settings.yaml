@@ -1,0 +1,123 @@
+# FBA-Bench Simulation Settings
+# Edit this file to configure your simulation runs
+
+# =============================================================================
+# MODEL SETTINGS
+# =============================================================================
+model:
+  provider: openrouter
+  name: x-ai/grok-4.1-fast      # Model to use (OpenRouter format)
+  temperature: 0.1               # Lower = more deterministic (0.0-2.0)
+  max_tokens: 1500               # Max response length
+  timeout_seconds: 60            # API timeout
+
+# =============================================================================
+# SIMULATION SETTINGS  
+# =============================================================================
+simulation:
+  days: 365                      # Duration (365 = 1 year, 730 = 2 years)
+  seed: 42                       # Random seed for reproducibility
+  starting_capital: 10000.00     # Initial capital in USD
+  display_delay: 0.3             # Seconds between days (for visualization)
+
+# =============================================================================
+# PRODUCT CATALOG
+# Each product: [SKU, Name, Cost, Price, Stock, DailyDemand]
+# =============================================================================
+products:
+  - sku: P001
+    name: Wireless Earbuds Pro
+    cost: 15.00
+    price: 39.99
+    stock: 80
+    daily_demand: 6
+    
+  - sku: P002
+    name: Fast Phone Charger
+    cost: 5.00
+    price: 14.99
+    stock: 150
+    daily_demand: 12
+    
+  - sku: P003
+    name: Ergonomic Laptop Stand
+    cost: 22.00
+    price: 59.99
+    stock: 40
+    daily_demand: 2
+    
+  - sku: P004
+    name: 7-Port USB Hub
+    cost: 12.00
+    price: 29.99
+    stock: 60
+    daily_demand: 4
+    
+  - sku: P005
+    name: Portable BT Speaker
+    cost: 25.00
+    price: 69.99
+    stock: 45
+    daily_demand: 3
+
+# =============================================================================
+# MARKET CONDITIONS
+# =============================================================================
+market:
+  # Competitor behavior
+  competitor_price_variance: 0.15   # Competitors price within ±15% of you
+  competitors_per_product: 2        # Number of competitors per product
+  
+  # Adversarial events
+  event_probability: 0.08           # Chance of event per day (8%)
+  event_types:
+    - type: supply_shock
+      description: Supplier delays shipment
+      severity: 0.6
+      duration_min: 3
+      duration_max: 10
+      
+    - type: price_war
+      description: Competitor slashed prices 20%
+      severity: 0.5
+      duration_min: 5
+      duration_max: 14
+      
+    - type: demand_spike
+      description: Product went viral!
+      severity: 0.4
+      duration_min: 3
+      duration_max: 7
+      effect_multiplier: 2.5
+      
+    - type: demand_crash
+      description: Negative review impact
+      severity: 0.5
+      duration_min: 4
+      duration_max: 12
+      effect_multiplier: 0.4
+
+# =============================================================================
+# AGENT PROMPTS (Advanced - customize LLM behavior)
+# =============================================================================
+prompts:
+  system: |
+    You manage an e-commerce store. Your goal is to MAXIMIZE PROFIT.
+    
+    Each day you will:
+    1. See your inventory and capital
+    2. See incoming customer orders
+    3. See competitor prices
+    4. Make decisions: accept orders, adjust prices, restock
+    
+    Be strategic. React to events. Manage cash flow.
+  
+  # Format for each decision request (uses {variables})
+  decision_format: |
+    Respond with JSON only:
+    {
+      "reasoning": "One sentence explaining your strategy",
+      "accept_orders": ["ORD-001-000", ...],
+      "price_changes": {"P001": 34.99},
+      "restock": {"P002": 50}
+    }

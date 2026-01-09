@@ -26,6 +26,36 @@ FBA-Bench Enterprise is an advanced benchmarking framework for evaluating AI age
 - **Poetry-Managed Dependencies**: Standardized build and testing with `pyproject.toml` for reproducible environments.
 - **Comprehensive Testing**: Unit, integration, contract, and performance tests in `tests/`, with CI parity via Makefile targets.
 
+## Two Benchmarks, Two Purposes
+
+FBA-Bench provides **two distinct benchmarks** to isolate what you're testing:
+
+### 🧠 LLM Benchmark (Pure Model Capability)
+```
+Input:  Full state + yesterday's results → LLM → Decision
+```
+- **Tests the LLM itself**, not scaffolding
+- No external memory systems, no vector DBs, no RAG
+- Every piece of information is in the prompt
+- If the model fails, it's the model's fault
+- **Runtime: ~6 hours for 1 year** (365 API calls with feedback loop)
+- **Cost: ~$1.35** via OpenRouter
+
+**This is the honest benchmark.** No shortcuts, no memory crutches, no excuses.
+
+See: [Why It Takes Hours](docs/why_it_takes_hours.md)
+
+### 🤖 Agent Benchmark (Full System)
+```
+Input: Context window → Agent (LLM + Memory + Tools + RAG) → Decision
+```
+- Tests **your agent architecture**, not just the LLM
+- Bring your own memory systems, tools, and scaffolding
+- Fair comparison of agent frameworks (CrewAI vs LangChain vs DIY)
+- Measures system resilience, not just model capability
+
+**Use this when benchmarking your agent code**, not raw models.
+
 ## Quick Start
 
 ### Prerequisites

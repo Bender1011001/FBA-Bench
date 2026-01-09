@@ -6,7 +6,7 @@ extends Node
 signal request_completed(endpoint: String, response: Variant)
 signal request_failed(endpoint: String, error: String)
 
-const BASE_URL = "http://localhost:8000"
+const BASE_URL = "http://localhost:55555"
 
 func _ready():
 	process_mode = PROCESS_MODE_ALWAYS

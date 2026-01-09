@@ -219,7 +219,7 @@ class GlobalRegistry:
         # Trigger event
         self._trigger_event("on_register", entry)
 
-        logger.info(f"Registered {entry.entry_type.value} entry: {entry.name}")
+        logger.info("Registered %s entry: %s", entry.entry_type.value, entry.name)
 
     def unregister(self, name: str) -> bool:
         """
@@ -232,7 +232,7 @@ class GlobalRegistry:
             True if successful, False if entry not found
         """
         if name not in self._entries:
-            logger.warning(f"Entry '{name}' not found for unregistration")
+            logger.warning("Entry '%s' not found for unregistration", name)
             return False
 
         entry = self._entries[name]
@@ -266,7 +266,7 @@ class GlobalRegistry:
         # Trigger event
         self._trigger_event("on_unregister", entry)
 
-        logger.info(f"Unregistered {entry.entry_type.value} entry: {name}")
+        logger.info("Unregistered %s entry: %s", entry.entry_type.value, name)
         return True
 
     def get(self, name: str) -> Optional[RegistryEntry]:
@@ -384,7 +384,7 @@ class GlobalRegistry:
         # Trigger event
         self._trigger_event("on_update", entry)
 
-        logger.info(f"Updated entry: {name}")
+        logger.info("Updated entry: %s", name)
         return True
 
     def enable(self, name: str) -> bool:
@@ -451,7 +451,7 @@ class GlobalRegistry:
             try:
                 handler(entry)
             except Exception as e:
-                logger.error(f"Error in event handler for {event}: {e}")
+                logger.error("Error in event handler for %s: %s", event, e)
 
     def get_registry_summary(self) -> Dict[str, Any]:
         """
@@ -569,7 +569,7 @@ class GlobalRegistry:
         self.clear()
 
         # Import entries
-        for name, entry_data in data.get("entries", {}).items():
+        for _, entry_data in data.get("entries", {}).items():
             entry_type = RegistryType(entry_data["entry_type"])
 
             # Create appropriate entry type
@@ -639,7 +639,7 @@ class GlobalRegistry:
                     config_schema=entry_data.get("config_schema", {}),
                 )
             else:
-                logger.warning(f"Unknown entry type: {entry_type}")
+                logger.warning("Unknown entry type: %s", entry_type)
                 continue
 
             # Set timestamps
@@ -650,7 +650,7 @@ class GlobalRegistry:
             self.register(entry)
 
         logger.info(
-            f"Imported {len(data.get('entries', {}))} entries into GlobalRegistry"
+            "Imported %d entries into GlobalRegistry", len(data.get('entries', {}))
         )
 
 

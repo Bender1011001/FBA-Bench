@@ -69,7 +69,7 @@ class DemandForecastingScenario(BaseScenario):
         Set up the demand forecasting scenario.
         Generate historical sales data and future actual sales for comparison.
         """
-        logger.info(f"Setting up Demand Forecasting Scenario: {self.scenario_id}")
+        logger.info("Setting up Demand Forecasting Scenario: %s", self.scenario_id)
         self.current_tick = 0
         self.historical_sales = []
         self.actual_sales_future = []
@@ -102,11 +102,14 @@ class DemandForecastingScenario(BaseScenario):
             )  # Ensure sales are at least 10
 
         logger.info(
-            f"Demand forecasting scenario initialized for ASIN {self.product_asin}. Generated {len(self.historical_sales)} historical data points and {len(self.actual_sales_future)} future data points."
+            "Demand forecasting scenario initialized for ASIN %s. Generated %d historical data points and %d future data points.",
+            self.product_asin,
+            len(self.historical_sales),
+            len(self.actual_sales_future),
         )
         # For debugging/verification
-        logger.debug(f"Historical Sales: {self.historical_sales}")
-        logger.debug(f"Actual Sales Future: {self.actual_sales_future}")
+        logger.debug("Historical Sales: %s", self.historical_sales)
+        logger.debug("Actual Sales Future: %s", self.actual_sales_future)
 
     async def run(
         self, agent: BaseAgent, run_number: int, *args, **kwargs
@@ -117,7 +120,10 @@ class DemandForecastingScenario(BaseScenario):
         """
         start_time = datetime.now()
         logger.info(
-            f"Running Demand Forecasting for agent {agent.agent_id}, run {run_number}, tick {self.current_tick}"
+            "Running Demand Forecasting for agent %s, run %d, tick %d",
+            agent.agent_id,
+            run_number,
+            self.current_tick,
         )
 
         agent_forecast: List[int] = []
@@ -162,12 +168,17 @@ class DemandForecastingScenario(BaseScenario):
                 success = False
 
             logger.info(
-                f"Agent {agent.agent_id} provided forecast: {agent_forecast[:5]}... (full length: {len(agent_forecast)})"
+                "Agent %s provided forecast: %s... (full length: %d)",
+                agent.agent_id,
+                agent_forecast[:5],
+                len(agent_forecast),
             )
 
         except Exception as e:
             logger.error(
-                f"Error in Demand Forecasting scenario run for agent {agent.agent_id}: {e}"
+                "Error in Demand Forecasting scenario run for agent %s: %s",
+                agent.agent_id,
+                e,
             )
             success = False
             errors.append(str(e))
@@ -224,7 +235,7 @@ class DemandForecastingScenario(BaseScenario):
         """
         Clean up resources after the demand forecasting scenario.
         """
-        logger.info(f"Tearing down Demand Forecasting Scenario: {self.scenario_id}")
+        logger.info("Tearing down Demand Forecasting Scenario: %s", self.scenario_id)
         self.current_tick = 0
         self.historical_sales = []
         self.actual_sales_future = []

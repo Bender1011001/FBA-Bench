@@ -25,11 +25,18 @@ func _ready():
 	close_btn.pressed.connect(func(): close_requested.emit())
 	debug_btn.pressed.connect(func(): dump_requested.emit(current_agent_id))
 	
+	# Load premium theme
+	var theme = load("res://UITheme.tres")
+	if theme:
+		self.theme = theme
+		
 	# Setup ToolCallList
 	tool_call_list.columns = 2
 	tool_call_list.set_column_title(0, "Tool")
 	tool_call_list.set_column_title(1, "Arguments")
 	tool_call_list.column_titles_visible = true
+	
+	close_btn.modulate = Color(1.0, 0.4, 0.4) # Make close button subtle red
 
 func update_agent_data(agent_data: Dictionary):
 	current_agent_id = agent_data.get("id", agent_data.get("slug", "Unknown"))
@@ -106,10 +113,10 @@ func _update_tool_calls(calls: Array):
 func _get_colored_state(state: String) -> String:
 	match state.to_lower():
 		"active", "buying", "selling", "deciding":
-			return "[color=green]" + state + "[/color]"
+			return "[color=#a3e635]" + state + "[/color]" # Neon Green
 		"bankrupt", "error", "failed":
-			return "[color=red]" + state + "[/color]"
+			return "[color=#f87171]" + state + "[/color]" # Soft Red
 		"idle", "waiting", "sleeping":
-			return "[color=yellow]" + state + "[/color]"
+			return "[color=#fbbf24]" + state + "[/color]" # Amber
 		_:
 			return state
