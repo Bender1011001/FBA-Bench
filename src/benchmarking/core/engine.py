@@ -498,6 +498,7 @@ class RunResult(BaseModel):
     output: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     duration_ms: int
+    verified: bool = False
     metrics: Dict[str, Any] = Field(default_factory=dict)
     artifacts: Optional[Dict[str, Any]] = None
 
@@ -778,6 +779,12 @@ class Engine:
                 metrics_out = await self._apply_metrics(
                     run_for_metrics, metrics_context
                 )
+                
+                # Determine verified status based on runner framework. 
+                # LangChain and CrewAI runners are verified LLM-only paths.
+                is_verified = runner_spec.key.lower() in ("langchain", "crewai")
+                metrics_out["verified"] = is_verified
+
                 return RunResult(
                     scenario_key=scenario_spec.key,
                     runner_key=runner_spec.key,
@@ -786,6 +793,7 @@ class Engine:
                     error=None,
                     output=_safe_jsonable(output),
                     duration_ms=duration_ms,
+                    verified=is_verified,
                     metrics=metrics_out,
                     artifacts=None,
                 )

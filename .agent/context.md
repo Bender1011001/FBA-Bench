@@ -120,6 +120,8 @@ All critical and medium priority issues resolved in hostile audit:
 
 **New files created**:
 - `src/fba_bench_api/core/simulation_runner.py` - Production simulation runner
+- **Simulation Runner**: `RealSimulationRunner` (`src/fba_bench_api/core/simulation_runner.py`) handles execution of simulations.
+- **Population Script**: `scripts/populate_leaderboard.py` can be used to generate authentic simulation data for the leaderboard.
 
 ## Related Files
 

@@ -85,11 +85,14 @@ class LeaderboardManager:
         if score is None:
             raise ValueError("Metric results must contain a 'score' field.")
 
+        verified = metric_results.get("verified", False)
+
         self.score_tracker.add_run_result(
             bot_name=agent_id,
             tier=tier,
             score=score,
             run_details=metric_results,  # Store full details for history/analysis
+            verified=verified,
         )
         await self.generate_leaderboard_artifacts()
 
@@ -131,6 +134,9 @@ class LeaderboardManager:
                 scores = [run["score"] for run in runs]
                 avg_score = sum(scores) / len(scores)
 
+                # Check if model has any verified runs
+                is_verified = any(run.get("verified", False) for run in runs)
+
                 # Simple consistency: standard deviation (lower is more consistent)
                 # Or could use min/max difference, or a custom metric
                 # Use population stddev from the stdlib statistics module for portability.
@@ -150,6 +156,7 @@ class LeaderboardManager:
                         "score": round(avg_score, 2),
                         "expected_score": expected_score,
                         "tier": tier,
+                        "verified": is_verified,
                         "runs_completed": total_runs_completed,
                         "consistency": round(consistency, 3),
                         # Add more stats here like min/max score, cost, token usage from run_details
@@ -174,12 +181,15 @@ class LeaderboardManager:
             "avg_score": (
                 round(sum(r["score"] for r in rankings) / len(rankings), 2) if rankings else 0.0
             ),
+            "verified_models_count": sum(1 for r in rankings if r.get("verified")),
         }
 
         return {
             "generated_at": datetime.utcnow().isoformat() + "Z",
+            "last_updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
             "git_sha": os.getenv("GITHUB_SHA", "unknown"),  # For CI integration
             "rankings": rankings,
+            "bots": rankings, # Alias for template compatibility
             "summary": summary,
         }
 

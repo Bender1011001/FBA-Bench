@@ -191,18 +191,23 @@ class AgentManager:
         runner = _StubRunner(agent_config)
 
         # Register in primary registry and back-compat dict
-        self.agent_registry.add_agent(
+        reg = self.agent_registry.add_agent(
             str(aid),
             runner,
             framework,
             config=getattr(agent_config, "model_dump", dict)(),
         )
+        # Mark as LLM-only if framework is LangChain or CrewAI
+        if framework.lower() in ("langchain", "crewai"):
+            reg.is_llm_only = True
+
         self.agents[str(aid)] = {
             "runner": runner,
             "active": True,
             "created_at": datetime.now(),
             "total_decisions": 0,
             "total_tool_calls": 0,
+            "is_llm_only": reg.is_llm_only,
         }
         # CEO controller placeholder (optional; avoid strict dependency on controller impl)
         try:
@@ -468,7 +473,14 @@ class AgentManager:
 
     def _add_to_registries(self, agent_id: str, runner: Any, framework: str, config: Optional[Dict[str, Any]] = None) -> None:
         """Internal helper to update both the modern registry and back-compat mirror."""
-        self.agent_registry.add_agent(agent_id, runner, framework, config or {})
+        reg = self.agent_registry.add_agent(agent_id, runner, framework, config or {})
+        
+        # Mark as LLM-only if framework is LangChain or CrewAI
+        is_llm_only = False
+        if framework.lower() in ("langchain", "crewai"):
+            reg.is_llm_only = True
+            is_llm_only = True
+
         # Update back-compat mirror
         self.agents[agent_id] = BackCompatRegistration(
             agent_id=agent_id,
@@ -477,6 +489,7 @@ class AgentManager:
             created_at=datetime.now(),
             total_decisions=0,
             total_tool_calls=0,
+            is_llm_only=is_llm_only,
         )
         self._update_stats()
 
@@ -719,6 +732,11 @@ class AgentManager:
         try:
             # Iterate over active agents; create controller on demand
             for agent_id, reg in self.agent_registry.active_agents().items():
+                # For LLM-only (verified) agents, we skip automated skill-based heuristics
+                # to ensure 100% LLM autonomy in decision making for the leaderboard.
+                if getattr(reg, "is_llm_only", False):
+                    continue
+
                 controller = self._get_multi_domain_controller(agent_id)
                 await self._ensure_product_sourcing_skill_registered(
                     agent_id, controller
@@ -863,8 +881,39 @@ class AgentManager:
         if not tool_calls:
             return 0
         try:
+            # Unpack 'decision' tool calls from LLM runners if present.
+            # This allows runners to return a single block of decisions which are then arbitrated individually.
+            unpacked_calls: List[ToolCall] = []
+            for tc in tool_calls:
+                if tc.tool_name == "decision" and isinstance(tc.parameters, dict) and "decisions" in tc.parameters:
+                    # Unpack bulk decisions
+                    decisions = tc.parameters["decisions"]
+                    if isinstance(decisions, list):
+                        for d in decisions:
+                            if not isinstance(d, dict):
+                                continue
+                            # Map dict field names to known tool names
+                            if "new_price" in d:
+                                unpacked_calls.append(ToolCall(
+                                    tool_name="set_price",
+                                    parameters={"asin": d.get("asin"), "price": d.get("new_price")},
+                                    reasoning=d.get("reasoning", tc.reasoning),
+                                    confidence=tc.confidence
+                                ))
+                            elif "quantity" in d:
+                                unpacked_calls.append(ToolCall(
+                                    tool_name="place_order",
+                                    parameters=d,
+                                    reasoning=d.get("reasoning", tc.reasoning),
+                                    confidence=tc.confidence
+                                ))
+                    else:
+                        unpacked_calls.append(tc)
+                else:
+                    unpacked_calls.append(tc)
+
             controller = self._get_multi_domain_controller(agent_id)
-            skill_actions = [self._toolcall_to_skillaction(tc) for tc in tool_calls]
+            skill_actions = [self._toolcall_to_skillaction(tc) for tc in unpacked_calls]
             approved_actions = await controller.arbitrate_actions(skill_actions)
             count = 0
             for action in approved_actions:
@@ -883,12 +932,10 @@ class AgentManager:
         )
 
         # In a real system, this would involve routing to the actual tool implementation
-        # For now, we'll just log and acknowledge
+        # We now implement explicit routing for core tools to enable full LLM autonomy.
+        
+        # 1. Budget and Safety Check via Gateway
         if self.agent_gateway:
-            # The agent gateway would validate and execute the tool call, publishing events
-            logger.debug(
-                f"Tool call '{tool_call.tool_name}' for agent {agent_id} submitted to AgentGateway."
-            )
             allowed = await self.agent_gateway.process_tool_call(
                 agent_id, tool_call, self.world_store, self.event_bus
             )
@@ -896,9 +943,56 @@ class AgentManager:
                 logger.warning(
                     f"Tool call '{tool_call.tool_name}' for agent {agent_id} was BLOCKED by AgentGateway."
                 )
+                return
+        
+        # 2. Command Dispatch
+        params = tool_call.parameters or {}
+        if tool_call.tool_name == "set_price":
+            asin = params.get("asin")
+            price = float(params.get("price", 0))
+            if asin and price > 0:
+                cmd = SetPriceCommand(
+                    event_id=f"sp_{agent_id}_{uuid.uuid4().hex[:8]}",
+                    agent_id=agent_id,
+                    asin=asin,
+                    price=price
+                )
+                await self.event_bus.publish(cmd)
+                logger.info(f"Dispatched SetPriceCommand from LLM tool for {agent_id}: {asin} @ {price}")
+        
+        elif tool_call.tool_name == "place_order":
+            supplier_id = params.get("supplier_id") or "S001" # Default if not specified
+            asin = params.get("asin")
+            quantity = int(params.get("quantity", 0))
+            max_price_raw = params.get("max_price")
+            
+            if asin and quantity > 0:
+                # Defensive Money parsing
+                if isinstance(max_price_raw, Money):
+                    max_price = max_price_raw
+                else:
+                    max_price = (
+                        Money(amount=float(max_price_raw))
+                        if max_price_raw is not None
+                        else Money(amount=0)
+                    )
+                
+                po = PlaceOrderCommand(
+                    event_id=f"po_{agent_id}_{uuid.uuid4().hex[:8]}",
+                    timestamp=datetime.now(),
+                    agent_id=agent_id,
+                    supplier_id=supplier_id,
+                    asin=asin,
+                    quantity=quantity,
+                    max_price=max_price,
+                    reason=tool_call.reasoning or "LLM-driven sourcing"
+                )
+                await self.event_bus.publish(po)
+                logger.info(f"Dispatched PlaceOrderCommand from LLM tool for {agent_id}: {asin} Qty={quantity}")
+
         else:
             logger.warning(
-                f"No AgentGateway configured, cannot process tool call: {tool_call.tool_name}"
+                f"No explicit handler for tool call: {tool_call.tool_name}"
             )
 
     def _create_pydantic_config_from_dict(

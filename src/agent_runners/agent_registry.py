@@ -33,6 +33,7 @@ class AgentRegistration:
         # Statistics
         self.total_decisions: int = 0
         self.total_tool_calls: int = 0
+        self.is_llm_only: bool = False
 
 
 @dataclass
@@ -44,6 +45,7 @@ class BackCompatRegistration:
     created_at: datetime
     total_decisions: int = 0
     total_tool_calls: int = 0
+    is_llm_only: bool = False
 
 
 class AgentRegistry:

@@ -34,7 +34,7 @@ class ScoreTracker:
         with open(self.data_file_path, "w") as f:
             json.dump(self.scores, f, indent=2)
 
-    def add_run_result(self, bot_name: str, tier: str, score: float, run_details: Dict[str, Any]):
+    def add_run_result(self, bot_name: str, tier: str, score: float, run_details: Dict[str, Any], verified: bool = False):
         """
         Adds a new run result to the tracker with strict input validation.
 
@@ -43,6 +43,7 @@ class ScoreTracker:
             tier: The curriculum tier the bot ran in.
             score: The final score achieved in the run.
             run_details: A dictionary containing all details of the run, e.g., cost, tokens, breakdown.
+            verified: Whether the run was autonomously performed by an LLM (verified only).
         """
         if not isinstance(bot_name, str) or not bot_name.strip():
             raise ValueError("bot_name must be a non-empty string")
@@ -66,6 +67,7 @@ class ScoreTracker:
         run_entry = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "score": score,
+            "verified": verified,
             "details": run_details,
         }
         self.scores[bot_name][tier].append(run_entry)

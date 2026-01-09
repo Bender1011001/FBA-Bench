@@ -63,6 +63,7 @@ class ModelPerformance:
     total_runs: int
     last_updated: str
     badge: Literal["gold", "silver", "bronze", "rising", "stable"] = "stable"
+    verified: bool = False  # New: indicates if LLM made all decisions
     
     # Optional financial metrics
     avg_profit: Optional[float] = None
@@ -80,6 +81,7 @@ class LeaderboardSummary:
     avg_success_rate: float = 0.0
     total_tokens: int = 0
     top_performer: str = "N/A"
+    verified_models_count: int = 0  # New: count of models with verified=True
 
 
 @dataclass

@@ -501,9 +501,9 @@ class MarketSimulationService:
                     else 0.0
                 ),
                 fee_breakdown={
-                    "unit_fees": str(unit_fees),
-                    "referral_fee": str(next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "referral"), Money.zero())),
-                    "fba_fee": str(next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "fba"), Money.zero())),
+                    "unit_fees": unit_fees,
+                    "referral_fee": next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "referral"), Money.zero()),
+                    "fba_fee": next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "fba"), Money.zero()),
                 },
                 market_conditions={
                     "reference_price": str(ref_price),

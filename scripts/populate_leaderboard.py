@@ -69,7 +69,8 @@ AGENTS = [
 SCENARIOS = ["scenario_market_entry_easy", "scenario_price_war_hard"]
 
 class SimulatedAgent:
-    def __init__(self, strategy: str, world_store, event_bus, rng_seed: int):
+    def __init__(self, agent_id: str, strategy: str, world_store, event_bus, rng_seed: int):
+        self.agent_id = agent_id
         self.strategy = strategy
         self.world_store = world_store
         self.event_bus = event_bus
@@ -121,134 +122,184 @@ class SimulatedAgent:
             
             # Publish command if price changed significantly
             if abs(new_price - current_price) > 0.01:
-                cmd = SetPriceCommand(
-                    product_id=asin,
-                    price=Money.from_dollars(new_price),
-                    timestamp=datetime.now(timezone.utc)
-                )
-                await self.event_bus.publish(cmd)
+                try:
+                    cmd = SetPriceCommand(
+                        agent_id=self.agent_id,
+                        asin=asin,
+                        new_price=Money.from_dollars(new_price),
+                        timestamp=datetime.now(timezone.utc),
+                        reason=f"Strategy: {self.strategy}"
+                    )
+                    await self.event_bus.publish(cmd)
+                except Exception as e:
+                    logger.error(f"Failed to publish price command: {e}")
 
-async def run_simulation_for_agent(agent_cfg: Dict[str, Any], scenario_id: str, pm: AsyncPersistenceManager):
+async def run_simulation_for_agent(agent_cfg: Dict[str, Any], scenario_id: str):
     """Run a single simulation and save results."""
-    logger.info(f"Starting simulation for {agent_cfg['name']} on {scenario_id}")
-    
-    # 1. Ensure Agent exists
-    existing_agent = await pm.agents().get(agent_cfg["id"])
-    if not existing_agent:
-        await pm.agents().create({
-            "id": agent_cfg["id"],
-            "name": agent_cfg["name"],
-            "framework": agent_cfg["framework"],
-            "config": {}
-        })
+    # Create a fresh session for each run to isolate transactions
+    async with AsyncSessionLocal() as db:
+        pm = AsyncPersistenceManager(db)
+        try:
+            logger.info(f"Starting simulation for {agent_cfg['name']} on {scenario_id}")
+            
+            # 1. Ensure Agent exists (Idempotent)
+            agent_id = agent_cfg["id"]
+            existing_agent = await pm.agents().get(agent_id)
+            
+            if not existing_agent:
+                try:
+                    # use nested transaction (savepoint) so we can rollback just this if it fails
+                    async with db.begin_nested():
+                        await pm.agents().create({
+                            "id": agent_id,
+                            "name": agent_cfg["name"],
+                            "framework": agent_cfg["framework"],
+                            "config": {}
+                        })
+                except Exception as e:
+                    # Likely race condition or already exists
+                    logger.info(f"Agent {agent_id} creation skipped: {e}")
+            
+            # 2. Create Experiment
+            # Use timestamp to ensure uniqueness for this run
+            timestamp = int(datetime.now().timestamp())
+            exp_id = f"exp_{agent_cfg['id']}_{scenario_id}_{timestamp}"
+            
+            await pm.experiments().create({
+                "id": exp_id,
+                "name": f"{agent_cfg['name']} - {scenario_id}",
+                "description": f"Benchmark run for {agent_cfg['name']}",
+                "agent_id": agent_id,
+                "scenario_id": scenario_id,
+                "params": {
+                    "strategy": agent_cfg["strategy"],
+                    "scenario": scenario_id,
+                    "agent_config": agent_cfg
+                },
+                "status": "running"
+            })
+            
+            # 3. Initialize Simulation Runner
+            sim_id = f"sim_{exp_id}"
+            
+            # Config varies by scenario
+            sim_config = {
+                "max_ticks": 50,  # Short run for population
+                "tick_interval": 0.001, # Extremely Fast execution
+                "seed": hash(exp_id) & 0xFFFFFFFF,
+                "base_demand": 250 if "easy" in scenario_id else 180,
+                "elasticity": 2.0 if "price_war" in scenario_id else 1.5,
+                "asins": ["ASIN001", "ASIN002", "ASIN003"],
+                "customers_per_tick": 200,
+                "time_acceleration": 10.0
+            }
+            
+            runner = RealSimulationRunner(sim_id, config=sim_config)
+            await runner.initialize()
+            
+            # 4. Create proper DB record for sim
+            await pm.simulations().create({
+                "id": sim_id,
+                "experiment_id": exp_id,
+                "metadata": sim_config
+            })
 
-    # 2. Create Experiment
-    exp_id = f"exp_{agent_cfg['id']}_{scenario_id}_{int(datetime.now().timestamp())}"
-    await pm.experiments().create({
-        "id": exp_id,
-        "name": f"{agent_cfg['name']} - {scenario_id}",
-        "description": f"Benchmark run for {agent_cfg['name']}",
-        "agent_id": agent_cfg["id"],
-        "scenario_id": scenario_id,
-        "params": {
-            "strategy": agent_cfg["strategy"],
-            "scenario": scenario_id
-        },
-        "status": "running"
-    })
-    
-    # 3. Initialize Simulation Runner
-    sim_id = f"sim_{exp_id}"
-    
-    # Config varies by scenario
-    sim_config = {
-        "max_ticks": 50,  # Short run for population
-        "tick_interval": 0.01, # Fast execution
-        "seed": hash(exp_id) & 0xFFFFFFFF,
-        "base_demand": 150 if "easy" in scenario_id else 80,
-        "elasticity": 2.0 if "price_war" in scenario_id else 1.5,
-        "asins": ["ASIN001", "ASIN002", "ASIN003"],
-        "customers_per_tick": 100
-    }
-    
-    runner = RealSimulationRunner(sim_id, config=sim_config)
-    await runner.initialize()
-    
-    # 4. Create proper DB record for sim
-    await pm.simulations().create({
-        "id": sim_id,
-        "experiment_id": exp_id,
-        "metadata": sim_config
-    })
-
-    # 5. Run Loop with Agent Interaction
-    sim_agent = SimulatedAgent(
-        agent_cfg["strategy"], 
-        runner._world_store, 
-        runner._event_bus, 
-        sim_config["seed"]
-    )
-    
-    # Manually step through ticks (or just let it run and interact)
-    # Since RealSimulationRunner runs in background task, we can just sleep and act
-    await runner.start()
-    
-    try:
-        current_tick = 0
-        while current_tick < sim_config["max_ticks"]:
-            state = runner.get_state()
-            if state.status in ["completed", "failed", "stopped"]:
-                break
+            # 5. Run Loop with Agent Interaction
+            sim_agent = SimulatedAgent(
+                agent_id,
+                agent_cfg["strategy"], 
+                runner._world_store, 
+                runner._event_bus, 
+                sim_config["seed"]
+            )
+            
+            # Start runner
+            await runner.start()
+            
+            try:
+                current_tick = 0
+                while current_tick < sim_config["max_ticks"]:
+                    state = runner.get_state()
+                    if state.status in ["completed", "failed", "stopped"]:
+                        break
+                        
+                    current_tick = state.current_tick
+                    await sim_agent.act(current_tick, sim_config["asins"])
+                    
+                    # Check status and sleep
+                    if not runner._running:
+                        break
+                        
+                    await asyncio.sleep(0.01) # Give loop time
+                    
+            finally:
+                await runner.stop()
                 
-            current_tick = state.current_tick
-            await sim_agent.act(current_tick, sim_config["asins"])
+            # 6. Save Results
+            final_state = runner.get_state()
             
-            await asyncio.sleep(0.05) # Give loop time
+            # Construct results dict for leaderboard
+            results = {
+                "total_profit": f"${final_state.total_profit_cents / 100.0:.2f}",
+                "total_revenue": f"${final_state.total_revenue_cents / 100.0:.2f}",
+                "units_sold": final_state.total_units_sold,
+                "avg_inventory": 400, # Approx
+                "trust_score": 0.85, # Mock for now
+                "avg_review_score": 4.2
+            }
             
-    finally:
-        await runner.stop()
+            # Fetch current experiment to merge params
+            current_exp = await pm.experiments().get(exp_id)
+            current_params = current_exp.get("params", {}) if current_exp else {}
+            
+            new_params = current_params.copy()
+            new_params.update(results) # Flattened for top-level access
+            new_params["results"] = results # Nested for structure
+            
+            # Update Experiment
+            await pm.experiments().update(exp_id, {
+                "status": "completed",
+                "params": new_params
+            })
+            
+            # CRITICAL: Commit the transaction!
+            await db.commit()
+            
+            logger.info(f"Completed {agent_cfg['name']}: Profit {results['total_profit']}")
         
-    # 6. Save Results
-    final_state = runner.get_state()
-    
-    # Construct results dict for leaderboard
-    results = {
-        "total_profit": f"${final_state.total_profit_cents / 100.0:.2f}",
-        "total_revenue": f"${final_state.total_revenue_cents / 100.0:.2f}",
-        "units_sold": final_state.total_units_sold,
-        "avg_inventory": 400, # Approx
-        "trust_score": 0.85, # Mock for now
-        "avg_review_score": 4.2
-    }
-    
-    # Update Experiment
-    await pm.experiments().update(exp_id, {
-        "status": "completed",
-        "params": { # Store results in params or a dedicated results field if schema supported
-            **results, # Flatten results into params for simple extraction
-            "results": results
-        }
-    })
-    
-    logger.info(f"Completed {agent_cfg['name']}: Profit {results['total_profit']}")
-
+        except Exception as e:
+            logger.error(f"Error for agent {agent_cfg['name']}: {e}", exc_info=True)
+            # Try to commit any partial progress (like Experiment creation) if possible, or rollback
+            try:
+                await db.rollback()
+            except:
+                pass
 
 async def main():
     await create_db_tables_async()
     
-    async with AsyncSessionLocal() as db:
-        pm = AsyncPersistenceManager(db)
-        
-        tasks = []
-        for scenario in SCENARIOS:
-            for agent in AGENTS:
-                tasks.append(run_simulation_for_agent(agent, scenario, pm))
-        
-        # Run sequentially to avoid DB lock contention/resource issues in script
-        for task in tasks:
-            await task
+    # 1. Run ONE simple case first to verify
+    print("Running smoke test (1 agent)...")
+    await run_simulation_for_agent(AGENTS[0], SCENARIOS[0])
+    print("Smoke test done.")
+    
+    # 2. Run the rest
+    print("Running full population...")
+    tasks = []
+    for scenario in SCENARIOS:
+        for agent in AGENTS:
+            # Skip the one we already ran
+            if agent == AGENTS[0] and scenario == SCENARIOS[0]:
+                continue
+            tasks.append(run_simulation_for_agent(agent, scenario))
+    
+    # Run sequentially
+    for i, task in enumerate(tasks):
+        print(f"Running task {i+1}/{len(tasks)}...")
+        await task
             
     print("\n✅ Leaderboard population complete!")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
