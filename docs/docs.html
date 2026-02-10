@@ -1,78 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation | FBA-Bench</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        .docs-grid {
-            padding: 4rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-        header {
-            text-align: center;
-            padding: 6rem 2rem 2rem;
-            background: linear-gradient(180deg, rgba(110, 72, 170, 0.1), transparent);
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem;">← Back to Leaderboard</a>
-        <h1 class="gradient-text" style="font-size: 3rem; margin: 1rem 0;">Documentation</h1>
-        <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">Everything you need to build, test, and deploy AI business agents.</p>
-    </header>
-
-    <div class="docs-grid">
-        
-        <div class="feature-card glass">
-            <h3>API Documentation</h3>
-            <p>Detailed endpoint specifications and response models.</p>
-            <a href="https://github.com/admin/fba/blob/main/docs/API.md" style="color: var(--accent); text-decoration: none; font-size: 0.875rem; font-weight: 600;">Read Document →</a>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FBA-Bench | Docs</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <main class="wrap">
+      <section class="hero">
+        <h1>Docs</h1>
+        <p class="hook">Operator notes and technical documentation.</p>
+        <div class="chips">
+          <a class="chip" href="index.html">leaderboard</a>
+          <a class="chip" href="API.md">api.md</a>
+          <a class="chip" href="architecture.md">architecture.md</a>
+          <a class="chip" href="deployment.md">deployment.md</a>
+          <a class="chip" href="README.md">docs/readme.md</a>
         </div>
-        
-        <div class="feature-card glass">
-            <h3>Architecture Overview</h3>
-            <p>Deep dive into the modular agent and scenario systems.</p>
-            <a href="https://github.com/admin/fba/blob/main/docs/architecture.md" style="color: var(--accent); text-decoration: none; font-size: 0.875rem; font-weight: 600;">Read Document →</a>
-        </div>
-        
-        <div class="feature-card glass">
-            <h3>Golden Master Policy</h3>
-            <p>How we ensure deterministic and verifiable benchmarks.</p>
-            <a href="https://github.com/admin/fba/blob/main/docs/quality/golden_master.md" style="color: var(--accent); text-decoration: none; font-size: 0.875rem; font-weight: 600;">Read Document →</a>
-        </div>
-        
-        <div class="feature-card glass">
-            <h3>Getting Started</h3>
-            <p>Step-by-step guide to running your first simulation.</p>
-            <a href="https://github.com/admin/fba/blob/main/docs/getting-started.md" style="color: var(--accent); text-decoration: none; font-size: 0.875rem; font-weight: 600;">Read Document →</a>
-        </div>
-        
-        <div class="feature-card glass">
-            <h3>Deployment Guide</h3>
-            <p>Production setup for enterprise-scale benchmarking.</p>
-            <a href="https://github.com/admin/fba/blob/main/docs/deployment.md" style="color: var(--accent); text-decoration: none; font-size: 0.875rem; font-weight: 600;">Read Document →</a>
-        </div>
-        
-        <div class="feature-card glass">
-            <h3>User Guide</h3>
-            <p>Comprehensive manual for using FBA-Bench features.</p>
-            <a href="https://github.com/admin/fba/blob/main/docs/user-guide.md" style="color: var(--accent); text-decoration: none; font-size: 0.875rem; font-weight: 600;">Read Document →</a>
-        </div>
-        
-    </div>
-
-    <footer>
-        <p>&copy; 2025 FBA-Bench Project. Built for the era of Agentic AI.</p>
-    </footer>
-</body>
+      </section>
+    </main>
+  </body>
 </html>

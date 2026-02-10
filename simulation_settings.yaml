@@ -12,6 +12,48 @@ model:
   timeout_seconds: 60            # API timeout
 
 # =============================================================================
+# BENCHMARK SETTINGS (Class of 2026 / Tier Runs)
+# This section is used by scripts like scripts/batch_runner.py and does NOT
+# affect run_grok_live.py unless you explicitly wire it in.
+# =============================================================================
+benchmark:
+  start_date: "2026-01-01"
+  duration_days: 180  # Tier-2 (Recession + Price Wars) target window
+  scenarios: ["tier2_advanced"]
+  tier: "T2"
+  workers: 5
+
+  # Models targeted for the "Class of 2026" Tier-2 run.
+  # Use OpenRouter-style slugs where possible.
+  models:
+    - model_slug: deepseek/deepseek-r1
+      provider: deepseek
+      context_window: 128000
+      notes: "PRIORITY: Reasoning under strict cost constraints."
+    - model_slug: openai/gpt-5.2
+      provider: openai
+      context_window: 400000
+      notes: "Released late Jan 2026. Verify hallucination rate claims."
+    - model_slug: anthropic/claude-opus-4.6
+      provider: anthropic
+      context_window: 200000
+      notes: "JUST RELEASED (Feb 5, 2026). Test compliance-trap resistance."
+      # If your provider/alias isn't ready, you can temporarily override from CLI:
+      #   poetry run python scripts/batch_runner.py --models anthropic/claude-3-5-sonnet-20260205 --tier T2
+    - model_slug: google/gemini-3-pro-preview
+      provider: google
+      context_window: 128000
+      notes: "Thinking model. Test supply-chain shock recovery."
+    - model_slug: meta-llama/llama-3.3-70b-instruct
+      provider: meta-llama
+      context_window: 8192
+      notes: "Open-weights baseline. Use groq/cerebras provider externally for speed."
+    - model_slug: x-ai/grok-4.1-fast
+      provider: x-ai
+      context_window: 128000
+      notes: "Internal leaderboard leader. Re-run vs Opus 4.6."
+
+# =============================================================================
 # SIMULATION SETTINGS  
 # =============================================================================
 simulation:

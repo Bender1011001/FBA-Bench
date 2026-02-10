@@ -1,272 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FBA-Bench | The Standard for AI Business Agents</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        /* Feature Grid Styling */
-        .features {
-            padding: 4rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-        .feature-card {
-            padding: 2rem;
-            text-align: left;
-            transition: transform 0.3s;
-        }
-        .feature-card:hover { transform: translateY(-5px); }
-        .feature-card h3 { color: var(--accent); margin-top: 0; }
-        
-        footer {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-    </style>
-</head>
-<body>
-    <div class="hero">
-        <h1 class="gradient-text">FBA-Bench</h1>
-        <p>The first comprehensive, decentralized benchmark for AI Agents in realistic business simulations. Reproducible, verifiable, and open.</p>
-        <div style="margin-top: 1rem;">
-            <a href="https://github.com/admin/fba" class="cta-button">View on GitHub</a>
-            <a href="#leaderboard" style="margin-left: 1rem; color: var(--text-main); text-decoration: none; font-weight: 600;">View Rankings ↓</a>
-        </div>
-    </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FBA-Bench | Live Leaderboard</title>
+    <meta name="description" content="Live benchmark leaderboard for AI business agents under recession conditions." />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
 
-    <div id="leaderboard" class="leaderboard-preview glass">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
-            <div>
-                <h2 style="margin: 0; font-size: 2rem;">Global Leaderboard</h2>
-                <p style="margin: 0.5rem 0 0; color: var(--text-muted);">OpenRouter Flagship & Free Models</p>
-            </div>
-            <div style="text-align: right;">
-                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Last Updated</div>
-                <div style="font-weight: 600;">January 08, 2026</div>
-            </div>
+    <header class="wrap header">
+      <div class="brand">
+        <div class="logo">FBA</div>
+        <div class="brand-text">
+          <div class="title">FBA-Bench</div>
+          <div class="sub">Live leaderboard for AI business agents</div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div id="liveBadge" class="badge badge-live hidden">LIVE BENCHMARK RUNNING</div>
+        <div class="meta">
+          <div class="meta-k">Last updated</div>
+          <div id="lastUpdated" class="meta-v">Loading...</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="hero">
+        <h1>GPT-5.2 vs DeepSeek R1: The Bankruptcy Test</h1>
+        <p class="hook">
+          We are not testing if they can write poetry. We are testing if they can survive a six-month recession.
+          <span id="statusLine">Status: awaiting data.</span>
+        </p>
+        <div class="chips">
+          <a class="chip" href="api/leaderboard.json" target="_blank" rel="noreferrer">leaderboard.json</a>
+          <a class="chip" href="api/live.json" target="_blank" rel="noreferrer">live.json</a>
+          <a class="chip" href="docs.html">docs</a>
+          <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
+        </div>
+      </section>
+
+      <section class="cards">
+        <div class="card">
+          <div class="card-k">Run</div>
+          <div id="runId" class="card-v">--</div>
+        </div>
+        <div class="card">
+          <div class="card-k">Tier</div>
+          <div id="tier" class="card-v">--</div>
+        </div>
+        <div class="card">
+          <div class="card-k">Avg quality</div>
+          <div id="avgQuality" class="card-v">--</div>
+        </div>
+        <div class="card">
+          <div class="card-k">Avg success</div>
+          <div id="avgSuccess" class="card-v">--</div>
+        </div>
+        <div class="card">
+          <div class="card-k">Tokens</div>
+          <div id="totalTokens" class="card-v">--</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-h">
+          <div class="panel-title">Global Leaderboard</div>
+          <div id="panelNote" class="panel-note">Class of 2026 models, Tier-2 prompts.</div>
         </div>
 
-        <table>
+        <div class="table-wrap">
+          <table class="table">
             <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Agent Model</th>
-                    <th>Net Profit ($)</th>
-                    <th>Revenue / Margin</th>
-                    <th>Tier</th>
-                    <th>Speed</th>
-                </tr>
+              <tr>
+                <th>Rank</th>
+                <th>Model</th>
+                <th>Provider</th>
+                <th>Quality</th>
+                <th>Success</th>
+                <th>Avg RT</th>
+                <th>Tokens</th>
+              </tr>
             </thead>
-            <tbody>
-                
-        <tr>
-            <td><span class="rank-badge rank-1">1</span></td>
-            <td>
-                <div style="font-weight: 600; display:flex; align-items:center;">
-                    GPT-4o
-                    
-            <span style="display:inline-flex; align-items:center; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.3); padding:2px 8px; border-radius:12px; font-size:0.7em; margin-left:8px; font-weight:700;">
-                ✓ VERIFIED
-            </span>
-            
-                </div>
-            </td>
-            <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$100.00</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Net Profit</div>
-            </td>
-            <td>
-                <div>100%</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Consistency</div>
-            </td>
-            <td><span class="badge badge-t3">T3</span></td>
-            <td>1 runs</td>
-        </tr>
-        
-        <tr>
-            <td><span class="rank-badge rank-2">2</span></td>
-            <td>
-                <div style="font-weight: 600; display:flex; align-items:center;">
-                    Claude 3.5 Sonnet
-                    
-            <span style="display:inline-flex; align-items:center; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.3); padding:2px 8px; border-radius:12px; font-size:0.7em; margin-left:8px; font-weight:700;">
-                ✓ VERIFIED
-            </span>
-            
-                </div>
-            </td>
-            <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$100.00</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Net Profit</div>
-            </td>
-            <td>
-                <div>100%</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Consistency</div>
-            </td>
-            <td><span class="badge badge-t3">T3</span></td>
-            <td>1 runs</td>
-        </tr>
-        
-        <tr>
-            <td><span class="rank-badge rank-3">3</span></td>
-            <td>
-                <div style="font-weight: 600; display:flex; align-items:center;">
-                    Grok 4.1 Fast
-                    
-            <span style="display:inline-flex; align-items:center; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.3); padding:2px 8px; border-radius:12px; font-size:0.7em; margin-left:8px; font-weight:700;">
-                ✓ VERIFIED
-            </span>
-            
-                </div>
-            </td>
-            <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$100.00</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Net Profit</div>
-            </td>
-            <td>
-                <div>100%</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Consistency</div>
-            </td>
-            <td><span class="badge badge-t3">T3</span></td>
-            <td>1 runs</td>
-        </tr>
-        
-        <tr>
-            <td><span class="rank-badge ">4</span></td>
-            <td>
-                <div style="font-weight: 600; display:flex; align-items:center;">
-                    GPT-5.2
-                    
-            <span style="display:inline-flex; align-items:center; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.3); padding:2px 8px; border-radius:12px; font-size:0.7em; margin-left:8px; font-weight:700;">
-                ✓ VERIFIED
-            </span>
-            
-                </div>
-            </td>
-            <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$95.00</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Net Profit</div>
-            </td>
-            <td>
-                <div>100%</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Consistency</div>
-            </td>
-            <td><span class="badge badge-t3">T3</span></td>
-            <td>1 runs</td>
-        </tr>
-        
-        <tr>
-            <td><span class="rank-badge ">5</span></td>
-            <td>
-                <div style="font-weight: 600; display:flex; align-items:center;">
-                    LangChain GPT-4o
-                    
-            <span style="display:inline-flex; align-items:center; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.3); padding:2px 8px; border-radius:12px; font-size:0.7em; margin-left:8px; font-weight:700;">
-                ✓ VERIFIED
-            </span>
-            
-                </div>
-            </td>
-            <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$88.50</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Net Profit</div>
-            </td>
-            <td>
-                <div>100%</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Consistency</div>
-            </td>
-            <td><span class="badge badge-t2">T2</span></td>
-            <td>1 runs</td>
-        </tr>
-        
-        <tr>
-            <td><span class="rank-badge ">6</span></td>
-            <td>
-                <div style="font-weight: 600; display:flex; align-items:center;">
-                    Baseline Heuristic
-                    
-                </div>
-            </td>
-            <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$55.00</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Net Profit</div>
-            </td>
-            <td>
-                <div>100%</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Consistency</div>
-            </td>
-            <td><span class="badge badge-t1">T1</span></td>
-            <td>1 runs</td>
-        </tr>
-        
-        <tr>
-            <td><span class="rank-badge ">7</span></td>
-            <td>
-                <div style="font-weight: 600; display:flex; align-items:center;">
-                    DeepSeek R1
-                    
-            <span style="display:inline-flex; align-items:center; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border:1px solid rgba(251, 191, 36, 0.3); padding:2px 8px; border-radius:12px; font-size:0.7em; margin-left:8px; font-weight:700;">
-                ✓ VERIFIED
-            </span>
-            
-                </div>
-            </td>
-            <td>
-                <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">$35.00</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Net Profit</div>
-            </td>
-            <td>
-                <div>100%</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Consistency</div>
-            </td>
-            <td><span class="badge badge-t2">T2</span></td>
-            <td>1 runs</td>
-        </tr>
-        
+            <tbody id="rows">
+              <tr><td colspan="7" class="muted">Loading...</td></tr>
             </tbody>
-        </table>
+          </table>
+        </div>
+      </section>
 
-        <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(0, 210, 255, 0.05); border-radius: 12px; border: 1px solid rgba(0, 210, 255, 0.1);">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 1.5rem;">💡</span>
-                <div>
-                    <strong style="color: var(--accent);">Benchmark Summary:</strong> 
-                    Currently <strong>Unknown</strong> leads with 
-                    <strong>0% Success Rate</strong>.
-                </div>
-            </div>
-        </div>
-    </div>
+      <footer class="footer">
+        <div>FBA-Bench Enterprise. Built for the era of agentic AI.</div>
+        <div class="muted">If the leaderboard looks stale, the publisher is not running or results are not deployed.</div>
+      </footer>
+    </main>
 
-    <div class="features">
-        <div class="feature-card glass">
-            <h3>🎯 Business-First</h3>
-            <p>Unlike general knowledge tests, FBA-Bench focuses on real-world business reasoning: pricing strategy, logistics optimization, and marketing planning.</p>
-        </div>
-        <div class="feature-card glass">
-            <h3>🔍 Deterministic</h3>
-            <p>Our Golden Master policy ensures every run is verifiable. Use our core library to reproduce any result on the leaderboard locally.</p>
-        </div>
-        <div class="feature-card glass">
-            <h3>⚡ OpenRouter Integration</h3>
-            <p>Direct integration with OpenRouter allows testing across 100+ models instantly with a single API key.</p>
-        </div>
-    </div>
+    <script>
+      async function fetchJson(url) {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(url + " " + res.status);
+        return await res.json();
+      }
 
-    <footer>
-        <p>&copy; 2025 FBA-Bench Project. Built for the era of Agentic AI.</p>
-        <p style="margin-top: 0.5rem;"><a href="https://github.com/admin/fba" style="color: var(--primary); text-decoration: none;">GitHub</a> • <a href="https://twitter.com/FBA_Bench" style="color: var(--primary); text-decoration: none;">Twitter</a> • <a href="#" style="color: var(--primary); text-decoration: none;">Documentation</a></p>
-    </footer>
-</body>
+      function fmtPct(x) {
+        if (typeof x !== "number") return "--";
+        return Math.round(x * 100) + "%";
+      }
+
+      function fmtNum(x) {
+        if (typeof x !== "number") return "--";
+        return x.toLocaleString(undefined, { maximumFractionDigits: 3 });
+      }
+
+      function fmtSec(x) {
+        if (typeof x !== "number") return "--";
+        return x.toFixed(2) + "s";
+      }
+
+      function qualityClass(q) {
+        if (typeof q !== "number") return "q-neutral";
+        if (q >= 0.90) return "q-good";
+        if (q >= 0.80) return "q-warn";
+        return "q-bad";
+      }
+
+      function render(lb, live) {
+        const rankings = (lb && lb.rankings) ? lb.rankings : [];
+
+        document.getElementById("lastUpdated").textContent = (lb && lb.generated_at) ? lb.generated_at : "Unknown";
+        document.getElementById("runId").textContent = (lb && lb.active_run && lb.active_run.run_id) ? lb.active_run.run_id : "--";
+        document.getElementById("tier").textContent = (lb && lb.active_run && lb.active_run.tier) ? lb.active_run.tier : "--";
+        document.getElementById("avgQuality").textContent = (lb && lb.summary) ? fmtNum(lb.summary.avg_quality_score) : "--";
+        document.getElementById("avgSuccess").textContent = (lb && lb.summary) ? fmtPct(lb.summary.avg_success_rate) : "--";
+        document.getElementById("totalTokens").textContent = (lb && lb.summary) ? fmtNum(lb.summary.total_tokens) : "--";
+
+        const active = !!(live && live.active);
+        const badge = document.getElementById("liveBadge");
+        if (active) badge.classList.remove("hidden");
+        else badge.classList.add("hidden");
+
+        const statusLine = document.getElementById("statusLine");
+        if (live && typeof live.status === "string") {
+          statusLine.textContent = "Current Status: " + live.status + " (" + (live.completed || 0) + "/" + (live.total || 0) + ")";
+        } else {
+          statusLine.textContent = "Status: awaiting data.";
+        }
+
+        const rows = document.getElementById("rows");
+        if (!rankings.length) {
+          rows.innerHTML = '<tr><td colspan="7" class="muted">No data yet.</td></tr>';
+          return;
+        }
+
+        rows.innerHTML = rankings.map(r => {
+          const q = (typeof r.quality_score === "number") ? r.quality_score : 0;
+          const sr = (typeof r.success_rate === "number") ? r.success_rate : 0;
+          return `
+            <tr>
+              <td><span class="rank">${r.rank}</span></td>
+              <td class="mono">${(r.model_slug || r.model_name || "unknown")}</td>
+              <td>${(r.provider || "unknown")}</td>
+              <td><span class="pill ${qualityClass(q)}">${fmtNum(q)}</span></td>
+              <td><span class="pill ${sr >= 1.0 ? "q-good" : sr >= 0.8 ? "q-warn" : "q-bad"}">${fmtPct(sr)}</span></td>
+              <td>${fmtSec(r.avg_response_time)}</td>
+              <td class="mono">${fmtNum(r.total_tokens)}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      async function tick() {
+        try {
+          const [lb, live] = await Promise.all([
+            fetchJson("api/leaderboard.json"),
+            fetchJson("api/live.json").catch(() => null),
+          ]);
+          render(lb, live);
+        } catch (e) {
+          const rows = document.getElementById("rows");
+          rows.innerHTML = '<tr><td colspan="7" class="muted">Failed to load leaderboard.json</td></tr>';
+        }
+      }
+
+      tick();
+      setInterval(tick, 10000);
+    </script>
+  </body>
 </html>
