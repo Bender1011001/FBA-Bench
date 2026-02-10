@@ -130,6 +130,9 @@ node_modules/
 .terraform/
 **/.terraform/
 
+# Generated heartbeat for the live leaderboard badge (written during runs)
+docs/api/live.json
+
 # Corrupt learning data
 learning_data/*.corrupt
 learning_data/**/*.json
