@@ -1,5 +1,5 @@
 {
-  "generated_at": "February 10, 2026 at 07:43 UTC",
+  "generated_at": "February 10, 2026 at 07:45 UTC",
   "rankings": [
     {
       "rank": 1,
@@ -35,6 +35,22 @@
     },
     {
       "rank": 3,
+      "model_name": "claude-opus-4.6",
+      "model_slug": "anthropic/claude-opus-4.6",
+      "provider": "Anthropic",
+      "tier": "flagship",
+      "quality_score": 0.88,
+      "success_rate": 1.0,
+      "avg_response_time": 37.87,
+      "total_tokens": 12750,
+      "total_runs": 1,
+      "badge": "bronze",
+      "timestamp": "2026-02-10T07:45:18.476522+00:00",
+      "run_id": "run-20260210-074050",
+      "success": true
+    },
+    {
+      "rank": 4,
       "model_name": "gemini-3-pro-preview",
       "model_slug": "google/gemini-3-pro-preview",
       "provider": "Google",
@@ -44,7 +60,7 @@
       "avg_response_time": 24.08,
       "total_tokens": 15256,
       "total_runs": 1,
-      "badge": "bronze",
+      "badge": "stable",
       "timestamp": "2026-02-10T07:43:41.939520+00:00",
       "run_id": "run-20260210-074050",
       "success": true
