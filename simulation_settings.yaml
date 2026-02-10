@@ -8,8 +8,8 @@ model:
   provider: openrouter
   name: x-ai/grok-4.1-fast      # Model to use (OpenRouter format)
   temperature: 0.1               # Lower = more deterministic (0.0-2.0)
-  max_tokens: 1500               # Max response length
-  timeout_seconds: 60            # API timeout
+  max_tokens: null               # No explicit max token cap; let the provider/model decide
+  timeout_seconds: null          # No client-side HTTP timeout; let long "thinking" calls complete
 
 # =============================================================================
 # BENCHMARK SETTINGS (Class of 2026 / Tier Runs)

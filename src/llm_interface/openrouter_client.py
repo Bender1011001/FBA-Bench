@@ -140,9 +140,6 @@ class OpenRouterClient(BaseLLMClient):
             "temperature": (
                 temperature if temperature is not None else self.config.temperature
             ),
-            "max_tokens": (
-                max_tokens if max_tokens is not None else self.config.max_tokens
-            ),
             "top_p": top_p if top_p is not None else self.config.top_p,
             "frequency_penalty": (
                 frequency_penalty
@@ -156,6 +153,11 @@ class OpenRouterClient(BaseLLMClient):
             ),
             **kwargs,
         }
+
+        # Only include max_tokens if explicitly set (allows "no limit" by omission).
+        mt = max_tokens if max_tokens is not None else self.config.max_tokens
+        if mt is not None:
+            payload["max_tokens"] = int(mt)
 
         # Fix #86: Only include response_format if explicitly provided
         if response_format is not None:
@@ -172,10 +174,27 @@ class OpenRouterClient(BaseLLMClient):
                 self.base_url + "/chat/completions",  # Use base_url from config
                 headers=headers,
                 json=payload,
-                timeout=self.config.timeout,  # Use config timeout for individual requests as well
+                timeout=self.config.timeout,  # Use config timeout for individual requests as well (may be None)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors (4xx or 5xx)
-            response_data = response.json()
+            try:
+                response_data = response.json()
+            except ValueError as e:
+                # OpenRouter can occasionally return a truncated/non-JSON body (network/proxy issues).
+                body = ""
+                try:
+                    body = response.text
+                except Exception:
+                    body = "<unreadable body>"
+                snippet = body[:2000]
+                logger.error(
+                    "Failed to decode OpenRouter JSON response: %s; body_snippet=%r", e, snippet
+                )
+                raise LLMClientError(
+                    f"OpenRouter returned a non-JSON response (status {response.status_code}).",
+                    original_exception=e,
+                    status_code=response.status_code,
+                )
 
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(
@@ -215,7 +234,7 @@ class OpenRouterClient(BaseLLMClient):
             raise LLMClientError(
                 f"Network error connecting to OpenRouter API: {e}", original_exception=e
             )
-        except (TypeError, AttributeError, RuntimeError, KeyError) as e:
+        except (TypeError, AttributeError, RuntimeError, KeyError, ValueError) as e:
             logger.error(
                 f"An unexpected error occurred during OpenRouter API call: {e}",
                 exc_info=True,

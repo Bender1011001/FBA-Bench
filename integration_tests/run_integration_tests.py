@@ -36,8 +36,19 @@ import sys
 from datetime import datetime
 from typing import Any, Dict
 
+# Ensure stdout/stderr can handle non-ASCII logs on Windows shells.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+except Exception:
+    pass
+
 # Add project root to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _repo_root)
+# This repo uses a src/ layout; ensure installable packages under src/ are importable
+# when running this module as a script.
+sys.path.insert(0, os.path.join(_repo_root, "src"))
 
 from integration_tests import IntegrationTestConfig, logger
 
@@ -200,6 +211,12 @@ class IntegrationTestRunner:
             # Run T2 stress/memory demo (prefer DemoScenarios when available).
             # If agent_runners or demo_scenarios aren't installed in this environment,
             # fall back to a minimal T2-style stress run that still exercises real LLM calls.
+            force_fallback = os.getenv("FBA_FORCE_FALLBACK_T2", "").strip().lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
             try:
                 from integration_tests.demo_scenarios import (
                     DemoScenarios,  # may require agent_runners
@@ -207,7 +224,7 @@ class IntegrationTestRunner:
             except Exception:
                 DemoScenarios = None
 
-            if DemoScenarios:
+            if DemoScenarios and not force_fallback:
                 demo_suite = DemoScenarios(self.config)
                 results = await demo_suite.run_memory_ablation_demo()
                 success = all(r.success for r in results)

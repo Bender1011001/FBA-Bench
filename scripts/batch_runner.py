@@ -26,6 +26,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
+try:
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover
+    yaml = None  # type: ignore[assignment]
+
+
 def _utc_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -43,11 +49,25 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         default=None,
         help="Comma-separated model slugs (OpenRouter style). If omitted, uses simulation_settings.yaml benchmark.models.",
     )
+    p.add_argument(
+        "--engine",
+        choices=["agentic_sim", "openrouter_prompts"],
+        default="agentic_sim",
+        help="Benchmark engine. agentic_sim waits for one LLM decision per day (slow). openrouter_prompts is quick prompt scoring.",
+    )
     p.add_argument("--workers", type=int, default=None, help="Max concurrent runs.")
     p.add_argument(
         "--scenario",
         default=None,
         help="Scenario YAML to convert into prompts for Tier-2 style evaluation (default from simulation_settings.yaml benchmark.scenarios).",
+    )
+    p.add_argument("--days", type=int, default=None, help="Simulated days for agentic_sim (default benchmark.duration_days).")
+    p.add_argument("--seed", type=int, default=None, help="RNG seed for agentic_sim (default simulation.seed).")
+    p.add_argument(
+        "--max-wait-seconds",
+        type=float,
+        default=0.0,
+        help="Optional per-day cap for a single model response in agentic_sim. 0 disables this cap.",
     )
     p.add_argument("--run-id", default=None, help="Run id; defaults to run-YYYYMMDD-HHMMSS.")
     p.add_argument("--settings", default="simulation_settings.yaml", help="YAML settings file (for benchmark defaults).")
@@ -169,6 +189,32 @@ def ensure_parent_dir(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
+def _safe_float(x: Any, default: float = 0.0) -> float:
+    try:
+        return float(x)
+    except Exception:
+        return default
+
+
+def _safe_int(x: Any, default: int = 0) -> int:
+    try:
+        return int(x)
+    except Exception:
+        return default
+
+
+def load_settings(settings_path: str) -> Dict[str, Any]:
+    if yaml is None:
+        return {}
+    path = Path(settings_path)
+    if not path.exists():
+        return {}
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return {}
+
+
 def _load_openrouter_key_from_dotenv(dotenv_path: str = ".env") -> Optional[str]:
     """
     Minimal .env loader for OPENROUTER_API_KEY only (avoids adding a runtime dependency).
@@ -246,6 +292,38 @@ def summarize_openrouter_run(raw: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def summarize_agentic_run(raw: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Extract stable summary metrics from scripts/run_t2_agentic_sim.py output.
+    """
+    summary = raw.get("summary") or {}
+    if not isinstance(summary, dict):
+        summary = {}
+    total_profit = _safe_float(summary.get("total_profit"), 0.0)
+    tokens = _safe_int(summary.get("tokens_used"), 0)
+    roi_pct = _safe_float(summary.get("roi_pct"), 0.0)
+    llm_calls = _safe_int(summary.get("llm_calls"), 0)
+    avg_call_seconds = summary.get("avg_call_seconds")
+    try:
+        avg_call_seconds = float(avg_call_seconds) if avg_call_seconds is not None else None
+    except Exception:
+        avg_call_seconds = None
+    errors = summary.get("errors") or []
+    if not isinstance(errors, list):
+        errors = [str(errors)]
+
+    return {
+        "total_profit": total_profit,
+        "tokens_used": tokens,
+        "roi_pct": roi_pct,
+        "llm_calls": llm_calls,
+        "avg_call_seconds": avg_call_seconds,
+        # Keep a composite for sorting; profit is the primary target.
+        "composite_score": total_profit,
+        "errors": errors,
+    }
+
+
 @dataclass(frozen=True)
 class RunOutcome:
     model_slug: str
@@ -285,6 +363,10 @@ async def run_one_model(
     artifacts_dir: Path,
     results_dir: Path,
     scenario_path: str,
+    engine: str,
+    days: int,
+    seed: int,
+    max_wait_seconds: float,
 ) -> RunOutcome:
     started_at = _utc_iso()
     start_time = time.time()
@@ -294,22 +376,47 @@ async def run_one_model(
     result_path = results_dir / f"{sanitized}.json"
     raw_dir = Path("artifacts") / "openrouter_runs" / run_id
     raw_path = raw_dir / f"{sanitized}.json"
+    progress_dir = artifacts_dir / "progress"
+    progress_path = progress_dir / f"{sanitized}.json"
     ensure_parent_dir(log_path)
     ensure_parent_dir(result_path)
     ensure_parent_dir(raw_path)
+    ensure_parent_dir(progress_path)
 
-    cmd = [
-        "poetry",
-        "run",
-        "python",
-        "run_openrouter_benchmark.py",
-        "--model",
-        model_slug,
-        "--scenario",
-        scenario_path,
-        "--output",
-        str(raw_path),
-    ]
+    if engine == "openrouter_prompts":
+        cmd = [
+            "poetry",
+            "run",
+            "python",
+            "run_openrouter_benchmark.py",
+            "--model",
+            model_slug,
+            "--scenario",
+            scenario_path,
+            "--output",
+            str(raw_path),
+        ]
+    else:
+        cmd = [
+            "poetry",
+            "run",
+            "python",
+            "scripts/run_t2_agentic_sim.py",
+            "--model",
+            model_slug,
+            "--settings",
+            "simulation_settings.yaml",
+            "--days",
+            str(days),
+            "--seed",
+            str(seed),
+            "--output",
+            str(raw_path),
+            "--progress",
+            str(progress_path),
+            "--max-wait-seconds",
+            str(float(max_wait_seconds)),
+        ]
 
     env = os.environ.copy()
     if not env.get("OPENROUTER_API_KEY"):
@@ -347,21 +454,19 @@ async def run_one_model(
     if raw_path.exists():
         try:
             raw = json.loads(raw_path.read_text(encoding="utf-8"))
-            metrics = summarize_openrouter_run(raw)
+            metrics = summarize_openrouter_run(raw) if engine == "openrouter_prompts" else summarize_agentic_run(raw)
         except Exception as e:
             metrics = {
-                "success_rate": 0.0,
-                "avg_response_time": 0.0,
-                "total_tokens": 0,
-                "avg_quality_score": 0.0,
+                "total_profit": 0.0,
+                "tokens_used": 0,
+                "composite_score": 0.0,
                 "errors": [f"failed to parse raw output: {e}"],
             }
     else:
         metrics = {
-            "success_rate": 0.0,
-            "avg_response_time": 0.0,
-            "total_tokens": 0,
-            "avg_quality_score": 0.0,
+            "total_profit": 0.0,
+            "tokens_used": 0,
+            "composite_score": 0.0,
             "errors": ["raw output missing"],
         }
 
@@ -432,6 +537,19 @@ async def heartbeat_task(
             "completed": state.get("completed", 0),
             "total": state.get("total", len(models)),
         }
+        # Optional per-model progress (agentic_sim).
+        progress_dir = state.get("progress_dir")
+        if progress_dir:
+            prog: Dict[str, Any] = {}
+            for m in models:
+                sanitized = sanitize_model_slug(m)
+                p = Path(progress_dir) / f"{sanitized}.json"
+                if p.exists():
+                    try:
+                        prog[m] = json.loads(p.read_text(encoding="utf-8"))
+                    except Exception:
+                        prog[m] = {"error": "unreadable"}
+            payload["progress"] = prog
         write_live_json(live_json_path, payload)
         await asyncio.sleep(interval_s)
 
@@ -439,11 +557,17 @@ async def heartbeat_task(
 async def main_async(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
     bench = load_benchmark_defaults(args.settings)
+    settings_all = load_settings(args.settings)
 
     tier = args.tier or str(bench.get("tier") or "T2")
     workers = args.workers or int(bench.get("workers") or 5)
     models = resolve_models(args.models, bench)
     scenario_path = resolve_scenario_path(args.scenario, bench)
+    engine = str(args.engine)
+    days = int(args.days or bench.get("duration_days") or 180)
+    # Prefer simulation.seed for determinism.
+    seed = int(args.seed or int(((settings_all.get("simulation") or {}).get("seed", 42))))
+    max_wait_seconds = float(args.max_wait_seconds or 0.0)
 
     if not models:
         print("No models provided and none found in benchmark.models.", file=sys.stderr)
@@ -459,7 +583,13 @@ async def main_async(argv: Optional[Sequence[str]] = None) -> int:
     results_dir.mkdir(parents=True, exist_ok=True)
 
     live_json_path = Path(args.live_json)
-    hb_state: Dict[str, Any] = {"total": len(models), "completed": 0, "started_at": _utc_iso(), "status": "running"}
+    hb_state: Dict[str, Any] = {
+        "total": len(models),
+        "completed": 0,
+        "started_at": _utc_iso(),
+        "status": "running",
+        "progress_dir": str((artifacts_dir / "progress").resolve()),
+    }
     hb = asyncio.create_task(
         heartbeat_task(
             live_json_path=live_json_path,
@@ -484,6 +614,10 @@ async def main_async(argv: Optional[Sequence[str]] = None) -> int:
                 artifacts_dir=artifacts_dir,
                 results_dir=results_dir,
                 scenario_path=scenario_path,
+                engine=engine,
+                days=days,
+                seed=seed,
+                max_wait_seconds=max_wait_seconds,
             )
 
     pending: List[asyncio.Task[RunOutcome]] = []

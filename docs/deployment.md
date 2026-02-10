@@ -107,6 +107,23 @@ Manifests in infrastructure/deployment/kubernetes.yaml.
 
 For managed cloud platforms, use container services. Examples below; adapt for your provider. Focus on Docker images from Dockerfile.prod.
 
+## Live Leaderboard on Cloudflare Pages (Static)
+
+The live leaderboard site is a static bundle under `docs/` that fetches JSON from `docs/api/`.
+
+- Build: `poetry run python generate_github_pages.py`
+- Runtime updates (local): `poetry run python tools/watch_and_build.py --tier T2 --interval-seconds 5`
+- Inputs:
+  - Results: `results/openrouter_tier_runs/<tier>/summary.json` (from `scripts/batch_runner.py`)
+  - Live status/progress: `docs/api/live.json` (from `scripts/batch_runner.py`)
+
+Cloudflare Pages deployment:
+
+1. Create a Pages project and connect the GitHub repo.
+2. Set build command to empty (or a no-op) and set output directory to `docs`.
+3. Add a custom domain `fbabench.com` in Pages and follow the DNS instructions in Cloudflare.
+4. Ensure the JSON endpoints are not cached: `docs/_headers` sets `Cache-Control: no-store` for `/api/*.json`.
+
 ### AWS ECS (Elastic Container Service)
 
 1. **Setup**:

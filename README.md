@@ -13,48 +13,35 @@
 [![Benchmark Status](https://img.shields.io/badge/Benchmark-Results_Ready-success?style=flat-square)](https://fbabench.com)
 <!-- LEADERBOARD_BADGE_END -->
 
-FBA-Bench Enterprise is an advanced benchmarking framework for evaluating AI agents in complex business simulations, with a focus on e-commerce fulfillment, strategic decision-making, and multi-agent interactions. Built on Python with a modular `src/` architecture, it supports integration with leading LLM providers, custom agent runners, and comprehensive metrics for performance analysis. This enterprise edition extends the core FBA-Bench with proprietary features, API services, observability, and production-ready tooling.
+## 🎯 Two Benchmarks. Know Which One You Need.
+
+| | 🧠 **LLM Benchmark** | 🤖 **Agent Benchmark** |
+|---|:---:|:---:|
+| **Tests** | Raw model capability | Your agent system |
+| **Memory/RAG** | ❌ None | ✅ Bring your own |
+| **If it fails** | Model's fault | System's fault |
+| **Runtime** | 6 hours / year | Varies |
+| **Use when** | Comparing LLMs | Comparing architectures |
+
+**The LLM Benchmark is honest.** No scaffolding. No memory crutches. No excuses. Just 365 API calls with real feedback loops. [Why it takes hours →](docs/why_it_takes_hours.md)
+
+---
+
+## What is FBA-Bench?
+
+A business simulation benchmark for evaluating AI in complex e-commerce scenarios: inventory, pricing, competitors, and adversarial market events. 
+
+Unlike academic benchmarks that run in minutes, FBA-Bench simulates **real consequences over time**. Each decision affects tomorrow's state. Bad choices compound. Good strategies emerge.
 
 ## Key Features
 
-- **Modular Agent Ecosystem**: Supports diverse agent frameworks (e.g., CrewAI, LangChain) via unified runners in `src/agent_runners/`.
-- **Rich Simulation Scenarios**: Pre-built business scenarios in `src/scenarios/` covering sourcing, logistics, pricing, and competitive analysis.
-- **Benchmarking Engine**: Robust validation and metrics in `src/benchmarking/` for success rates, efficiency, and quality scoring.
-- **API and Dashboard**: FastAPI-based services in `src/fba_bench_api/` with real-time event streaming via WebSockets.
-- **Observability and Tracking**: Integrated ClearML, Prometheus, and OpenTelemetry for experiment management and monitoring.
-- **Plugin System**: Extensible plugins in `src/plugins/` for custom tools, constraints, and integrations.
-- **Poetry-Managed Dependencies**: Standardized build and testing with `pyproject.toml` for reproducible environments.
-- **Comprehensive Testing**: Unit, integration, contract, and performance tests in `tests/`, with CI parity via Makefile targets.
-
-## Two Benchmarks, Two Purposes
-
-FBA-Bench provides **two distinct benchmarks** to isolate what you're testing:
-
-### 🧠 LLM Benchmark (Pure Model Capability)
-```
-Input:  Full state + yesterday's results → LLM → Decision
-```
-- **Tests the LLM itself**, not scaffolding
-- No external memory systems, no vector DBs, no RAG
-- Every piece of information is in the prompt
-- If the model fails, it's the model's fault
-- **Runtime: ~6 hours for 1 year** (365 API calls with feedback loop)
-- **Cost: ~$1.35** via OpenRouter
-
-**This is the honest benchmark.** No shortcuts, no memory crutches, no excuses.
-
-See: [Why It Takes Hours](docs/why_it_takes_hours.md)
-
-### 🤖 Agent Benchmark (Full System)
-```
-Input: Context window → Agent (LLM + Memory + Tools + RAG) → Decision
-```
-- Tests **your agent architecture**, not just the LLM
-- Bring your own memory systems, tools, and scaffolding
-- Fair comparison of agent frameworks (CrewAI vs LangChain vs DIY)
-- Measures system resilience, not just model capability
-
-**Use this when benchmarking your agent code**, not raw models.
+- **Tick-Based Simulation**: Each day is a separate LLM call with real feedback loops
+- **Modular Agent Ecosystem**: Supports CrewAI, LangChain, and custom frameworks via `src/agent_runners/`
+- **Rich Scenarios**: Supply chain shocks, price wars, demand spikes, and compliance traps
+- **Live Visualization**: Watch decisions happen in real-time with `run_grok_live.py`
+- **API & Dashboard**: FastAPI backend with WebSocket streaming
+- **Observability**: ClearML, Prometheus, and OpenTelemetry integration
+- **Settings File**: Configure everything in `simulation_settings.yaml`
 
 ## Quick Start
 

@@ -56,12 +56,12 @@
           <div id="tier" class="card-v">--</div>
         </div>
         <div class="card">
-          <div class="card-k">Avg quality</div>
-          <div id="avgQuality" class="card-v">--</div>
+          <div class="card-k" id="metricK1">Avg profit</div>
+          <div id="metricV1" class="card-v">--</div>
         </div>
         <div class="card">
-          <div class="card-k">Avg success</div>
-          <div id="avgSuccess" class="card-v">--</div>
+          <div class="card-k" id="metricK2">Avg ROI</div>
+          <div id="metricV2" class="card-v">--</div>
         </div>
         <div class="card">
           <div class="card-k">Tokens</div>
@@ -82,14 +82,15 @@
                 <th>Rank</th>
                 <th>Model</th>
                 <th>Provider</th>
-                <th>Quality</th>
-                <th>Success</th>
-                <th>Avg RT</th>
+                <th id="colK1">Net Profit</th>
+                <th id="colK2">ROI</th>
+                <th id="colK3">Calls</th>
+                <th id="colK4">Avg Call</th>
                 <th>Tokens</th>
               </tr>
             </thead>
             <tbody id="rows">
-              <tr><td colspan="7" class="muted">Loading...</td></tr>
+              <tr><td colspan="8" class="muted">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -110,7 +111,12 @@
 
       function fmtPct(x) {
         if (typeof x !== "number") return "--";
-        return Math.round(x * 100) + "%";
+        return x.toFixed(1) + "%";
+      }
+
+      function fmtPctFraction(x) {
+        if (typeof x !== "number") return "--";
+        return (x * 100).toFixed(1) + "%";
       }
 
       function fmtNum(x) {
@@ -123,22 +129,51 @@
         return x.toFixed(2) + "s";
       }
 
-      function qualityClass(q) {
-        if (typeof q !== "number") return "q-neutral";
-        if (q >= 0.90) return "q-good";
-        if (q >= 0.80) return "q-warn";
-        return "q-bad";
+      function fmtMoney(x) {
+        if (typeof x !== "number") return "--";
+        const sign = x >= 0 ? "+" : "-";
+        const abs = Math.abs(x);
+        return sign + "$" + abs.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      }
+
+      function profitClass(x) {
+        if (typeof x !== "number") return "q-neutral";
+        if (x > 0.01) return "q-good";
+        if (x < -0.01) return "q-bad";
+        return "q-warn";
       }
 
       function render(lb, live) {
         const rankings = (lb && lb.rankings) ? lb.rankings : [];
+        const mode = (lb && typeof lb.metric_mode === "string") ? lb.metric_mode : "agentic";
 
         document.getElementById("lastUpdated").textContent = (lb && lb.generated_at) ? lb.generated_at : "Unknown";
         document.getElementById("runId").textContent = (lb && lb.active_run && lb.active_run.run_id) ? lb.active_run.run_id : "--";
         document.getElementById("tier").textContent = (lb && lb.active_run && lb.active_run.tier) ? lb.active_run.tier : "--";
-        document.getElementById("avgQuality").textContent = (lb && lb.summary) ? fmtNum(lb.summary.avg_quality_score) : "--";
-        document.getElementById("avgSuccess").textContent = (lb && lb.summary) ? fmtPct(lb.summary.avg_success_rate) : "--";
         document.getElementById("totalTokens").textContent = (lb && lb.summary) ? fmtNum(lb.summary.total_tokens) : "--";
+
+        // Metric cards (prefer agentic profit metrics; fall back to prompt-scoring if needed).
+        const k1 = document.getElementById("metricK1");
+        const v1 = document.getElementById("metricV1");
+        const k2 = document.getElementById("metricK2");
+        const v2 = document.getElementById("metricV2");
+
+        k1.textContent = "Avg profit";
+        k2.textContent = "Avg ROI";
+        if (lb && lb.summary && typeof lb.summary.avg_total_profit === "number") {
+          v1.textContent = fmtMoney(lb.summary.avg_total_profit);
+        } else if (lb && lb.summary && typeof lb.summary.avg_quality_score === "number") {
+          v1.textContent = fmtNum(lb.summary.avg_quality_score);
+        } else {
+          v1.textContent = "--";
+        }
+        if (lb && lb.summary && typeof lb.summary.avg_roi_pct === "number") {
+          v2.textContent = fmtPct(lb.summary.avg_roi_pct);
+        } else if (lb && lb.summary && typeof lb.summary.avg_success_rate === "number") {
+          v2.textContent = fmtPctFraction(lb.summary.avg_success_rate);
+        } else {
+          v2.textContent = "--";
+        }
 
         const active = !!(live && live.active);
         const badge = document.getElementById("liveBadge");
@@ -154,22 +189,44 @@
 
         const rows = document.getElementById("rows");
         if (!rankings.length) {
-          rows.innerHTML = '<tr><td colspan="7" class="muted">No data yet.</td></tr>';
+          rows.innerHTML = '<tr><td colspan="8" class="muted">No data yet.</td></tr>';
           return;
         }
 
         rows.innerHTML = rankings.map(r => {
-          const q = (typeof r.quality_score === "number") ? r.quality_score : 0;
-          const sr = (typeof r.success_rate === "number") ? r.success_rate : 0;
+          if (mode === "prompt") {
+            const q = (typeof r.quality_score === "number") ? r.quality_score : 0;
+            const sr = (typeof r.success_rate === "number") ? r.success_rate : 0;
+            const rt = (typeof r.avg_response_time === "number") ? r.avg_response_time : null;
+            return `
+              <tr>
+                <td><span class="rank">${r.rank}</span></td>
+                <td class="mono">${(r.model_slug || r.model_name || "unknown")}</td>
+                <td>${(r.provider || "unknown")}</td>
+                <td><span class="pill ${profitClass(q - 0.85)}">${fmtNum(q)}</span></td>
+                <td><span class="pill ${sr >= 1.0 ? "q-good" : sr >= 0.8 ? "q-warn" : "q-bad"}">${fmtPctFraction(sr)}</span></td>
+                <td class="mono">${fmtSec(rt)}</td>
+                <td>${fmtSec(null)}</td>
+                <td class="mono">${fmtNum(r.total_tokens)}</td>
+              </tr>
+            `;
+          }
+
+          const p = (typeof r.total_profit === "number") ? r.total_profit : null;
+          const roi = (typeof r.roi_pct === "number") ? r.roi_pct : null;
+          const calls = (typeof r.llm_calls === "number") ? r.llm_calls : null;
+          const avgCall = (typeof r.avg_call_seconds === "number") ? r.avg_call_seconds : null;
+          const tokens = (typeof r.total_tokens === "number") ? r.total_tokens : null;
           return `
             <tr>
               <td><span class="rank">${r.rank}</span></td>
               <td class="mono">${(r.model_slug || r.model_name || "unknown")}</td>
               <td>${(r.provider || "unknown")}</td>
-              <td><span class="pill ${qualityClass(q)}">${fmtNum(q)}</span></td>
-              <td><span class="pill ${sr >= 1.0 ? "q-good" : sr >= 0.8 ? "q-warn" : "q-bad"}">${fmtPct(sr)}</span></td>
-              <td>${fmtSec(r.avg_response_time)}</td>
-              <td class="mono">${fmtNum(r.total_tokens)}</td>
+              <td><span class="pill ${profitClass(p)}">${fmtMoney(p)}</span></td>
+              <td><span class="pill ${profitClass(roi)}">${roi === null ? "--" : fmtPct(roi)}</span></td>
+              <td class="mono">${calls === null ? "--" : fmtNum(calls)}</td>
+              <td>${fmtSec(avgCall)}</td>
+              <td class="mono">${fmtNum(tokens)}</td>
             </tr>
           `;
         }).join("");

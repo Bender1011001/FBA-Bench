@@ -131,6 +131,49 @@ All critical and medium priority issues resolved in hostile audit:
 - [docs/architecture.md](file:///c:/Users/admin/GitHub-projects/fba/FBA-Bench-Enterprise/docs/architecture.md) - Detailed architecture
 - [CONTRIBUTING.md](file:///c:/Users/admin/GitHub-projects/fba/FBA-Bench-Enterprise/CONTRIBUTING.md) - Coding standards
 
+## 🎯 Deterministic Simulation (2026-01-10)
+
+**Major refactor to achieve world-class simulation reproducibility:**
+
+### New Components
+
+| File | Purpose |
+|------|---------|
+| `src/reproducibility/deterministic_rng.py` | Component-isolated, seeded RNG with economic distributions |
+| Updated `simulation_modes.py` | Now initializes both SimSeed AND DeterministicRNG |
+
+### Fixes Applied
+
+| Issue | Location | Resolution |
+|-------|----------|------------|
+| Raw `random.random()` in competitor logic | `competitor_manager.py` | ✅ Uses `DeterministicRNG.for_component("competitor_manager")` |
+| Raw `random.*()` in scenario templates | `scenarios/templates.py` | ✅ Uses component-specific `self._rng` |
+| Fake `customer_satisfaction` metric | `ECommerceScenario` | ✅ `_calculate_customer_satisfaction()` from real data |
+| Fake `patient_satisfaction` metric | `HealthcareScenario` | ✅ `_calculate_patient_satisfaction()` from real data |
+
+### Reproducibility Guarantee
+
+With `simulation.seed: 42` in `simulation_settings.yaml`:
+- **Competitors:** Same prices, BSRs, and sales velocities every run
+- **Customer behavior:** Same purchase patterns every run  
+- **Market conditions:** Same demand and seasonal factors every run
+- **Metrics:** Based on actual simulation state, not random values
+
+### Usage Pattern
+
+```python
+# In any component needing randomness:
+from reproducibility.deterministic_rng import DeterministicRNG
+
+class MyComponent:
+    def __init__(self):
+        self._rng = DeterministicRNG.for_component("my_component")
+    
+    def do_something(self):
+        value = self._rng.random()  # Deterministic!
+        shock = self._rng.market_shock()  # Log-normal distribution
+```
+
 ---
 
 *See `.agent/context_template.md` for the subdirectory context file format.*

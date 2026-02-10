@@ -453,14 +453,32 @@ class SimulationModeController:
         """Apply mode configuration to core FBA-Bench systems."""
         results = {}
 
-        # Configure seed management
+        # Configure seed management (both SimSeed and DeterministicRNG)
         try:
             if config.enable_seeding and config.master_seed is not None:
+                # Configure legacy SimSeed system
                 SimSeed.reset_master_seed()
                 SimSeed.set_master_seed(config.master_seed)
                 SimSeed.enable_audit(config.audit_randomness)
+                
+                # Configure new DeterministicRNG system for world-class reproducibility
+                try:
+                    from reproducibility.deterministic_rng import DeterministicRNG
+                    DeterministicRNG.reset()
+                    DeterministicRNG.set_master_seed(config.master_seed)
+                    DeterministicRNG.enable_audit(config.audit_randomness)
+                    logger.debug(f"DeterministicRNG initialized with seed {config.master_seed}")
+                except ImportError:
+                    logger.warning("DeterministicRNG not available, using SimSeed only")
+                    
             elif not config.enable_seeding:
                 SimSeed.reset_master_seed()
+                # Also reset DeterministicRNG
+                try:
+                    from reproducibility.deterministic_rng import DeterministicRNG
+                    DeterministicRNG.reset()
+                except ImportError:
+                    pass
 
             results["seed_management"] = True
 

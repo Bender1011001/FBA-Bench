@@ -3,13 +3,23 @@ Scenario templates for different domains.
 
 This module provides concrete implementations of scenarios for various domains
 including e-commerce, healthcare, finance, legal, and scientific research.
+
+All randomness in this module uses deterministic RNG to ensure perfect
+reproducibility when provided with the same master seed.
 """
 
 import logging
-import random
 import statistics
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
+
+# Import deterministic RNG for reproducible simulations
+try:
+    from reproducibility.deterministic_rng import DeterministicRNG
+    _HAS_DETERMINISTIC_RNG = True
+except ImportError:
+    import random
+    _HAS_DETERMINISTIC_RNG = False
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +34,8 @@ class ECommerceScenario(ScenarioTemplate):
 
     This scenario simulates an e-commerce environment where agents must manage
     product pricing, inventory, and marketing strategies.
+    
+    All randomness uses deterministic RNG for perfect reproducibility.
     """
 
     def __init__(self, config: ScenarioConfig):
@@ -34,6 +46,16 @@ class ECommerceScenario(ScenarioTemplate):
             config: Scenario configuration
         """
         super().__init__(config)
+
+        # Initialize deterministic RNG for reproducible scenario generation
+        if _HAS_DETERMINISTIC_RNG:
+            self._rng = DeterministicRNG.for_component("ecommerce_scenario")
+        else:
+            self._rng = None
+            logger.warning(
+                "DeterministicRNG not available for ECommerceScenario. "
+                "Simulation will NOT be reproducible."
+            )
 
         # E-commerce specific state
         self.products = []
@@ -95,10 +117,15 @@ class ECommerceScenario(ScenarioTemplate):
         # Generate competitors
         self.competitors = self._generate_competitors(3)
 
-        # Initialize market conditions
-        self.market_demand = random.uniform(0.8, 1.2)
-        self.seasonal_factor = random.uniform(0.9, 1.1)
-        self.competition_level = random.uniform(0.3, 0.7)
+        # Initialize market conditions (deterministic)
+        if self._rng:
+            self.market_demand = self._rng.uniform(0.8, 1.2)
+            self.seasonal_factor = self._rng.uniform(0.9, 1.1)
+            self.competition_level = self._rng.uniform(0.3, 0.7)
+        else:
+            self.market_demand = 1.0
+            self.seasonal_factor = 1.0
+            self.competition_level = 0.5
 
         # Update global state
         self.global_state.update(
@@ -118,58 +145,93 @@ class ECommerceScenario(ScenarioTemplate):
         )
 
     def _generate_products(self, count: int) -> List[Dict[str, Any]]:
-        """Generate random products."""
+        """Generate products with deterministic randomness."""
         products = []
         categories = ["Electronics", "Clothing", "Home", "Books", "Sports"]
 
         for i in range(count):
-            product = {
-                "id": f"product_{i}",
-                "name": f"Product {i}",
-                "category": random.choice(categories),
-                "base_price": random.uniform(10, 100),
-                "current_price": random.uniform(10, 100),
-                "inventory": random.randint(10, 100),
-                "cost": random.uniform(5, 50),
-                "popularity": random.uniform(0.1, 1.0),
-            }
+            if self._rng:
+                product = {
+                    "id": f"product_{i}",
+                    "name": f"Product {i}",
+                    "category": self._rng.choice(categories),
+                    "base_price": self._rng.uniform(10, 100),
+                    "current_price": self._rng.uniform(10, 100),
+                    "inventory": self._rng.randint(10, 100),
+                    "cost": self._rng.uniform(5, 50),
+                    "popularity": self._rng.uniform(0.1, 1.0),
+                }
+            else:
+                # Fallback: use deterministic defaults for reproducibility
+                product = {
+                    "id": f"product_{i}",
+                    "name": f"Product {i}",
+                    "category": categories[i % len(categories)],
+                    "base_price": 50.0 + (i * 5) % 50,
+                    "current_price": 50.0 + (i * 5) % 50,
+                    "inventory": 50 + (i * 7) % 50,
+                    "cost": 25.0 + (i * 3) % 25,
+                    "popularity": 0.5 + (i * 0.05) % 0.5,
+                }
             products.append(product)
 
         return products
 
     def _generate_customers(self, count: int) -> List[Dict[str, Any]]:
-        """Generate random customers."""
+        """Generate customers with deterministic randomness."""
         customers = []
 
         for i in range(count):
-            customer = {
-                "id": f"customer_{i}",
-                "budget": random.uniform(50, 500),
-                "preferences": {
-                    "price_sensitivity": random.uniform(0.1, 1.0),
-                    "quality_preference": random.uniform(0.1, 1.0),
-                    "brand_loyalty": random.uniform(0.1, 1.0),
-                },
-                "purchase_history": [],
-            }
+            if self._rng:
+                customer = {
+                    "id": f"customer_{i}",
+                    "budget": self._rng.uniform(50, 500),
+                    "preferences": {
+                        "price_sensitivity": self._rng.uniform(0.1, 1.0),
+                        "quality_preference": self._rng.uniform(0.1, 1.0),
+                        "brand_loyalty": self._rng.uniform(0.1, 1.0),
+                    },
+                    "purchase_history": [],
+                }
+            else:
+                # Fallback: deterministic customer generation
+                customer = {
+                    "id": f"customer_{i}",
+                    "budget": 200.0 + (i * 30) % 300,
+                    "preferences": {
+                        "price_sensitivity": 0.5 + (i * 0.03) % 0.5,
+                        "quality_preference": 0.5 + (i * 0.04) % 0.5,
+                        "brand_loyalty": 0.5 + (i * 0.02) % 0.5,
+                    },
+                    "purchase_history": [],
+                }
             customers.append(customer)
 
         return customers
 
     def _generate_competitors(self, count: int) -> List[Dict[str, Any]]:
-        """Generate random competitors."""
+        """Generate competitors with deterministic randomness."""
         competitors = []
+        strategies = ["aggressive", "moderate", "premium"]
 
         for i in range(count):
-            competitor = {
-                "id": f"competitor_{i}",
-                "name": f"Competitor {i}",
-                "market_share": random.uniform(0.1, 0.3),
-                "pricing_strategy": random.choice(
-                    ["aggressive", "moderate", "premium"]
-                ),
-                "reputation": random.uniform(0.5, 1.0),
-            }
+            if self._rng:
+                competitor = {
+                    "id": f"competitor_{i}",
+                    "name": f"Competitor {i}",
+                    "market_share": self._rng.uniform(0.1, 0.3),
+                    "pricing_strategy": self._rng.choice(strategies),
+                    "reputation": self._rng.uniform(0.5, 1.0),
+                }
+            else:
+                # Fallback: deterministic competitor generation
+                competitor = {
+                    "id": f"competitor_{i}",
+                    "name": f"Competitor {i}",
+                    "market_share": 0.2 + (i * 0.05) % 0.1,
+                    "pricing_strategy": strategies[i % len(strategies)],
+                    "reputation": 0.7 + (i * 0.1) % 0.3,
+                }
             competitors.append(competitor)
 
         return competitors
@@ -196,60 +258,98 @@ class ECommerceScenario(ScenarioTemplate):
             self._simulate_competitor_actions(tick)
 
     def _update_market_conditions(self) -> None:
-        """Update market conditions."""
+        """Update market conditions (deterministic)."""
         # Gradual changes in market demand
-        self.market_demand += random.uniform(-0.05, 0.05)
+        if self._rng:
+            demand_change = self._rng.uniform(-0.05, 0.05)
+            seasonal_change = self._rng.uniform(-0.02, 0.02)
+        else:
+            # Deterministic fallback: small fixed oscillation
+            demand_change = 0.01 if (self.current_tick // 10) % 2 == 0 else -0.01
+            seasonal_change = 0.005 if (self.current_tick // 10) % 3 == 0 else -0.005
+        
+        self.market_demand += demand_change
         self.market_demand = max(0.5, min(1.5, self.market_demand))
 
         # Seasonal changes
-        self.seasonal_factor += random.uniform(-0.02, 0.02)
+        self.seasonal_factor += seasonal_change
         self.seasonal_factor = max(0.8, min(1.2, self.seasonal_factor))
 
     def _simulate_customer_behavior(self, tick: int) -> None:
-        """Simulate customer purchasing behavior."""
-        # Random customer purchases
-        num_purchases = random.randint(0, len(self.customers) // 10)
+        """Simulate customer purchasing behavior (deterministic)."""
+        # Deterministic customer purchases based on RNG
+        if self._rng:
+            num_purchases = self._rng.randint(0, max(1, len(self.customers) // 10))
+        else:
+            # Fallback: deterministic based on tick
+            num_purchases = (tick * 7) % max(1, len(self.customers) // 10)
 
-        for _ in range(num_purchases):
-            customer = random.choice(self.customers)
-            product = random.choice(self.products)
+        for i in range(num_purchases):
+            if self._rng:
+                customer = self._rng.choice(self.customers)
+                product = self._rng.choice(self.products)
+            else:
+                # Deterministic selection
+                customer = self.customers[i % len(self.customers)]
+                product = self.products[i % len(self.products)]
 
-            # Calculate purchase probability
+            # Calculate purchase probability based on economic factors
             price_factor = 1.0 - (product["current_price"] / 100.0)
             demand_factor = self.market_demand * self.seasonal_factor
+            customer_price_sensitivity = customer["preferences"].get("price_sensitivity", 0.5)
+            
+            # More sophisticated purchase probability considering customer preferences
+            purchase_probability = (
+                price_factor * demand_factor * (1 - customer_price_sensitivity * 0.5) * 0.15
+            )
 
-            purchase_probability = price_factor * demand_factor * 0.1
+            purchase_roll = self._rng.random() if self._rng else 0.5
+            if purchase_roll < purchase_probability:
+                # Determine quantity based on budget and price
+                max_affordable = int(customer["budget"] / product["current_price"])
+                if max_affordable > 0 and product["inventory"] > 0:
+                    if self._rng:
+                        quantity = self._rng.randint(1, min(5, max_affordable, product["inventory"]))
+                    else:
+                        quantity = min(2, max_affordable, product["inventory"])
+                    
+                    order = {
+                        "customer_id": customer["id"],
+                        "product_id": product["id"],
+                        "price": product["current_price"],
+                        "quantity": quantity,
+                        "timestamp": tick,
+                    }
+                    self.orders.append(order)
 
-            if random.random() < purchase_probability:
-                # Make purchase
-                order = {
-                    "customer_id": customer["id"],
-                    "product_id": product["id"],
-                    "price": product["current_price"],
-                    "quantity": random.randint(1, 5),
-                    "timestamp": tick,
-                }
-                self.orders.append(order)
+                    # Update product inventory
+                    product["inventory"] = max(0, product["inventory"] - order["quantity"])
 
-                # Update product inventory
-                product["inventory"] -= order["quantity"]
-
-                # Update customer budget
-                customer["budget"] -= order["price"] * order["quantity"]
+                    # Update customer budget
+                    customer["budget"] -= order["price"] * order["quantity"]
 
     def _simulate_competitor_actions(self, tick: int) -> None:
-        """Simulate competitor pricing actions."""
+        """Simulate competitor pricing actions (deterministic)."""
         for competitor in self.competitors:
-            # Random price adjustments
-            if random.random() < 0.3:  # 30% chance
-                # Adjust prices of random products
-                for product in random.sample(self.products, min(3, len(self.products))):
+            # Deterministic price adjustments based on strategy and RNG
+            action_roll = self._rng.random() if self._rng else 0.5
+            if action_roll < 0.3:  # 30% chance to adjust (deterministic when seeded)
+                # Select products to adjust
+                if self._rng and len(self.products) > 3:
+                    selected_products = self._rng.sample(self.products, min(3, len(self.products)))
+                else:
+                    selected_products = self.products[:min(3, len(self.products))]
+                
+                for product in selected_products:
                     if competitor["pricing_strategy"] == "aggressive":
-                        product["current_price"] *= random.uniform(0.95, 0.99)
+                        multiplier = self._rng.uniform(0.95, 0.99) if self._rng else 0.97
+                        product["current_price"] *= multiplier
                     elif competitor["pricing_strategy"] == "premium":
-                        product["current_price"] *= random.uniform(1.01, 1.05)
+                        multiplier = self._rng.uniform(1.01, 1.05) if self._rng else 1.03
+                        product["current_price"] *= multiplier
                     else:  # moderate
-                        product["current_price"] *= random.uniform(0.98, 1.02)
+                        multiplier = self._rng.uniform(0.98, 1.02) if self._rng else 1.0
+                        product["current_price"] *= multiplier
 
     async def evaluate_agent_performance(self, agent_id: str) -> Dict[str, Any]:
         """
@@ -288,7 +388,10 @@ class ECommerceScenario(ScenarioTemplate):
         ]
         market_share = len(agent_orders) / total_orders if total_orders > 0 else 0
 
-        # Update metrics
+        # Update metrics with CALCULATED customer satisfaction
+        # (Based on real simulation data, NOT random values!)
+        customer_satisfaction = self._calculate_customer_satisfaction()
+        
         ecommerce_metrics = {
             "total_revenue": total_revenue,
             "total_orders": total_orders,
@@ -296,7 +399,7 @@ class ECommerceScenario(ScenarioTemplate):
             "profit": profit,
             "market_share": market_share,
             "inventory_turnover": self._calculate_inventory_turnover(),
-            "customer_satisfaction": random.uniform(0.7, 0.95),  # Simulated
+            "customer_satisfaction": customer_satisfaction,
         }
 
         base_metrics.update(ecommerce_metrics)
@@ -311,6 +414,76 @@ class ECommerceScenario(ScenarioTemplate):
             return 0.0
 
         return total_sold / total_inventory
+
+    def _calculate_customer_satisfaction(self) -> float:
+        """
+        Calculate customer satisfaction based on REAL simulation metrics.
+        
+        This replaces the fake random.uniform(0.7, 0.95) approach with an
+        evidence-based calculation derived from actual simulation state.
+        
+        Factors considered:
+        1. Order fulfillment rate (40% weight): Were products in stock?
+        2. Price competitiveness (30% weight): Are prices reasonable?
+        3. Inventory availability (20% weight): Can customers find what they want?
+        4. Service quality proxy (10% weight): Based on order frequency
+        
+        Returns:
+            Customer satisfaction score (0.0 to 1.0)
+        """
+        if not self.orders and not self.products:
+            return 0.5  # Neutral when no data
+        
+        # Factor 1: Order fulfillment rate (40%)
+        # Measured by: percentage of products with positive inventory
+        products_in_stock = sum(1 for p in self.products if p.get("inventory", 0) > 0)
+        in_stock_rate = products_in_stock / len(self.products) if self.products else 1.0
+        fulfillment_score = in_stock_rate
+        
+        # Factor 2: Price competitiveness (30%)
+        # Measured by: how close current prices are to base prices (lower = better value)
+        if self.products:
+            price_ratios = []
+            for p in self.products:
+                base = p.get("base_price", p.get("current_price", 50))
+                current = p.get("current_price", base)
+                if base > 0:
+                    ratio = current / base
+                    # Score: 1.0 if at or below base, decreasing as price increases
+                    price_score = max(0.0, min(1.0, 2.0 - ratio))
+                    price_ratios.append(price_score)
+            price_competitiveness = sum(price_ratios) / len(price_ratios) if price_ratios else 0.7
+        else:
+            price_competitiveness = 0.7
+        
+        # Factor 3: Inventory availability (20%)
+        # Measured by: average inventory level relative to expected demand
+        if self.products:
+            avg_inventory = sum(p.get("inventory", 0) for p in self.products) / len(self.products)
+            # Normalize: assume 50 units is "good" inventory
+            inventory_score = min(1.0, avg_inventory / 50.0)
+        else:
+            inventory_score = 0.5
+        
+        # Factor 4: Service quality proxy (10%)
+        # Measured by: order frequency relative to customer base
+        if self.customers and self.orders:
+            orders_per_customer = len(self.orders) / len(self.customers)
+            # Normalize: assume 2 orders per customer is "excellent"
+            service_score = min(1.0, orders_per_customer / 2.0)
+        else:
+            service_score = 0.3
+        
+        # Weighted composite score
+        satisfaction = (
+            fulfillment_score * 0.40 +
+            price_competitiveness * 0.30 +
+            inventory_score * 0.20 +
+            service_score * 0.10
+        )
+        
+        # Clamp to valid range
+        return max(0.0, min(1.0, satisfaction))
 
 
 class HealthcareScenario(ScenarioTemplate):
@@ -329,6 +502,16 @@ class HealthcareScenario(ScenarioTemplate):
             config: Scenario configuration
         """
         super().__init__(config)
+
+        # Initialize deterministic RNG for reproducible scenario generation
+        if _HAS_DETERMINISTIC_RNG:
+            self._rng = DeterministicRNG.for_component("healthcare_scenario")
+        else:
+            self._rng = None
+            logger.warning(
+                "DeterministicRNG not available for HealthcareScenario. "
+                "Simulation will NOT be reproducible."
+            )
 
         # Healthcare specific state
         self.patients = []
@@ -402,111 +585,199 @@ class HealthcareScenario(ScenarioTemplate):
         )
 
     def _generate_medical_conditions(self) -> List[Dict[str, Any]]:
-        """Generate medical conditions."""
-        conditions = [
-            {
-                "id": "flu",
-                "name": "Influenza",
-                "symptoms": ["fever", "cough", "fatigue", "body aches"],
-                "severity": random.uniform(0.3, 0.7),
-                "prevalence": random.uniform(0.1, 0.3),
-            },
-            {
-                "id": "diabetes",
-                "name": "Type 2 Diabetes",
-                "symptoms": [
-                    "increased thirst",
-                    "frequent urination",
-                    "fatigue",
-                    "blurred vision",
-                ],
-                "severity": random.uniform(0.5, 0.8),
-                "prevalence": random.uniform(0.05, 0.15),
-            },
-            {
-                "id": "hypertension",
-                "name": "High Blood Pressure",
-                "symptoms": [
-                    "headaches",
-                    "shortness of breath",
-                    "nosebleeds",
-                    "chest pain",
-                ],
-                "severity": random.uniform(0.4, 0.7),
-                "prevalence": random.uniform(0.2, 0.4),
-            },
-        ]
+        """Generate medical conditions with deterministic randomness."""
+        # Use deterministic values - severity and prevalence are based on
+        # medical literature but with RNG for variability when available
+        if self._rng:
+            conditions = [
+                {
+                    "id": "flu",
+                    "name": "Influenza",
+                    "symptoms": ["fever", "cough", "fatigue", "body aches"],
+                    "severity": self._rng.uniform(0.3, 0.7),
+                    "prevalence": self._rng.uniform(0.1, 0.3),
+                },
+                {
+                    "id": "diabetes",
+                    "name": "Type 2 Diabetes",
+                    "symptoms": [
+                        "increased thirst",
+                        "frequent urination",
+                        "fatigue",
+                        "blurred vision",
+                    ],
+                    "severity": self._rng.uniform(0.5, 0.8),
+                    "prevalence": self._rng.uniform(0.05, 0.15),
+                },
+                {
+                    "id": "hypertension",
+                    "name": "High Blood Pressure",
+                    "symptoms": [
+                        "headaches",
+                        "shortness of breath",
+                        "nosebleeds",
+                        "chest pain",
+                    ],
+                    "severity": self._rng.uniform(0.4, 0.7),
+                    "prevalence": self._rng.uniform(0.2, 0.4),
+                },
+            ]
+        else:
+            # Deterministic fallback based on medical literature
+            conditions = [
+                {
+                    "id": "flu",
+                    "name": "Influenza",
+                    "symptoms": ["fever", "cough", "fatigue", "body aches"],
+                    "severity": 0.5,
+                    "prevalence": 0.2,
+                },
+                {
+                    "id": "diabetes",
+                    "name": "Type 2 Diabetes",
+                    "symptoms": [
+                        "increased thirst",
+                        "frequent urination",
+                        "fatigue",
+                        "blurred vision",
+                    ],
+                    "severity": 0.65,
+                    "prevalence": 0.1,
+                },
+                {
+                    "id": "hypertension",
+                    "name": "High Blood Pressure",
+                    "symptoms": [
+                        "headaches",
+                        "shortness of breath",
+                        "nosebleeds",
+                        "chest pain",
+                    ],
+                    "severity": 0.55,
+                    "prevalence": 0.3,
+                },
+            ]
         return conditions
 
     def _generate_treatments(self) -> List[Dict[str, Any]]:
-        """Generate medical treatments."""
-        treatments = [
-            {
-                "id": "medication",
-                "name": "Medication Therapy",
-                "effectiveness": random.uniform(0.7, 0.9),
-                "cost": random.uniform(50, 200),
-                "duration": random.randint(7, 30),
-            },
-            {
-                "id": "surgery",
-                "name": "Surgical Intervention",
-                "effectiveness": random.uniform(0.8, 0.95),
-                "cost": random.uniform(1000, 10000),
-                "duration": random.randint(1, 7),
-            },
-            {
-                "id": "therapy",
-                "name": "Physical Therapy",
-                "effectiveness": random.uniform(0.6, 0.8),
-                "cost": random.uniform(100, 500),
-                "duration": random.randint(14, 90),
-            },
-        ]
+        """Generate medical treatments with deterministic randomness."""
+        if self._rng:
+            treatments = [
+                {
+                    "id": "medication",
+                    "name": "Medication Therapy",
+                    "effectiveness": self._rng.uniform(0.7, 0.9),
+                    "cost": self._rng.uniform(50, 200),
+                    "duration": self._rng.randint(7, 30),
+                },
+                {
+                    "id": "surgery",
+                    "name": "Surgical Intervention",
+                    "effectiveness": self._rng.uniform(0.8, 0.95),
+                    "cost": self._rng.uniform(1000, 10000),
+                    "duration": self._rng.randint(1, 7),
+                },
+                {
+                    "id": "therapy",
+                    "name": "Physical Therapy",
+                    "effectiveness": self._rng.uniform(0.6, 0.8),
+                    "cost": self._rng.uniform(100, 500),
+                    "duration": self._rng.randint(14, 90),
+                },
+            ]
+        else:
+            # Deterministic fallback based on medical literature
+            treatments = [
+                {
+                    "id": "medication",
+                    "name": "Medication Therapy",
+                    "effectiveness": 0.8,
+                    "cost": 125.0,
+                    "duration": 14,
+                },
+                {
+                    "id": "surgery",
+                    "name": "Surgical Intervention",
+                    "effectiveness": 0.87,
+                    "cost": 5000.0,
+                    "duration": 3,
+                },
+                {
+                    "id": "therapy",
+                    "name": "Physical Therapy",
+                    "effectiveness": 0.7,
+                    "cost": 300.0,
+                    "duration": 45,
+                },
+            ]
         return treatments
 
     def _generate_patients(self, count: int) -> List[Dict[str, Any]]:
-        """Generate patients."""
+        """Generate patients with deterministic randomness."""
         patients = []
+        genders = ["male", "female"]
 
         for i in range(count):
-            # Assign random condition
-            condition = random.choice(self.medical_conditions)
-
-            patient = {
-                "id": f"patient_{i}",
-                "age": random.randint(18, 80),
-                "gender": random.choice(["male", "female"]),
-                "condition": condition["id"],
-                "symptoms": random.sample(
-                    condition["symptoms"], random.randint(2, len(condition["symptoms"]))
-                ),
-                "severity": random.uniform(0.1, 1.0),
-                "medical_history": [],
-                "treatment_plan": None,
-                "status": "waiting",  # waiting, diagnosed, treating, recovered
-            }
+            if self._rng:
+                condition = self._rng.choice(self.medical_conditions)
+                num_symptoms = self._rng.randint(2, len(condition["symptoms"]))
+                patient = {
+                    "id": f"patient_{i}",
+                    "age": self._rng.randint(18, 80),
+                    "gender": self._rng.choice(genders),
+                    "condition": condition["id"],
+                    "symptoms": self._rng.sample(condition["symptoms"], num_symptoms),
+                    "severity": self._rng.uniform(0.1, 1.0),
+                    "medical_history": [],
+                    "treatment_plan": None,
+                    "status": "waiting",
+                }
+            else:
+                # Deterministic fallback
+                condition = self.medical_conditions[i % len(self.medical_conditions)]
+                patient = {
+                    "id": f"patient_{i}",
+                    "age": 40 + (i * 3) % 40,
+                    "gender": genders[i % 2],
+                    "condition": condition["id"],
+                    "symptoms": condition["symptoms"][:2],
+                    "severity": 0.5 + (i * 0.03) % 0.5,
+                    "medical_history": [],
+                    "treatment_plan": None,
+                    "status": "waiting",
+                }
             patients.append(patient)
 
         return patients
 
     def _generate_medical_staff(self, count: int) -> List[Dict[str, Any]]:
-        """Generate medical staff."""
+        """Generate medical staff with deterministic randomness."""
         staff = []
         roles = ["doctor", "nurse", "specialist", "technician"]
+        specializations = ["cardiology", "neurology", "pediatrics", "general"]
 
         for i in range(count):
-            staff_member = {
-                "id": f"staff_{i}",
-                "name": f"Staff Member {i}",
-                "role": random.choice(roles),
-                "experience": random.randint(1, 20),
-                "specialization": random.choice(
-                    ["cardiology", "neurology", "pediatrics", "general"]
-                ),
-                "workload": 0,
-                "patients_assigned": [],
-            }
+            if self._rng:
+                staff_member = {
+                    "id": f"staff_{i}",
+                    "name": f"Staff Member {i}",
+                    "role": self._rng.choice(roles),
+                    "experience": self._rng.randint(1, 20),
+                    "specialization": self._rng.choice(specializations),
+                    "workload": 0,
+                    "patients_assigned": [],
+                }
+            else:
+                # Deterministic fallback
+                staff_member = {
+                    "id": f"staff_{i}",
+                    "name": f"Staff Member {i}",
+                    "role": roles[i % len(roles)],
+                    "experience": 5 + (i * 2) % 15,
+                    "specialization": specializations[i % len(specializations)],
+                    "workload": 0,
+                    "patients_assigned": [],
+                }
             staff.append(staff_member)
 
         return staff
@@ -532,60 +803,81 @@ class HealthcareScenario(ScenarioTemplate):
         self._update_staff_workload()
 
     def _simulate_patient_arrival(self) -> None:
-        """Simulate new patient arrivals."""
-        if random.random() < 0.3:  # 30% chance
+        """Simulate new patient arrivals (deterministic)."""
+        arrival_roll = self._rng.random() if self._rng else 0.5
+        if arrival_roll < 0.3:  # 30% chance (deterministic when seeded)
             # Generate new patient
-            condition = random.choice(self.medical_conditions)
-
-            patient = {
-                "id": f"patient_{len(self.patients)}",
-                "age": random.randint(18, 80),
-                "gender": random.choice(["male", "female"]),
-                "condition": condition["id"],
-                "symptoms": random.sample(
-                    condition["symptoms"], random.randint(2, len(condition["symptoms"]))
-                ),
-                "severity": random.uniform(0.1, 1.0),
-                "medical_history": [],
-                "treatment_plan": None,
-                "status": "waiting",
-                "arrival_time": self.current_tick,
-            }
+            if self._rng:
+                condition = self._rng.choice(self.medical_conditions)
+                num_symptoms = self._rng.randint(2, len(condition["symptoms"]))
+                patient = {
+                    "id": f"patient_{len(self.patients)}",
+                    "age": self._rng.randint(18, 80),
+                    "gender": self._rng.choice(["male", "female"]),
+                    "condition": condition["id"],
+                    "symptoms": self._rng.sample(condition["symptoms"], num_symptoms),
+                    "severity": self._rng.uniform(0.1, 1.0),
+                    "medical_history": [],
+                    "treatment_plan": None,
+                    "status": "waiting",
+                    "arrival_time": self.current_tick,
+                }
+            else:
+                # Deterministic fallback when no RNG available
+                condition = self.medical_conditions[len(self.patients) % len(self.medical_conditions)]
+                patient = {
+                    "id": f"patient_{len(self.patients)}",
+                    "age": 45,
+                    "gender": "male" if len(self.patients) % 2 == 0 else "female",
+                    "condition": condition["id"],
+                    "symptoms": condition["symptoms"][:2],
+                    "severity": 0.5,
+                    "medical_history": [],
+                    "treatment_plan": None,
+                    "status": "waiting",
+                    "arrival_time": self.current_tick,
+                }
             self.patients.append(patient)
 
     def _simulate_treatment_progress(self, tick: int) -> None:
-        """Simulate treatment progress for patients."""
+        """Simulate treatment progress for patients (deterministic)."""
         for patient in self.patients:
             if patient["status"] == "treating" and patient["treatment_plan"]:
-                # Update treatment progress
+                # Update treatment progress with deterministic randomness
                 treatment = patient["treatment_plan"]
-                treatment["progress"] += random.uniform(0.05, 0.15)
+                progress_increment = self._rng.uniform(0.05, 0.15) if self._rng else 0.1
+                treatment["progress"] += progress_increment
 
                 if treatment["progress"] >= 1.0:
                     # Treatment completed
                     patient["status"] = "recovered"
                     treatment["end_time"] = tick
 
-                    # Calculate treatment outcome
-                    treatment_success = random.random() < treatment["effectiveness"]
+                    # Calculate treatment outcome (deterministic)
+                    success_roll = self._rng.random() if self._rng else 0.5
+                    treatment_success = success_roll < treatment["effectiveness"]
                     patient["treatment_success"] = treatment_success
 
     def _update_staff_workload(self) -> None:
-        """Update medical staff workload."""
+        """Update medical staff workload (deterministic)."""
         # Reset workload
         for staff in self.medical_staff:
             staff["workload"] = 0
             staff["patients_assigned"] = []
 
-        # Assign patients to staff
-        for patient in self.patients:
+        # Assign patients to staff deterministically
+        for idx, patient in enumerate(self.patients):
             if patient["status"] in ["diagnosed", "treating"]:
                 # Find available staff
                 available_staff = [
                     s for s in self.medical_staff if len(s["patients_assigned"]) < 5
                 ]
                 if available_staff:
-                    staff = random.choice(available_staff)
+                    if self._rng:
+                        staff = self._rng.choice(available_staff)
+                    else:
+                        # Deterministic assignment based on patient index
+                        staff = available_staff[idx % len(available_staff)]
                     staff["patients_assigned"].append(patient["id"])
                     staff["workload"] += 1
 
@@ -642,8 +934,8 @@ class HealthcareScenario(ScenarioTemplate):
             )
             self.treatment_effectiveness = successful_treatments / len(agent_treatments)
 
-        # Calculate patient satisfaction (simulated)
-        self.patient_satisfaction = random.uniform(0.7, 0.95)
+        # CALCULATED patient satisfaction based on REAL simulation metrics
+        self.patient_satisfaction = self._calculate_patient_satisfaction()
 
         # Update metrics
         healthcare_metrics = {
@@ -672,6 +964,68 @@ class HealthcareScenario(ScenarioTemplate):
         )
 
         return total_wait_time / len(waiting_patients)
+
+    def _calculate_patient_satisfaction(self) -> float:
+        """
+        Calculate patient satisfaction based on REAL simulation metrics.
+        
+        This replaces the fake random.uniform(0.7, 0.95) approach with an
+        evidence-based calculation derived from actual simulation state.
+        
+        Factors considered:
+        1. Wait time factor (35% weight): Shorter waits = higher satisfaction
+        2. Treatment success rate (35% weight): Successful treatments boost satisfaction
+        3. Diagnosis coverage (20% weight): Percentage of patients diagnosed
+        4. Staff availability (10% weight): Low workload = better attention
+        
+        Returns:
+            Patient satisfaction score (0.0 to 1.0)
+        """
+        if not self.patients:
+            return 0.5  # Neutral when no patients
+        
+        # Factor 1: Wait time factor (35%)
+        # Lower wait times = higher satisfaction
+        avg_wait = self._calculate_average_wait_time()
+        # Assume 10 ticks is acceptable wait time, satisfaction decreases after
+        wait_satisfaction = max(0.0, 1.0 - (avg_wait / 20.0))
+        
+        # Factor 2: Treatment success rate (35%)
+        recovered = [p for p in self.patients if p["status"] == "recovered"]
+        if recovered:
+            successful = sum(1 for p in recovered if p.get("treatment_success", False))
+            treatment_satisfaction = successful / len(recovered)
+        else:
+            treatment_satisfaction = 0.5  # Neutral when no recoveries yet
+        
+        # Factor 3: Diagnosis coverage (20%)
+        # Percentage of patients who have been diagnosed or treated
+        non_waiting = sum(
+            1 for p in self.patients
+            if p["status"] in ["diagnosed", "treating", "recovered"]
+        )
+        diagnosis_coverage = non_waiting / len(self.patients)
+        
+        # Factor 4: Staff availability (10%)
+        # Average workload per staff member (lower is better)
+        if self.medical_staff:
+            total_workload = sum(s["workload"] for s in self.medical_staff)
+            avg_workload = total_workload / len(self.medical_staff)
+            # Normalize: 5 patients per staff is max capacity
+            availability = max(0.0, 1.0 - (avg_workload / 5.0))
+        else:
+            availability = 0.0
+        
+        # Weighted composite score
+        satisfaction = (
+            wait_satisfaction * 0.35 +
+            treatment_satisfaction * 0.35 +
+            diagnosis_coverage * 0.20 +
+            availability * 0.10
+        )
+        
+        # Clamp to valid range
+        return max(0.0, min(1.0, satisfaction))
 
 
 class FinancialScenario(ScenarioTemplate):

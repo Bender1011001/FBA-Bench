@@ -227,7 +227,7 @@ a { color: inherit; }
 .table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 820px;
+  min-width: 980px;
 }
 
 .table th, .table td {
@@ -258,6 +258,24 @@ a { color: inherit; }
   background: rgba(255, 255, 255, 0.04);
   font-weight: 700;
 }
+
+.mono { font-variant-ligatures: none; }
+
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.q-neutral { color: var(--text); }
+.q-good { color: var(--green); border-color: rgba(50, 255, 126, 0.28); }
+.q-warn { color: var(--amber); border-color: rgba(255, 209, 102, 0.28); }
+.q-bad { color: var(--red); border-color: rgba(255, 59, 59, 0.28); }
 
 .mono {
   font-variant-ligatures: none;
@@ -304,4 +322,3 @@ a { color: inherit; }
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .right { align-items: flex-start; flex-direction: column; }
 }
-

@@ -1,8 +1,25 @@
-import random
+"""
+Scenario Framework for FBA-Bench Enterprise.
+
+All randomness in this module uses deterministic RNG to ensure perfect
+reproducibility when provided with the same master seed.
+"""
+
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import yaml
+
+# Import deterministic RNG for reproducible scenario generation
+try:
+    from reproducibility.deterministic_rng import DeterministicRNG
+    _HAS_DETERMINISTIC_RNG = True
+    # Get module-level RNG instance
+    _scenario_rng = DeterministicRNG.for_component("scenario_framework")
+except ImportError:
+    import random
+    _HAS_DETERMINISTIC_RNG = False
+    _scenario_rng = None
 
 
 class ScenarioValidator:
@@ -73,13 +90,23 @@ class ScenarioGenerator:
 
     @staticmethod
     def calculate_event_timing(event: Dict[str, Any], timeline: int) -> int:
+        """Calculate event timing with deterministic randomness."""
         if "timing_preference" in event:
             pref = event["timing_preference"]
             if pref == "early":
-                return random.randint(1, timeline // 3)
+                if _scenario_rng:
+                    return _scenario_rng.randint(1, max(1, timeline // 3))
+                else:
+                    return timeline // 6  # Deterministic fallback
             elif pref == "late":
-                return random.randint(2 * timeline // 3, timeline)
-        return random.randint(1, timeline)
+                if _scenario_rng:
+                    return _scenario_rng.randint(max(1, 2 * timeline // 3), timeline)
+                else:
+                    return 5 * timeline // 6  # Deterministic fallback
+        if _scenario_rng:
+            return _scenario_rng.randint(1, max(1, timeline))
+        else:
+            return timeline // 2  # Deterministic fallback: midpoint
 
 
 class ScenarioConfig:
@@ -1025,59 +1052,41 @@ class ScenarioFramework:
         }
 
         if category in attribute_values and attribute in attribute_values[category]:
-            return random.choice(attribute_values[category][attribute])
+            values = attribute_values[category][attribute]
+            if _scenario_rng:
+                return _scenario_rng.choice(values)
+            else:
+                return values[0]  # Deterministic fallback: first value
 
         return "standard"  # Default value
 
     def _generate_variant_attributes(self, variant_types: List[str]) -> Dict[str, Any]:
-        """Generates attributes for product variants."""
+        """Generates attributes for product variants (deterministic)."""
         variant_attributes = {}
+        
+        # Define all variant options
+        variant_options = {
+            "storage_size": ["64GB", "128GB", "256GB", "512GB", "1TB"],
+            "color": ["black", "white", "silver", "blue", "red", "green"],
+            "size": ["XS", "S", "M", "L", "XL", "XXL"],
+            "style": ["casual", "formal", "sport", "classic"],
+            "connectivity": ["WiFi", "WiFi+Cellular", "5G", "Bluetooth only"],
+            "model": ["base", "sport", "luxury", "performance"],
+            "trim_level": ["base", "mid", "high", "premium"],
+            "material": ["plastic", "metal", "wood", "glass", "fabric"],
+            "flavor": ["vanilla", "chocolate", "strawberry", "mint", "caramel"],
+            "packaging_size": ["small", "medium", "large", "family", "bulk"],
+            "dietary_category": ["regular", "low-fat", "sugar-free", "gluten-free", "vegan"],
+        }
 
-        for variant_type in variant_types:
-            if variant_type == "storage_size":
-                variant_attributes[variant_type] = random.choice(
-                    ["64GB", "128GB", "256GB", "512GB", "1TB"]
-                )
-            elif variant_type == "color":
-                variant_attributes[variant_type] = random.choice(
-                    ["black", "white", "silver", "blue", "red", "green"]
-                )
-            elif variant_type == "size":
-                variant_attributes[variant_type] = random.choice(
-                    ["XS", "S", "M", "L", "XL", "XXL"]
-                )
-            elif variant_type == "style":
-                variant_attributes[variant_type] = random.choice(
-                    ["casual", "formal", "sport", "classic"]
-                )
-            elif variant_type == "connectivity":
-                variant_attributes[variant_type] = random.choice(
-                    ["WiFi", "WiFi+Cellular", "5G", "Bluetooth only"]
-                )
-            elif variant_type == "model":
-                variant_attributes[variant_type] = random.choice(
-                    ["base", "sport", "luxury", "performance"]
-                )
-            elif variant_type == "trim_level":
-                variant_attributes[variant_type] = random.choice(
-                    ["base", "mid", "high", "premium"]
-                )
-            elif variant_type == "material":
-                variant_attributes[variant_type] = random.choice(
-                    ["plastic", "metal", "wood", "glass", "fabric"]
-                )
-            elif variant_type == "flavor":
-                variant_attributes[variant_type] = random.choice(
-                    ["vanilla", "chocolate", "strawberry", "mint", "caramel"]
-                )
-            elif variant_type == "packaging_size":
-                variant_attributes[variant_type] = random.choice(
-                    ["small", "medium", "large", "family", "bulk"]
-                )
-            elif variant_type == "dietary_category":
-                variant_attributes[variant_type] = random.choice(
-                    ["regular", "low-fat", "sugar-free", "gluten-free", "vegan"]
-                )
+        for idx, variant_type in enumerate(variant_types):
+            if variant_type in variant_options:
+                options = variant_options[variant_type]
+                if _scenario_rng:
+                    variant_attributes[variant_type] = _scenario_rng.choice(options)
+                else:
+                    # Deterministic fallback: use index-based selection
+                    variant_attributes[variant_type] = options[idx % len(options)]
             else:
                 variant_attributes[variant_type] = "standard"
 
@@ -1167,19 +1176,33 @@ class ScenarioFramework:
         return validated_products
 
     def _calculate_event_timing(self, event: Dict[str, Any], timeline: int) -> int:
-        """Calculates the optimal timing for an event within the timeline."""
+        """Calculates the optimal timing for an event within the timeline (deterministic)."""
+        safe_timeline = max(1, timeline)
+        
         # If event already has a timing preference, use it
         if "timing_preference" in event:
             preference = event["timing_preference"]
             if preference == "early":
-                return random.randint(1, timeline // 3)
+                if _scenario_rng:
+                    return _scenario_rng.randint(1, max(1, safe_timeline // 3))
+                else:
+                    return safe_timeline // 6
             elif preference == "middle":
-                return random.randint(timeline // 3, 2 * timeline // 3)
+                if _scenario_rng:
+                    return _scenario_rng.randint(max(1, safe_timeline // 3), max(2, 2 * safe_timeline // 3))
+                else:
+                    return safe_timeline // 2
             elif preference == "late":
-                return random.randint(2 * timeline // 3, timeline)
+                if _scenario_rng:
+                    return _scenario_rng.randint(max(1, 2 * safe_timeline // 3), safe_timeline)
+                else:
+                    return 5 * safe_timeline // 6
 
-        # Otherwise, distribute evenly across timeline
-        return random.randint(1, timeline)
+        # Otherwise, distribute evenly across timeline (deterministic)
+        if _scenario_rng:
+            return _scenario_rng.randint(1, safe_timeline)
+        else:
+            return safe_timeline // 2
 
     def _calculate_event_count(self, event_type: str, timeline: int) -> int:
         """Calculates the number of events of a given type to generate based on timeline."""
@@ -1201,16 +1224,23 @@ class ScenarioFramework:
     def _generate_event_from_template(
         self, template: Dict[str, Any], event_type: str, timeline: int
     ) -> Dict[str, Any]:
-        """Generates a new event based on a template."""
-        # Select random event type from template
-        event_subtype = random.choice(template["types"])
-        impact_level = random.choice(template["impact_levels"])
-        duration = random.randint(
-            template["duration_range"][0], template["duration_range"][1]
-        )
-
-        # Calculate timing
-        timing = random.randint(1, timeline)
+        """Generates a new event based on a template (deterministic)."""
+        types = template["types"]
+        impact_levels = template["impact_levels"]
+        duration_min, duration_max = template["duration_range"]
+        
+        # Select event type and impact level with deterministic RNG
+        if _scenario_rng:
+            event_subtype = _scenario_rng.choice(types)
+            impact_level = _scenario_rng.choice(impact_levels)
+            duration = _scenario_rng.randint(duration_min, duration_max)
+            timing = _scenario_rng.randint(1, max(1, timeline))
+        else:
+            # Deterministic fallback
+            event_subtype = types[0]
+            impact_level = impact_levels[0]
+            duration = (duration_min + duration_max) // 2
+            timing = timeline // 2
 
         # Create event
         event = {

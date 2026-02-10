@@ -1,5 +1,4 @@
 import logging
-import random
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
@@ -12,6 +11,14 @@ from fba_bench_core.models.competitor import Competitor
 from fba_events.competitor import CompetitorPricesUpdated, CompetitorState
 from fba_events.time_events import TickEvent
 from personas import CompetitorPersona  # New import
+
+# Import deterministic RNG for reproducible simulations
+try:
+    from reproducibility.deterministic_rng import DeterministicRNG
+    _HAS_DETERMINISTIC_RNG = True
+except ImportError:
+    import random
+    _HAS_DETERMINISTIC_RNG = False
 
 if TYPE_CHECKING:
     from fba_bench_core.event_bus import EventBus
@@ -89,6 +96,16 @@ class CompetitorManager:
 
         # Competitors managed by this service
         self.competitors: Dict[str, Competitor] = {}  # ASIN -> Competitor instance
+
+        # Initialize deterministic RNG for reproducible competitor behavior
+        # This ensures identical simulation runs when using the same master seed
+        if _HAS_DETERMINISTIC_RNG:
+            self._rng = DeterministicRNG.for_component("competitor_manager")
+        else:
+            self._rng = None
+            logger.warning(
+                "DeterministicRNG not available. Competitor behavior will NOT be reproducible."
+            )
 
         # Strategies for generating competitor data
         self.competitor_strategies = {
@@ -355,10 +372,11 @@ class CompetitorManager:
                 units_sold = max(0, int(new_sales_velocity * 0.2)) # Heuristic
                 competitor.inventory = max(0, competitor.inventory - units_sold)
 
-                # Auto-restock logic
+                # Auto-restock logic (deterministic)
                 if competitor.inventory <= 0:
                      # 5% chance to restock per tick if empty
-                     if random.random() < 0.05:
+                     restock_roll = self._rng.random() if self._rng else 0.01
+                     if restock_roll < 0.05:
                           competitor.inventory = 5000
                           logger.info(f"Competitor {competitor_id} RESTOCKED to 5000 units.")
 
@@ -533,11 +551,14 @@ class CompetitorManager:
             1, int(our_price.cents) - 10
         )  # 10 cents less, clamp at 1 cent minimum
         new_price = money_cls(new_cents)
+        # Use deterministic RNG for reproducible market dynamics
+        bsr_factor = self._rng.random() if self._rng else 0.5
+        sales_factor = self._rng.random() if self._rng else 0.5
         new_bsr = max(
-            1.0, competitor.bsr * (1 - self.bsr_volatility * random.random())
+            1.0, competitor.bsr * (1 - self.bsr_volatility * bsr_factor)
         )  # Slight improvement
         new_sales_velocity = competitor.sales_velocity * (
-            1 + self.sales_volatility * random.random()
+            1 + self.sales_volatility * sales_factor
         )  # Increase sales
         return new_price, new_bsr, new_sales_velocity
 
@@ -546,11 +567,14 @@ class CompetitorManager:
     ) -> Tuple[Money, float, float]:
         """Competitor maintains stable prices, reacts slowly."""
         new_price = competitor.price  # Price remains stable
+        # Use deterministic RNG for reproducible market dynamics
+        bsr_factor = self._rng.random() if self._rng else 0.5
+        sales_factor = self._rng.random() if self._rng else 0.5
         new_bsr = competitor.bsr * (
-            1 + self.bsr_volatility * random.random()
+            1 + self.bsr_volatility * bsr_factor
         )  # Slight degradation
         new_sales_velocity = competitor.sales_velocity * (
-            1 - self.sales_volatility * random.random()
+            1 - self.sales_volatility * sales_factor
         )  # Slight decrease
         return new_price, new_bsr, new_sales_velocity
 
@@ -563,8 +587,9 @@ class CompetitorManager:
         target_price_cents = (int(competitor.price.cents) + int(our_price.cents)) // 2
         new_price = money_cls(int(target_price_cents))
 
-        # Add some randomness to BSR and sales velocity
-        new_bsr = competitor.bsr + random.randint(-1000, 1000)
+        # Add some randomness to BSR and sales velocity using deterministic RNG
+        bsr_delta = self._rng.randint(-1000, 1000) if self._rng else 0
+        new_bsr = competitor.bsr + bsr_delta
         new_bsr = max(1, new_bsr)
         # Ensure numeric type safety: competitor.sales_velocity may be Decimal in tests
         base_sv = competitor.sales_velocity
@@ -572,22 +597,25 @@ class CompetitorManager:
             base_sv_f = float(base_sv)
         except (TypeError, ValueError):
             base_sv_f = 0.0
-        new_sales_velocity = base_sv_f * (
-            1 + random.uniform(-self.sales_volatility, self.sales_volatility)
-        )
+        sales_adjust = self._rng.uniform(-self.sales_volatility, self.sales_volatility) if self._rng else 0.0
+        new_sales_velocity = base_sv_f * (1 + sales_adjust)
         return new_price, new_bsr, new_sales_velocity
 
     def _random_strategy(
         self, competitor: Competitor, our_price: Money, tick_event: TickEvent
     ) -> Tuple[Money, float, float]:
-        """Competitor changes prices randomly."""
+        """Competitor changes prices randomly (but deterministically when seeded)."""
         money_cls = type(competitor.price)
         base_cents = int(competitor.price.cents)
-        new_cents = int(base_cents * random.uniform(0.8, 1.2))  # +/- 20%
+        # Use deterministic RNG for reproducible "random" behavior
+        price_factor = self._rng.uniform(0.8, 1.2) if self._rng else 1.0
+        new_cents = int(base_cents * price_factor)  # +/- 20%
         new_price = money_cls(max(1, new_cents))
-        new_bsr = competitor.bsr + random.randint(-5000, 5000)
+        bsr_delta = self._rng.randint(-5000, 5000) if self._rng else 0
+        new_bsr = competitor.bsr + bsr_delta
         new_bsr = max(1, new_bsr)
-        new_sales_velocity = competitor.sales_velocity * (1 + random.uniform(-0.2, 0.2))
+        sales_adjust = self._rng.uniform(-0.2, 0.2) if self._rng else 0.0
+        new_sales_velocity = competitor.sales_velocity * (1 + sales_adjust)
         return new_price, new_bsr, new_sales_velocity
 
     def _apply_persona_modifiers(
@@ -621,15 +649,15 @@ class CompetitorManager:
         try:
             if isinstance(persona, IrrationalSlasher):
                 slash_prob = float(getattr(persona, "slash_probability", 0.35))
-                if random.random() < max(0.0, min(1.0, slash_prob)):
+                slash_roll = self._rng.random() if self._rng else 0.5
+                if slash_roll < max(0.0, min(1.0, slash_prob)):
                     # Slash 5% to 12% deterministically bounded
-                    cut_ratio = random.uniform(0.05, 0.12)
+                    cut_ratio = self._rng.uniform(0.05, 0.12) if self._rng else 0.08
                     new_cents = max(1, int(price_cents * (1.0 - cut_ratio)))
                     price = money_cls(new_cents)
                     # When slashing, increase sales velocity moderately (10%-25%)
-                    sales_velocity = float(sales_velocity) * (
-                        1.10 + random.uniform(0.0, 0.15)
-                    )
+                    velocity_boost = self._rng.uniform(0.0, 0.15) if self._rng else 0.07
+                    sales_velocity = float(sales_velocity) * (1.10 + velocity_boost)
         except (AttributeError, TypeError, ValueError):
             pass
 
@@ -637,7 +665,8 @@ class CompetitorManager:
         try:
             if isinstance(persona, SlowFollower):
                 # With high probability, hold price (less responsiveness)
-                if random.random() < 0.65:
+                hold_roll = self._rng.random() if self._rng else 0.5
+                if hold_roll < 0.65:
                     price = competitor.price  # keep previous price
                 else:
                     # Move only a small step towards proposed price (smooth changes)

@@ -114,6 +114,15 @@ def main() -> int:
     tier_dir = results_root / args.tier.lower()
 
     last = snapshot_mtimes(tier_dir)
+    live_path = Path(args.live_json)
+    last_live = None
+    if live_path.exists():
+        try:
+            st = live_path.stat()
+            last_live = (int(st.st_size), int(getattr(st, "st_mtime_ns", int(st.st_mtime * 1e9))))
+        except OSError:
+            last_live = None
+
     # Initial build (useful when starting watcher mid-run)
     run_build(args.results_root, args.tier, args.live_json, args.output_leaderboard, args.output_top10)
 
@@ -123,7 +132,18 @@ def main() -> int:
     while True:
         time.sleep(float(args.interval_seconds))
         cur = snapshot_mtimes(tier_dir)
-        if cur != last:
+        live_changed = False
+        if live_path.exists():
+            try:
+                st = live_path.stat()
+                live_now = (int(st.st_size), int(getattr(st, "st_mtime_ns", int(st.st_mtime * 1e9))))
+            except OSError:
+                live_now = None
+            if live_now != last_live:
+                live_changed = True
+                last_live = live_now
+
+        if cur != last or live_changed:
             last = cur
             run_build(args.results_root, args.tier, args.live_json, args.output_leaderboard, args.output_top10)
 
