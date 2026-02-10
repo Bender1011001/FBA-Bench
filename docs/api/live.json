@@ -11,21 +11,21 @@
     "x-ai/grok-4.1-fast"
   ],
   "started_at": "2026-02-10T08:59:42.258813+00:00",
-  "last_heartbeat": "2026-02-10T11:07:58.031372+00:00",
+  "last_heartbeat": "2026-02-10T11:13:01.057585+00:00",
   "status": "running_with_failures",
   "completed": 5,
   "total": 6,
   "progress": {
     "deepseek/deepseek-r1": {
       "model": "deepseek/deepseek-r1",
-      "day": 39,
+      "day": 41,
       "days_total": 180,
-      "capital": 20429.91,
-      "profit_so_far": 10429.91,
-      "tokens_used": 387567,
-      "llm_calls": 39,
-      "last_call_seconds": 214.35755339998286,
-      "timestamp": "2026-02-10T11:04:34.348071+00:00"
+      "capital": 20553.66,
+      "profit_so_far": 10553.66,
+      "tokens_used": 407503,
+      "llm_calls": 41,
+      "last_call_seconds": 201.3593221999472,
+      "timestamp": "2026-02-10T11:11:25.053070+00:00"
     },
     "openai/gpt-5.2": {
       "model": "openai/gpt-5.2",
