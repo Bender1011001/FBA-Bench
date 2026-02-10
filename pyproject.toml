@@ -33,6 +33,7 @@ packages = [
     {include = "baseline_bots", from = "src"},
     {include = "benchmarking", from = "src"},
     {include = "config", from = "src"},
+    {include = "constraints", from = "src"},
     {include = "fba_events", from = "src"},
     {include = "instrumentation", from = "src"},
     {include = "llm_interface", from = "src"},

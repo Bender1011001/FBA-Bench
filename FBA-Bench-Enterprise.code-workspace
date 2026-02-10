@@ -13,5 +13,58 @@
 			"path": "../../../Downloads/fba"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.venv": true,
+			"**/node_modules": true,
+			"**/clearml-data": true,
+			"**/.terraform": true,
+			"**/.mypy_cache": true,
+			"**/.ruff_cache": true,
+			"**/.pytest_cache": true,
+			"**/__pycache__": true,
+			"artifacts": true,
+			"results": true
+		},
+		"search.exclude": {
+			"**/.git": true,
+			"**/.venv": true,
+			"**/node_modules": true,
+			"**/clearml-data": true,
+			"**/.terraform": true,
+			"**/.mypy_cache": true,
+			"**/.ruff_cache": true,
+			"**/.pytest_cache": true,
+			"**/__pycache__": true,
+			"artifacts": true,
+			"results": true
+		},
+		"files.watcherExclude": {
+			"**/.git/**": true,
+			"**/.venv/**": true,
+			"**/node_modules/**": true,
+			"**/clearml-data/**": true,
+			"**/.terraform/**": true,
+			"**/.mypy_cache/**": true,
+			"**/.ruff_cache/**": true,
+			"**/.pytest_cache/**": true,
+			"**/__pycache__/**": true,
+			"artifacts/**": true,
+			"results/**": true
+		},
+		"python.analysis.exclude": [
+			"**/.git/**",
+			"**/.venv/**",
+			"**/node_modules/**",
+			"**/clearml-data/**",
+			"**/.terraform/**",
+			"**/.mypy_cache/**",
+			"**/.ruff_cache/**",
+			"**/.pytest_cache/**",
+			"**/__pycache__/**",
+			"artifacts/**",
+			"results/**"
+		]
+	}
 }

@@ -1,9 +1,0 @@
-agent:
-  name: "Grok-4 Bot"
-  description: "A baseline agent powered by xAI's Grok-4 model via OpenRouter."
-  agent_class: "benchmarking.agents.unified_agent.UnifiedAgent"
-  llm_config:
-    client_type: "openrouter"
-    model: "xai/grok-1.5-flash"
-    temperature: 0.6
-    max_tokens: 2000

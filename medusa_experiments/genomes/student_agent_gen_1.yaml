@@ -1,9 +1,0 @@
-agent:
-  name: "Candidate Student Agent Gen 1"
-  description: "Improved agent with lower temperature for better decision making."
-  agent_class: "benchmarking.agents.unified_agent.UnifiedAgent"
-  llm_config:
-    client_type: "openrouter"
-    model: "xai/grok-beta"
-    temperature: 0.5
-    max_tokens: 2000

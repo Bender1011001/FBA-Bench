@@ -7,8 +7,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Callable, Dict, Optional, Tuple
 
-from event_bus import EventBus
-from events import BudgetExceeded, BudgetWarning, TickEvent
+from fba_events.budget import BudgetExceeded, BudgetWarning
+from fba_events.bus import EventBus
+from fba_events.time_events import TickEvent
 
 from .token_counter import TokenCounter
 

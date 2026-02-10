@@ -244,89 +244,12 @@ class MyPlugin(ScenarioPlugin):
         self.logger.info("Plugin unloaded")
 ```
 
-## 🤝 Community Contribution System
+## 🤝 Community Contributions
 
-### Publishing a Plugin
-
-```python
-from community.contribution_tools import ContributionManager
-
-contribution_manager = ContributionManager()
-
-# Validate plugin before submission
-validation_result = await contribution_manager.validate_plugin_submission(
-    plugin_path="./my_plugin",
-    include_performance_tests=True
-)
-
-if validation_result["valid"]:
-    # Submit to community repository
-    submission = await contribution_manager.submit_plugin(
-        plugin_path="./my_plugin",
-        metadata={
-            "category": "trading_strategies",
-            "tags": ["machine_learning", "high_frequency"],
-            "license": "MIT"
-        }
-    )
-    print(f"Plugin submitted with ID: {submission['submission_id']}")
-else:
-    print(f"Validation failed: {validation_result['errors']}")
-```
-
-### Quality Assurance
-
-```python
-# Run automated quality checks
-qa_results = await contribution_manager.run_quality_assurance(
-    plugin_path="./submitted_plugin"
-)
-
-print(f"Code quality score: {qa_results['code_quality_score']}")
-print(f"Test coverage: {qa_results['test_coverage']}%")
-print(f"Performance benchmark: {qa_results['performance_score']}")
-print(f"Documentation quality: {qa_results['documentation_score']}")
-```
-
-### Plugin Benchmarking
-
-```python
-# Benchmark plugin performance
-benchmark_scenarios = [
-    {"name": "Standard Market", "config": "scenarios/tier_1_moderate.yaml"},
-    {"name": "High Volatility", "config": "scenarios/tier_2_advanced.yaml"},
-    {"name": "Crisis Scenario", "config": "scenarios/tier_3_expert.yaml"}
-]
-
-benchmark_results = await contribution_manager.benchmark_plugin_performance(
-    plugin_path="./my_agent_plugin",
-    scenarios=benchmark_scenarios
-)
-
-for scenario, result in benchmark_results.items():
-    print(f"{scenario}: {result['average_score']} (±{result['std_dev']})")
-```
-
-## 💻 CLI Integration
-
-The plugin system integrates with the experiment CLI:
-
-```bash
-# Load specific plugins
-python experiment_cli.py run sweep.yaml --load-plugin ./my_plugin
-
-# Load plugins from directory
-python experiment_cli.py run sweep.yaml --plugin-dir ./community_plugins
-
-# Benchmark a community plugin
-python experiment_cli.py analyze --benchmark-community-plugin ./awesome_plugin
-
-# List available plugins
-python experiment_cli.py plugins list
-
-# Validate plugin before use
-python experiment_cli.py plugins validate ./my_plugin
-```
+The older “community plugin submission” tooling lived in a separate `community/`
+module and an `experiment_cli.py` workflow that were removed as part of the repo
+slim-down. If you need a community marketplace again, reintroduce it as a
+separate repository or restore it from git history.
 
 ## 🔧 Advanced Features
 

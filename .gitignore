@@ -126,6 +126,10 @@ clearml-data/
 # Node modules
 node_modules/
 
+# Terraform (local state/cache)
+.terraform/
+**/.terraform/
+
 # Corrupt learning data
 learning_data/*.corrupt
 learning_data/**/*.json
