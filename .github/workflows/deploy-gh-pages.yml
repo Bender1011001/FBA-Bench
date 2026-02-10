@@ -5,7 +5,6 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'openrouter_benchmark_results.json'
       - 'docs/**'
       - 'generate_github_pages.py'
 
@@ -29,9 +28,12 @@ jobs:
       - name: Build static site
         run: |
           python generate_github_pages.py
+          # Ensure GitHub Pages serves files under docs/ that start with "_"
+          # (Jekyll ignores them unless .nojekyll exists).
+          touch docs/.nojekyll
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

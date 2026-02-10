@@ -124,6 +124,32 @@ Cloudflare Pages deployment:
 3. Add a custom domain `fbabench.com` in Pages and follow the DNS instructions in Cloudflare.
 4. Ensure the JSON endpoints are not cached: `docs/_headers` sets `Cache-Control: no-store` for `/api/*.json`.
 
+Direct upload (Wrangler) notes:
+
+- Do not run `wrangler deploy` for this repo if you want Pages. `wrangler deploy` targets Workers and expects an
+  `assets` directory configuration.
+- For Pages direct upload, use:
+  - `npx wrangler pages deploy ./docs --project-name <your-pages-project>`
+- If Wrangler fails with `Authentication error [code: 10000]`, the API token usually lacks Pages permissions.
+  Create a token with:
+  - `Account` -> `Cloudflare Pages` -> `Edit`
+  and use it as `CLOUDFLARE_API_TOKEN` (or pass via the GitHub action/CLI).
+
+## Live Leaderboard on GitHub Pages
+
+This repo includes a GitHub Actions workflow that deploys `docs/` to GitHub Pages on every push to `main`
+(file: `.github/workflows/deploy-gh-pages.yml`).
+
+If Pages is not enabled yet, you can enable it via API (CLI):
+
+- `gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow`
+
+Notes:
+
+- `docs/.nojekyll` is required so GitHub Pages serves files like `docs/_headers` and `docs/_redirects`.
+- For "live-ish" updates during a long benchmark run, use `tools/watch_and_build.py --git-push` to periodically
+  commit+push updated JSON under `docs/api/`, which triggers the deploy workflow.
+
 ### AWS ECS (Elastic Container Service)
 
 1. **Setup**:
