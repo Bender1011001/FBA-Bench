@@ -1,0 +1,9 @@
+/api/leaderboard.json
+  Cache-Control: no-store, max-age=0
+
+/api/top10.json
+  Cache-Control: no-store, max-age=0
+
+/api/live.json
+  Cache-Control: no-store, max-age=0
+

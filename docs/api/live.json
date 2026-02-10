@@ -1,5 +1,5 @@
 {
-  "active": true,
+  "active": false,
   "run_id": "run-20260210-074050",
   "tier": "T2",
   "models": [
@@ -11,8 +11,7 @@
     "x-ai/grok-4.1-fast"
   ],
   "started_at": "2026-02-10T07:40:50.286335+00:00",
-  "last_heartbeat": "2026-02-10T07:45:40.801338+00:00",
-  "status": "running",
-  "completed": 4,
-  "total": 6
+  "ended_at": "2026-02-10T07:52:03.602394+00:00",
+  "last_heartbeat": "2026-02-10T07:52:06.506198+00:00",
+  "status": "completed"
 }
