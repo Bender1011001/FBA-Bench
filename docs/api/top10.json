@@ -1,5 +1,5 @@
 {
-  "generated_at": "February 11, 2026 at 03:20 UTC",
+  "generated_at": "February 11, 2026 at 03:21 UTC",
   "rankings": [
     {
       "rank": 1,
@@ -70,14 +70,14 @@
       "quality_score": null,
       "success_rate": null,
       "avg_response_time": null,
-      "total_tokens": 11222,
-      "total_profit": -2284.58,
-      "roi_pct": -22.846,
-      "llm_calls": 3,
-      "avg_call_seconds": 43.14,
+      "total_tokens": 18533,
+      "total_profit": -977.02,
+      "roi_pct": -9.77,
+      "llm_calls": 5,
+      "avg_call_seconds": 41.27,
       "total_runs": 1,
       "badge": "stable",
-      "timestamp": "2026-02-11T03:19:41.844316+00:00",
+      "timestamp": "2026-02-11T03:20:55.110045+00:00",
       "run_id": "run-20260210-gpt5-retry",
       "success": true
     },
