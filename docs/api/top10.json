@@ -1,5 +1,5 @@
 {
-  "generated_at": "February 11, 2026 at 03:25 UTC",
+  "generated_at": "February 11, 2026 at 03:26 UTC",
   "rankings": [
     {
       "rank": 1,
@@ -43,6 +43,26 @@
     },
     {
       "rank": 3,
+      "model_name": "gpt-5.2",
+      "model_slug": "openai/gpt-5.2",
+      "provider": "OpenAI",
+      "tier": "flagship",
+      "quality_score": null,
+      "success_rate": null,
+      "avg_response_time": null,
+      "total_tokens": 48601,
+      "total_profit": 458.22,
+      "roi_pct": 4.582,
+      "llm_calls": 12,
+      "avg_call_seconds": 38.56,
+      "total_runs": 1,
+      "badge": "bronze",
+      "timestamp": "2026-02-11T03:26:08.060175+00:00",
+      "run_id": "run-20260210-gpt5-retry",
+      "success": true
+    },
+    {
+      "rank": 4,
       "model_name": "deepseek-r1",
       "model_slug": "deepseek/deepseek-r1",
       "provider": "DeepSeek",
@@ -56,30 +76,10 @@
       "llm_calls": 0,
       "avg_call_seconds": null,
       "total_runs": 1,
-      "badge": "bronze",
+      "badge": "stable",
       "timestamp": "2026-02-10T13:32:10.146304+00:00",
       "run_id": "run-20260210-gpt5-retry",
       "success": false
-    },
-    {
-      "rank": 4,
-      "model_name": "gpt-5.2",
-      "model_slug": "openai/gpt-5.2",
-      "provider": "OpenAI",
-      "tier": "flagship",
-      "quality_score": null,
-      "success_rate": null,
-      "avg_response_time": null,
-      "total_tokens": 40220,
-      "total_profit": -372.37,
-      "roi_pct": -3.724,
-      "llm_calls": 10,
-      "avg_call_seconds": 34.73,
-      "total_runs": 1,
-      "badge": "stable",
-      "timestamp": "2026-02-11T03:24:36.253321+00:00",
-      "run_id": "run-20260210-gpt5-retry",
-      "success": true
     },
     {
       "rank": 5,
