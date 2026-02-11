@@ -1,21 +1,21 @@
 {
-  "generated_at": "February 10, 2026 at 11:28 UTC",
+  "generated_at": "February 11, 2026 at 03:01 UTC",
   "benchmark_version": "2026.02-live",
   "metric_mode": "agentic",
   "active_run": {
     "active": true,
-    "run_id": "run-20260210-085941",
+    "run_id": "run-20260210-gpt5-retry",
     "tier": "T2"
   },
   "total_models": 6,
   "summary": {
     "avg_quality_score": null,
     "avg_success_rate": null,
-    "avg_total_profit": 3067.95,
-    "avg_roi_pct": 30.679,
-    "total_profit_sum": 18407.7,
-    "total_llm_calls": 765,
-    "total_tokens": 3045359,
+    "avg_total_profit": 1418.1,
+    "avg_roi_pct": 14.181,
+    "total_profit_sum": 8508.6,
+    "total_llm_calls": 723,
+    "total_tokens": 2610718,
     "total_runs": 6,
     "top_performer": "claude-opus-4.6"
   },
@@ -37,31 +37,11 @@
       "total_runs": 1,
       "badge": "gold",
       "timestamp": "2026-02-10T09:17:01.763466+00:00",
-      "run_id": "run-20260210-085941",
+      "run_id": "run-20260210-gpt5-retry",
       "success": true
     },
     {
       "rank": 2,
-      "model_name": "deepseek-r1",
-      "model_slug": "deepseek/deepseek-r1",
-      "provider": "DeepSeek",
-      "tier": "flagship",
-      "quality_score": null,
-      "success_rate": null,
-      "avg_response_time": null,
-      "total_tokens": 446746,
-      "total_profit": 11856.78,
-      "roi_pct": 118.568,
-      "llm_calls": 45,
-      "avg_call_seconds": 216.65,
-      "total_runs": 1,
-      "badge": "silver",
-      "timestamp": "2026-02-10T11:25:09.347290+00:00",
-      "run_id": "run-20260210-085941",
-      "success": true
-    },
-    {
-      "rank": 3,
       "model_name": "gemini-3-pro-preview",
       "model_slug": "google/gemini-3-pro-preview",
       "provider": "Google",
@@ -75,16 +55,36 @@
       "llm_calls": 180,
       "avg_call_seconds": 36.35,
       "total_runs": 1,
-      "badge": "bronze",
+      "badge": "silver",
       "timestamp": "2026-02-10T10:48:48.332542+00:00",
-      "run_id": "run-20260210-085941",
+      "run_id": "run-20260210-gpt5-retry",
+      "success": true
+    },
+    {
+      "rank": 3,
+      "model_name": "gpt-5.2",
+      "model_slug": "openai/gpt-5.2",
+      "provider": "OpenAI",
+      "tier": "flagship",
+      "quality_score": null,
+      "success_rate": null,
+      "avg_response_time": null,
+      "total_tokens": 12105,
+      "total_profit": 1957.68,
+      "roi_pct": 19.577,
+      "llm_calls": 3,
+      "avg_call_seconds": 38.59,
+      "total_runs": 1,
+      "badge": "bronze",
+      "timestamp": "2026-02-11T03:01:02.752047+00:00",
+      "run_id": "run-20260210-gpt5-retry",
       "success": true
     },
     {
       "rank": 4,
-      "model_name": "gpt-5.2",
-      "model_slug": "openai/gpt-5.2",
-      "provider": "OpenAI",
+      "model_name": "deepseek-r1",
+      "model_slug": "deepseek/deepseek-r1",
+      "provider": "DeepSeek",
       "tier": "flagship",
       "quality_score": null,
       "success_rate": null,
@@ -96,8 +96,8 @@
       "avg_call_seconds": null,
       "total_runs": 1,
       "badge": "stable",
-      "timestamp": "2026-02-10T10:05:41.589472+00:00",
-      "run_id": "run-20260210-085941",
+      "timestamp": "2026-02-10T13:32:10.146304+00:00",
+      "run_id": "run-20260210-gpt5-retry",
       "success": false
     },
     {
@@ -117,7 +117,7 @@
       "total_runs": 1,
       "badge": "stable",
       "timestamp": "2026-02-10T10:36:10.330570+00:00",
-      "run_id": "run-20260210-085941",
+      "run_id": "run-20260210-gpt5-retry",
       "success": true
     },
     {
@@ -137,7 +137,7 @@
       "total_runs": 1,
       "badge": "stable",
       "timestamp": "2026-02-10T09:09:51.727353+00:00",
-      "run_id": "run-20260210-085941",
+      "run_id": "run-20260210-gpt5-retry",
       "success": true
     }
   ]

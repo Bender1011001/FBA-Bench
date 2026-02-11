@@ -1,0 +1,26 @@
+{
+  "active": true,
+  "run_id": "run-20260210-gpt5-retry",
+  "tier": "T2",
+  "models": [
+    "openai/gpt-5.2"
+  ],
+  "started_at": "2026-02-11T02:58:48.901730+00:00",
+  "last_heartbeat": "2026-02-11T03:03:34.514337+00:00",
+  "status": "running",
+  "completed": 0,
+  "total": 1,
+  "progress": {
+    "openai/gpt-5.2": {
+      "model": "openai/gpt-5.2",
+      "day": 7,
+      "days_total": 180,
+      "capital": 10824.31,
+      "profit_so_far": 824.3100000000009,
+      "tokens_used": 27578,
+      "llm_calls": 7,
+      "last_call_seconds": 36.400024299975485,
+      "timestamp": "2026-02-11T03:03:30.989860+00:00"
+    }
+  }
+}
