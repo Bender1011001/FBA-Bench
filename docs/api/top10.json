@@ -1,5 +1,5 @@
 {
-  "generated_at": "February 12, 2026 at 01:09 UTC",
+  "generated_at": "February 12, 2026 at 01:10 UTC",
   "rankings": [
     {
       "rank": 1,
@@ -70,14 +70,14 @@
       "quality_score": null,
       "success_rate": null,
       "avg_response_time": null,
-      "total_tokens": 167502,
-      "total_profit": 4405.19,
-      "roi_pct": 44.052,
-      "llm_calls": 42,
-      "avg_call_seconds": 97.33,
+      "total_tokens": 172609,
+      "total_profit": 4617.45,
+      "roi_pct": 46.175,
+      "llm_calls": 43,
+      "avg_call_seconds": 65.34,
       "total_runs": 1,
       "badge": "stable",
-      "timestamp": "2026-02-12T01:09:02.183578+00:00",
+      "timestamp": "2026-02-12T01:10:07.524301+00:00",
       "run_id": "run-20260211-v2-consolidated",
       "success": true
     },
