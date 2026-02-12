@@ -1,26 +1,15 @@
 {
   "active": true,
-  "run_id": "run-20260211-gpt5-fullyear",
+  "run_id": "run-20260211-v2-consolidated",
   "tier": "T2",
   "models": [
+    "openai/gpt-5.2",
     "deepseek/deepseek-r1"
   ],
-  "started_at": "2026-02-12T00:16:15.012633+00:00",
-  "last_heartbeat": "2026-02-12T00:34:29.019206+00:00",
+  "started_at": "2026-02-12T00:36:05.279685+00:00",
+  "last_heartbeat": "2026-02-12T00:36:15.289635+00:00",
   "status": "running",
   "completed": 0,
-  "total": 1,
-  "progress": {
-    "deepseek/deepseek-r1": {
-      "model": "deepseek/deepseek-r1",
-      "day": 4,
-      "days_total": 365,
-      "capital": 12862.77,
-      "profit_so_far": 2862.77,
-      "tokens_used": 39652,
-      "llm_calls": 4,
-      "last_call_seconds": 181.7459494000068,
-      "timestamp": "2026-02-12T00:32:02.551577+00:00"
-    }
-  }
+  "total": 2,
+  "progress": {}
 }
