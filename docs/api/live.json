@@ -6,21 +6,21 @@
     "deepseek/deepseek-r1"
   ],
   "started_at": "2026-02-12T00:16:15.012633+00:00",
-  "last_heartbeat": "2026-02-12T00:28:05.464288+00:00",
+  "last_heartbeat": "2026-02-12T00:29:05.331360+00:00",
   "status": "running",
   "completed": 0,
   "total": 1,
   "progress": {
     "deepseek/deepseek-r1": {
       "model": "deepseek/deepseek-r1",
-      "day": 2,
+      "day": 3,
       "days_total": 365,
-      "capital": 11432.86,
-      "profit_so_far": 1432.86,
-      "tokens_used": 16319,
-      "llm_calls": 2,
-      "last_call_seconds": 123.78914720006287,
-      "timestamp": "2026-02-12T00:25:34.333383+00:00"
+      "capital": 12082.07,
+      "profit_so_far": 2082.07,
+      "tokens_used": 28384,
+      "llm_calls": 3,
+      "last_call_seconds": 206.47071919997688,
+      "timestamp": "2026-02-12T00:29:00.804836+00:00"
     }
   }
 }
