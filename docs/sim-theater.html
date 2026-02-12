@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FBA-Bench | Sim Theater</title>
+    <meta
+      name="description"
+      content="Live decision theater for the current FBA-Bench simulation run."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f3efe5;
+        --panel: rgba(255, 255, 255, 0.88);
+        --panel-strong: #ffffff;
+        --ink: #182226;
+        --muted: #4f656f;
+        --teal: #0b9d8a;
+        --orange: #db6a31;
+        --slate: #2c4149;
+        --good: #0f8b45;
+        --bad: #ba3e1f;
+        --line: rgba(24, 34, 38, 0.12);
+        --shadow: 0 14px 40px rgba(24, 34, 38, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+        background:
+          radial-gradient(circle at 8% 12%, rgba(11, 157, 138, 0.2), transparent 35%),
+          radial-gradient(circle at 88% 14%, rgba(219, 106, 49, 0.2), transparent 34%),
+          radial-gradient(circle at 84% 92%, rgba(44, 65, 73, 0.17), transparent 36%),
+          var(--bg);
+        min-height: 100vh;
+      }
+
+      .grain {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.3;
+        background-image: radial-gradient(rgba(0, 0, 0, 0.1) 0.4px, transparent 0.4px);
+        background-size: 3px 3px;
+      }
+
+      .wrap {
+        width: min(1220px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 22px 0 28px;
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: clamp(30px, 4.6vw, 52px);
+        letter-spacing: -0.03em;
+        line-height: 0.92;
+      }
+
+      .sub {
+        margin: 8px 0 0;
+        color: var(--muted);
+        max-width: 720px;
+      }
+
+      .meta {
+        min-width: 290px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 12px 14px;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-radius: 999px;
+        padding: 6px 10px;
+        color: #fff;
+        background: var(--slate);
+      }
+
+      .badge.live {
+        background: var(--teal);
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+
+      .badge.done {
+        background: var(--good);
+      }
+
+      .badge.failed {
+        background: var(--bad);
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(11, 157, 138, 0.35);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 14px rgba(11, 157, 138, 0);
+        }
+      }
+
+      .meta-grid {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 10px;
+        font-size: 12px;
+      }
+
+      .kpis {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .kpi {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel);
+        padding: 10px 12px;
+        box-shadow: var(--shadow);
+      }
+
+      .kpi-k {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .kpi-v {
+        margin-top: 6px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .main-grid {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 10px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .ph {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: baseline;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.62));
+      }
+
+      .pt {
+        margin: 0;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+
+      .pn {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .frame-row {
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .frame {
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: var(--panel-strong);
+        padding: 10px;
+        min-height: 220px;
+        transform: translateY(8px);
+        opacity: 0;
+        animation: rise 0.4s ease-out forwards;
+      }
+
+      .frame.now {
+        border-color: rgba(11, 157, 138, 0.38);
+        box-shadow: inset 0 0 0 1px rgba(11, 157, 138, 0.3);
+      }
+
+      @keyframes rise {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: #eff6f8;
+        color: var(--slate);
+      }
+
+      .day {
+        margin-top: 7px;
+        font-size: 19px;
+        font-weight: 800;
+      }
+
+      .mini {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .reason {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.34;
+      }
+
+      .stats {
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        font-size: 12px;
+      }
+
+      .mono {
+        font-family: "IBM Plex Mono", "Courier New", monospace;
+      }
+
+      .chart-wrap {
+        padding: 10px 12px 12px;
+      }
+
+      .chart {
+        width: 100%;
+        height: 132px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      .bottom-grid {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 10px;
+      }
+
+      .storyline {
+        margin-top: 10px;
+        padding: 12px 14px;
+      }
+
+      .storyline .pt {
+        margin-bottom: 4px;
+      }
+
+      .storyline h3 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.1;
+      }
+
+      .storyline p {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .story-tone-positive h3 {
+        color: var(--good);
+      }
+
+      .story-tone-negative h3 {
+        color: var(--bad);
+      }
+
+      .story-tone-neutral h3 {
+        color: var(--slate);
+      }
+
+      .replay {
+        margin-top: 10px;
+        padding: 10px 12px 12px;
+      }
+
+      .replay-row {
+        display: grid;
+        grid-template-columns: 88px 1fr 86px 120px;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .replay-row input[type="range"] {
+        width: 100%;
+      }
+
+      .replay-row button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .replay-row button:hover {
+        background: #f5fbfa;
+      }
+
+      .frame-story {
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: #f9f9f9;
+        padding: 7px 8px;
+        font-size: 12px;
+      }
+
+      .frame-story strong {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .tone-positive strong {
+        color: var(--good);
+      }
+
+      .tone-negative strong {
+        color: var(--bad);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--line);
+        font-size: 13px;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+      }
+
+      .ev {
+        list-style: none;
+        margin: 0;
+        padding: 10px;
+        max-height: 290px;
+        overflow: auto;
+      }
+
+      .ev li {
+        padding: 8px 9px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        font-size: 12px;
+      }
+
+      .ev li + li {
+        margin-top: 7px;
+      }
+
+      .footer-note {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 1060px) {
+        .kpis {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .main-grid,
+        .bottom-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .top {
+          flex-direction: column;
+        }
+        .meta {
+          width: 100%;
+        }
+        .kpis {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .frame-row {
+          grid-template-columns: 1fr;
+        }
+        .replay-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <main class="wrap">
+      <section class="top">
+        <div>
+          <h1 class="title">Simulation Theater</h1>
+          <p class="sub">
+            Live decision playback for the current run: current move, one step back, and two steps
+            back.
+          </p>
+        </div>
+        <aside class="meta">
+          <div id="statusBadge" class="badge">Waiting</div>
+          <div class="meta-grid">
+            <div>Source</div>
+            <div id="sourcePath" class="mono">api/sim_theater_live.json</div>
+            <div>Updated</div>
+            <div id="updatedAt" class="mono">--</div>
+            <div>Run</div>
+            <div id="runId" class="mono">--</div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="kpis">
+        <article class="kpi"><div class="kpi-k">Day</div><div id="kDay" class="kpi-v">--</div></article>
+        <article class="kpi"><div class="kpi-k">Capital</div><div id="kCapital" class="kpi-v">--</div></article>
+        <article class="kpi"><div class="kpi-k">Total Profit</div><div id="kProfit" class="kpi-v">--</div></article>
+        <article class="kpi"><div class="kpi-k">ROI</div><div id="kRoi" class="kpi-v">--</div></article>
+        <article class="kpi"><div class="kpi-k">Fulfilled</div><div id="kFulfilled" class="kpi-v">--</div></article>
+        <article class="kpi"><div class="kpi-k">LLM Calls</div><div id="kCalls" class="kpi-v">--</div></article>
+      </section>
+
+      <section id="storylinePanel" class="panel storyline story-tone-neutral">
+        <div class="pt">Current Headline</div>
+        <h3 id="currentHeadline">Waiting for first decision frame...</h3>
+        <p id="currentDetail">Story details will appear as frames arrive.</p>
+      </section>
+
+      <section id="replayPanel" class="panel replay hidden">
+        <div class="replay-row">
+          <div class="pn">Replay Day</div>
+          <input id="replayScrub" type="range" min="0" max="0" value="0" />
+          <button id="replayPlayBtn" type="button">Play</button>
+          <div id="replayMeta" class="pn mono">--</div>
+        </div>
+      </section>
+
+      <section class="main-grid">
+        <article class="panel">
+          <header class="ph">
+            <h2 class="pt">Decision Frames</h2>
+            <div class="pn">Now | -1 | -2</div>
+          </header>
+          <div class="frame-row">
+            <div id="frameNow" class="frame now"></div>
+            <div id="framePrev1" class="frame"></div>
+            <div id="framePrev2" class="frame"></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="ph">
+            <h2 class="pt">Momentum</h2>
+            <div class="pn">Capital and Daily Profit</div>
+          </header>
+          <div class="chart-wrap">
+            <svg id="capitalChart" class="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg>
+            <div class="footer-note">Capital curve</div>
+          </div>
+          <div class="chart-wrap">
+            <svg id="profitChart" class="chart" viewBox="0 0 560 132" preserveAspectRatio="none"></svg>
+            <div class="footer-note">Daily profit curve</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel">
+          <header class="ph">
+            <h2 class="pt">Product Snapshot (Current Frame)</h2>
+            <div class="pn">Top 8 by risk profile</div>
+          </header>
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Name</th>
+                  <th>Stock</th>
+                  <th>Backlog</th>
+                  <th>Price</th>
+                  <th>Rating</th>
+                </tr>
+              </thead>
+              <tbody id="productRows">
+                <tr><td colspan="6">Waiting for data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="ph">
+            <h2 class="pt">Current Events</h2>
+            <div class="pn">Latest market and execution signals</div>
+          </header>
+          <ul id="eventFeed" class="ev">
+            <li>Waiting for data...</li>
+          </ul>
+        </article>
+      </section>
+
+      <p class="footer-note">
+        One-command demo:
+        <span class="mono">python scripts/sim_theater_demo.py --mode live --days 120 --open-browser</span>
+        · Runbook:
+        <a href="RUNBOOK_SIM_THEATER.md">RUNBOOK_SIM_THEATER.md</a>
+      </p>
+    </main>
+
+    <script>
+      const qs = new URLSearchParams(window.location.search);
+      const sourcePath = qs.get("source") || "api/sim_theater_live.json";
+      const pollMs = 2000;
+      document.getElementById("sourcePath").textContent = sourcePath;
+
+      let latestPayload = null;
+      let replayIndex = null;
+      let replayTimer = null;
+
+      const replayPanel = document.getElementById("replayPanel");
+      const replayScrub = document.getElementById("replayScrub");
+      const replayPlayBtn = document.getElementById("replayPlayBtn");
+      const replayMeta = document.getElementById("replayMeta");
+
+      function money(v) {
+        if (typeof v !== "number") return "--";
+        return "$" + v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      }
+
+      function pct(v) {
+        if (typeof v !== "number") return "--";
+        return v.toFixed(1) + "%";
+      }
+
+      function num(v) {
+        if (typeof v !== "number") return "--";
+        return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      }
+
+      function linePath(values, width, height, pad) {
+        if (!Array.isArray(values) || values.length === 0) return "";
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const span = max - min || 1;
+        const step = values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0;
+        const points = values.map((v, i) => {
+          const x = pad + i * step;
+          const y = height - pad - ((v - min) / span) * (height - pad * 2);
+          return `${x.toFixed(2)},${y.toFixed(2)}`;
+        });
+        return "M" + points.join(" L");
+      }
+
+      function renderChart(svgId, values, color) {
+        const svg = document.getElementById(svgId);
+        const w = 560;
+        const h = 132;
+        const pad = 10;
+        const path = linePath(values, w, h, pad);
+        const min = values.length ? Math.min(...values) : 0;
+        const max = values.length ? Math.max(...values) : 0;
+        svg.innerHTML = `
+          <rect x="0" y="0" width="${w}" height="${h}" fill="#fff"></rect>
+          <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(0,0,0,0.10)" />
+          <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h - pad}" stroke="rgba(0,0,0,0.10)" />
+          <path d="${path}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"></path>
+          <text x="${w - 6}" y="${pad + 10}" text-anchor="end" font-size="10" fill="rgba(0,0,0,0.55)">${num(max)}</text>
+          <text x="${w - 6}" y="${h - 4}" text-anchor="end" font-size="10" fill="rgba(0,0,0,0.55)">${num(min)}</text>
+        `;
+      }
+
+      function frameHtml(frame, label) {
+        if (!frame) {
+          return `<div class="tag">${label}</div><div class="day">No data</div><div class="mini">Waiting...</div>`;
+        }
+        const dr = frame.daily_results || {};
+        const o = frame.orders || {};
+        const a = frame.actions || {};
+        const story = frame.story || {};
+        const tone = story.tone || "neutral";
+        return `
+          <div class="tag">${label}</div>
+          <div class="day">Day ${frame.day ?? "--"}</div>
+          <div class="mini mono">Latency ${num(frame.decision_latency_seconds)}s</div>
+          <div class="frame-story tone-${tone}">
+            <strong>${story.headline || "No headline yet."}</strong>
+            <div>${story.detail || "No additional detail."}</div>
+          </div>
+          <div class="reason">${frame.reasoning_preview || "No reasoning provided."}</div>
+          <div class="stats mono">
+            <div>Rev ${money(dr.revenue)}</div>
+            <div>Pft ${money(dr.profit)}</div>
+            <div>Ful ${num(o.fulfilled)}</div>
+            <div>Stk ${num(o.stockouts)}</div>
+            <div>PriceΔ ${num(a.price_changes)}</div>
+            <div>Restock ${num(a.restocks)}</div>
+          </div>
+        `;
+      }
+
+      function frameWindow(payload) {
+        const all = Array.isArray(payload?.frames) ? payload.frames : [];
+        if (!all.length) {
+          const recent = Array.isArray(payload?.recent_frames) ? payload.recent_frames : [];
+          return {
+            now: recent[recent.length - 1] || payload?.current_frame || null,
+            prev1: recent[recent.length - 2] || null,
+            prev2: recent[recent.length - 3] || null,
+            selected: null,
+            total: recent.length,
+          };
+        }
+
+        if (payload?.status === "running") {
+          replayIndex = all.length - 1;
+        } else if (replayIndex === null || replayIndex >= all.length) {
+          replayIndex = all.length - 1;
+        }
+
+        const idx = Math.max(0, Math.min(all.length - 1, replayIndex));
+        return {
+          now: all[idx] || null,
+          prev1: all[idx - 1] || null,
+          prev2: all[idx - 2] || null,
+          selected: idx,
+          total: all.length,
+        };
+      }
+
+      function updateReplayControls(payload, selected, total) {
+        const canReplay = total > 0 && payload?.status !== "running";
+        if (!canReplay) {
+          replayPanel.classList.add("hidden");
+          replayMeta.textContent = "--";
+          replayPlayBtn.textContent = "Play";
+          if (replayTimer) {
+            clearInterval(replayTimer);
+            replayTimer = null;
+          }
+          return;
+        }
+
+        replayPanel.classList.remove("hidden");
+        replayScrub.min = "0";
+        replayScrub.max = String(Math.max(0, total - 1));
+        replayScrub.value = String(selected ?? 0);
+        replayMeta.textContent = `Day ${(selected ?? 0) + 1}/${total}`;
+      }
+
+      function renderStory(now) {
+        const story = now?.story || {};
+        const panel = document.getElementById("storylinePanel");
+        panel.classList.remove("story-tone-positive", "story-tone-negative", "story-tone-neutral");
+        const tone = story.tone || "neutral";
+        panel.classList.add(`story-tone-${tone}`);
+        document.getElementById("currentHeadline").textContent =
+          story.headline || "Waiting for first decision frame...";
+        document.getElementById("currentDetail").textContent =
+          story.detail || "Story details will appear as frames arrive.";
+      }
+
+      function render(payload) {
+        latestPayload = payload;
+
+        const status = String(payload?.status || "waiting");
+        const badge = document.getElementById("statusBadge");
+        badge.className = "badge";
+        if (status === "running") badge.classList.add("live");
+        if (status === "completed") badge.classList.add("done");
+        if (status === "failed") badge.classList.add("failed");
+        badge.textContent = status;
+
+        document.getElementById("updatedAt").textContent = payload?.updated_at_utc || "--";
+        document.getElementById("runId").textContent = payload?.run_id || "--";
+
+        const progress = payload?.progress || {};
+        const windowed = frameWindow(payload);
+        const now = windowed.now;
+        const dayText = (progress.day && progress.days_total)
+          ? `${progress.day}/${progress.days_total}`
+          : "--";
+        document.getElementById("kDay").textContent = dayText;
+        document.getElementById("kCapital").textContent = money(now?.capital);
+        document.getElementById("kProfit").textContent = money(now?.total_profit);
+        document.getElementById("kRoi").textContent = pct(now?.roi_percent);
+        document.getElementById("kFulfilled").textContent = num(now?.orders?.fulfilled);
+        document.getElementById("kCalls").textContent = num(payload?.execution?.llm_calls);
+
+        renderStory(now);
+        document.getElementById("frameNow").innerHTML = frameHtml(windowed.now, "Now");
+        document.getElementById("framePrev1").innerHTML = frameHtml(windowed.prev1, "1 Step Back");
+        document.getElementById("framePrev2").innerHTML = frameHtml(windowed.prev2, "2 Steps Back");
+
+        updateReplayControls(payload, windowed.selected, windowed.total);
+
+        const series = payload?.series || {};
+        const limit = windowed.selected !== null ? windowed.selected + 1 : undefined;
+        const capSeries = Array.isArray(series.capital) ? series.capital.slice(0, limit) : [];
+        const profitSeries = Array.isArray(series.daily_profit) ? series.daily_profit.slice(0, limit) : [];
+        renderChart("capitalChart", capSeries, "#0b9d8a");
+        renderChart("profitChart", profitSeries, "#db6a31");
+
+        const products = Array.isArray(now?.products) ? now.products : [];
+        const rows = products
+          .map((p) => `
+          <tr>
+            <td class="mono">${p.sku}</td>
+            <td>${p.name}</td>
+            <td class="mono">${num(p.stock)}</td>
+            <td class="mono">${num(p.backlog)}</td>
+            <td class="mono">${money(p.price)}</td>
+            <td class="mono">${num(p.rating)}</td>
+          </tr>
+        `)
+          .join("");
+        document.getElementById("productRows").innerHTML =
+          rows || "<tr><td colspan='6'>No product snapshot in this frame.</td></tr>";
+
+        const events = [];
+        if (now?.story?.detail) {
+          events.push(now.story.detail);
+        }
+        if (Array.isArray(now?.active_events)) {
+          events.push(...now.active_events);
+        }
+        if (Array.isArray(now?.events)) {
+          events.push(...now.events);
+        }
+        const eventHtml = events.slice(0, 12).map((ev) => `<li>${ev}</li>`).join("");
+        document.getElementById("eventFeed").innerHTML = eventHtml || "<li>No active events.</li>";
+      }
+
+      replayScrub.addEventListener("input", () => {
+        replayIndex = Number(replayScrub.value);
+        if (replayTimer) {
+          clearInterval(replayTimer);
+          replayTimer = null;
+          replayPlayBtn.textContent = "Play";
+        }
+        if (latestPayload) {
+          render(latestPayload);
+        }
+      });
+
+      replayPlayBtn.addEventListener("click", () => {
+        if (!latestPayload) return;
+        const all = Array.isArray(latestPayload.frames) ? latestPayload.frames : [];
+        if (!all.length) return;
+
+        if (replayTimer) {
+          clearInterval(replayTimer);
+          replayTimer = null;
+          replayPlayBtn.textContent = "Play";
+          return;
+        }
+
+        replayPlayBtn.textContent = "Pause";
+        replayTimer = setInterval(() => {
+          if (replayIndex === null) {
+            replayIndex = 0;
+          } else {
+            replayIndex += 1;
+          }
+          if (replayIndex >= all.length) {
+            replayIndex = all.length - 1;
+            clearInterval(replayTimer);
+            replayTimer = null;
+            replayPlayBtn.textContent = "Play";
+          }
+          render(latestPayload);
+        }, 800);
+      });
+
+      async function tick() {
+        try {
+          const res = await fetch(sourcePath, { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const payload = await res.json();
+          render(payload);
+        } catch (err) {
+          render({ status: "waiting", updated_at_utc: String(err) });
+        }
+      }
+
+      tick();
+      setInterval(tick, pollMs);
+    </script>
+  </body>
+</html>

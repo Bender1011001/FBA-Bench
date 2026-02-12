@@ -1,0 +1,30 @@
+{
+  "run_id": "none",
+  "status": "waiting",
+  "phase": "idle",
+  "started_at_utc": null,
+  "updated_at_utc": null,
+  "config": {},
+  "progress": {
+    "day": 0,
+    "days_total": 0,
+    "percent": 0.0
+  },
+  "current_frame": null,
+  "recent_frames": [],
+  "frames": [],
+  "series": {
+    "day": [],
+    "capital": [],
+    "daily_profit": [],
+    "roi_percent": [],
+    "orders_fulfilled": [],
+    "stockouts": []
+  },
+  "execution": {
+    "llm_calls": 0,
+    "reflection_calls": 0,
+    "total_tokens": 0,
+    "elapsed_seconds": 0.0
+  }
+}

@@ -1,0 +1,115 @@
+# Simulation realism tuning for run_grok_proper_sim.py
+# Use with:
+#   python run_grok_proper_sim.py --realism-config configs/sim_realism.yaml
+
+cost_model:
+  fulfillment_fee_per_unit: 3.20
+  payment_processing_rate: 0.03
+  daily_platform_overhead: 8.0
+  max_order_qty_per_decision: 2000
+
+seasonality:
+  enabled: true
+  default_multiplier: 1.0
+  weekend_multiplier: 1.05
+  windows:
+    - name: q4_holiday_spike
+      start_day: 320
+      end_day: 360
+      multiplier: 1.18
+      categories: ["audio", "camera", "charging", "connectivity"]
+    - name: post_holiday_softness
+      start_day: 1
+      end_day: 35
+      multiplier: 0.92
+      categories: ["audio", "camera", "workstation"]
+    - name: back_to_school
+      start_day: 220
+      end_day: 255
+      multiplier: 1.10
+      categories: ["workstation", "camera", "accessories", "connectivity"]
+  return_windows:
+    - name: post_holiday_return_wave
+      start_day: 1
+      end_day: 45
+      multiplier: 1.35
+      categories: ["audio", "camera", "workstation"]
+
+supplier_lanes:
+  profiles:
+    domestic:
+      lead_min: 2
+      lead_max: 5
+      rel_min: 0.90
+      rel_max: 0.99
+    nearshore:
+      lead_min: 4
+      lead_max: 8
+      rel_min: 0.86
+      rel_max: 0.97
+    overseas_air:
+      lead_min: 5
+      lead_max: 10
+      rel_min: 0.82
+      rel_max: 0.95
+    overseas_ocean:
+      lead_min: 9
+      lead_max: 18
+      rel_min: 0.78
+      rel_max: 0.93
+  mix: ["domestic", "nearshore", "overseas_air", "overseas_ocean"]
+  delay_risk_by_lane:
+    domestic: 0.018
+    nearshore: 0.038
+    overseas_air: 0.062
+    overseas_ocean: 0.095
+  supply_shock_extra_delay_risk: 0.18
+  max_delay_risk: 0.45
+  delay_days_min: 1
+  delay_days_max: 3
+  max_cumulative_delay_days: 14
+
+returns:
+  profiles_by_category:
+    audio:
+      base: 0.046
+      restock_prob: 0.58
+      recovery_low: 0.42
+      recovery_high: 0.86
+      salvage: 0.24
+    charging:
+      base: 0.024
+      restock_prob: 0.76
+      recovery_low: 0.65
+      recovery_high: 0.97
+      salvage: 0.15
+    connectivity:
+      base: 0.026
+      restock_prob: 0.79
+      recovery_low: 0.68
+      recovery_high: 0.98
+      salvage: 0.14
+    workstation:
+      base: 0.038
+      restock_prob: 0.66
+      recovery_low: 0.50
+      recovery_high: 0.90
+      salvage: 0.19
+    camera:
+      base: 0.042
+      restock_prob: 0.60
+      recovery_low: 0.46
+      recovery_high: 0.87
+      salvage: 0.22
+    accessories:
+      base: 0.020
+      restock_prob: 0.82
+      recovery_low: 0.72
+      recovery_high: 0.99
+      salvage: 0.12
+  default_profile:
+    base: 0.03
+    restock_prob: 0.70
+    recovery_low: 0.55
+    recovery_high: 0.92
+    salvage: 0.18
