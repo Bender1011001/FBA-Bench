@@ -1,9 +1,9 @@
 {
-  "generated_at": "February 12, 2026 at 00:24 UTC",
+  "generated_at": "February 12, 2026 at 00:25 UTC",
   "benchmark_version": "2026.02-live",
   "metric_mode": "agentic",
   "active_run": {
-    "active": true,
+    "active": false,
     "run_id": "run-20260211-gpt5-fullyear",
     "tier": "T2"
   },
@@ -11,11 +11,11 @@
   "summary": {
     "avg_quality_score": null,
     "avg_success_rate": null,
-    "avg_total_profit": 1455.78,
-    "avg_roi_pct": 14.558,
-    "total_profit_sum": 7278.92,
-    "total_llm_calls": 721,
-    "total_tokens": 2607160,
+    "avg_total_profit": 1310.18,
+    "avg_roi_pct": 13.102,
+    "total_profit_sum": 6550.92,
+    "total_llm_calls": 720,
+    "total_tokens": 2598613,
     "total_runs": 5,
     "top_performer": "claude-opus-4.6"
   },
@@ -69,16 +69,16 @@
       "quality_score": null,
       "success_rate": null,
       "avg_response_time": null,
-      "total_tokens": 8547,
-      "total_profit": 728.0,
-      "roi_pct": 7.28,
-      "llm_calls": 1,
-      "avg_call_seconds": 433.95,
+      "total_tokens": 0,
+      "total_profit": 0.0,
+      "roi_pct": 0.0,
+      "llm_calls": 0,
+      "avg_call_seconds": null,
       "total_runs": 1,
       "badge": "bronze",
-      "timestamp": "2026-02-12T00:23:30.543271+00:00",
+      "timestamp": "2026-02-10T13:32:10.146304+00:00",
       "run_id": "run-20260211-gpt5-fullyear",
-      "success": true
+      "success": false
     },
     {
       "rank": 4,
