@@ -1,5 +1,5 @@
 {
-  "generated_at": "February 12, 2026 at 00:14 UTC",
+  "generated_at": "February 12, 2026 at 00:15 UTC",
   "rankings": [
     {
       "rank": 1,
@@ -50,14 +50,14 @@
       "quality_score": null,
       "success_rate": null,
       "avg_response_time": null,
-      "total_tokens": 74805,
-      "total_profit": 4993.49,
-      "roi_pct": 49.935,
-      "llm_calls": 18,
-      "avg_call_seconds": 42.44,
+      "total_tokens": 81748,
+      "total_profit": 3337.7,
+      "roi_pct": 33.377,
+      "llm_calls": 20,
+      "avg_call_seconds": 40.05,
       "total_runs": 1,
       "badge": "bronze",
-      "timestamp": "2026-02-12T00:13:19.073721+00:00",
+      "timestamp": "2026-02-12T00:14:44.932399+00:00",
       "run_id": "run-20260211-gpt5-fullyear",
       "success": true
     },
