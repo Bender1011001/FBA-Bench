@@ -6,21 +6,21 @@
     "openai/gpt-5.2"
   ],
   "started_at": "2026-02-11T23:58:49.572776+00:00",
-  "last_heartbeat": "2026-02-12T00:20:19.792585+00:00",
+  "last_heartbeat": "2026-02-12T00:21:25.894888+00:00",
   "status": "running",
   "completed": 0,
   "total": 1,
   "progress": {
     "openai/gpt-5.2": {
       "model": "openai/gpt-5.2",
-      "day": 27,
+      "day": 28,
       "days_total": 365,
-      "capital": 15172.9,
-      "profit_so_far": 5172.9,
-      "tokens_used": 108733,
-      "llm_calls": 27,
-      "last_call_seconds": 35.528712400002405,
-      "timestamp": "2026-02-12T00:20:10.902341+00:00"
+      "capital": 12110.14,
+      "profit_so_far": 2110.14,
+      "tokens_used": 112747,
+      "llm_calls": 28,
+      "last_call_seconds": 47.30098990001716,
+      "timestamp": "2026-02-12T00:20:58.204004+00:00"
     }
   }
 }
