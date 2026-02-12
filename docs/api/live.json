@@ -7,21 +7,21 @@
     "deepseek/deepseek-r1"
   ],
   "started_at": "2026-02-12T00:36:05.279685+00:00",
-  "last_heartbeat": "2026-02-12T01:00:17.239763+00:00",
+  "last_heartbeat": "2026-02-12T01:01:22.320611+00:00",
   "status": "running",
   "completed": 0,
   "total": 2,
   "progress": {
     "openai/gpt-5.2": {
       "model": "openai/gpt-5.2",
-      "day": 31,
+      "day": 33,
       "days_total": 365,
-      "capital": 11431.23,
-      "profit_so_far": 1431.2300000000005,
-      "tokens_used": 123247,
-      "llm_calls": 31,
-      "last_call_seconds": 40.141568100079894,
-      "timestamp": "2026-02-12T00:59:50.293262+00:00"
+      "capital": 12039.41,
+      "profit_so_far": 2039.4100000000003,
+      "tokens_used": 130262,
+      "llm_calls": 33,
+      "last_call_seconds": 36.07510499993805,
+      "timestamp": "2026-02-12T01:01:00.721554+00:00"
     },
     "deepseek/deepseek-r1": {
       "model": "deepseek/deepseek-r1",
