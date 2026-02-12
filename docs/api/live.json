@@ -3,27 +3,24 @@
   "run_id": "run-20260211-gpt5-fullyear",
   "tier": "T2",
   "models": [
-    "openai/gpt-5.2"
+    "deepseek/deepseek-r1"
   ],
-  "started_at": "2026-02-11T23:58:49.572776+00:00",
-  "last_heartbeat": "2026-02-12T00:25:50.192163+00:00",
+  "started_at": "2026-02-12T00:16:15.012633+00:00",
+  "last_heartbeat": "2026-02-12T00:27:00.857920+00:00",
   "status": "running",
   "completed": 0,
   "total": 1,
   "progress": {
-    "openai/gpt-5.2": {
-      "model": "openai/gpt-5.2",
-      "day": 34,
+    "deepseek/deepseek-r1": {
+      "model": "deepseek/deepseek-r1",
+      "day": 2,
       "days_total": 365,
-      "capital": 7280.2,
-      "profit_so_far": -2719.8,
-      "tokens_used": 136772,
-      "llm_calls": 34,
-      "last_call_seconds": 36.06623699993361,
-      "timestamp": "2026-02-12T00:25:44.586393+00:00"
-    }
-  }
-}00"
+      "capital": 11432.86,
+      "profit_so_far": 1432.86,
+      "tokens_used": 16319,
+      "llm_calls": 2,
+      "last_call_seconds": 123.78914720006287,
+      "timestamp": "2026-02-12T00:25:34.333383+00:00"
     }
   }
 }
