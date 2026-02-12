@@ -1,5 +1,5 @@
 {
-  "generated_at": "February 12, 2026 at 00:33 UTC",
+  "generated_at": "February 12, 2026 at 00:34 UTC",
   "rankings": [
     {
       "rank": 1,
@@ -50,39 +50,19 @@
       "quality_score": null,
       "success_rate": null,
       "avg_response_time": null,
-      "total_tokens": 0,
-      "total_profit": 0.0,
-      "roi_pct": 0.0,
-      "llm_calls": 0,
-      "avg_call_seconds": null,
+      "total_tokens": 39652,
+      "total_profit": 2862.77,
+      "roi_pct": 28.628,
+      "llm_calls": 4,
+      "avg_call_seconds": 181.75,
       "total_runs": 1,
       "badge": "bronze",
-      "timestamp": "2026-02-10T13:32:10.146304+00:00",
-      "run_id": "run-20260211-gpt5-fullyear",
-      "success": false
-    },
-    {
-      "rank": 4,
-      "model_name": "gpt-5.2",
-      "model_slug": "openai/gpt-5.2",
-      "provider": "OpenAI",
-      "tier": "flagship",
-      "quality_score": null,
-      "success_rate": null,
-      "avg_response_time": null,
-      "total_tokens": 170969,
-      "total_profit": -732.74,
-      "roi_pct": -7.327,
-      "llm_calls": 43,
-      "avg_call_seconds": 45.32,
-      "total_runs": 1,
-      "badge": "stable",
-      "timestamp": "2026-02-12T00:32:36.329616+00:00",
+      "timestamp": "2026-02-12T00:32:02.551577+00:00",
       "run_id": "run-20260211-gpt5-fullyear",
       "success": true
     },
     {
-      "rank": 5,
+      "rank": 4,
       "model_name": "grok-4.1-fast",
       "model_slug": "x-ai/grok-4.1-fast",
       "provider": "X.AI",
@@ -102,7 +82,7 @@
       "success": true
     },
     {
-      "rank": 6,
+      "rank": 5,
       "model_name": "llama-3.3-70b-instruct",
       "model_slug": "meta-llama/llama-3.3-70b-instruct",
       "provider": "Meta",
