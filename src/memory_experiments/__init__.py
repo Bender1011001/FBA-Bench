@@ -33,6 +33,7 @@ from .memory_modes import (
     ReflectionEnabledMode,
     ShortTermOnlyMode,
 )
+from .reflective_memory_v1 import ReflectiveMemoryV1
 from .reflection_module import ReflectionModule
 
 __version__ = "1.0.0"
@@ -52,4 +53,5 @@ __all__ = [
     "LongTermOnlyMode",
     "HybridReflectionMode",
     "MemoryFreeMode",
+    "ReflectiveMemoryV1",
 ]
