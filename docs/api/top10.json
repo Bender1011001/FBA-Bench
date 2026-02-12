@@ -1,5 +1,5 @@
 {
-  "generated_at": "February 12, 2026 at 00:38 UTC",
+  "generated_at": "February 12, 2026 at 00:39 UTC",
   "rankings": [
     {
       "rank": 1,
@@ -50,16 +50,16 @@
       "quality_score": null,
       "success_rate": null,
       "avg_response_time": null,
-      "total_tokens": 0,
-      "total_profit": 0.0,
-      "roi_pct": 0.0,
-      "llm_calls": 0,
-      "avg_call_seconds": null,
+      "total_tokens": 8592,
+      "total_profit": 728.0,
+      "roi_pct": 7.28,
+      "llm_calls": 1,
+      "avg_call_seconds": 134.26,
       "total_runs": 1,
       "badge": "bronze",
-      "timestamp": "2026-02-10T13:32:10.146304+00:00",
+      "timestamp": "2026-02-12T00:38:22.045425+00:00",
       "run_id": "run-20260211-v2-consolidated",
-      "success": false
+      "success": true
     },
     {
       "rank": 4,
@@ -70,14 +70,14 @@
       "quality_score": null,
       "success_rate": null,
       "avg_response_time": null,
-      "total_tokens": 10797,
-      "total_profit": -1779.82,
-      "roi_pct": -17.798,
-      "llm_calls": 3,
-      "avg_call_seconds": 42.27,
+      "total_tokens": 14445,
+      "total_profit": -1048.35,
+      "roi_pct": -10.483,
+      "llm_calls": 4,
+      "avg_call_seconds": 42.41,
       "total_runs": 1,
       "badge": "stable",
-      "timestamp": "2026-02-12T00:38:09.528333+00:00",
+      "timestamp": "2026-02-12T00:38:51.939226+00:00",
       "run_id": "run-20260211-v2-consolidated",
       "success": true
     },
