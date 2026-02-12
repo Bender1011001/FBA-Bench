@@ -7,32 +7,32 @@
     "deepseek/deepseek-r1"
   ],
   "started_at": "2026-02-12T00:36:05.279685+00:00",
-  "last_heartbeat": "2026-02-12T00:45:41.211677+00:00",
+  "last_heartbeat": "2026-02-12T00:46:46.274776+00:00",
   "status": "running",
   "completed": 0,
   "total": 2,
   "progress": {
     "openai/gpt-5.2": {
       "model": "openai/gpt-5.2",
-      "day": 11,
+      "day": 13,
       "days_total": 365,
-      "capital": 9518.78,
-      "profit_so_far": -481.2199999999995,
-      "tokens_used": 45471,
-      "llm_calls": 11,
-      "last_call_seconds": 56.886948699946515,
-      "timestamp": "2026-02-12T00:45:11.402082+00:00"
+      "capital": 10455.22,
+      "profit_so_far": 455.22000000000037,
+      "tokens_used": 52224,
+      "llm_calls": 13,
+      "last_call_seconds": 39.995687299990095,
+      "timestamp": "2026-02-12T00:46:26.804641+00:00"
     },
     "deepseek/deepseek-r1": {
       "model": "deepseek/deepseek-r1",
-      "day": 3,
+      "day": 4,
       "days_total": 365,
-      "capital": 12081.1,
-      "profit_so_far": 2081.1,
-      "tokens_used": 30294,
-      "llm_calls": 3,
-      "last_call_seconds": 201.11515349999536,
-      "timestamp": "2026-02-12T00:44:17.595612+00:00"
+      "capital": 12861.31,
+      "profit_so_far": 2861.31,
+      "tokens_used": 38913,
+      "llm_calls": 4,
+      "last_call_seconds": 129.3971109999111,
+      "timestamp": "2026-02-12T00:46:26.993472+00:00"
     }
   }
 }
