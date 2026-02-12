@@ -1,4 +1,4 @@
-.PHONY: be-migrate be-test lint format-check format-fix type-check test-contracts test-all coverage ci-local pre-commit-install pre-commit-run
+.PHONY: be-migrate be-test lint format-check format-fix type-check test-contracts test-all coverage ci-local pre-commit-install pre-commit-run sim-contract-check sim-matrix-dry-run
 
 # Use Poetry to run all Python tooling by default
 # Detect Poetry command (Windows-friendly)
@@ -68,6 +68,12 @@ verify-golden:
 
 verify-coverage:
 	$(POETRY) run python scripts/verify_coverage_thresholds.py
+
+sim-contract-check:
+	$(POETRY) run python scripts/verify_sim_benchmark_contract.py --latest
+
+sim-matrix-dry-run:
+	$(POETRY) run python scripts/run_sim_benchmark_matrix.py --days 14 --seeds 42,43,44 --print-only
 
 # -----------------------------------------------------------------------------
 # CI parity aggregate

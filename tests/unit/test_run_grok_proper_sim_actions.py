@@ -123,6 +123,22 @@ def test_accept_all_orders_handles_orders_not_listed_by_id() -> None:
     assert results["orders_rejected"] == 0
 
 
+def test_generated_order_ids_are_unique_across_days() -> None:
+    sim = MarketSimulator(seed=83)
+    sim.state.day = 1
+    day1_orders = sim.generate_daily_orders()
+    ids_day1 = {order.order_id for order in day1_orders}
+
+    sim.state.day = 2
+    day2_orders = sim.generate_daily_orders()
+    ids_day2 = {order.order_id for order in day2_orders}
+
+    assert ids_day1
+    assert ids_day2
+    assert ids_day1.isdisjoint(ids_day2)
+    assert sim.state.next_order_sequence == (len(day1_orders) + len(day2_orders))
+
+
 def test_state_days_remaining_uses_total_days_setting() -> None:
     sim = MarketSimulator(seed=31)
     sim.state.day = 3
@@ -372,3 +388,167 @@ def test_inbound_delay_respects_cumulative_delay_cap(monkeypatch) -> None:
     assert not any("Supplier delay" in e for e in second_events)
     assert sim.state.total_supplier_delay_events == 1
     assert sim.state.pending_inbound_orders[0].days_until_arrival == 4
+
+
+def test_demand_multiplier_recalculation_handles_overlapping_events() -> None:
+    sim = MarketSimulator(seed=89)
+    sku = "P001"
+    product = sim.state.products[sku]
+    sim.state.active_events = [
+        AdversarialEvent(
+            event_id="EVT-1-demand_spike",
+            event_type="demand_spike",
+            affected_sku=sku,
+            severity=0.6,
+            days_remaining=1,
+            description="spike",
+        ),
+        AdversarialEvent(
+            event_id="EVT-1-demand_crash",
+            event_type="demand_crash",
+            affected_sku=sku,
+            severity=0.4,
+            days_remaining=3,
+            description="crash",
+        ),
+    ]
+
+    sim._recalculate_demand_multipliers()
+    expected_before = sim._demand_event_multiplier("demand_spike", 0.6) * sim._demand_event_multiplier(
+        "demand_crash",
+        0.4,
+    )
+    assert abs(product.demand_multiplier - expected_before) < 1e-9
+
+    sim.update_events()
+    expected_after = sim._demand_event_multiplier("demand_crash", 0.4)
+    assert abs(product.demand_multiplier - expected_after) < 1e-9
+
+
+def test_price_war_initial_shock_scales_with_severity() -> None:
+    sku = "P001"
+    sim_low = MarketSimulator(seed=97)
+    sim_high = MarketSimulator(seed=97)
+
+    low_event = AdversarialEvent(
+        event_id="EVT-LOW-price_war",
+        event_type="price_war",
+        affected_sku=sku,
+        severity=0.3,
+        days_remaining=5,
+        description="low severity price war",
+    )
+    high_event = AdversarialEvent(
+        event_id="EVT-HIGH-price_war",
+        event_type="price_war",
+        affected_sku=sku,
+        severity=1.0,
+        days_remaining=5,
+        description="high severity price war",
+    )
+
+    sim_low._apply_event_initial_effects(low_event)
+    sim_high._apply_event_initial_effects(high_event)
+    avg_low = sum(float(c.price) for c in sim_low.state.competitors if c.sku == sku) / max(
+        1,
+        len([c for c in sim_low.state.competitors if c.sku == sku]),
+    )
+    avg_high = sum(float(c.price) for c in sim_high.state.competitors if c.sku == sku) / max(
+        1,
+        len([c for c in sim_high.state.competitors if c.sku == sku]),
+    )
+
+    assert avg_high < avg_low
+
+
+def test_price_war_active_pressure_affects_daily_competitor_evolution() -> None:
+    sku = "P001"
+    sim_base = MarketSimulator(seed=101)
+    sim_war = MarketSimulator(seed=101)
+    sim_war.state.active_events.append(
+        AdversarialEvent(
+            event_id="EVT-WAR-price_war",
+            event_type="price_war",
+            affected_sku=sku,
+            severity=1.0,
+            days_remaining=5,
+            description="active price war",
+        )
+    )
+
+    sim_base.evolve_competitor_prices()
+    sim_war.evolve_competitor_prices()
+    avg_base = sum(float(c.price) for c in sim_base.state.competitors if c.sku == sku) / max(
+        1,
+        len([c for c in sim_base.state.competitors if c.sku == sku]),
+    )
+    avg_war = sum(float(c.price) for c in sim_war.state.competitors if c.sku == sku) / max(
+        1,
+        len([c for c in sim_war.state.competitors if c.sku == sku]),
+    )
+
+    assert avg_war < avg_base
+
+
+def test_review_bomb_severity_scales_rating_drop_and_recovery() -> None:
+    sku = "P001"
+
+    sim_low = MarketSimulator(seed=103)
+    sim_low.state.products[sku].rating = 4.8
+    low_event = AdversarialEvent(
+        event_id="EVT-LOW-review_bomb",
+        event_type="review_bomb",
+        affected_sku=sku,
+        severity=0.3,
+        days_remaining=2,
+        description="low severity review bomb",
+    )
+    sim_low._apply_event_initial_effects(low_event)
+    low_drop = 4.8 - sim_low.state.products[sku].rating
+
+    sim_high = MarketSimulator(seed=103)
+    sim_high.state.products[sku].rating = 4.8
+    high_event = AdversarialEvent(
+        event_id="EVT-HIGH-review_bomb",
+        event_type="review_bomb",
+        affected_sku=sku,
+        severity=1.0,
+        days_remaining=2,
+        description="high severity review bomb",
+    )
+    sim_high._apply_event_initial_effects(high_event)
+    high_drop = 4.8 - sim_high.state.products[sku].rating
+
+    assert high_drop > low_drop
+
+    sim_recover_low = MarketSimulator(seed=107)
+    sim_recover_low.state.products[sku].rating = 3.0
+    sim_recover_low.state.active_events = [
+        AdversarialEvent(
+            event_id="EVT-END-LOW-review_bomb",
+            event_type="review_bomb",
+            affected_sku=sku,
+            severity=0.3,
+            days_remaining=1,
+            description="ending low review bomb",
+        )
+    ]
+    sim_recover_low.update_events()
+    low_recovered = sim_recover_low.state.products[sku].rating
+
+    sim_recover_high = MarketSimulator(seed=107)
+    sim_recover_high.state.products[sku].rating = 3.0
+    sim_recover_high.state.active_events = [
+        AdversarialEvent(
+            event_id="EVT-END-HIGH-review_bomb",
+            event_type="review_bomb",
+            affected_sku=sku,
+            severity=1.0,
+            days_remaining=1,
+            description="ending high review bomb",
+        )
+    ]
+    sim_recover_high.update_events()
+    high_recovered = sim_recover_high.state.products[sku].rating
+
+    assert high_recovered > low_recovered

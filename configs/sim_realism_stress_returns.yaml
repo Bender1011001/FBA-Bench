@@ -1,0 +1,50 @@
+# Stress profile for return-heavy benchmark validation.
+# Use with:
+#   python run_grok_proper_sim.py --realism-config configs/sim_realism_stress_returns.yaml
+
+seasonality:
+  return_windows:
+    - name: stress_return_wave
+      start_day: 1
+      end_day: 45
+      multiplier: 1.9
+      categories: ["audio", "camera", "workstation", "charging", "connectivity", "accessories"]
+
+returns:
+  profiles_by_category:
+    audio:
+      base: 0.120
+      restock_prob: 0.52
+      recovery_low: 0.35
+      recovery_high: 0.80
+      salvage: 0.22
+    charging:
+      base: 0.080
+      restock_prob: 0.70
+      recovery_low: 0.55
+      recovery_high: 0.92
+      salvage: 0.14
+    connectivity:
+      base: 0.085
+      restock_prob: 0.72
+      recovery_low: 0.58
+      recovery_high: 0.94
+      salvage: 0.14
+    workstation:
+      base: 0.100
+      restock_prob: 0.58
+      recovery_low: 0.42
+      recovery_high: 0.85
+      salvage: 0.18
+    camera:
+      base: 0.115
+      restock_prob: 0.50
+      recovery_low: 0.35
+      recovery_high: 0.80
+      salvage: 0.20
+    accessories:
+      base: 0.070
+      restock_prob: 0.76
+      recovery_low: 0.62
+      recovery_high: 0.95
+      salvage: 0.12

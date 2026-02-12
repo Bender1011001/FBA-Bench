@@ -166,6 +166,66 @@ def _write_json_atomic(path: Path, payload: Dict[str, Any]) -> None:
         json.dump(payload, handle, indent=2)
     tmp_path.replace(path)
 
+def _sanitize_decisions_for_replay(decisions: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Persist only the actionable decision fields needed to replay a run deterministically.
+    Keep this stable: it becomes part of the reproducibility story.
+    """
+    if not isinstance(decisions, dict):
+        return {}
+    return {
+        "accept_all_orders": bool(decisions.get("accept_all_orders", False)),
+        "accept_skus": list(decisions.get("accept_skus", []) or []),
+        "reject_skus": list(decisions.get("reject_skus", []) or []),
+        "accept_orders": list(decisions.get("accept_orders", []) or []),
+        "price_changes": dict(decisions.get("price_changes", {}) or {}),
+        "restock": dict(decisions.get("restock", {}) or {}),
+        "supplier_orders": decisions.get("supplier_orders", []) or [],
+        "ad_budget_shift": dict(decisions.get("ad_budget_shift", {}) or {}),
+        "customer_ops": dict(decisions.get("customer_ops", {}) or {}),
+    }
+
+
+def _load_replay_decisions(results_file: str) -> List[Dict[str, Any]]:
+    """
+    Load a previous results JSON and extract day-indexed decisions for replay.
+    Uses `decisions_raw` when available; falls back to parsing `decisions` entries.
+    """
+    results_path = Path(results_file)
+    if not results_path.exists():
+        raise FileNotFoundError(f"Replay results file not found: {results_path}")
+    with open(results_path, "r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    decisions_list = payload.get("decisions", [])
+    if not isinstance(decisions_list, list) or not decisions_list:
+        raise ValueError("Replay source missing `decisions` list")
+
+    by_day: Dict[int, Dict[str, Any]] = {}
+    for entry in decisions_list:
+        if not isinstance(entry, dict):
+            continue
+        day_val = entry.get("day")
+        if not isinstance(day_val, int) or day_val <= 0:
+            continue
+        raw = entry.get("decisions_raw")
+        if isinstance(raw, dict) and raw:
+            by_day[day_val] = raw
+            continue
+        fallback = entry.get("decisions")
+        if isinstance(fallback, dict) and fallback:
+            by_day[day_val] = _sanitize_decisions_for_replay(fallback)
+
+    if not by_day:
+        raise ValueError("Replay source has no usable decisions (missing `decisions_raw` fields)")
+
+    max_day = max(by_day.keys())
+    out: List[Dict[str, Any]] = []
+    for day in range(1, max_day + 1):
+        if day not in by_day:
+            raise ValueError(f"Replay source missing decisions for day {day}")
+        out.append(by_day[day])
+    return out
+
 
 def _action_count(value: Any) -> int:
     if isinstance(value, dict):
@@ -433,6 +493,7 @@ class SimulationState:
     pending_inbound_orders: List[PendingInboundOrder] = field(default_factory=list)
     pending_returns: List[PendingReturn] = field(default_factory=list)
     customer_backlog: Dict[str, int] = field(default_factory=dict)
+    next_order_sequence: int = 0
     
     # Historical tracking
     daily_revenue: List[Decimal] = field(default_factory=list)
@@ -611,6 +672,11 @@ class MarketSimulator:
                 target = product.price * Decimal(str(self.rng.uniform(0.90, 0.98)))
             else:
                 target = competitor.price * Decimal(str(self.rng.uniform(0.97, 1.03)))
+
+            # Active price-war events apply sustained downward pressure by severity.
+            pressure = self._active_price_war_pressure(competitor.sku)
+            if pressure < 1.0:
+                target = target * Decimal(str(pressure))
 
             floor_price = (product.cost * Decimal("1.02")).quantize(Decimal("0.01"))
             cap_price = (product.price * Decimal("1.35")).quantize(Decimal("0.01"))
@@ -943,7 +1009,6 @@ class MarketSimulator:
         """Generate customer orders for today based on demand."""
         self._roll_forward_daily_effects()
         orders = []
-        order_counter = self.state.day * 100
         
         for sku, product in self.state.products.items():
             raw_demand = product.calculate_daily_demand(self.rng)
@@ -952,12 +1017,12 @@ class MarketSimulator:
             demand = max(0, int(round(raw_demand * price_factor * seasonal_factor)))
             
             for i in range(demand):
-                order_counter += 1
+                self.state.next_order_sequence += 1
                 # Customer max price = our price ± 10%
                 max_price = product.price * Decimal(str(self.rng.uniform(0.9, 1.1)))
                 
                 orders.append(Order(
-                    order_id=f"ORD-{order_counter:06d}",
+                    order_id=f"ORD-{self.state.next_order_sequence:07d}",
                     sku=sku,
                     quantity=self.rng.randint(1, 3),
                     max_price=max_price.quantize(Decimal("0.01")),
@@ -965,6 +1030,76 @@ class MarketSimulator:
         
         self.rng.shuffle(orders)
         return orders
+
+    @staticmethod
+    def _demand_event_multiplier(event_type: str, severity: float) -> float:
+        sev = max(0.0, float(severity))
+        if event_type == "demand_spike":
+            return min(3.5, 1.0 + (2.0 * sev))
+        if event_type == "demand_crash":
+            return max(0.25, 1.0 - (0.75 * sev))
+        return 1.0
+
+    @staticmethod
+    def _price_war_shock_multiplier(severity: float) -> float:
+        sev = max(0.0, float(severity))
+        return max(0.55, min(0.95, 1.0 - (0.35 * sev)))
+
+    @staticmethod
+    def _price_war_drift_multiplier(severity: float) -> float:
+        sev = max(0.0, float(severity))
+        return max(0.70, min(0.98, 1.0 - (0.18 * sev)))
+
+    @staticmethod
+    def _review_bomb_drop(severity: float) -> float:
+        sev = max(0.0, float(severity))
+        return max(0.25, min(2.20, 1.20 * sev))
+
+    @staticmethod
+    def _review_bomb_recovery(severity: float) -> float:
+        sev = max(0.0, float(severity))
+        return max(0.10, min(0.75, 0.45 * sev))
+
+    def _active_price_war_pressure(self, sku: str) -> float:
+        pressure = 1.0
+        for event in self.state.active_events:
+            if event.event_type != "price_war" or event.affected_sku != sku:
+                continue
+            pressure *= self._price_war_drift_multiplier(event.severity)
+        return max(0.55, min(1.0, pressure))
+
+    def _apply_event_initial_effects(self, event: AdversarialEvent) -> None:
+        product = self.state.products.get(event.affected_sku)
+        if product is None:
+            return
+        if event.event_type == "review_bomb":
+            drop = self._review_bomb_drop(event.severity)
+            product.rating = max(1.0, product.rating - drop)
+            return
+        if event.event_type == "price_war":
+            shock = self._price_war_shock_multiplier(event.severity)
+            for comp in self.state.competitors:
+                if comp.sku != event.affected_sku:
+                    continue
+                comp.price = (comp.price * Decimal(str(shock))).quantize(Decimal("0.01"))
+            return
+
+    def _recalculate_demand_multipliers(self) -> None:
+        """
+        Recompute SKU demand multipliers from active demand events.
+        Avoids event-stack bugs where one expiring event can overwrite another.
+        """
+        for product in self.state.products.values():
+            product.demand_multiplier = 1.0
+
+        for event in self.state.active_events:
+            factor = self._demand_event_multiplier(event.event_type, event.severity)
+            if factor == 1.0:
+                continue
+            product = self.state.products.get(event.affected_sku)
+            if product is None:
+                continue
+            product.demand_multiplier = max(0.2, min(4.0, product.demand_multiplier * factor))
     
     def maybe_inject_event(self) -> Optional[AdversarialEvent]:
         """Randomly inject adversarial events."""
@@ -983,31 +1118,20 @@ class MarketSimulator:
         event_type, desc, severity = self.rng.choice(event_types)
         affected_sku = self.rng.choice(list(self.state.products.keys()))
         duration = self.rng.randint(3, 14)  # 3-14 days
+        event_severity = severity * self.rng.uniform(0.8, 1.2)
         
         event = AdversarialEvent(
             event_id=f"EVT-{self.state.day}-{event_type}",
             event_type=event_type,
             affected_sku=affected_sku,
-            severity=severity * self.rng.uniform(0.8, 1.2),
+            severity=event_severity,
             days_remaining=duration,
             description=f"{desc} for {self.state.products[affected_sku].name}",
         )
-        
-        # Apply immediate effects
-        product = self.state.products[affected_sku]
-        if event_type == "demand_spike":
-            product.demand_multiplier = 3.0
-        elif event_type == "demand_crash":
-            product.demand_multiplier = 0.5
-        elif event_type == "review_bomb":
-            product.rating = max(1.0, product.rating - 1.5)
-        elif event_type == "price_war":
-            # Competitor drops price
-            for comp in self.state.competitors:
-                if comp.sku == affected_sku:
-                    comp.price = comp.price * Decimal("0.75")
-        
+
         self.state.active_events.append(event)
+        self._apply_event_initial_effects(event)
+        self._recalculate_demand_multipliers()
         return event
     
     def update_events(self):
@@ -1020,14 +1144,14 @@ class MarketSimulator:
             if event.days_remaining <= 0:
                 # Event ended - restore normal state
                 product = self.state.products[event.affected_sku]
-                if event.event_type in ("demand_spike", "demand_crash"):
-                    product.demand_multiplier = 1.0
-                elif event.event_type == "review_bomb":
-                    product.rating = min(5.0, product.rating + 0.5)  # Slow recovery
+                if event.event_type == "review_bomb":
+                    recovery = self._review_bomb_recovery(event.severity)
+                    product.rating = min(5.0, product.rating + recovery)
             else:
                 still_active.append(event)
         
         self.state.active_events = still_active
+        self._recalculate_demand_multipliers()
 
     def _select_supplier(self, sku: str, supplier_id: Optional[str]) -> Optional[SupplierOffer]:
         offers = self.state.suppliers.get(sku, [])
@@ -1802,6 +1926,7 @@ async def run_simulation(
     live_trace_enabled: bool = True,
     live_trace_file: Optional[str] = None,
     realism_config_path: Optional[str] = None,
+    replay_results_file: Optional[str] = None,
 ):
     """
     Run the proper tick-based simulation.
@@ -1825,19 +1950,33 @@ async def run_simulation(
     )
     if realism_config_path:
         print(f"Realism config: {realism_config_path}")
+    if replay_results_file:
+        print(f"Replay source: {replay_results_file}")
     if live_trace_enabled:
         print(f"Live theater trace: {live_trace_file or 'docs/api/sim_theater_live.json'}")
     print("="*80 + "\n")
-    
-    # Check API key
-    if not os.getenv("OPENROUTER_API_KEY"):
-        print("❌ Set OPENROUTER_API_KEY first!")
-        return None
+
+    replay_decisions: Optional[List[Dict[str, Any]]] = None
+    if replay_results_file:
+        replay_decisions = _load_replay_decisions(replay_results_file)
+        if days != len(replay_decisions):
+            print(
+                f"⚠️  Overriding --days={days} to replay length={len(replay_decisions)} "
+                f"from {replay_results_file}"
+            )
+            days = len(replay_decisions)
+    else:
+        # Check API key only for live LLM runs.
+        if not os.getenv("OPENROUTER_API_KEY"):
+            print("❌ Set OPENROUTER_API_KEY first!")
+            return None
     
     realism_config = _load_realism_config(realism_config_path)
     simulator = MarketSimulator(seed=seed, realism_config=realism_config)
     simulator.state.total_days = days
-    agent = GrokAgent()
+    agent: Optional[GrokAgent] = None
+    if replay_decisions is None:
+        agent = GrokAgent()
     memory_engine: Optional[ReflectiveMemoryV1] = None
     if memory_mode == "reflective":
         memory_engine = ReflectiveMemoryV1()
@@ -1935,9 +2074,14 @@ async def run_simulation(
                 )
             
             # 4. Agent makes decisions WITH FEEDBACK
-            decision_started_at = time.time()
-            decisions = await agent.decide(state, last_results)
-            decision_latency_seconds = time.time() - decision_started_at
+            decision_latency_seconds = 0.0
+            if replay_decisions is not None:
+                decisions = replay_decisions[day - 1]
+            else:
+                assert agent is not None
+                decision_started_at = time.time()
+                decisions = await agent.decide(state, last_results)
+                decision_latency_seconds = time.time() - decision_started_at
             
             # 5. Apply decisions and get results
             results = simulator.apply_agent_decisions(
@@ -1986,6 +2130,7 @@ async def run_simulation(
 
                 review_payload = None
                 if memory_review_mode == "llm":
+                    assert agent is not None
                     review_payload = await agent.review_memory(
                         day_trace=day_trace,
                         long_term_snapshot=memory_engine.long_term_snapshot(limit=20),
@@ -2018,6 +2163,7 @@ async def run_simulation(
                 "day": day,
                 "reasoning": decisions.get("reasoning", ""),
                 "story_headline": theater_frame.get("story", {}).get("headline", ""),
+                "decisions_raw": _sanitize_decisions_for_replay(decisions),
                 "actions": {
                     "accept_all_orders": bool(decisions.get("accept_all_orders", False)),
                     "accept_skus": _action_count(decisions.get("accept_skus", [])),
@@ -2077,9 +2223,9 @@ async def run_simulation(
                 }
                 live_trace_payload["updated_at_utc"] = _utc_now_iso()
                 live_trace_payload["execution"] = {
-                    "llm_calls": agent.calls,
-                    "reflection_calls": agent.reflection_calls,
-                    "total_tokens": agent.total_tokens,
+                    "llm_calls": agent.calls if agent is not None else 0,
+                    "reflection_calls": agent.reflection_calls if agent is not None else 0,
+                    "total_tokens": agent.total_tokens if agent is not None else 0,
                     "elapsed_seconds": round(time.time() - start_time, 2),
                 }
                 live_trace_payload["phase"] = f"day_{day}: results_applied"
@@ -2107,9 +2253,9 @@ async def run_simulation(
         print("📊 FINAL RESULTS")
         print("="*80)
         print(f"⏱️  Execution Time: {elapsed/60:.1f} minutes")
-        print(f"🤖 LLM Calls: {agent.calls}")
-        print(f"🧠 Reflection Calls: {agent.reflection_calls}")
-        print(f"📝 Total Tokens: {agent.total_tokens:,}")
+        print(f"🤖 LLM Calls: {agent.calls if agent is not None else 0}")
+        print(f"🧠 Reflection Calls: {agent.reflection_calls if agent is not None else 0}")
+        print(f"📝 Total Tokens: {(agent.total_tokens if agent is not None else 0):,}")
         print()
         print("💰 Starting Capital: $10,000.00")
         print(f"💰 Final Capital: ${simulator.state.capital:,.2f}")
@@ -2132,7 +2278,8 @@ async def run_simulation(
         print("="*80)
         
         # Save results
-        results_file = Path(__file__).parent / "results" / f"grok_proper_sim_{int(time.time())}.json"
+        file_prefix = "grok_proper_sim_replay" if replay_decisions is not None else "grok_proper_sim"
+        results_file = Path(__file__).parent / "results" / f"{file_prefix}_{int(time.time())}.json"
         results_file.parent.mkdir(exist_ok=True)
         
         final_results = {
@@ -2144,12 +2291,14 @@ async def run_simulation(
                 "memory_review_mode": memory_review_mode,
                 "weekly_consolidation": weekly_consolidation,
                 "realism_config_path": realism_config_path,
+                "run_mode": "replay" if replay_decisions is not None else "live",
+                "replay_source": replay_results_file,
             },
             "execution": {
                 "time_seconds": elapsed,
-                "llm_calls": agent.calls,
-                "reflection_calls": agent.reflection_calls,
-                "total_tokens": agent.total_tokens,
+                "llm_calls": agent.calls if agent is not None else 0,
+                "reflection_calls": agent.reflection_calls if agent is not None else 0,
+                "total_tokens": agent.total_tokens if agent is not None else 0,
             },
             "results": {
                 "starting_capital": float(simulator.state.starting_capital),
@@ -2221,15 +2370,16 @@ async def run_simulation(
             live_trace_payload["phase"] = "error"
             live_trace_payload["updated_at_utc"] = _utc_now_iso()
             live_trace_payload["execution"] = {
-                "llm_calls": agent.calls,
-                "reflection_calls": agent.reflection_calls,
-                "total_tokens": agent.total_tokens,
+                "llm_calls": agent.calls if agent is not None else 0,
+                "reflection_calls": agent.reflection_calls if agent is not None else 0,
+                "total_tokens": agent.total_tokens if agent is not None else 0,
                 "elapsed_seconds": round(time.time() - start_time, 2),
             }
             _write_json_atomic(live_trace_path, live_trace_payload)
         raise
     finally:
-        await agent.close()
+        if agent is not None:
+            await agent.close()
 
 
 def main():
@@ -2271,6 +2421,11 @@ def main():
         default=None,
         help="Optional YAML file to tune seasonality/returns/supplier-lane realism",
     )
+    parser.add_argument(
+        "--replay-results-file",
+        default=None,
+        help="Offline replay: load decisions from a prior results JSON (writes grok_proper_sim_replay_*.json)",
+    )
     args = parser.parse_args()
     
     asyncio.run(run_simulation(
@@ -2283,6 +2438,7 @@ def main():
         live_trace_enabled=not args.no_live_trace,
         live_trace_file=args.live_trace_file,
         realism_config_path=args.realism_config,
+        replay_results_file=args.replay_results_file,
     ))
 
 

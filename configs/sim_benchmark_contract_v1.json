@@ -1,0 +1,102 @@
+{
+  "contract_version": "sim_benchmark_contract_v1",
+  "description": "Contract for run_grok_proper_sim.py benchmark artifacts.",
+  "required": {
+    "top_level": [
+      "config",
+      "execution",
+      "results",
+      "daily_performance",
+      "decisions"
+    ],
+    "config": [
+      "days",
+      "seed",
+      "model",
+      "memory_mode",
+      "memory_review_mode",
+      "weekly_consolidation"
+    ],
+    "execution": [
+      "time_seconds",
+      "llm_calls",
+      "reflection_calls",
+      "total_tokens"
+    ],
+    "results": [
+      "starting_capital",
+      "starting_inventory_value",
+      "starting_equity",
+      "final_capital",
+      "final_inventory_value",
+      "final_equity",
+      "total_revenue",
+      "total_costs",
+      "net_profit",
+      "equity_profit",
+      "roi_percent",
+      "orders_fulfilled",
+      "stockouts",
+      "total_ad_spend",
+      "returns_processed",
+      "refunds_paid",
+      "salvage_recovered",
+      "supplier_delay_events",
+      "supplier_delay_days",
+      "open_customer_backlog",
+      "pending_refund_exposure",
+      "pending_returns_open"
+    ],
+    "daily_performance_series": [
+      "revenue",
+      "costs",
+      "profit",
+      "ad_spend",
+      "ad_attributed_revenue"
+    ],
+    "decision_action_keys": [
+      "accept_all_orders",
+      "accept_skus",
+      "reject_skus",
+      "orders_accepted",
+      "price_changes",
+      "restocks",
+      "supplier_orders",
+      "ad_budget_shifts",
+      "customer_ops_updates"
+    ],
+    "decision_result_keys": [
+      "revenue",
+      "profit",
+      "fulfilled",
+      "stockouts",
+      "ad_spend",
+      "ad_attributed_revenue",
+      "supplier_orders_placed",
+      "service_tickets_resolved",
+      "fulfillment_fees",
+      "payment_processing_fees",
+      "fixed_operating_cost",
+      "returns_processed",
+      "refunds_paid",
+      "salvage_recovered"
+    ]
+  },
+  "tolerances": {
+    "money": 0.05,
+    "ratio_points": 0.02
+  },
+  "invariants": [
+    "net_profit == total_revenue - total_costs",
+    "equity_profit == final_equity - starting_equity",
+    "final_equity == final_capital + final_inventory_value - pending_refund_exposure",
+    "roi_percent == ((final_equity - starting_equity) / starting_equity) * 100",
+    "sum(daily.revenue) == total_revenue",
+    "sum(daily.costs) == total_costs",
+    "sum(daily.profit) == net_profit",
+    "len(daily.series) == config.days",
+    "len(decisions) == config.days",
+    "decision.day is contiguous 1..config.days",
+    "execution.llm_calls >= config.days"
+  ]
+}
