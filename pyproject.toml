@@ -13,10 +13,10 @@ repository = "https://github.com/Bender1011001/FBA-Bench-Enterprise"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha",
@@ -51,7 +51,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.10,<3.14"
 aiosqlite = "^0.20.0"
 alembic = "1.16.5"
 annotated-types = "0.7.0"
@@ -140,7 +140,7 @@ docs = ["docs"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 # Keep core error checks while unblocking CI by relaxing noisy style checks.
