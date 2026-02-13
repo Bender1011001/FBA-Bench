@@ -27,7 +27,7 @@ docker compose -f docker-compose.oneclick.yml down
 ## Backend Only (No Docker)
 
 Prereqs:
-- Python 3.9 to 3.12
+- Python 3.10 to 3.13
 - Poetry
 
 Install and run:
@@ -59,4 +59,3 @@ If Godot is not on PATH, set `GODOT_EXE` to your Godot executable.
 - Configuration: `docs/configuration.md`
 - Testing: `docs/testing.md`
 - Architecture: `docs/architecture.md`
-

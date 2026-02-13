@@ -7,7 +7,7 @@ This guide provides instructions for starting the FBA-Bench application. The pro
 Before starting, ensure the following are installed and configured:
 
 - **Docker Desktop**: Required for backend services (Postgres, Redis, API). Download from [docker.com](https://www.docker.com/products/docker-desktop/). Start Docker and ensure it's running (check system tray).
-- **Python 3.9+**: Required for the backend and launcher scripts.
+- **Python 3.10+**: Required for the backend and launcher scripts.
 - **Poetry**: Python dependency manager for the backend. Install via `pip install poetry` or [official guide](https://python-poetry.org/docs/#installation). Verify: `poetry --version`.
 - **Godot 4.5+**: For the immersive GUI. Download from [godotengine.org](https://godotengine.org/download). 
 - **Git**: To clone the repo if needed. Verify: `git --version`.

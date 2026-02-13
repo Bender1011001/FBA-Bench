@@ -11,7 +11,7 @@ poetry install
 
 Unit tests (fast):
 ```bash
-poetry run pytest -q
+make test-unit
 ```
 
 Contracts:
@@ -23,6 +23,7 @@ Full suite + coverage gate:
 ```bash
 make test-all
 ```
+Note: `make test-all` is currently a heavier/legacy target; CI runs a curated fast unit+contract suite for stability.
 
 ## Markers
 
@@ -62,4 +63,3 @@ Type checking (currently strict, but may require staged adoption depending on re
 ```bash
 make type-check
 ```
-
