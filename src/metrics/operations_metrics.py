@@ -124,11 +124,11 @@ class OperationsMetrics:
         # Calculate average inventory value based on history
         # Note: We rely on history populated during updates.
         inventory_values = [d["value"] for d in self.inventory_history]
-        
+
         # Avoid zero division
         if not inventory_values:
             return 0.0
-            
+
         average_inventory_value = sum(inventory_values) / len(inventory_values)
 
         if average_inventory_value > 0:
@@ -150,8 +150,12 @@ class OperationsMetrics:
         # Total score range: 0-100, where 100 represents perfect operations
         overall_score = 0.0
         if inventory_turnover > 0:
-             overall_score += min(50.0, inventory_turnover * 5)  # Cap turnover contribution at 50
-        overall_score += max(0.0, 50.0 - stockout_percentage)  # Cap stockout contribution at 50
+            overall_score += min(
+                50.0, inventory_turnover * 5
+            )  # Cap turnover contribution at 50
+        overall_score += max(
+            0.0, 50.0 - stockout_percentage
+        )  # Cap stockout contribution at 50
 
         return {
             "overall_score": overall_score,

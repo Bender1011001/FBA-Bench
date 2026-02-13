@@ -40,7 +40,9 @@ class MemoryEvent:
         if not self.event_id:
             self.event_id = f"{self.agent_id}-{self.tick}-{self.event_type}-{self.timestamp.isoformat()}-{hash(self.content)}"
         if len(self.event_id) > 255:  # Truncate or hash if too long for storage systems
-            self.event_id = hashlib.md5(self.event_id.encode(), usedforsecurity=False).hexdigest()
+            self.event_id = hashlib.md5(
+                self.event_id.encode(), usedforsecurity=False
+            ).hexdigest()
 
     # Memory-specific metadata
     importance_score: float = 0.0
@@ -66,7 +68,9 @@ class MemoryEvent:
         # Generating a unique event_id here, but it can be overridden if provided during init
         generated_id = f"{agent_id}-{current_tick}-{event.event_type}-{event.timestamp.isoformat()}"
         if len(generated_id) > 255:
-            generated_id = hashlib.md5(generated_id.encode(), usedforsecurity=False).hexdigest()
+            generated_id = hashlib.md5(
+                generated_id.encode(), usedforsecurity=False
+            ).hexdigest()
 
         return cls(
             event_id=generated_id,  # Use the generated_id

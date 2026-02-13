@@ -332,7 +332,14 @@ class AgentRunner:
             self._trigger_callbacks("on_decision", result)
 
             return result
-        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError, AgentRunnerTimeoutError) as e:
+        except (
+            AttributeError,
+            TypeError,
+            ValueError,
+            RuntimeError,
+            AgentRunnerDecisionError,
+            AgentRunnerTimeoutError,
+        ) as e:
             self.status = AgentRunnerStatus.FAILED
             self.error_message = str(e)
             self._trigger_callbacks("on_status_change", self.status)
@@ -387,7 +394,7 @@ class AgentRunner:
         """
         Consolidate memory by processing recent events and updating long-term memory.
         This roughly mimics 'sleep' or 'nightly processing' in biological agents.
-        
+
         Args:
             context: Context information for memory consolidation
         """
@@ -524,7 +531,13 @@ class AgentRunner:
             self._trigger_callbacks("on_status_change", self.status)
 
             logger.info(f"Agent runner {self.agent_id} cleaned up successfully")
-        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerCleanupError) as e:
+        except (
+            AttributeError,
+            TypeError,
+            ValueError,
+            RuntimeError,
+            AgentRunnerCleanupError,
+        ) as e:
             self.status = AgentRunnerStatus.FAILED
             self.error_message = str(e)
             self._trigger_callbacks("on_status_change", self.status)

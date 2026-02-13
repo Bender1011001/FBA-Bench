@@ -327,10 +327,9 @@ class IntegrationManager:
         """
         # Wrap configuration for sync create_agent call
         from types import SimpleNamespace
+
         agent_config = SimpleNamespace(
-            agent_id=agent_id, 
-            framework=framework, 
-            **(config or {})
+            agent_id=agent_id, framework=framework, **(config or {})
         )
         return self.agent_manager.create_agent(agent_config)
 
@@ -574,6 +573,7 @@ class IntegrationManager:
         # AgentManager stop/cleanup are async; use best-effort sync approach
         try:
             import asyncio
+
             try:
                 loop = asyncio.get_event_loop()
                 if loop.is_running():

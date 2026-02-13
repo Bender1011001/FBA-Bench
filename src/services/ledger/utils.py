@@ -25,6 +25,7 @@ FEE_ACCOUNT_MAP: Dict[str, str] = {
     "opaque_bagging_fee": "Expenses:Fees:OpaqueBagging",
 }
 
+
 def round_currency(amount: Decimal) -> Decimal:
     """
     Round a currency amount to 2 decimal places.

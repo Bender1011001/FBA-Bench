@@ -6,8 +6,8 @@ All endpoints are under `/api/v1/` (versioned). Base URL: http://localhost:8000 
 
 ## Accessing Auto-Generated Docs
 
-- **Swagger UI**: http://localhost:8000/api/docs (interactive, try requests)
-- **ReDoc**: http://localhost:8000/api/redoc (formatted spec)
+- **Swagger UI**: http://localhost:8000/docs (interactive, try requests)
+- **ReDoc**: http://localhost:8000/redoc (formatted spec)
 - **OpenAPI JSON**: http://localhost:8000/openapi.json (machine-readable)
 
 In production, docs are protected (AUTH_PROTECT_DOCS=true); use JWT Bearer token.

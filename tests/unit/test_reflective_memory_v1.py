@@ -71,7 +71,9 @@ def test_heuristic_fallback_generates_inventory_memory_from_stockout() -> None:
     )
 
     assert summary.kept >= 1
-    retrieved = mem.retrieve(day=3, decision_type="restock", asin=None, tags=["inventory"])
+    retrieved = mem.retrieve(
+        day=3, decision_type="restock", asin=None, tags=["inventory"]
+    )
     assert retrieved
     assert any("stockout" in item["statement"].lower() for item in retrieved)
 

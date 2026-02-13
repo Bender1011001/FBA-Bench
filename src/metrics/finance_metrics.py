@@ -230,14 +230,14 @@ class FinanceMetrics:
             return 0.0
         cash_flow_decimals = [cf.to_decimal() for cf in self.cash_flow_history]
         std_dev_cash_flow = statistics.pstdev(cash_flow_decimals)
-        
+
         # Bounded stability score 0-100
         # A std_dev of 0 gives 100. Higher std_dev reduces the score asymptotically.
         # Adjusted formulation: 100 / (1 + scaled_std_dev)
         # Using epsilon for consistency with original method but capped
         if std_dev_cash_flow <= self.config.cash_flow_stability_epsilon:
             return 100.0
-        
+
         # Scale std_dev to meaningful impact; assumming cash flows > $1000
         return float(100.0 / (1.0 + float(std_dev_cash_flow) / 1000.0))
 

@@ -650,7 +650,7 @@ class GlobalRegistry:
             self.register(entry)
 
         logger.info(
-            "Imported %d entries into GlobalRegistry", len(data.get('entries', {}))
+            "Imported %d entries into GlobalRegistry", len(data.get("entries", {}))
         )
 
 

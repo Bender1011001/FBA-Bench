@@ -252,9 +252,21 @@ class AdversarialEventInjector:
             # Fallback: sync publish
             try:
                 publish(event_obj)  # type: ignore[call-arg]
-            except (RuntimeError, TypeError, ValueError, AttributeError, NotImplementedError):
+            except (
+                RuntimeError,
+                TypeError,
+                ValueError,
+                AttributeError,
+                NotImplementedError,
+            ):
                 # Last resort: swallow to avoid breaking tests
                 return
-        except (RuntimeError, TypeError, ValueError, AttributeError, NotImplementedError):
+        except (
+            RuntimeError,
+            TypeError,
+            ValueError,
+            AttributeError,
+            NotImplementedError,
+        ):
             # Never break test flow on publish errors
             return

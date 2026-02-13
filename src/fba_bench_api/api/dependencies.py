@@ -46,14 +46,16 @@ def get_current_user(token: str = Depends(security)) -> Optional[Dict[str, Any]]
     """
     if not token:
         raise HTTPException(status_code=401, detail="Authentication required")
-        
+
     try:
         # Pydantic/FastAPI might pass the object, extract credentials
         token_str = token.credentials if hasattr(token, "credentials") else str(token)
         payload = jwt.decode(token_str, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        raise HTTPException(
+            status_code=401, detail="Invalid authentication credentials"
+        )
 
 
 class TenantContext(BaseModel):
@@ -67,8 +69,8 @@ async def get_tenant_context(
 ) -> TenantContext:
     """
     Extract tenant context from Authorization header using JWT validation.
-    
-    In production, this integrates with Auth0 or similar IAM to decode JWT claims 
+
+    In production, this integrates with Auth0 or similar IAM to decode JWT claims
     for tenant_id, user_id, and roles.
     """
     if not credentials:
@@ -78,27 +80,27 @@ async def get_tenant_context(
         )
 
     token = credentials.credentials
-    
+
     try:
         # Verify and decode the JWT token
-        # Note: In a real multi-tenant setup, you might need to fetch the public key 
+        # Note: In a real multi-tenant setup, you might need to fetch the public key
         # from the identity provider (e.g., Auth0 JWKS endpoint) instead of using a shared secret.
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        
+
         # Extract claims. Adjust these keys based on your actual JWT structure.
         # For example, Auth0 might use custom namespaced claims like 'https://myapp.com/tenant_id'
         tenant_id = payload.get("tenant_id")
         user_id = payload.get("sub") or payload.get("user_id")
         roles = payload.get("roles", [])
-        
+
         if not tenant_id or not user_id:
-             raise HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token missing required tenant or user claims",
             )
 
         return TenantContext(tenant_id=tenant_id, user_id=user_id, roles=roles)
-        
+
     except JWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

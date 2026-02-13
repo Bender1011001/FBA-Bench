@@ -1,4 +1,0 @@
-config_data keys: ['name', 'description', 'enabled', 'metadata', 'benchmark_id', 'environment', 'log_level', 'tier', 'budget_overrides', 'agents', 'scenarios', 'execution', 'metrics', 'metric_weights', 'tags', 'created_at', 'updated_at']
-config object fields: dict_keys(['name', 'description', 'enabled', 'metadata', 'benchmark_id', 'environment', 'log_level', 'tier', 'budget_overrides', 'agents', 'scenarios', 'execution', 'metrics', 'metric_weights', 'tags', 'created_at', 'updated_at'])
-metrics in config_data: True
-metrics type: <class 'dict'>

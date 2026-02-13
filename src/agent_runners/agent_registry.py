@@ -39,6 +39,7 @@ class AgentRegistration:
 @dataclass
 class BackCompatRegistration:
     """Back-compat mirror record used for tests expecting attributes on manager.agents[aid]"""
+
     agent_id: str
     runner: Any
     active: bool
@@ -60,7 +61,7 @@ class AgentRegistry:
         """Register a new agent."""
         if agent_id in self._agents:
             logger.warning(f"Agent {agent_id} already exists in registry, overwriting.")
-        
+
         registration = AgentRegistration(agent_id, runner, framework, config)
         self._agents[agent_id] = registration
         logger.debug(f"Agent {agent_id} added to registry.")
@@ -77,7 +78,8 @@ class AgentRegistry:
     def active_agents(self) -> Dict[str, AgentRegistration]:
         """List all active (non-failed) agents."""
         return {
-            agent_id: reg for agent_id, reg in self._agents.items() 
+            agent_id: reg
+            for agent_id, reg in self._agents.items()
             if reg.is_active and not reg.is_unresponsive
         }
 

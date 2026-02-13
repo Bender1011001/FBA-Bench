@@ -203,8 +203,10 @@ class GoldenMasterTester:
         except (OSError, IOError, json.JSONDecodeError) as e:
             logger.error(f"Failed to record golden master '{label}': {e}")
             return False
-    
-    def create_golden_master(self, simulation_run: Dict[str, Any], label: str = "default") -> bool:
+
+    def create_golden_master(
+        self, simulation_run: Dict[str, Any], label: str = "default"
+    ) -> bool:
         """Alias for record_golden_master to support legacy validation tests."""
         return self.record_golden_master(simulation_run, label)
 

@@ -202,6 +202,7 @@ async def lifespan(app: FastAPI):
     # 5) Benchmark Service (background worker)
     # Import locally to avoid circular dependencies
     from fba_bench_api.api.routes.benchmarks import benchmark_service
+
     await benchmark_service.start()
     logger.info("BenchmarkService started")
 

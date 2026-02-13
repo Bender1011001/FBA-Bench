@@ -117,15 +117,21 @@ class ReflectiveMemoryV1:
         self.long_term: List[MemoryRecord] = []
         self.daily_reviews: List[DailyReviewSummary] = []
 
-    def _make_id(self, day: int, statement: str, decision_type: str, asin: Optional[str]) -> str:
+    def _make_id(
+        self, day: int, statement: str, decision_type: str, asin: Optional[str]
+    ) -> str:
         raw = f"{day}|{decision_type}|{asin or 'none'}|{statement.strip().lower()}"
         return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16]
 
-    def _build_record(self, day: int, candidate: Dict[str, Any], source: str) -> Optional[MemoryRecord]:
+    def _build_record(
+        self, day: int, candidate: Dict[str, Any], source: str
+    ) -> Optional[MemoryRecord]:
         statement = str(candidate.get("statement", "")).strip()
         if not statement:
             return None
-        decision_type = str(candidate.get("decision_type", "mixed")).strip().lower() or "mixed"
+        decision_type = (
+            str(candidate.get("decision_type", "mixed")).strip().lower() or "mixed"
+        )
         scope = str(candidate.get("scope", "global")).strip().lower() or "global"
         asin = candidate.get("asin")
         asin_val = str(asin).strip() if asin is not None else None
@@ -138,7 +144,9 @@ class ReflectiveMemoryV1:
         novelty = float(candidate.get("novelty", 0.4))
         recency = float(candidate.get("recency", 1.0))
         penalty = float(candidate.get("penalty", 0.0))
-        tags = [str(x).strip().lower() for x in candidate.get("tags", []) if str(x).strip()]
+        tags = [
+            str(x).strip().lower() for x in candidate.get("tags", []) if str(x).strip()
+        ]
 
         mem_id = self._make_id(day, statement, decision_type, asin_val)
         score = score_memory(
@@ -323,7 +331,9 @@ class ReflectiveMemoryV1:
                 existing.last_seen_day = day
                 existing.evidence_count += 1
                 # Smooth update for confidence and score
-                existing.confidence = _clamp_01((existing.confidence + record.confidence) / 2.0)
+                existing.confidence = _clamp_01(
+                    (existing.confidence + record.confidence) / 2.0
+                )
                 existing.score = _clamp_01((existing.score + record.score) / 2.0)
 
         episodic_sorted = sorted(
@@ -349,7 +359,9 @@ class ReflectiveMemoryV1:
         min_day = day - self.episodic_ttl_days
         self.episodic = [m for m in self.episodic if m.last_seen_day >= min_day]
 
-        long_term_by_id: Dict[str, MemoryRecord] = {m.memory_id: m for m in self.long_term}
+        long_term_by_id: Dict[str, MemoryRecord] = {
+            m.memory_id: m for m in self.long_term
+        }
         promoted = 0
         for candidate in self.episodic:
             if candidate.score < self.keep_threshold:
@@ -361,7 +373,9 @@ class ReflectiveMemoryV1:
             else:
                 existing.last_seen_day = day
                 existing.evidence_count += 1
-                existing.confidence = _clamp_01((existing.confidence + candidate.confidence) / 2.0)
+                existing.confidence = _clamp_01(
+                    (existing.confidence + candidate.confidence) / 2.0
+                )
                 existing.score = _clamp_01((existing.score + candidate.score) / 2.0)
 
         self.long_term = sorted(

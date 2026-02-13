@@ -15,9 +15,11 @@ from personas import CompetitorPersona  # New import
 # Import deterministic RNG for reproducible simulations
 try:
     from reproducibility.deterministic_rng import DeterministicRNG
+
     _HAS_DETERMINISTIC_RNG = True
 except ImportError:
     import random
+
     _HAS_DETERMINISTIC_RNG = False
 
 if TYPE_CHECKING:
@@ -366,19 +368,21 @@ class CompetitorManager:
                 # SIMULATION: Decrement inventory based on sales velocity
                 # Assume sales_velocity is units/day. Tick interval is unknown here but typically < 1 day.
                 # For simplicity, we treat sales_velocity as "units sold per tick" relative to time acceleration,
-                # or just use a small factor. 
+                # or just use a small factor.
                 # Let's assume sales_velocity is "units per day" and we need to verify delta.
                 # Just decrement by ceil(sales_velocity * 0.1) for now to simulate "some sales".
-                units_sold = max(0, int(new_sales_velocity * 0.2)) # Heuristic
+                units_sold = max(0, int(new_sales_velocity * 0.2))  # Heuristic
                 competitor.inventory = max(0, competitor.inventory - units_sold)
 
                 # Auto-restock logic (deterministic)
                 if competitor.inventory <= 0:
-                     # 5% chance to restock per tick if empty
-                     restock_roll = self._rng.random() if self._rng else 0.01
-                     if restock_roll < 0.05:
-                          competitor.inventory = 5000
-                          logger.info(f"Competitor {competitor_id} RESTOCKED to 5000 units.")
+                    # 5% chance to restock per tick if empty
+                    restock_roll = self._rng.random() if self._rng else 0.01
+                    if restock_roll < 0.05:
+                        competitor.inventory = 5000
+                        logger.info(
+                            f"Competitor {competitor_id} RESTOCKED to 5000 units."
+                        )
 
                 # Normalize to runtime Money class to satisfy both CompetitorState and tests
                 from money import Money as _Money  # type: ignore
@@ -407,7 +411,7 @@ class CompetitorManager:
                     bsr=int(new_bsr),
                     sales_velocity=new_sales_velocity,
                     inventory=competitor.inventory,
-                    is_out_of_stock=competitor.is_out_of_stock
+                    is_out_of_stock=competitor.is_out_of_stock,
                 )
                 updated_competitor_states.append(state)
 
@@ -597,7 +601,11 @@ class CompetitorManager:
             base_sv_f = float(base_sv)
         except (TypeError, ValueError):
             base_sv_f = 0.0
-        sales_adjust = self._rng.uniform(-self.sales_volatility, self.sales_volatility) if self._rng else 0.0
+        sales_adjust = (
+            self._rng.uniform(-self.sales_volatility, self.sales_volatility)
+            if self._rng
+            else 0.0
+        )
         new_sales_velocity = base_sv_f * (1 + sales_adjust)
         return new_price, new_bsr, new_sales_velocity
 

@@ -188,7 +188,9 @@ class OpenRouterClient(BaseLLMClient):
                     body = "<unreadable body>"
                 snippet = body[:2000]
                 logger.error(
-                    "Failed to decode OpenRouter JSON response: %s; body_snippet=%r", e, snippet
+                    "Failed to decode OpenRouter JSON response: %s; body_snippet=%r",
+                    e,
+                    snippet,
                 )
                 raise LLMClientError(
                     f"OpenRouter returned a non-JSON response (status {response.status_code}).",

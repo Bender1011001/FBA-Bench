@@ -4,10 +4,12 @@ import uvicorn
 
 from fba_bench_api.server.app_factory import create_app
 
+
 # Issue 77: Use factory pattern to avoid module-level side effects/startups.
 # Expose factory for ASGI servers (uvicorn --factory ...)
 def get_app():
     return create_app()
+
 
 def run():
     """Creates and runs the FastAPI application."""
@@ -15,7 +17,9 @@ def run():
     port = int(os.environ.get("FBA_BENCH_PORT", 8000))
     reload = os.environ.get("FBA_BENCH_RELOAD", "true").lower() == "true"
     # Use factory mode string reference to ensure lazy initialization
-    uvicorn.run("fba_bench_api.main:get_app", host=host, port=port, reload=reload, factory=True)
+    uvicorn.run(
+        "fba_bench_api.main:get_app", host=host, port=port, reload=reload, factory=True
+    )
 
 
 if __name__ == "__main__":

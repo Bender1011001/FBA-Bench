@@ -55,45 +55,45 @@ def _calculate_experiment_score(experiment: dict) -> float:
 
     Returns:
         Computed score between 0-100 based on performance metrics
-        
+
     Scoring methodology:
         - Uses actual business metrics from experiment params/results
         - Profit margin (40% weight) - profitability is key
         - Revenue efficiency (25% weight) - revenue relative to scenario baseline
-        - Inventory turnover (15% weight) - operational efficiency  
+        - Inventory turnover (15% weight) - operational efficiency
         - Customer satisfaction (10% weight) - trust/review scores
         - Completion bonus (10% weight) - completing the scenario
     """
     score = 0.0
     params = experiment.get("params", {})
     results = experiment.get("results", params)  # Results may be stored in params
-    
+
     # If experiment has a pre-calculated quality_score, use it directly
     if "quality_score" in params:
         try:
             return float(params["quality_score"]) * 100.0
         except (ValueError, TypeError):
             pass
-    
+
     # If experiment has a benchmark_score from actual simulation, use it
     if "benchmark_score" in results:
         try:
             return float(results["benchmark_score"])
         except (ValueError, TypeError):
             pass
-    
+
     # Calculate score from actual metrics if available
     status = experiment.get("status", "unknown")
-    
+
     if status == "completed":
         # Base completion bonus (10%)
         score += 10.0
-        
+
         # === Profit Margin Score (40% weight) ===
         # Based on actual profit/revenue ratio
         total_profit = _extract_money_value(results.get("total_profit", 0))
         total_revenue = _extract_money_value(results.get("total_revenue", 0))
-        
+
         if total_revenue > 0:
             profit_margin = total_profit / total_revenue
             # Score: -10% margin = 0 points, 30% margin = 40 points
@@ -109,7 +109,7 @@ def _calculate_experiment_score(experiment: dict) -> float:
                 score += 15.0
             else:
                 score += 10.0
-        
+
         # === Revenue Efficiency Score (25% weight) ===
         # Compare to baseline revenue if available
         baseline_revenue = _extract_money_value(results.get("baseline_revenue", 0))
@@ -125,11 +125,11 @@ def _calculate_experiment_score(experiment: dict) -> float:
             score += revenue_score
         else:
             score += 12.5  # Default to middle
-        
+
         # === Inventory Turnover Score (15% weight) ===
         units_sold = results.get("units_sold", 0) or 0
         avg_inventory = results.get("avg_inventory", 0) or 0
-        
+
         if avg_inventory > 0:
             turnover = units_sold / avg_inventory
             # Score: 0 turnover = 0, 10 turnover = 15
@@ -140,11 +140,11 @@ def _calculate_experiment_score(experiment: dict) -> float:
             score += min(15, units_sold / 100)
         else:
             score += 7.5  # Default to middle
-        
+
         # === Customer Satisfaction Score (10% weight) ===
         trust_score = results.get("trust_score", 0) or 0
         review_score = results.get("avg_review_score", 0) or 0
-        
+
         if trust_score > 0:
             # Trust score is 0-1, convert to 0-10 points
             score += trust_score * 10
@@ -153,16 +153,16 @@ def _calculate_experiment_score(experiment: dict) -> float:
             score += (review_score - 1) * 2.5
         else:
             score += 5.0  # Default to middle
-            
+
     elif status == "running":
         # Partial score based on progress
         progress = float(experiment.get("progress_percent", 0) or 0)
         score = progress * 0.5  # Max 50 while running
-        
+
     elif status == "failed":
         # Low score but not zero
         score = 5.0
-        
+
     # Clamp to valid range
     return max(0.0, min(100.0, score))
 
@@ -171,9 +171,9 @@ def _extract_money_value(value) -> float:
     """Extract numeric value from Money or numeric types."""
     if value is None:
         return 0.0
-    if hasattr(value, 'cents'):
+    if hasattr(value, "cents"):
         return value.cents / 100.0
-    if hasattr(value, 'to_float'):
+    if hasattr(value, "to_float"):
         return value.to_float()
     try:
         if isinstance(value, str):

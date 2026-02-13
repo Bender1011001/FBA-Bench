@@ -414,7 +414,9 @@ class MetricsCollectionConfig(BaseConfig):
 
     @model_validator(mode="before")
     @classmethod
-    def _map_categories_to_enabled_metrics(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def _map_categories_to_enabled_metrics(
+        cls, values: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Map legacy 'categories' field to 'enabled_metrics'."""
         if isinstance(values, dict):
             if "categories" in values and "enabled_metrics" not in values:
@@ -735,7 +737,8 @@ class UnifiedAgentRunnerConfig(BaseConfig):
         default_factory=dict, description="Additional custom configuration"
     )
     parameters: Dict[str, Any] = Field(
-        default_factory=dict, description="Arbitrary parameters for DIY or custom agents"
+        default_factory=dict,
+        description="Arbitrary parameters for DIY or custom agents",
     )
 
     @model_validator(mode="before")
@@ -982,7 +985,9 @@ class ConfigurationManager:
                 with open(env_file) as f:
                     data = yaml.safe_load(f)
                 env_config = EnvironmentConfig(**data)
-                self._environments[env_config.environment.value] = env_config  # pylint: disable=no-member
+                self._environments[env_config.environment.value] = (
+                    env_config  # pylint: disable=no-member
+                )
             except Exception as e:
                 print(f"Failed to load environment {env_file}: {e}")
 

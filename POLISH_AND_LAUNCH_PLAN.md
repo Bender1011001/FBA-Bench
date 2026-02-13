@@ -35,11 +35,11 @@ poetry install
 make be-migrate
 
 # Start API server
-poetry run uvicorn src.fba_bench_api.main:app --reload
+poetry run uvicorn fba_bench_api.main:get_app --factory --reload
 ```
 
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [API Reference](docs/api/)
 - [Deployment Guide](docs/deployment.md)
-- [Testing Strategy](tests/TESTING_STRATEGY.md)
+- [Testing](docs/testing.md)

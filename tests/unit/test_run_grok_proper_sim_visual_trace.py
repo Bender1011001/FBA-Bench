@@ -53,7 +53,11 @@ def test_write_json_atomic_persists_payload(tmp_path) -> None:
 
 def test_storyline_flags_stockout_risk() -> None:
     frame = {
-        "daily_results": {"profit": -30.0, "supplier_orders_placed": 0, "ad_spend": 0.0},
+        "daily_results": {
+            "profit": -30.0,
+            "supplier_orders_placed": 0,
+            "ad_spend": 0.0,
+        },
         "orders": {"stockouts": 9, "fulfilled": 2},
         "actions": {},
     }
@@ -77,4 +81,7 @@ def test_storyline_recognizes_marketing_efficiency() -> None:
     story = _build_storyline(frame)
 
     assert story["tone"] in {"positive", "neutral"}
-    assert "marketing" in story["headline"].lower() or "healthy execution" in story["headline"].lower()
+    assert (
+        "marketing" in story["headline"].lower()
+        or "healthy execution" in story["headline"].lower()
+    )

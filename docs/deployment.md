@@ -1,6 +1,6 @@
 # FBA-Bench Deployment Guide
 
-This guide covers deploying FBA-Bench to production environments. It assumes development setup from [getting-started.md](getting-started.md). Focus on Docker for simplicity; Kubernetes for scaling. For architecture: [docs/architecture.md](architecture.md).
+This guide covers deploying FBA-Bench to production environments. It assumes local setup from `docs/getting-started/README.md`. Focus on Docker for simplicity; Kubernetes for scaling. For architecture: `docs/architecture.md`.
 
 ## Production Setup with Docker Compose
 

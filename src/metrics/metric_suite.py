@@ -24,18 +24,21 @@ logger = logging.getLogger(__name__)
 # These would ideally be defined in a `services.contract` or similar module.
 class AbstractFinancialAuditService:
     """Abstract interface for a financial audit service."""
+
     # Add methods that MetricSuite expects to call, e.g., async def get_violations(self) -> List[Any]:
     pass
 
 
 class AbstractSalesService:
     """Abstract interface for a sales service."""
+
     # Add methods that MetricSuite expects to call, e.g., async def get_sales_data(self, period) -> Dict[str, Any]:
     pass
 
 
 class AbstractTrustScoreService:
     """Abstract interface for a trust score service."""
+
     # Add methods that MetricSuite expects to call, e.g., async def get_holistic_trust_score(self) -> float:
     pass
 
@@ -191,9 +194,7 @@ class MetricSuite:
         if handler:
             handler(event)
         else:
-            logger.debug(
-                f"Unhandled event type: {etype}. No specific metric update."
-            )
+            logger.debug(f"Unhandled event type: {etype}. No specific metric update.")
 
         self.current_tick = (
             event.tick_number if hasattr(event, "tick_number") else self.current_tick
@@ -210,7 +211,7 @@ class MetricSuite:
             except (AttributeError, TypeError):
                 # Fallback for immutable objects or those that don't support attribute assignment
                 pass
-        
+
         self._dispatch_event(event)
 
     # --- Individual Event Handlers for clarity and modularity ---
@@ -272,16 +273,22 @@ class MetricSuite:
 
         # Issue 95: Standardized key lookups to handle non-uniform return values from sub-modules
         cognitive_breakdown = self.cognitive_metrics.get_metrics_breakdown()
-        cognitive_score = cognitive_breakdown.get("overall_score", cognitive_breakdown.get("cra_score", 0.0))
+        cognitive_score = cognitive_breakdown.get(
+            "overall_score", cognitive_breakdown.get("cra_score", 0.0)
+        )
 
         stress_breakdown = self.stress_metrics.get_metrics_breakdown()
         stress_score = stress_breakdown.get("overall_score", 0.0)
 
         cost_breakdown = self.cost_metrics.get_metrics_breakdown()
-        cost_score = cost_breakdown.get("overall_score", cost_breakdown.get("cost_penalty_score", 0.0))
+        cost_score = cost_breakdown.get(
+            "overall_score", cost_breakdown.get("cost_penalty_score", 0.0)
+        )
 
         adversarial_breakdown = self.adversarial_metrics.get_metrics_breakdown()
-        adversarial_score = adversarial_breakdown.get("overall_score", adversarial_breakdown.get("ars_score", 0.0))
+        adversarial_score = adversarial_breakdown.get(
+            "overall_score", adversarial_breakdown.get("ars_score", 0.0)
+        )
 
         breakdown = {
             "finance": {"score": finance_score, "details": finance_breakdown},
@@ -291,7 +298,10 @@ class MetricSuite:
             "cognitive": {"score": cognitive_score, "details": cognitive_breakdown},
             "stress_recovery": {"score": stress_score, "details": stress_breakdown},
             "cost": {"score": cost_score, "details": cost_breakdown},
-            "adversarial_resistance": {"score": adversarial_score, "details": adversarial_breakdown},
+            "adversarial_resistance": {
+                "score": adversarial_score,
+                "details": adversarial_breakdown,
+            },
         }
 
         # Calculate overall weighted score

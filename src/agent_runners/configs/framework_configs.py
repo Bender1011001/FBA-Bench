@@ -41,7 +41,7 @@ class DIYConfig:
             "reaction_speed": 1,
         }
         from benchmarking.config.pydantic_config import AgentConfig
-        
+
         return UnifiedAgentRunnerConfig(
             name=f"{agent_id}_runner",
             description="Event-driven DIY agent with advanced strategies",
@@ -49,9 +49,7 @@ class DIYConfig:
             framework=FrameworkType.DIY,
             # Populate agent_config for tests that expect it
             agent_config=AgentConfig(
-                agent_id=agent_id,
-                framework=FrameworkType.DIY,
-                **params
+                agent_id=agent_id, framework=FrameworkType.DIY, **params
             ),
             llm_config=None,
             memory_config=None,
@@ -79,9 +77,7 @@ class DIYConfig:
             agent_id=agent_id,
             framework=FrameworkType.DIY,
             agent_config=AgentConfig(
-                agent_id=agent_id,
-                framework=FrameworkType.DIY,
-                **params
+                agent_id=agent_id, framework=FrameworkType.DIY, **params
             ),
             llm_config=None,
             memory_config=None,
@@ -561,7 +557,9 @@ class LeaderboardConfig:
         )
 
     @staticmethod
-    def claude35_sonnet_champion(agent_id: str, api_key: str) -> UnifiedAgentRunnerConfig:
+    def claude35_sonnet_champion(
+        agent_id: str, api_key: str
+    ) -> UnifiedAgentRunnerConfig:
         """
         Optimized Claude 3.5 Sonnet configuration for leaderboard dominance.
         Features: High reasoning capability, large context window util.
@@ -580,7 +578,7 @@ class LeaderboardConfig:
                 api_key=api_key,
                 max_tokens=4096,
             ),
-             memory_config=MemoryConfig(
+            memory_config=MemoryConfig(
                 name=f"{agent_id}_memory",
                 type="buffer",  # Claude has huge context, use buffer
                 window_size=100,

@@ -189,7 +189,9 @@ class ResponseMetadata:
     prompt_hash: str
     validation_passed: bool
     fallback_used: bool = False
-    fallback_temperature: Optional[float] = None # Issue 111: Added to record actual temperature
+    fallback_temperature: Optional[float] = (
+        None  # Issue 111: Added to record actual temperature
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -462,7 +464,7 @@ class DeterministicLLMClient(BaseLLMClient):
         # Make live call if needed
         live_response = None
         fallback_used = False
-        actual_temperature = temperature # Start with initial temperature
+        actual_temperature = temperature  # Start with initial temperature
 
         if not cached_response:
             # Make live LLM call with retries (even in deterministic mode, first call should record)
@@ -482,7 +484,9 @@ class DeterministicLLMClient(BaseLLMClient):
                     )
                     fallback_used = True
                     self._fallback_calls += 1
-                    actual_temperature = self.fallback_temperature # Update actual temperature
+                    actual_temperature = (
+                        self.fallback_temperature
+                    )  # Update actual temperature
 
                     live_response = await self._make_live_call_with_retry(
                         prompt,
@@ -541,11 +545,10 @@ class DeterministicLLMClient(BaseLLMClient):
             # Fallback for cached response without metadata (shouldn't happen if cache is well-formed)
             actual_temperature = temperature
 
-
         # Add metadata to response
         response_metadata = ResponseMetadata(
             model=model_name,
-            temperature=actual_temperature, # Issue 111: Use actual_temperature
+            temperature=actual_temperature,  # Issue 111: Use actual_temperature
             timestamp=datetime.now(timezone.utc).isoformat(),
             mode=self.mode.value,
             cache_hit=cache_hit,
@@ -553,7 +556,9 @@ class DeterministicLLMClient(BaseLLMClient):
             prompt_hash=prompt_hash,
             validation_passed=True,  # If we got here, validation passed
             fallback_used=fallback_used,
-            fallback_temperature=self.fallback_temperature if fallback_used else None, # Issue 111: Record fallback temp
+            fallback_temperature=(
+                self.fallback_temperature if fallback_used else None
+            ),  # Issue 111: Record fallback temp
         )
 
         # Add metadata to response without modifying original

@@ -14,11 +14,21 @@ class AgentSnapshot(BaseModel):
     slug: str = Field(..., description="Agent identifier")
     display_name: str = Field(..., description="Human friendly name")
     state: str = Field(..., description="Agent state string")
-    last_reasoning: Optional[str] = Field(None, description="Last chain-of-thought reasoning")
-    last_tool_calls: List[Dict[str, Any]] = Field(default_factory=list, description="Recent tool uses")
-    llm_usage: Dict[str, Any] = Field(default_factory=dict, description="Token usage stats")
-    financials: Dict[str, float] = Field(default_factory=dict, description="Cash, inventory value, net profit")
-    recent_events: List[Dict[str, Any]] = Field(default_factory=list, description="Recent relevant events")
+    last_reasoning: Optional[str] = Field(
+        None, description="Last chain-of-thought reasoning"
+    )
+    last_tool_calls: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Recent tool uses"
+    )
+    llm_usage: Dict[str, Any] = Field(
+        default_factory=dict, description="Token usage stats"
+    )
+    financials: Dict[str, float] = Field(
+        default_factory=dict, description="Cash, inventory value, net profit"
+    )
+    recent_events: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Recent relevant events"
+    )
 
     class Config:
         extra = "ignore"
@@ -55,14 +65,18 @@ class SimulationSnapshot(BaseModel):
     tick: int = Field(..., ge=0)
     kpis: KpiSnapshot
     agents: List[AgentSnapshot] = Field(default_factory=list)
-    competitors: List[CompetitorSnapshot] = Field(default_factory=list, description="Competitor landscape")
+    competitors: List[CompetitorSnapshot] = Field(
+        default_factory=list, description="Competitor landscape"
+    )
     timestamp: datetime = Field(..., description="UTC ISO timestamp")
 
     @classmethod
-    def from_dashboard_data(cls, raw: Dict[str, Any], status: str) -> "SimulationSnapshot":
+    def from_dashboard_data(
+        cls, raw: Dict[str, Any], status: str
+    ) -> "SimulationSnapshot":
         if not raw:
             return cls._default(status)
-            
+
         # Map KPIs
         fin = raw.get("financial_summary", {}) or {}
         kpis = KpiSnapshot.from_financials(fin)
@@ -70,13 +84,13 @@ class SimulationSnapshot(BaseModel):
         # Map Agents
         agents_raw = raw.get("agents", {}) or {}
         agents_list = []
-        
+
         # Normalize dict vs list input
         items = []
         if isinstance(agents_raw, dict):
-             items = [(slug, meta) for slug, meta in agents_raw.items()]
+            items = [(slug, meta) for slug, meta in agents_raw.items()]
         elif isinstance(agents_raw, list):
-             items = [(str(a.get("slug", "agent")), a) for a in agents_raw]
+            items = [(str(a.get("slug", "agent")), a) for a in agents_raw]
 
         for slug, meta in items:
             if not isinstance(meta, dict):
@@ -99,14 +113,16 @@ class SimulationSnapshot(BaseModel):
         comps_list = []
         if isinstance(comps_raw, dict):
             for asin, cdata in comps_raw.items():
-                comps_list.append(CompetitorSnapshot(
-                    asin=str(asin),
-                    price=str(cdata.get("price", "0.00")),
-                    bsr=cdata.get("bsr"),
-                    sales_velocity=cdata.get("sales_velocity"),
-                    inventory=int(cdata.get("inventory", 0)),
-                    is_out_of_stock=bool(cdata.get("is_out_of_stock", False))
-                ))
+                comps_list.append(
+                    CompetitorSnapshot(
+                        asin=str(asin),
+                        price=str(cdata.get("price", "0.00")),
+                        bsr=cdata.get("bsr"),
+                        sales_velocity=cdata.get("sales_velocity"),
+                        inventory=int(cdata.get("inventory", 0)),
+                        is_out_of_stock=bool(cdata.get("is_out_of_stock", False)),
+                    )
+                )
 
         return cls(
             status=status,
@@ -120,6 +136,7 @@ class SimulationSnapshot(BaseModel):
     @classmethod
     def _default(cls, status: str = "idle") -> "SimulationSnapshot":
         from datetime import datetime, timezone
+
         return cls(
             status=status,
             tick=0,

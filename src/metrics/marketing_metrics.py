@@ -183,14 +183,17 @@ class MarketingMetrics:
 
         total_weighted_score = 0.0
         contributing_campaigns = [
-            cp for cp in self.campaign_performance.values()
+            cp
+            for cp in self.campaign_performance.values()
             if cp.revenue.to_float() >= self.config.min_campaign_revenue_for_weighting
         ]
 
         if not contributing_campaigns:
             return 0.0
 
-        total_contributing_revenue = sum(cp.revenue.to_float() for cp in contributing_campaigns)
+        total_contributing_revenue = sum(
+            cp.revenue.to_float() for cp in contributing_campaigns
+        )
         if total_contributing_revenue == 0:
             return 0.0
 
@@ -207,8 +210,8 @@ class MarketingMetrics:
             acos_score = max(0.0, 100.0 - acos_val)
 
             combined_campaign_score = (
-                roas_score * self.config.roas_weight +
-                acos_score * self.config.acos_weight
+                roas_score * self.config.roas_weight
+                + acos_score * self.config.acos_weight
             )
 
             weight = revenue / total_contributing_revenue

@@ -3,12 +3,14 @@ import threading
 import time
 import sys
 import os
-sys.path.append(os.getcwd()) # Add project root for 'src' imports
-sys.path.append(os.path.abspath("src")) # Add src for direct imports
+
+sys.path.append(os.getcwd())  # Add project root for 'src' imports
+sys.path.append(os.path.abspath("src"))  # Add src for direct imports
 from money import Money
 from services.ledger.core import LedgerCore, AccountType
 
 import pytest
+
 
 @pytest.mark.asyncio
 async def test_ledger_concurrency():
@@ -34,22 +36,23 @@ async def test_ledger_concurrency():
         # print(f"Worker {worker_id} done")
 
     start_time = time.time()
-    
+
     # Spawn multiple workers
     # If LedgerCore used blocking lock, this would be serial execution effectively or slower
     # With asyncio.Lock, the event loop keeps spinning.
     # To prove blocking behavior was fixed, we'd need to block the IO.
     # But mainly we want to ensure it works without crashing.
-    
+
     tasks = [worker(i) for i in range(10)]
     await asyncio.gather(*tasks)
-    
+
     end_time = time.time()
     print(f"Finished 10 workers in {end_time - start_time:.4f}s")
-    
+
     stats = await ledger.get_ledger_statistics()
     print("Ledger Stats:", stats)
-    
+
+
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)

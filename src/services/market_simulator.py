@@ -88,7 +88,7 @@ class MarketSimulationService:
         self._customer_seed = customer_seed
         self._customer_pool: Optional[CustomerPool] = None
         self._rng = random.Random(customer_seed)
-        
+
         if use_agent_mode:
             self._customer_pool = CustomerPool.generate(
                 count=customers_per_tick * 10,  # Pool 10x for variety
@@ -105,14 +105,13 @@ class MarketSimulationService:
 
         # Control flags
         self._started = False
-        
+
         # Statistics for agent mode
         self._agent_stats = {
             "total_customers_served": 0,
             "total_purchases": 0,
             "purchase_rate": 0.0,
         }
-
 
     async def start(self) -> None:
         """Subscribe to relevant events."""
@@ -180,21 +179,26 @@ class MarketSimulationService:
             if window:
                 # Filter out OOS competitors from influencing the reference price
                 active_window = [c for c in window if not c.is_out_of_stock]
-                
+
                 if active_window:
-                    avg_cents = sum(c.price.cents for c in active_window) / len(active_window)
+                    avg_cents = sum(c.price.cents for c in active_window) / len(
+                        active_window
+                    )
                     avg_price = Money(int(round(avg_cents)))
                     # Reference is min of prior ref and avg competitor (aggressive market pressure)
                     ref = avg_price if avg_price.cents < ref.cents else ref
                 else:
-                     # If all competitors are OOS, we have pricing power.
-                     # Slowly drift reference price upwards to our current price (or slightly above).
-                     if window:
-                         drift_target = current_price
-                         current_ref_cents = ref.cents
-                         target_cents = drift_target.cents
-                         new_cents = int(current_ref_cents + (target_cents - current_ref_cents) * 0.05)
-                         ref = Money(new_cents)
+                    # If all competitors are OOS, we have pricing power.
+                    # Slowly drift reference price upwards to our current price (or slightly above).
+                    if window:
+                        drift_target = current_price
+                        current_ref_cents = ref.cents
+                        target_cents = drift_target.cents
+                        new_cents = int(
+                            current_ref_cents
+                            + (target_cents - current_ref_cents) * 0.05
+                        )
+                        ref = Money(new_cents)
 
         # Cache and return
         self._price_reference_by_asin[asin] = ref
@@ -214,26 +218,26 @@ class MarketSimulationService:
         demand = base_demand * (p / p_ref)^(-elasticity)
         """
         from decimal import Decimal
-        
+
         p = Decimal(price.cents) / Decimal("100.0")
         p_ref = Decimal(ref_price.cents) / Decimal("100.0")
-        
+
         try:
             if p_ref <= 0:
                 ratio = Decimal("1.0")
             else:
                 ratio = p / p_ref
         except (TypeError, ValueError, ZeroDivisionError):
-             ratio = Decimal("1.0")
+            ratio = Decimal("1.0")
 
         # clamp ratio to avoid extremes
         if ratio <= Decimal("0.0"):
             ratio = Decimal("0.01")
-            
+
         # Power function with Decimal: x**y where y is float is supported but keeping y as Decimal is better if possible.
         # However, demand_elasticity is likely float.
         # Decimal(ratio) ** Decimal(float) is valid.
-        
+
         elasticity = Decimal(str(self.demand_elasticity))
         quantity = Decimal(self.base_demand) * (ratio ** (-elasticity))
         # integer demand
@@ -246,28 +250,28 @@ class MarketSimulationService:
     ) -> int:
         """
         Compute demand using customer agent pool.
-        
+
         Each customer evaluates the product using their utility function
         and decides whether to purchase based on their threshold.
-        
+
         Args:
             price: Current product price.
             product_data: Dict with reviews, shipping_days, review_count.
-            
+
         Returns:
             Number of units demanded by customer pool.
         """
         if not self._customer_pool:
             return 0
-        
+
         # Sample customers for this tick
         pool_size = len(self._customer_pool)
         sample_size = min(self._customers_per_tick, pool_size)
-        
+
         # Get random sample of customers (deterministic with seed)
         sample_indices = self._rng.sample(range(pool_size), sample_size)
         sampled_customers = [self._customer_pool[i] for i in sample_indices]
-        
+
         # Build product offering
         product_offering = {
             "price": float(price.cents) / 100.0,
@@ -276,34 +280,34 @@ class MarketSimulationService:
             "review_count": product_data.get("review_count", 100),
             "sku": product_data.get("asin", "unknown"),
         }
-        
+
         # Count purchases
         purchases = 0
         for customer in sampled_customers:
             self._agent_stats["total_customers_served"] += 1
-            
+
             # Check if customer can afford and wants to buy
             if not customer.can_afford(product_offering["price"]):
                 continue
-            
+
             utility = customer.calculate_utility(
                 price=product_offering["price"],
                 reviews=product_offering["reviews"],
                 shipping_days=product_offering["shipping_days"],
                 review_count=product_offering["review_count"],
             )
-            
+
             if customer.will_purchase(utility):
                 purchases += 1
                 self._agent_stats["total_purchases"] += 1
-        
+
         # Update purchase rate
         if self._agent_stats["total_customers_served"] > 0:
             self._agent_stats["purchase_rate"] = (
-                self._agent_stats["total_purchases"] /
-                self._agent_stats["total_customers_served"]
+                self._agent_stats["total_purchases"]
+                / self._agent_stats["total_customers_served"]
             )
-        
+
         return purchases
 
     def set_agent_mode(
@@ -313,27 +317,27 @@ class MarketSimulationService:
         seed: Optional[int] = None,
     ) -> None:
         """Enable or disable agent-based demand mode.
-        
+
         Args:
             enabled: Whether to use agent-based mode.
             customers_per_tick: Number of customers to sample per tick.
             seed: Random seed for deterministic sampling.
         """
         self._use_agent_mode = enabled
-        
+
         if customers_per_tick is not None:
             self._customers_per_tick = customers_per_tick
-        
+
         if seed is not None:
             self._customer_seed = seed
             self._rng = random.Random(seed)
-        
+
         if enabled and self._customer_pool is None:
             self._customer_pool = CustomerPool.generate(
                 count=self._customers_per_tick * 10,
                 seed=self._customer_seed,
             )
-        
+
         logger.info(
             "Agent mode %s: customers_per_tick=%d",
             "enabled" if enabled else "disabled",
@@ -391,10 +395,14 @@ class MarketSimulationService:
                 if hasattr(product, "metadata") and isinstance(product.metadata, dict):
                     md = product.metadata
                     product_data["reviews"] = float(md.get("review_rating", 4.0) or 4.0)
-                    product_data["review_count"] = int(md.get("review_count", 100) or 100)
+                    product_data["review_count"] = int(
+                        md.get("review_count", 100) or 100
+                    )
                     product_data["shipping_days"] = int(md.get("shipping_days", 3) or 3)
-                
-                units_demanded_raw = self._demand_agent_based(current_price, product_data)
+
+                units_demanded_raw = self._demand_agent_based(
+                    current_price, product_data
+                )
                 # Marketing multiplier affects how many customers see the product
                 units_demanded = max(
                     0, int(round(units_demanded_raw * max(0.0, marketing_multiplier)))
@@ -405,20 +413,21 @@ class MarketSimulationService:
                 units_demanded = max(
                     0, int(round(units_demanded_raw * max(0.0, marketing_multiplier)))
                 )
-            
+
             inventory_qty = self.world_store.get_product_inventory_quantity(asin)
             units_sold = min(units_demanded, max(0, inventory_qty))
 
-
             revenue = current_price * units_sold
-            
+
             # Calculate REAL fees using FeeCalculationService
             # We pass empty context for now, but could include storage duration/prep info if available in simulation state
-            fee_breakdown = self._fee_service.calculate_comprehensive_fees(product, current_price)
+            fee_breakdown = self._fee_service.calculate_comprehensive_fees(
+                product, current_price
+            )
             # Fee service returns total_fees for a SINGLE unit. We need total for units_sold.
             unit_fees = fee_breakdown.total_fees
             total_fees = unit_fees * units_sold
-            
+
             # WorldStore returns per-unit average cost basis as Money; enforce consistent Money usage
             cost_basis = self.world_store.get_product_cost_basis(asin)
             total_cost = cost_basis * units_sold
@@ -502,8 +511,22 @@ class MarketSimulationService:
                 ),
                 fee_breakdown={
                     "unit_fees": unit_fees,
-                    "referral_fee": next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "referral"), Money.zero()),
-                    "fba_fee": next((f.calculated_amount for f in fee_breakdown.individual_fees if f.fee_type.value == "fba"), Money.zero()),
+                    "referral_fee": next(
+                        (
+                            f.calculated_amount
+                            for f in fee_breakdown.individual_fees
+                            if f.fee_type.value == "referral"
+                        ),
+                        Money.zero(),
+                    ),
+                    "fba_fee": next(
+                        (
+                            f.calculated_amount
+                            for f in fee_breakdown.individual_fees
+                            if f.fee_type.value == "fba"
+                        ),
+                        Money.zero(),
+                    ),
                 },
                 market_conditions={
                     "reference_price": str(ref_price),
@@ -524,8 +547,7 @@ class MarketSimulationService:
 
             # Parallelize event publishing for performance
             await asyncio.gather(
-                self.event_bus.publish(sale),
-                self.event_bus.publish(inv_update)
+                self.event_bus.publish(sale), self.event_bus.publish(inv_update)
             )
 
             logger.info(

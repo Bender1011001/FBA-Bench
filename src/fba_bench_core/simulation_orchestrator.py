@@ -94,13 +94,14 @@ class SimulationOrchestrator:
         assert (
             self._event_bus is not None
         ), "EventBus must be set before starting the orchestrator"
-        
+
         # Configure robust execution
         import logging
+
         logger = logging.getLogger(__name__)
         MAX_ERRORS = 5
         error_count = 0
-        
+
         cfg = self._config
         base_sim_time = datetime.now(timezone.utc)
 
@@ -145,19 +146,41 @@ class SimulationOrchestrator:
                 error_count = 0  # Reset on success
             except Exception as e:
                 # Check for critical logic errors that should not be retried
-                if isinstance(e, (NameError, TypeError, SyntaxError, AttributeError, ImportError, NotImplementedError)):
-                    logger.critical(f"Critical logic error in simulation tick {tick}: {e}", exc_info=True)
+                if isinstance(
+                    e,
+                    (
+                        NameError,
+                        TypeError,
+                        SyntaxError,
+                        AttributeError,
+                        ImportError,
+                        NotImplementedError,
+                    ),
+                ):
+                    logger.critical(
+                        f"Critical logic error in simulation tick {tick}: {e}",
+                        exc_info=True,
+                    )
                     self._is_running = False
-                    self._statistics["stopped_at"] = datetime.now(timezone.utc).isoformat()
-                    return # Or raise e to propagate
+                    self._statistics["stopped_at"] = datetime.now(
+                        timezone.utc
+                    ).isoformat()
+                    return  # Or raise e to propagate
 
                 # Circuit breaker pattern for transient errors
                 error_count += 1
-                logger.error(f"Error in simulation tick {tick} (Attempt {error_count}/{MAX_ERRORS}): {e}", exc_info=True)
+                logger.error(
+                    f"Error in simulation tick {tick} (Attempt {error_count}/{MAX_ERRORS}): {e}",
+                    exc_info=True,
+                )
                 if error_count >= MAX_ERRORS:
-                    logger.critical(f"Too many consecutive errors ({MAX_ERRORS}). Aborting simulation.")
+                    logger.critical(
+                        f"Too many consecutive errors ({MAX_ERRORS}). Aborting simulation."
+                    )
                     self._is_running = False
-                    self._statistics["stopped_at"] = datetime.now(timezone.utc).isoformat()
+                    self._statistics["stopped_at"] = datetime.now(
+                        timezone.utc
+                    ).isoformat()
                     return
                 # Backoff slightly
                 await asyncio.sleep(1.0)

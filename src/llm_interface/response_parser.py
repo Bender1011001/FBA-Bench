@@ -26,7 +26,7 @@ class LLMResponseParser:
     def __init__(self, event_bus: EventBus | Any):
         """
         Initialize the LLMResponseParser.
-        
+
         Args:
             event_bus: An EventBus instance for publishing error events.
                        Can also accept a TrustMetrics-like object for backwards compatibility.

@@ -31,8 +31,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["simulation"])
 
 
-
-
 def _extract_ws_token(websocket: WebSocket) -> dict:
     """
     Extract bearer token from Sec-WebSocket-Protocol subprotocol:
@@ -64,8 +62,6 @@ def _extract_ws_token(websocket: WebSocket) -> dict:
 #   {"type":"error","error":"message"}
 
 
-
-
 def _current_status() -> str:
     """Best-effort simulation status."""
     try:
@@ -77,7 +73,8 @@ def _current_status() -> str:
     except Exception:
         return "idle"
 
-def _now_iso() -> str: # Keep as helper for other functions
+
+def _now_iso() -> str:  # Keep as helper for other functions
     return datetime.now(tz=timezone.utc).isoformat()
 
 
@@ -168,33 +165,33 @@ async def websocket_realtime(
 
         try:
             # Use centralized keys from app_factory
-            # We trust the app_factory to load keys correctly. 
+            # We trust the app_factory to load keys correctly.
             key = AUTH_JWT_PUBLIC_KEYS[0] if AUTH_JWT_PUBLIC_KEYS else None
             if not key:
-                 # Fallback/Safety: If enabled but no keys, we can't verify. Fail closed.
-                 logger.error("Auth enabled but no keys configured. Closing.")
-                 await websocket.close(code=1008)
-                 return
+                # Fallback/Safety: If enabled but no keys, we can't verify. Fail closed.
+                logger.error("Auth enabled but no keys configured. Closing.")
+                await websocket.close(code=1008)
+                return
 
             payload = jwt.decode(
                 effective_token,
                 key=key,
                 algorithms=["RS256"],
-                options={"verify_signature": True}
+                options={"verify_signature": True},
             )
-            
+
             agent_id = payload.get("sub")
             if not agent_id:
                 logger.error("WS token missing subject (agent_id). Closing.")
                 await websocket.close(code=1008)
                 return
-                
+
             logger.info(f"WS Authenticated agent: {agent_id}")
 
         except jwt.PyJWTError as e:
-             logger.error(f"WS token validation failed: {e}. Closing.")
-             await websocket.close(code=1008)
-             return
+            logger.error(f"WS token validation failed: {e}. Closing.")
+            await websocket.close(code=1008)
+            return
     else:
         logger.warning("WS Authentication DISABLED - Allowing anonymous connection.")
 
@@ -280,8 +277,8 @@ async def websocket_realtime(
                 if pubsub:
                     await pubsub.close()
             except Exception:
-                 # Best effort close
-                 pass
+                # Best effort close
+                pass
 
     # Initialize Redis pubsub
     try:

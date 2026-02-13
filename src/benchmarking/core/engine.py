@@ -779,8 +779,8 @@ class Engine:
                 metrics_out = await self._apply_metrics(
                     run_for_metrics, metrics_context
                 )
-                
-                # Determine verified status based on runner framework. 
+
+                # Determine verified status based on runner framework.
                 # LangChain and CrewAI runners are verified LLM-only paths.
                 is_verified = runner_spec.key.lower() in ("langchain", "crewai")
                 metrics_out["verified"] = is_verified
@@ -1667,9 +1667,11 @@ class BenchmarkEngine:
             # - Accept simple objects that expose a 'name' attribute
             if integration_manager is None and (
                 isinstance(config_or_manager, _BM)
-                or getattr(config_or_manager, "__class__", None).__name__ == "BenchmarkConfig"
+                or getattr(config_or_manager, "__class__", None).__name__
+                == "BenchmarkConfig"
                 or hasattr(config_or_manager, "name")
-                or getattr(config_or_manager, "__class__", None).__name__ == "EngineConfig"
+                or getattr(config_or_manager, "__class__", None).__name__
+                == "EngineConfig"
                 or (
                     hasattr(config_or_manager, "scenarios")
                     and hasattr(config_or_manager, "runners")
@@ -2171,17 +2173,23 @@ class BenchmarkEngine:
         # ---------------- Classic mode (original implementation) ----------------
         if config is None:
             # Fallback to config provided during initialization
-            config = getattr(self, "config", None) or getattr(self, "benchmark_config", None)
+            config = getattr(self, "config", None) or getattr(
+                self, "benchmark_config", None
+            )
             # If still None, maybe it's in config_manager
-            if config is None and hasattr(self, "config_manager") and isinstance(self.config_manager, dict):
+            if (
+                config is None
+                and hasattr(self, "config_manager")
+                and isinstance(self.config_manager, dict)
+            ):
                 config = self.config_manager
 
         # Ensure config is a dictionary for the following logic (handles Pydantic models)
         if hasattr(config, "model_dump"):
-            config = config.model_dump(mode='json')
+            config = config.model_dump(mode="json")
         elif hasattr(config, "dict"):
             config = config.dict()
-        
+
         if not self._initialized:
             raise BenchmarkError("Benchmark engine not initialized")
 
@@ -2400,7 +2408,7 @@ class BenchmarkEngine:
         t0 = _dt.now(_timezone.utc)
         try:
             scenario = await self._load_scenario(scenario_config)
-            
+
             # Helper: instantiate scenario if it's a class (typical for registry)
             if isinstance(scenario, type):
                 try:
@@ -2408,6 +2416,7 @@ class BenchmarkEngine:
                     sc_cfg = scenario_config
                     try:
                         from benchmarking.scenarios.base import ScenarioConfig
+
                         if isinstance(scenario_config, dict):
                             # Ensure name defaults if missing
                             cfg_dict = dict(scenario_config)
@@ -2801,7 +2810,9 @@ class BenchmarkEngine:
             base_path.mkdir(parents=True, exist_ok=True)
             out_file = base_path / f"{result.benchmark_id}.json"
             with out_file.open("w", encoding="utf-8") as f:
-                json_str = _json.dumps(result.to_dict(), indent=2, cls=self.DateTimeEncoder)
+                json_str = _json.dumps(
+                    result.to_dict(), indent=2, cls=self.DateTimeEncoder
+                )
                 f.write(json_str)
         except Exception as e:
             raise BenchmarkError(f"Failed to save benchmark results: {e}") from e

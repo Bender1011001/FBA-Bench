@@ -25,52 +25,27 @@ Kill conflicting processes if needed (e.g., `netstat -ano | findstr :8000` on Wi
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Option A: One-Click Local Demo (Recommended)
+```
+docker compose -f docker-compose.oneclick.yml up -d --build
+```
+Open http://localhost:8080
 
-```bash
-git clone <repo-url> fba-bench
-cd fba-bench
+- API health (proxied): `curl -sS http://localhost:8080/api/v1/health`
+- FastAPI docs (proxied): http://localhost:8080/docs
+
+### Option B: Backend Only (No Docker)
+```
 poetry install
+poetry run uvicorn fba_bench_api.main:get_app --factory --reload --host 127.0.0.1 --port 8000
 ```
+Access the API docs at http://localhost:8000/docs.
 
-### 2. Configure Environment
-
-```bash
-cp .env.example .env
-# Edit .env with your API keys (e.g., OPENROUTER_API_KEY=sk-or-v1-...)
+### Option C: Godot GUI Launcher
 ```
-
-### 3. Start the Application
-
-**Option A: Docker Compose (Recommended)**
-
-```bash
-docker compose up -d
-```
-
-This starts the full backend stack (API, Postgres, Redis) on http://localhost:8000.
-
-> **Note**: If the Docker API container fails with import errors, you may need to manually install missing dependencies:
-> ```bash
-> docker exec fba-api pip install opentelemetry-api opentelemetry-sdk asyncpg prometheus_client
-> docker exec -d fba-api python api_server.py
-> ```
-
-**Option B: Using the Godot GUI Launcher**
-
-```bash
 python launch_godot_gui.py
 ```
-
-This starts the FastAPI backend (if not already running) and attempts to launch the Godot GUI. The launcher will detect if the backend is already running on port 8000.
-
-**Option C: Backend Only (API Server)**
-
-```bash
-poetry run python api_server.py
-```
-
-Access the API docs at http://localhost:8000/docs.
+If Godot is not on PATH, set `GODOT_EXE` to your Godot executable path.
 
 ## Using the Godot GUI
 

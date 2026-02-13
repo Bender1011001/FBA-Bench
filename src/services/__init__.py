@@ -14,7 +14,10 @@ from .fee_calculation_service import FeeCalculationService
 from .journal_service import JournalService
 from .market_simulator import MarketSimulationService
 from .marketing_service import MarketingService
-from .mock_service import ProductionService, MockService  # MockService is deprecated alias
+from .mock_service import (
+    ProductionService,
+    MockService,
+)  # MockService is deprecated alias
 from .outcome_analysis_service import OutcomeAnalysisService
 from .sales_service import SalesService
 from .supply_chain_service import SupplyChainService
@@ -51,4 +54,3 @@ __all__ = [
     "TrustScoreService",
     "WorldStore",
 ]
-

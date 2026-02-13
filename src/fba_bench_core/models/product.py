@@ -5,7 +5,14 @@ from uuid import UUID, uuid4
 
 # Import canonical Money (re-exported shim ensures single implementation)
 from money import Money
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 
 
 class Product(BaseModel):
@@ -21,7 +28,7 @@ class Product(BaseModel):
     - If name is missing, name defaults to asin or sku.
     - If weight_kg is missing but `weight` is provided, weight_kg is derived from `weight`.
     - Extra/unknown fields are allowed and set as attributes for ease-of-use in tests.
-    
+
     Physical Properties (for logistics calculations):
     - width_cm, height_cm, depth_cm: Product dimensions in centimeters
     - weight_kg: Product weight in kilograms
@@ -48,7 +55,7 @@ class Product(BaseModel):
     trust_score: Optional[float] = Field(default=0.8, ge=0.0, le=1.0)
     size: Optional[str] = Field(default="small")
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Physical dimensions for logistics (Phase 3: Physics of Stuff)
     width_cm: Optional[float] = Field(
         default=None, gt=0, description="Product width in centimeters"
@@ -63,10 +70,11 @@ class Product(BaseModel):
         default=None, gt=0, description="Product weight in kilograms"
     )
     fragility_score: Optional[float] = Field(
-        default=0.1, ge=0.0, le=1.0,
-        description="Breakage probability factor (0=indestructible, 1=fragile)"
+        default=0.1,
+        ge=0.0,
+        le=1.0,
+        description="Breakage probability factor (0=indestructible, 1=fragile)",
     )
-
 
     # -------------------------
     # Normalizers and validators
@@ -147,7 +155,7 @@ class Product(BaseModel):
     @property
     def volume_m3(self) -> float:
         """Compute product volume in cubic meters.
-        
+
         Used by freight engine for container packing calculations.
         Returns 0.0 if dimensions are not specified.
         """
@@ -155,43 +163,43 @@ class Product(BaseModel):
             # Convert cm³ to m³ (divide by 1,000,000)
             return (self.width_cm * self.height_cm * self.depth_cm) / 1_000_000
         return 0.0
-    
+
     @computed_field
     @property
     def dimensional_weight(self) -> float:
         """Compute dimensional weight in kg using standard logistics formula.
-        
+
         Dimensional weight = Volume (m³) × 167 kg/m³
         This is the industry standard divisor for ocean freight.
-        
+
         Carriers charge based on max(actual_weight, dimensional_weight).
         """
         return self.volume_m3 * 167.0
-    
+
     @computed_field
     @property
     def chargeable_weight(self) -> float:
         """Compute chargeable weight for freight billing.
-        
+
         The chargeable weight is the greater of:
         - Actual weight (weight_kg)
         - Dimensional weight
-        
+
         This is what carriers use to calculate shipping costs.
         """
         actual = self.weight_kg or 0.0
         dimensional = self.dimensional_weight
         return max(actual, dimensional)
-    
+
     def calculate_breakage_probability(self, handling_events: int = 5) -> float:
         """Estimate breakage probability during shipping.
-        
+
         Based on fragility score and number of handling events
         (loading, unloading, transfers, etc.).
-        
+
         Args:
             handling_events: Number of times the product will be handled.
-            
+
         Returns:
             Probability of breakage (0.0 to 1.0).
         """

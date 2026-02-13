@@ -209,14 +209,18 @@ class AgentRunnerConfig:
 
         memory_config = None
         if data.get("memory_config"):
-            memory_config = MemoryConfig(**_filter_kwargs(MemoryConfig, data["memory_config"]))
+            memory_config = MemoryConfig(
+                **_filter_kwargs(MemoryConfig, data["memory_config"])
+            )
 
         agent_config = None
         if data.get("agent_config"):
             # Special case for DIY bots that might put extra fields in agent_config
             agent_config_data = data["agent_config"]
             if isinstance(agent_config_data, dict):
-                agent_config = AgentConfig(**_filter_kwargs(AgentConfig, agent_config_data))
+                agent_config = AgentConfig(
+                    **_filter_kwargs(AgentConfig, agent_config_data)
+                )
 
         crew_config = None
         if data.get("crew_config"):

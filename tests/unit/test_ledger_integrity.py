@@ -28,6 +28,7 @@ class TestLedgerIntegrity:
         core = LedgerCore()
         # Use sync initialization for tests
         import asyncio
+
         asyncio.get_event_loop().run_until_complete(core.initialize_chart_of_accounts())
         return core
 
@@ -43,7 +44,7 @@ class TestLedgerIntegrity:
     def test_verify_integrity_passes_after_balanced_transaction(self, ledger_core):
         """Integrity should pass after posting balanced transactions."""
         import asyncio
-        
+
         # Create a balanced transaction: inject equity
         tx = Transaction(
             transaction_id="test-equity-001",
@@ -68,49 +69,47 @@ class TestLedgerIntegrity:
                 description="Initial capital",
             )
         )
-        
-        asyncio.get_event_loop().run_until_complete(
-            ledger_core.post_transaction(tx)
-        )
-        
+
+        asyncio.get_event_loop().run_until_complete(ledger_core.post_transaction(tx))
+
         assert ledger_core.verify_integrity() is True
 
     def test_verify_integrity_fails_on_manual_imbalance(self, ledger_core):
         """Manually corrupting an account balance should trigger failure."""
         import asyncio
-        
+
         # First inject some capital to have non-zero balances
         asyncio.get_event_loop().run_until_complete(
             ledger_core.inject_equity(Money.from_dollars("5000"))
         )
-        
+
         # Manually corrupt the cash balance (simulating a bug)
         cash_account = ledger_core.accounts.get("cash")
         original_balance = cash_account.balance
         cash_account.balance = Money.from_dollars("9999.99")  # Corrupt it!
-        
+
         # Should fail with raise_on_failure=False
         assert ledger_core.verify_integrity(raise_on_failure=False) is False
-        
+
         # Should raise AccountingError by default
         with pytest.raises(AccountingError) as exc_info:
             ledger_core.verify_integrity()
-        
+
         assert "LEDGER INTEGRITY FAILURE" in str(exc_info.value)
         assert "Accounting equation violated" in str(exc_info.value)
-        
+
         # Restore balance
         cash_account.balance = original_balance
 
     def test_verify_integrity_includes_revenue_and_expenses(self, ledger_core):
         """Revenue and expenses should be factored into equity for verification."""
         import asyncio
-        
+
         # Inject capital first
         asyncio.get_event_loop().run_until_complete(
             ledger_core.inject_equity(Money.from_dollars("1000"))
         )
-        
+
         # Create a sale transaction
         # DR Cash 100, CR Sales Revenue 100
         tx = Transaction(
@@ -134,14 +133,12 @@ class TestLedgerIntegrity:
                 entry_type="credit",
             )
         )
-        
-        asyncio.get_event_loop().run_until_complete(
-            ledger_core.post_transaction(tx)
-        )
-        
+
+        asyncio.get_event_loop().run_until_complete(ledger_core.post_transaction(tx))
+
         # Should still pass - revenue is included in equity calculation
         assert ledger_core.verify_integrity() is True
-        
+
         # Summary should show revenue
         summary = ledger_core.get_accounting_equation_summary()
         assert summary["total_revenue"].cents == 10000  # $100 in cents
@@ -150,14 +147,14 @@ class TestLedgerIntegrity:
     def test_get_accounting_equation_summary(self, ledger_core):
         """Summary should correctly break down all account types."""
         import asyncio
-        
+
         # Inject capital
         asyncio.get_event_loop().run_until_complete(
             ledger_core.inject_equity(Money.from_dollars("5000"))
         )
-        
+
         summary = ledger_core.get_accounting_equation_summary()
-        
+
         assert "total_assets" in summary
         assert "total_liabilities" in summary
         assert "total_equity_base" in summary
@@ -166,7 +163,7 @@ class TestLedgerIntegrity:
         assert "net_income" in summary
         assert "equity_with_retained_earnings" in summary
         assert "equation_balanced" in summary
-        
+
         # Check equation is balanced
         assert summary["equation_balanced"] is True
 
@@ -174,7 +171,7 @@ class TestLedgerIntegrity:
         """DoubleEntryLedgerService should expose verify_integrity()."""
         # Should pass with fresh ledger (no transactions yet)
         assert ledger_service.verify_integrity() is True
-        
+
         # Summary should also work
         summary = ledger_service.get_accounting_equation_summary()
         assert isinstance(summary, dict)

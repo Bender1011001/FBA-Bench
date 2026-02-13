@@ -23,7 +23,11 @@ from .events import (
 )
 from .factory import get_world_store, set_world_store
 from .models import CommandArbitrationResult, ProductState, SimpleArbitrationResult
-from .persistence import InMemoryStorageBackend, JsonFileStorageBackend, PersistenceBackend
+from .persistence import (
+    InMemoryStorageBackend,
+    JsonFileStorageBackend,
+    PersistenceBackend,
+)
 from .state import WorldStateManager
 
 logger = logging.getLogger(__name__)

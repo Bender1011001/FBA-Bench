@@ -329,7 +329,12 @@ class AgentManager:
                     for handle in self._subscription_handles:
                         try:
                             await self.event_bus.unsubscribe(handle)  # type: ignore[arg-type]
-                        except (AttributeError, TypeError, ValueError, RuntimeError) as ue:
+                        except (
+                            AttributeError,
+                            TypeError,
+                            ValueError,
+                            RuntimeError,
+                        ) as ue:
                             logger.debug(f"Issue unsubscribing handle {handle}: {ue}")
                     self._subscription_handles.clear()
                     logger.info("AgentManager unsubscribed from core events.")
@@ -417,7 +422,13 @@ class AgentManager:
                     mirror.total_tool_calls = int(
                         getattr(mirror, "total_tool_calls", 0)
                     ) + (len(tool_calls) if tool_calls else 0)
-        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError) as e:
+        except (
+            AttributeError,
+            TypeError,
+            ValueError,
+            RuntimeError,
+            AgentRunnerDecisionError,
+        ) as e:
             logger.error(f"_process_agent_decision error: {e}", exc_info=True)
 
     async def register_agent(
@@ -438,6 +449,7 @@ class AgentManager:
             # 1. Try modern registry/factory path
             try:
                 from .registry import create_runner as _create_runner
+
                 runner = _create_runner(framework, config or {}, agent_id=agent_id)
                 logger.info(f"Agent {agent_id} ({framework}) created via registry.")
             except (ImportError, AttributeError, ValueError, AgentRunnerError) as e:
@@ -453,12 +465,17 @@ class AgentManager:
                         agent_id, pydantic_config
                     )
                     from benchmarking.agents.unified_agent import UnifiedAgentRunner
+
                     unified_runner = UnifiedAgentRunner(unified_agent)
                     runner = UnifiedAgentRunnerWrapper(unified_runner, agent_id)
                     self.unified_agent_runners[agent_id] = unified_runner
-                    logger.info(f"Unified agent {agent_id} ({framework}) registered successfully.")
+                    logger.info(
+                        f"Unified agent {agent_id} ({framework}) registered successfully."
+                    )
                 except Exception as e:
-                    logger.warning(f"Unified agent system fallback failed for {agent_id}: {e}")
+                    logger.warning(
+                        f"Unified agent system fallback failed for {agent_id}: {e}"
+                    )
 
             if runner:
                 self._add_to_registries(agent_id, runner, framework, config)
@@ -471,10 +488,16 @@ class AgentManager:
             self._handle_registration_failure(agent_id, framework, config, e)
             return None
 
-    def _add_to_registries(self, agent_id: str, runner: Any, framework: str, config: Optional[Dict[str, Any]] = None) -> None:
+    def _add_to_registries(
+        self,
+        agent_id: str,
+        runner: Any,
+        framework: str,
+        config: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """Internal helper to update both the modern registry and back-compat mirror."""
         reg = self.agent_registry.add_agent(agent_id, runner, framework, config or {})
-        
+
         # Mark as LLM-only if framework is LangChain or CrewAI
         is_llm_only = False
         if framework.lower() in ("langchain", "crewai"):
@@ -493,11 +516,13 @@ class AgentManager:
         )
         self._update_stats()
 
-    def _handle_registration_failure(self, agent_id: str, framework: str, config: Dict[str, Any], error: Exception) -> None:
+    def _handle_registration_failure(
+        self, agent_id: str, framework: str, config: Dict[str, Any], error: Exception
+    ) -> None:
         """Handle registration failure by updating registries with failed state."""
         self.agent_registry.add_agent(agent_id, None, framework, config or {})
         self.agent_registry.mark_agent_as_failed(agent_id, str(error))
-        
+
         # Mirror failure into back-compat map
         self.agents[agent_id] = {
             "runner": None,
@@ -525,7 +550,9 @@ class AgentManager:
             self._update_stats()
             logger.info(f"Agent {agent_id} successfully deregistered.")
         else:
-            logger.warning(f"Agent {agent_id} not found in registry, cannot deregister.")
+            logger.warning(
+                f"Agent {agent_id} not found in registry, cannot deregister."
+            )
 
     def get_agent_runner(self, agent_id: str) -> Optional[AgentRunner]:
         """Retrieve the AgentRunner instance for a registered agent."""
@@ -541,7 +568,9 @@ class AgentManager:
             return
 
         shared_context = self._build_shared_context()
-        logger.debug(f"Running decision cycle for {len(active_regs)} agents at tick {shared_context['tick']}...")
+        logger.debug(
+            f"Running decision cycle for {len(active_regs)} agents at tick {shared_context['tick']}..."
+        )
 
         # Create tasks for all active agents
         decision_tasks = [
@@ -576,7 +605,9 @@ class AgentManager:
             ),
         }
 
-    async def _process_decision_result(self, agent_id: str, result: Any, context: Dict[str, Any]) -> None:
+    async def _process_decision_result(
+        self, agent_id: str, result: Any, context: Dict[str, Any]
+    ) -> None:
         """Handle the result of an agent decision (success or failure)."""
         if isinstance(result, Exception):
             self._handle_decision_error(agent_id, result)
@@ -587,16 +618,16 @@ class AgentManager:
 
         # Run arbitration and dispatch
         processed = await self._arbitrate_and_dispatch(agent_id, result)
-        
+
         # Update statistics in primary registry
         reg = self.agent_registry.get_agent(agent_id)
         if reg:
             reg.total_decisions += 1
             reg.total_tool_calls += processed
-        
+
         # Sync with back-compat mirror
         self._sync_back_compat_mirror(agent_id, decisions_inc=1, tools_inc=processed)
-        
+
         self.total_tool_calls += processed
 
     def _handle_decision_error(self, agent_id: str, error: Exception) -> None:
@@ -610,41 +641,53 @@ class AgentManager:
             if isinstance(error, AgentRunnerDecisionError):
                 logger.error(f"Decision error from agent {agent_id}: {error}")
             else:
-                logger.error(f"Unexpected error getting decision from agent {agent_id}: {error}", exc_info=True)
+                logger.error(
+                    f"Unexpected error getting decision from agent {agent_id}: {error}",
+                    exc_info=True,
+                )
             self.agent_registry.mark_agent_as_failed(agent_id, str(error))
             self.total_errors += 1
-            
+
         # Synchronize mirror
         self._sync_back_compat_mirror(agent_id, active=False, failure_reason=str(error))
         self._update_stats()
 
     def _sync_back_compat_mirror(
-        self, 
-        agent_id: str, 
-        active: Optional[bool] = None, 
+        self,
+        agent_id: str,
+        active: Optional[bool] = None,
         failure_reason: Optional[str] = None,
         decisions_inc: int = 0,
-        tools_inc: int = 0
+        tools_inc: int = 0,
     ) -> None:
         """Internal helper to synchronize the back-compat 'agents' mirror with registry state."""
         if agent_id not in self.agents:
             return
-            
+
         mirror = self.agents[agent_id]
         if isinstance(mirror, dict):
-            if active is not None: mirror["active"] = active
-            if failure_reason is not None: mirror["failure_reason"] = failure_reason
-            mirror["total_decisions"] = int(mirror.get("total_decisions", 0)) + decisions_inc
-            mirror["total_tool_calls"] = int(mirror.get("total_tool_calls", 0)) + tools_inc
+            if active is not None:
+                mirror["active"] = active
+            if failure_reason is not None:
+                mirror["failure_reason"] = failure_reason
+            mirror["total_decisions"] = (
+                int(mirror.get("total_decisions", 0)) + decisions_inc
+            )
+            mirror["total_tool_calls"] = (
+                int(mirror.get("total_tool_calls", 0)) + tools_inc
+            )
         else:
             # BackCompatRegistration dataclass
-            if active is not None: mirror.active = active
+            if active is not None:
+                mirror.active = active
             if hasattr(mirror, "failure_reason") and failure_reason is not None:
                 mirror.failure_reason = failure_reason
             mirror.total_decisions += decisions_inc
             mirror.total_tool_calls += tools_inc
 
-    async def _publish_decision_event(self, agent_id: str, tool_calls: List[ToolCall], context: Dict[str, Any]) -> None:
+    async def _publish_decision_event(
+        self, agent_id: str, tool_calls: List[ToolCall], context: Dict[str, Any]
+    ) -> None:
         """Publish an AgentDecisionEvent for observability."""
         reasoning = " ".join([tc.reasoning for tc in tool_calls if tc.reasoning])
         if not reasoning:
@@ -659,7 +702,7 @@ class AgentManager:
                     "prompt_tokens": tick_usage.get("tokens", 0),
                     "completion_tokens": 0,
                     "total_tokens": tick_usage.get("tokens", 0),
-                    "total_cost_usd": tick_usage.get("cost_cents", 0) / 100.0
+                    "total_cost_usd": tick_usage.get("cost_cents", 0) / 100.0,
                 }
             except Exception as e:
                 logger.warning(f"Failed to get usage for {agent_id}: {e}")
@@ -675,15 +718,19 @@ class AgentManager:
                 {
                     "function": {
                         "name": tc.tool_name,
-                        "arguments": json.dumps(tc.parameters) if isinstance(tc.parameters, dict) else str(tc.parameters)
+                        "arguments": (
+                            json.dumps(tc.parameters)
+                            if isinstance(tc.parameters, dict)
+                            else str(tc.parameters)
+                        ),
                     }
-                } for tc in tool_calls
+                }
+                for tc in tool_calls
             ],
             llm_usage=usage_info,
             prompt_metadata={},
         )
         await self.event_bus.publish(decision_event)
-
 
     async def _get_agent_decision(
         self, runner: AgentRunner, context: Dict[str, Any]
@@ -885,7 +932,11 @@ class AgentManager:
             # This allows runners to return a single block of decisions which are then arbitrated individually.
             unpacked_calls: List[ToolCall] = []
             for tc in tool_calls:
-                if tc.tool_name == "decision" and isinstance(tc.parameters, dict) and "decisions" in tc.parameters:
+                if (
+                    tc.tool_name == "decision"
+                    and isinstance(tc.parameters, dict)
+                    and "decisions" in tc.parameters
+                ):
                     # Unpack bulk decisions
                     decisions = tc.parameters["decisions"]
                     if isinstance(decisions, list):
@@ -894,19 +945,26 @@ class AgentManager:
                                 continue
                             # Map dict field names to known tool names
                             if "new_price" in d:
-                                unpacked_calls.append(ToolCall(
-                                    tool_name="set_price",
-                                    parameters={"asin": d.get("asin"), "price": d.get("new_price")},
-                                    reasoning=d.get("reasoning", tc.reasoning),
-                                    confidence=tc.confidence
-                                ))
+                                unpacked_calls.append(
+                                    ToolCall(
+                                        tool_name="set_price",
+                                        parameters={
+                                            "asin": d.get("asin"),
+                                            "price": d.get("new_price"),
+                                        },
+                                        reasoning=d.get("reasoning", tc.reasoning),
+                                        confidence=tc.confidence,
+                                    )
+                                )
                             elif "quantity" in d:
-                                unpacked_calls.append(ToolCall(
-                                    tool_name="place_order",
-                                    parameters=d,
-                                    reasoning=d.get("reasoning", tc.reasoning),
-                                    confidence=tc.confidence
-                                ))
+                                unpacked_calls.append(
+                                    ToolCall(
+                                        tool_name="place_order",
+                                        parameters=d,
+                                        reasoning=d.get("reasoning", tc.reasoning),
+                                        confidence=tc.confidence,
+                                    )
+                                )
                     else:
                         unpacked_calls.append(tc)
                 else:
@@ -933,7 +991,7 @@ class AgentManager:
 
         # In a real system, this would involve routing to the actual tool implementation
         # We now implement explicit routing for core tools to enable full LLM autonomy.
-        
+
         # 1. Budget and Safety Check via Gateway
         if self.agent_gateway:
             allowed = await self.agent_gateway.process_tool_call(
@@ -944,7 +1002,7 @@ class AgentManager:
                     f"Tool call '{tool_call.tool_name}' for agent {agent_id} was BLOCKED by AgentGateway."
                 )
                 return
-        
+
         # 2. Command Dispatch
         params = tool_call.parameters or {}
         if tool_call.tool_name == "set_price":
@@ -955,17 +1013,21 @@ class AgentManager:
                     event_id=f"sp_{agent_id}_{uuid.uuid4().hex[:8]}",
                     agent_id=agent_id,
                     asin=asin,
-                    price=price
+                    price=price,
                 )
                 await self.event_bus.publish(cmd)
-                logger.info(f"Dispatched SetPriceCommand from LLM tool for {agent_id}: {asin} @ {price}")
-        
+                logger.info(
+                    f"Dispatched SetPriceCommand from LLM tool for {agent_id}: {asin} @ {price}"
+                )
+
         elif tool_call.tool_name == "place_order":
-            supplier_id = params.get("supplier_id") or "S001" # Default if not specified
+            supplier_id = (
+                params.get("supplier_id") or "S001"
+            )  # Default if not specified
             asin = params.get("asin")
             quantity = int(params.get("quantity", 0))
             max_price_raw = params.get("max_price")
-            
+
             if asin and quantity > 0:
                 # Defensive Money parsing
                 if isinstance(max_price_raw, Money):
@@ -976,7 +1038,7 @@ class AgentManager:
                         if max_price_raw is not None
                         else Money(amount=0)
                     )
-                
+
                 po = PlaceOrderCommand(
                     event_id=f"po_{agent_id}_{uuid.uuid4().hex[:8]}",
                     timestamp=datetime.now(),
@@ -985,15 +1047,15 @@ class AgentManager:
                     asin=asin,
                     quantity=quantity,
                     max_price=max_price,
-                    reason=tool_call.reasoning or "LLM-driven sourcing"
+                    reason=tool_call.reasoning or "LLM-driven sourcing",
                 )
                 await self.event_bus.publish(po)
-                logger.info(f"Dispatched PlaceOrderCommand from LLM tool for {agent_id}: {asin} Qty={quantity}")
+                logger.info(
+                    f"Dispatched PlaceOrderCommand from LLM tool for {agent_id}: {asin} Qty={quantity}"
+                )
 
         else:
-            logger.warning(
-                f"No explicit handler for tool call: {tool_call.tool_name}"
-            )
+            logger.warning(f"No explicit handler for tool call: {tool_call.tool_name}")
 
     def _create_pydantic_config_from_dict(
         self, agent_id: str, framework: str, config: Dict[str, Any]
@@ -1134,15 +1196,15 @@ class AgentManager:
         for agent_id, agent_reg in self.agent_registry.all_agents().items():
             agent_map[agent_id] = {
                 "active": agent_reg.is_active,
-                "status": getattr(agent_reg.runner, "status", "unknown") if agent_reg.runner else "failed",
+                "status": (
+                    getattr(agent_reg.runner, "status", "unknown")
+                    if agent_reg.runner
+                    else "failed"
+                ),
                 "total_decisions": agent_reg.total_decisions,
             }
 
-        return {
-            **stats,
-            "agents": agent_map,
-            "manager_stats": stats
-        }
+        return {**stats, "agents": agent_map, "manager_stats": stats}
 
     async def get_agent_info(self, agent_id: str) -> Dict[str, Any]:
         """
@@ -1237,7 +1299,14 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
 
             return tool_calls
 
-        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError, AgentRunnerTimeoutError) as e:
+        except (
+            AttributeError,
+            TypeError,
+            ValueError,
+            RuntimeError,
+            AgentRunnerDecisionError,
+            AgentRunnerTimeoutError,
+        ) as e:
             raise AgentRunnerDecisionError(
                 f"Failed to get decision from unified agent {self.agent_id}: {e}"
             )
@@ -1247,7 +1316,13 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
         try:
             await self.unified_runner.cleanup()
             logger.info(f"Unified agent runner wrapper {self.agent_id} cleaned up")
-        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerCleanupError) as e:
+        except (
+            AttributeError,
+            TypeError,
+            ValueError,
+            RuntimeError,
+            AgentRunnerCleanupError,
+        ) as e:
             raise AgentRunnerCleanupError(
                 f"Failed to cleanup unified agent runner {self.agent_id}: {e}"
             )

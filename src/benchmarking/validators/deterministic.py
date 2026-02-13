@@ -466,7 +466,9 @@ class DeterministicContext:
         )
 
         # Create deterministic seed from context name
-        name_hash = hashlib.md5(f"{parent_seed}_{context_name}".encode(), usedforsecurity=False).hexdigest()
+        name_hash = hashlib.md5(
+            f"{parent_seed}_{context_name}".encode(), usedforsecurity=False
+        ).hexdigest()
         return int(name_hash[:8], 16)  # Use first 8 hex characters as seed
 
     def get_current_context(self) -> Optional[Dict[str, Any]]:

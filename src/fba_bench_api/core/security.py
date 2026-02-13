@@ -5,6 +5,7 @@ from typing import List
 
 from fba_bench_core.config import get_settings
 
+
 def _load_public_keys_from_env() -> List[str]:
     keys: List[str] = []
     # 1) Single key (back-compat)
@@ -54,6 +55,7 @@ def _load_public_keys_from_env() -> List[str]:
             seen.add(k)
             deduped.append(k)
     return deduped
+
 
 _settings = get_settings()
 

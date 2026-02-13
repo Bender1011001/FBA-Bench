@@ -290,7 +290,9 @@ def test_apply_agent_decisions_applies_external_return_adjustments() -> None:
         "events": ["return adjustment applied"],
     }
 
-    results = sim.apply_agent_decisions(decisions, orders=[], pre_day_adjustments=adjustments)
+    results = sim.apply_agent_decisions(
+        decisions, orders=[], pre_day_adjustments=adjustments
+    )
 
     assert results["returns_processed"] == 1
     assert results["refunds_paid"] == Decimal("25.00")
@@ -298,7 +300,9 @@ def test_apply_agent_decisions_applies_external_return_adjustments() -> None:
     assert results["revenue"] == Decimal("-20.00")
 
 
-def test_category_based_return_probability_is_higher_for_audio_than_accessories() -> None:
+def test_category_based_return_probability_is_higher_for_audio_than_accessories() -> (
+    None
+):
     sim = MarketSimulator(seed=53)
     audio = sim.state.products["P001"]
     accessory = sim.state.products["P007"]
@@ -414,7 +418,9 @@ def test_demand_multiplier_recalculation_handles_overlapping_events() -> None:
     ]
 
     sim._recalculate_demand_multipliers()
-    expected_before = sim._demand_event_multiplier("demand_spike", 0.6) * sim._demand_event_multiplier(
+    expected_before = sim._demand_event_multiplier(
+        "demand_spike", 0.6
+    ) * sim._demand_event_multiplier(
         "demand_crash",
         0.4,
     )
@@ -449,11 +455,15 @@ def test_price_war_initial_shock_scales_with_severity() -> None:
 
     sim_low._apply_event_initial_effects(low_event)
     sim_high._apply_event_initial_effects(high_event)
-    avg_low = sum(float(c.price) for c in sim_low.state.competitors if c.sku == sku) / max(
+    avg_low = sum(
+        float(c.price) for c in sim_low.state.competitors if c.sku == sku
+    ) / max(
         1,
         len([c for c in sim_low.state.competitors if c.sku == sku]),
     )
-    avg_high = sum(float(c.price) for c in sim_high.state.competitors if c.sku == sku) / max(
+    avg_high = sum(
+        float(c.price) for c in sim_high.state.competitors if c.sku == sku
+    ) / max(
         1,
         len([c for c in sim_high.state.competitors if c.sku == sku]),
     )
@@ -478,11 +488,15 @@ def test_price_war_active_pressure_affects_daily_competitor_evolution() -> None:
 
     sim_base.evolve_competitor_prices()
     sim_war.evolve_competitor_prices()
-    avg_base = sum(float(c.price) for c in sim_base.state.competitors if c.sku == sku) / max(
+    avg_base = sum(
+        float(c.price) for c in sim_base.state.competitors if c.sku == sku
+    ) / max(
         1,
         len([c for c in sim_base.state.competitors if c.sku == sku]),
     )
-    avg_war = sum(float(c.price) for c in sim_war.state.competitors if c.sku == sku) / max(
+    avg_war = sum(
+        float(c.price) for c in sim_war.state.competitors if c.sku == sku
+    ) / max(
         1,
         len([c for c in sim_war.state.competitors if c.sku == sku]),
     )

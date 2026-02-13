@@ -228,7 +228,7 @@ class AdversarialMetrics:
                 "resistance_trend_score": self._get_trend_score(),
                 "time_since_last_incident": self._get_time_since_last_incident(),
                 "average_response_time": self._calculate_average_response_time(),
-                "financial_damage_prevented_usd": 0.0, # Issue 96: Standardized key
+                "financial_damage_prevented_usd": 0.0,  # Issue 96: Standardized key
                 "category_breakdown": self.get_category_breakdown(),
             }
 
@@ -298,9 +298,7 @@ class AdversarialMetrics:
 
         # Use ALL responses to find the last successful exploit, not just recent ones.
         # This ensures we don't erroneously report "default hours" if the last incident was long ago.
-        successful_exploits = [
-            r for r in self.agent_responses if r.fell_for_exploit
-        ]
+        successful_exploits = [r for r in self.agent_responses if r.fell_for_exploit]
 
         if not successful_exploits:
             return (

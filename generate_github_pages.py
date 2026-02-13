@@ -73,8 +73,34 @@ def write_index_html() -> None:
         </div>
       </section>
 
+      <section class="support">
+        <div class="support-content">
+          <h2>Support the Research</h2>
+          <p>
+            We'd love to run more sims, but the API costs are currently more than my construction job can support. 
+            If you find this research valuable, consider helping out with server costs. 
+            Every donation allows for more benchmark runs and better data.
+          </p>
+          <div class="crypto-grid">
+            <div class="crypto-card">
+              <div class="crypto-label">Bitcoin (BTC)</div>
+              <code class="crypto-addr">YOUR_BTC_ADDRESS_HERE</code>
+            </div>
+            <div class="crypto-card">
+              <div class="crypto-label">Ethereum (ETH / ERC-20)</div>
+              <code class="crypto-addr">YOUR_ETH_ADDRESS_HERE</code>
+            </div>
+            <div class="crypto-card">
+              <div class="crypto-label">Solana (SOL)</div>
+              <code class="crypto-addr">YOUR_SOL_ADDRESS_HERE</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="cards">
         <div class="card">
+
           <div class="card-k">Run</div>
           <div id="runId" class="card-v">--</div>
         </div>

@@ -161,15 +161,15 @@ class DoubleEntryLedgerService:
 
     def verify_integrity(self, raise_on_failure: bool = True) -> bool:
         """Verify the fundamental accounting equation: Assets = Liabilities + Equity.
-        
+
         This is the 'Panic Button' - if violated, the simulation should halt.
-        
+
         Args:
             raise_on_failure: If True, raises AccountingError on violation.
-        
+
         Returns:
             True if the accounting equation holds.
-            
+
         Raises:
             AccountingError: If raise_on_failure=True and equation is violated.
         """

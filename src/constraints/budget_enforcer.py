@@ -103,10 +103,18 @@ class BudgetEnforcer:
         limits = cfg.get("limits", {}) or {}
         self._meter_cfg: Dict[str, Any] = {
             "limits": {
-                "total_tokens_per_tick": int(limits.get("total_tokens_per_tick", 200_000)),
-                "total_tokens_per_run": int(limits.get("total_tokens_per_run", 5_000_000)),
-                "total_cost_cents_per_tick": int(limits.get("total_cost_cents_per_tick", 1_000)),
-                "total_cost_cents_per_run": int(limits.get("total_cost_cents_per_run", 25_000)),
+                "total_tokens_per_tick": int(
+                    limits.get("total_tokens_per_tick", 200_000)
+                ),
+                "total_tokens_per_run": int(
+                    limits.get("total_tokens_per_run", 5_000_000)
+                ),
+                "total_cost_cents_per_tick": int(
+                    limits.get("total_cost_cents_per_tick", 1_000)
+                ),
+                "total_cost_cents_per_run": int(
+                    limits.get("total_cost_cents_per_run", 25_000)
+                ),
             },
             "tool_limits": dict(cfg.get("tool_limits", {}) or {}),
             "warning_threshold_pct": float(cfg.get("warning_threshold_pct", 0.8)),
@@ -136,9 +144,15 @@ class BudgetEnforcer:
             "max_tokens_per_action": int(legacy_cfg.get("max_tokens_per_action", 100)),
             "max_total_tokens": int(legacy_cfg.get("max_total_tokens", 500)),
             "token_cost_per_1k": float(legacy_cfg.get("token_cost_per_1k", 0.01)),
-            "violation_penalty_weight": float(legacy_cfg.get("violation_penalty_weight", 10.0)),
-            "grace_period_percentage": float(legacy_cfg.get("grace_period_percentage", 10.0)),
-            "hard_fail_on_violation": bool(legacy_cfg.get("hard_fail_on_violation", True)),
+            "violation_penalty_weight": float(
+                legacy_cfg.get("violation_penalty_weight", 10.0)
+            ),
+            "grace_period_percentage": float(
+                legacy_cfg.get("grace_period_percentage", 10.0)
+            ),
+            "hard_fail_on_violation": bool(
+                legacy_cfg.get("hard_fail_on_violation", True)
+            ),
             "inject_budget_status": bool(legacy_cfg.get("inject_budget_status", False)),
         }
 
@@ -200,7 +214,9 @@ class BudgetEnforcer:
             ),
             (
                 "tool_calls_run",
-                lambda: self._check_tool_limit(agent_id, tool_name, "calls_per_run", window="run"),
+                lambda: self._check_tool_limit(
+                    agent_id, tool_name, "calls_per_run", window="run"
+                ),
             ),
             (
                 "tool_tokens_tick",
@@ -210,7 +226,9 @@ class BudgetEnforcer:
             ),
             (
                 "tool_tokens_run",
-                lambda: self._check_tool_limit(agent_id, tool_name, "tokens_per_run", window="run"),
+                lambda: self._check_tool_limit(
+                    agent_id, tool_name, "tokens_per_run", window="run"
+                ),
             ),
             (
                 "tool_cost_tick",
@@ -239,13 +257,19 @@ class BudgetEnforcer:
             (
                 "overall_cost_tick",
                 lambda: self._check_overall_limit(
-                    agent_id, "total_cost_cents_per_tick", window="tick", field="cost_cents"
+                    agent_id,
+                    "total_cost_cents_per_tick",
+                    window="tick",
+                    field="cost_cents",
                 ),
             ),
             (
                 "overall_cost_run",
                 lambda: self._check_overall_limit(
-                    agent_id, "total_cost_cents_per_run", window="run", field="cost_cents"
+                    agent_id,
+                    "total_cost_cents_per_run",
+                    window="run",
+                    field="cost_cents",
                 ),
             ),
         )
@@ -298,14 +322,21 @@ class BudgetEnforcer:
 
             # Tool-specific limits
             if tool_name:
-                tool_calls = self.usage[agent_id][window]["per_tool"][tool_name]["calls"]
+                tool_calls = self.usage[agent_id][window]["per_tool"][tool_name][
+                    "calls"
+                ]
                 call_limit = self._get_tool_limit(tool_name, f"calls_per_{window}")
                 if call_limit is not None and tool_calls + 1 > call_limit:
                     return False
 
-                tool_tokens = self.usage[agent_id][window]["per_tool"][tool_name]["tokens"]
+                tool_tokens = self.usage[agent_id][window]["per_tool"][tool_name][
+                    "tokens"
+                ]
                 token_limit = self._get_tool_limit(tool_name, f"tokens_per_{window}")
-                if token_limit is not None and tool_tokens + estimated_tokens > token_limit:
+                if (
+                    token_limit is not None
+                    and tool_tokens + estimated_tokens > token_limit
+                ):
                     return False
 
         return True
@@ -347,7 +378,9 @@ class BudgetEnforcer:
                     "calls": 0,
                 }
 
-    def _update_counters(self, agent_id: str, tool_name: str, tokens: int, cost_cents: int) -> None:
+    def _update_counters(
+        self, agent_id: str, tool_name: str, tokens: int, cost_cents: int
+    ) -> None:
         self._ensure_agent(agent_id)
         self._ensure_tool(agent_id, tool_name)
 
@@ -364,17 +397,29 @@ class BudgetEnforcer:
 
     def _reset_tick(self, agent_id: str) -> None:
         self._ensure_agent(agent_id)
-        self.usage[agent_id]["tick"] = {"tokens": 0, "cost_cents": 0, "calls": 0, "per_tool": {}}
+        self.usage[agent_id]["tick"] = {
+            "tokens": 0,
+            "cost_cents": 0,
+            "calls": 0,
+            "per_tool": {},
+        }
 
     def _reset_run(self, agent_id: str) -> None:
         self._ensure_agent(agent_id)
-        self.usage[agent_id]["run"] = {"tokens": 0, "cost_cents": 0, "calls": 0, "per_tool": {}}
+        self.usage[agent_id]["run"] = {
+            "tokens": 0,
+            "cost_cents": 0,
+            "calls": 0,
+            "per_tool": {},
+        }
 
     # ---------------------------
     # Internal helpers - limits evaluation
     # ---------------------------
     def _get_tool_limit(self, tool_name: str, key: str) -> Optional[int]:
-        tool_cfg: Dict[str, Any] = (self.config.get("tool_limits") or {}).get(tool_name, {}) or {}
+        tool_cfg: Dict[str, Any] = (self.config.get("tool_limits") or {}).get(
+            tool_name, {}
+        ) or {}
         value = tool_cfg.get(key)
         if value is None:
             return None
@@ -418,7 +463,9 @@ class BudgetEnforcer:
         # compat: accept either a float fraction (e.g., 0.8) or an integer percentage (e.g., 80).
         #         Provide a safe default of 80% for legacy configs lacking this key.
         try:
-            pct_raw = self.config.get("warning_threshold_pct", 80)  # compat: default 80%
+            pct_raw = self.config.get(
+                "warning_threshold_pct", 80
+            )  # compat: default 80%
         except Exception:
             pct_raw = 80
         try:
@@ -481,7 +528,9 @@ class BudgetEnforcer:
         # Tool-level warnings (calls, tokens, cost) for both windows
         for window in ("tick", "run"):
             for metric in ("calls", "tokens", "cost_cents"):
-                usage, limit, budget_type = self._limit_tuple(agent_id, window, tool_name, metric)
+                usage, limit, budget_type = self._limit_tuple(
+                    agent_id, window, tool_name, metric
+                )
                 if self._threshold_crossed(usage, limit) and limit is not None:
                     reason = f"Usage reached {usage} of {limit} for {budget_type}"
                     await self._publish(
@@ -497,7 +546,9 @@ class BudgetEnforcer:
             ("tick", "cost_cents"),
             ("run", "cost_cents"),
         ):
-            usage, limit, budget_type = self._limit_tuple(agent_id, window, None, metric)
+            usage, limit, budget_type = self._limit_tuple(
+                agent_id, window, None, metric
+            )
             if self._threshold_crossed(usage, limit):
                 reason = f"Usage reached {usage} of {limit} for {budget_type}"
                 await self._publish(
@@ -512,7 +563,13 @@ class BudgetEnforcer:
         severity = "soft" if self.config["allow_soft_overage"] else "hard_fail"
         reason = f"Exceeded {budget_type}: usage {usage} > limit {limit}"
         event = self._build_event(
-            BudgetExceeded, agent_id, budget_type, usage, limit, reason, severity=severity
+            BudgetExceeded,
+            agent_id,
+            budget_type,
+            usage,
+            limit,
+            reason,
+            severity=severity,
         )
         # Publish asynchronously if bus is available (caller is async in meter_api_call)
         return {
@@ -530,15 +587,21 @@ class BudgetEnforcer:
     ) -> Optional[Dict[str, Any]]:
         # Determine metric from key
         metric = (
-            "calls" if "calls" in cfg_key else ("tokens" if "tokens" in cfg_key else "cost_cents")
+            "calls"
+            if "calls" in cfg_key
+            else ("tokens" if "tokens" in cfg_key else "cost_cents")
         )
-        usage, limit, budget_type = self._limit_tuple(agent_id, window, tool_name, metric)
+        usage, limit, budget_type = self._limit_tuple(
+            agent_id, window, tool_name, metric
+        )
         if limit is None:
             return None
 
         # Hard exceed check
         if self._exceeded(usage, limit):
-            resp = self._build_exceeded_response(agent_id, budget_type, usage, int(limit))
+            resp = self._build_exceeded_response(
+                agent_id, budget_type, usage, int(limit)
+            )
             # Publish inside meter_api_call to ensure async context and ordering
             return resp
         return None
@@ -576,7 +639,10 @@ class BudgetEnforcer:
     # ---------------------------
     @classmethod
     def from_tier_config(
-        cls, tier: str, event_bus: Optional[EventBus] = None, metrics_tracker: Any = None
+        cls,
+        tier: str,
+        event_bus: Optional[EventBus] = None,
+        metrics_tracker: Any = None,
     ) -> BudgetEnforcer:
         """
         Construct BudgetEnforcer with legacy-style config appropriate for the tier.
@@ -619,7 +685,9 @@ class BudgetEnforcer:
     # ---------------------------
     # Backward-compatibility methods (legacy API used by existing modules/tests)
     # ---------------------------
-    def record_token_usage(self, tokens_used: int, action_type: str = "general") -> None:
+    def record_token_usage(
+        self, tokens_used: int, action_type: str = "general"
+    ) -> None:
         """
         Legacy: Records token usage for the current tick and overall simulation.
         Also forwards to metrics tracker if available.
@@ -683,7 +751,9 @@ class BudgetEnforcer:
                     f"WARNING: Per-tick token limit nearing/exceeded by "
                     f"{self.current_tick_tokens_used - limit} tokens (within Grace Period)."
                 )
-                self._legacy_publish("BudgetWarning", {"type": "per_tick", "message": msg})
+                self._legacy_publish(
+                    "BudgetWarning", {"type": "per_tick", "message": msg}
+                )
                 return True, msg
         return True, ""
 
@@ -727,8 +797,13 @@ class BudgetEnforcer:
                 self._trigger_hard_fail(msg)
                 return False, msg
             else:
-                msg = f"{warning_prefix} " f"{current_usage - limit} tokens (within Grace Period)."
-                self._legacy_publish("BudgetWarning", {"type": budget_type_str, "message": msg})
+                msg = (
+                    f"{warning_prefix} "
+                    f"{current_usage - limit} tokens (within Grace Period)."
+                )
+                self._legacy_publish(
+                    "BudgetWarning", {"type": budget_type_str, "message": msg}
+                )
                 return True, msg
         return True, ""
 
@@ -746,7 +821,9 @@ class BudgetEnforcer:
                 except Exception:
                     pass
             # publish legacy style event for tests
-            self._legacy_publish("BudgetExceeded", {"reason": reason, "severity": "hard_fail"})
+            self._legacy_publish(
+                "BudgetExceeded", {"reason": reason, "severity": "hard_fail"}
+            )
 
             # compat: Backward compatibility toggle for SystemExit (default enabled)
             legacy_hard_fail_env = os.getenv("FBA_LEGACY_HARD_FAIL", "true").lower()
@@ -828,7 +905,9 @@ class BudgetEnforcer:
         budget_health = budget_info["budget_health"]
 
         percent_this_turn = (
-            (tokens_used_this_turn / max_tokens_per_turn) * 100 if max_tokens_per_turn else 0
+            (tokens_used_this_turn / max_tokens_per_turn) * 100
+            if max_tokens_per_turn
+            else 0
         )
         percent_total_sim = (
             (total_simulation_tokens_used / max_total_simulation_tokens) * 100

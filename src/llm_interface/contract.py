@@ -41,10 +41,10 @@ class BaseLLMClient(ABC):
     async def get_token_count(self, text: str) -> int:
         """
         Estimates or calculates the token count for a given text using the client's model.
-        
+
         Implementation Note:
-            This method is asynchronous to allow implementations to offload CPU-bound 
-            tokenization tasks (e.g., tiktoken encoding) to a separate thread or call 
+            This method is asynchronous to allow implementations to offload CPU-bound
+            tokenization tasks (e.g., tiktoken encoding) to a separate thread or call
             an external API, ensuring the main event loop remains unblocked.
 
         Args:

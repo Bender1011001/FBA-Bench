@@ -45,52 +45,30 @@ Unlike academic benchmarks that run in minutes, FBA-Bench simulates **real conse
 
 ## Quick Start
 
-### Prerequisites
-- Python 3.9–3.12
-- Poetry (install via `curl -sSL https://install.python-poetry.org | python3 -`)
-
-### Installation
-1. Clone the repository:
-   ```
-   git clone https://github.com/<YOUR-ORG>/FBA-Bench-Enterprise.git
-   cd FBA-Bench-Enterprise
-   ```
-
-2. Install dependencies:
-   ```
-   poetry install
-   ```
-
-3. Copy and configure environment:
-   ```
-   cp .env.example .env
-   # Edit .env for API keys (e.g., OPENAI_API_KEY, CLEARML_API_HOST) and database (default: SQLite)
-   ```
-
-4. Run database migrations (for API features):
-   ```
-   make be-migrate
-   ```
-
-### Basic Usage Example
-Run a simple benchmark with a baseline agent:
+### One-Click Local Demo (Docker)
 ```
-poetry run python examples/learning_example.py
+docker compose -f docker-compose.oneclick.yml up -d --build
 ```
-This executes a learning scenario, tracks metrics, and outputs results to `results/`.
+Open http://localhost:8080
 
-For API server:
-```
-python api_server.py
-```
-Access docs at http://localhost:8000/docs.
+- API health (proxied): `curl -sS http://localhost:8080/api/v1/health`
+- FastAPI docs (proxied): http://localhost:8080/docs
 
-For the Godot GUI:
+### Backend Only (Local, No Docker)
 ```
-# Option 1: Open Godot 4.5+, import godot_gui/, press F5
-# Option 2: Use the launcher (starts backend automatically)
+poetry install
+poetry run uvicorn fba_bench_api.main:get_app --factory --reload --host 127.0.0.1 --port 8000
+```
+Swagger UI: http://localhost:8000/docs
+
+### Godot GUI (Local)
+Option 1: Open Godot 4.5+, import `godot_gui/`, press F5.
+
+Option 2: Use the launcher (starts backend if needed):
+```
 python launch_godot_gui.py
 ```
+If Godot is not on PATH, set `GODOT_EXE` to your Godot executable path.
 
 ## Development Setup
 See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile commands for linting (`make lint`), testing (`make test-all`), and local CI (`make ci-local`).
@@ -106,7 +84,7 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 
 ## Detailed Documentation
 - [Architecture Overview](docs/architecture.md): System design and module relationships.
-- [API Reference](docs/api.md): Endpoints for simulations, experiments, and metrics.
+- [API Reference](docs/api/README.md): Endpoints, auth, and realtime WebSocket.
 - [Testing Strategy](docs/testing.md): Guidelines for unit, integration, and performance tests.
 - [Deployment Guide](docs/deployment.md): Docker Compose setups for dev/prod.
 - [Contribution Guidelines](CONTRIBUTING.md): Coding standards and PR process.

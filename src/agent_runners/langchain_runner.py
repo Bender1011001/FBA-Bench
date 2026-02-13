@@ -78,7 +78,8 @@ class LangChainRunnerConfig(BaseModel):
     )
     # OpenRouter / custom endpoint support
     base_url: Optional[str] = Field(
-        default=None, description="Base URL for OpenAI-compatible API (e.g., OpenRouter)"
+        default=None,
+        description="Base URL for OpenAI-compatible API (e.g., OpenRouter)",
     )
     api_key: Optional[str] = Field(
         default=None, description="API key (falls back to OPENAI_API_KEY env var)"
@@ -100,7 +101,7 @@ class LangChainRunnerConfig(BaseModel):
                     "base_url": "https://openrouter.ai/api/v1",
                     "api_key": "sk-or-...",
                     "temperature": 0.0,
-                }
+                },
             ]
         }
     )
@@ -133,8 +134,15 @@ async def _maybe_publish_progress(topic: str, event: Dict[str, Any]) -> None:
         client = await get_redis()
         payload = json.dumps(event)
         await client.publish(topic, payload)
-    except (AttributeError, TypeError, ValueError, RuntimeError) as exc:  # pragma: no cover
-        logger.debug("Progress publish skipped (redis unavailable or misconfigured): %s", exc)
+    except (
+        AttributeError,
+        TypeError,
+        ValueError,
+        RuntimeError,
+    ) as exc:  # pragma: no cover
+        logger.debug(
+            "Progress publish skipped (redis unavailable or misconfigured): %s", exc
+        )
 
 
 def _now_iso() -> str:
@@ -422,7 +430,13 @@ class LangChainRunner(AgentRunner):
                 "tool_calls": tool_calls,
                 "metrics": metrics,
             }
-        except (AttributeError, TypeError, ValueError, RuntimeError, AgentRunnerDecisionError) as e:
+        except (
+            AttributeError,
+            TypeError,
+            ValueError,
+            RuntimeError,
+            AgentRunnerDecisionError,
+        ) as e:
             logger.exception("LangChain run failed: %s", e)
             await _maybe_publish_progress(
                 topic, {"phase": "error", "at": _now_iso(), "error": str(e)}

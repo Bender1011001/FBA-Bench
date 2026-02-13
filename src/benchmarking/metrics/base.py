@@ -266,7 +266,9 @@ class BusinessMetrics(BaseMetric):
         roi = (profit / revenue) if revenue > 0 else 0.0
         efficiency = 1.0 - min(1.0, (ad_spend / revenue) if revenue > 0 else 1.0)
         # Strategy alignment: ratio of completed goals to total goals (baseline 0.5 if no goals)
-        goal_events = [e for e in events if e.get("type") == "AgentGoalStatusUpdateEvent"]
+        goal_events = [
+            e for e in events if e.get("type") == "AgentGoalStatusUpdateEvent"
+        ]
         if goal_events:
             completed = sum(1 for e in goal_events if e.get("status") == "completed")
             failed = sum(1 for e in goal_events if e.get("status") == "failed")

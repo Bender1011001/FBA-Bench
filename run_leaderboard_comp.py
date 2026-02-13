@@ -6,8 +6,14 @@ Script to run the leaderboard competition between registered agents.
 import asyncio
 import logging
 import sys
-import os
 from pathlib import Path
+
+# Local run artifacts (gitignored)
+REPO_ROOT = Path(__file__).resolve().parent
+ARTIFACT_DIR = REPO_ROOT / "artifacts" / "leaderboard_comp"
+ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+LOG_PATH = ARTIFACT_DIR / "leaderboard_run.log"
+CONFIG_DEBUG_PATH = ARTIFACT_DIR / "config_debug.txt"
 
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -23,7 +29,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler("leaderboard_run.log")
+        logging.FileHandler(LOG_PATH, encoding="utf-8")
     ]
 )
 logger = logging.getLogger(__name__)
@@ -67,7 +73,7 @@ async def main():
         # Convert dict to BenchmarkConfig object for the engine
         config = BenchmarkConfig.model_validate(config_data)
         
-        with open("config_debug.txt", "w") as f:
+        with open(CONFIG_DEBUG_PATH, "w", encoding="utf-8") as f:
             f.write(f"config_data keys: {list(config_data.keys())}\n")
             f.write(f"config object fields: {config.__dict__.keys()}\n")
             f.write(f"metrics in config_data: {'metrics' in config_data}\n")
@@ -87,7 +93,7 @@ async def main():
         # Run the benchmark
         # We pass the dict here because BenchmarkEngine._validate_configuration 
         # expects a dict for 'in' operator checks in Classic mode.
-        result = await engine.run_benchmark(config=config_data)
+        await engine.run_benchmark(config=config_data)
 
         logger.info("Benchmark completed successfully!")
 

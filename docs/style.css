@@ -318,7 +318,65 @@ a { color: inherit; }
   font-size: 12px;
 }
 
+.support {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 14px 44px var(--shadow);
+}
+
+.support-content {
+  max-width: 800px;
+}
+
+.support h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: var(--green);
+}
+
+.support p {
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.crypto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.crypto-card {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.crypto-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.crypto-addr {
+  font-family: inherit;
+  font-size: 13px;
+  word-break: break-all;
+  color: var(--cyan);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border-radius: 4px;
+  display: block;
+}
+
 @media (max-width: 900px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .right { align-items: flex-start; flex-direction: column; }
+  .crypto-grid { grid-template-columns: 1fr; }
 }
+

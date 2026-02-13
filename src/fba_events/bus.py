@@ -343,7 +343,12 @@ class InMemoryEventBus(EventBus):
                         *(self._safe_invoke(h, event) for h in handlers),
                         return_exceptions=True,
                     )
-                except (AttributeError, TypeError, RuntimeError, asyncio.CancelledError):
+                except (
+                    AttributeError,
+                    TypeError,
+                    RuntimeError,
+                    asyncio.CancelledError,
+                ):
                     # Swallow to keep publish resilient
                     pass
         else:

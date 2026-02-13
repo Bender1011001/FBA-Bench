@@ -18,7 +18,10 @@ try:
         DeploymentType,
     )
     from infrastructure.distributed_coordinator import DistributedCoordinator
-    from infrastructure.distributed_event_bus import DistributedEventBus, MockRedisBroker
+    from infrastructure.distributed_event_bus import (
+        DistributedEventBus,
+        MockRedisBroker,
+    )
     from infrastructure.fast_forward_engine import FastForwardEngine
     from infrastructure.llm_batcher import LLMBatcher
     from infrastructure.performance_monitor import PerformanceMonitor

@@ -1,4 +1,5 @@
 """Agent Gateway for preprocessing/postprocessing LLM requests."""
+
 import logging
 from typing import Any, Dict, Optional
 
@@ -56,7 +57,9 @@ class AgentGateway:
 
         # In a real implementation, we could also inject budget status into the prompt here
         modified_prompt = prompt
-        if self.budget_enforcer and getattr(self.budget_enforcer.config, "inject_budget_status", False):
+        if self.budget_enforcer and getattr(
+            self.budget_enforcer.config, "inject_budget_status", False
+        ):
             status = self.budget_enforcer.format_budget_status_for_prompt()
             modified_prompt = f"{status}\n\n{prompt}"
 
@@ -89,12 +92,23 @@ class AgentGateway:
         """
         if self.budget_enforcer:
             # Count tokens for both prompt and response
-            prompt_tokens = self.token_counter.count_tokens(raw_prompt, model=model_name).count
-            completion_tokens = self.token_counter.count_tokens(llm_response, model=model_name).count
-            
+            prompt_tokens = self.token_counter.count_tokens(
+                raw_prompt, model=model_name
+            ).count
+            completion_tokens = self.token_counter.count_tokens(
+                llm_response, model=model_name
+            ).count
+
             # Use legacy cost if model-specific cost logic isn't here yet
-            cost_rate = getattr(self.budget_enforcer, "_legacy", {}).get("token_cost_per_1k", 0.01)
-            cost_cents = int(self.token_counter.calculate_cost(prompt_tokens + completion_tokens, cost_rate) * 100)
+            cost_rate = getattr(self.budget_enforcer, "_legacy", {}).get(
+                "token_cost_per_1k", 0.01
+            )
+            cost_cents = int(
+                self.token_counter.calculate_cost(
+                    prompt_tokens + completion_tokens, cost_rate
+                )
+                * 100
+            )
 
             await self.budget_enforcer.meter_api_call(
                 agent_id=agent_id,
@@ -125,6 +139,6 @@ class AgentGateway:
         """
         # In a real system, we'd validate the tool_call against safety rules here.
         # e.g., if tool_call.name == "set_price" and tool_call.parameters["price"] < 0: return False
-        
+
         logger.info(f"AgentGateway processing tool call for {agent_id}: {tool_call}")
         return True

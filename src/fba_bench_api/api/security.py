@@ -24,8 +24,11 @@ if not SECRET_KEY:
     else:
         # Fallback for local dev only - still risky but better than silent random
         import logging
-        logging.getLogger(__name__).warning("Using unsafe default SECRET_KEY for development.")
-        SECRET_KEY = "dev-secret-change-me" 
+
+        logging.getLogger(__name__).warning(
+            "Using unsafe default SECRET_KEY for development."
+        )
+        SECRET_KEY = "dev-secret-change-me"
 
 ALGORITHM = os.environ.get("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30

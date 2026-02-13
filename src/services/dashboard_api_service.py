@@ -128,7 +128,9 @@ class DashboardAPIService:
             ProductPriceUpdated, self._handle_product_price_updated
         )
         await self.event_bus.subscribe(SetPriceCommand, self._handle_set_price_command)
-        await self.event_bus.subscribe(AgentDecisionEvent, self._handle_agent_decision_event)
+        await self.event_bus.subscribe(
+            AgentDecisionEvent, self._handle_agent_decision_event
+        )
 
         # Start fee aggregator if provided (it subscribes to SaleOccurred itself)
         if self.fee_aggregator is not None:
@@ -292,7 +294,9 @@ class DashboardAPIService:
                 "bsr": competitor.bsr,
                 "sales_velocity": competitor.sales_velocity,
                 "inventory": getattr(competitor, "inventory", 0),  # New fidelity field
-                "is_out_of_stock": getattr(competitor, "is_out_of_stock", False), # New fidelity field
+                "is_out_of_stock": getattr(
+                    competitor, "is_out_of_stock", False
+                ),  # New fidelity field
                 "last_updated": event.timestamp.isoformat(),
             }
 
@@ -412,17 +416,17 @@ class DashboardAPIService:
                 "avg_price_change_pct": 0,
                 "last_reasoning": "",
                 "recent_events": [],
-                "financials": {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0}
+                "financials": {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0},
             }
-        
+
         agent = self.simulation_state["agents"][event.agent_id]
-        
+
         # Update financials if ledger exists
         if self.ledger_service:
             try:
                 # Use get_financial_position() which returns Dict[str, Any]
                 pos = self.ledger_service.get_financial_position()
-                
+
                 # Helper to convert Money/cents to float
                 def to_float(val: Any) -> float:
                     if hasattr(val, "cents"):
@@ -433,11 +437,11 @@ class DashboardAPIService:
                 inv_val = to_float(pos.get("inventory_value"))
                 equity = to_float(pos.get("total_equity"))
                 capital = to_float(pos.get("owner_equity"))
-                
+
                 agent["financials"] = {
                     "cash": cash,
                     "inventory_value": inv_val,
-                    "net_profit": round(equity - capital, 2)
+                    "net_profit": round(equity - capital, 2),
                 }
             except Exception as e:
                 logger.warning(f"Failed to update agent financials from ledger: {e}")
@@ -446,7 +450,7 @@ class DashboardAPIService:
         agent["last_reasoning"] = event.reasoning
         agent["last_tool_calls"] = event.tool_calls
         agent["llm_usage"] = event.llm_usage
-        
+
         # Add to recent events log for this agent
         log_entry = f"[{event.timestamp.strftime('%H:%M:%S')}] Decision: {event.reasoning[:70]}..."
         if "recent_events" not in agent:

@@ -132,7 +132,9 @@ _MODEL_ENCODING_ALIASES = {
 }
 
 
-def _resolve_tiktoken_encoding_name(model: str, provider: Optional[str] = None) -> Optional[str]:
+def _resolve_tiktoken_encoding_name(
+    model: str, provider: Optional[str] = None
+) -> Optional[str]:
     """
     Resolve a best-effort tiktoken encoding name for a given model string.
     Uses substring matching against _MODEL_ENCODING_ALIASES keys and optional provider hint.
@@ -199,7 +201,9 @@ class TokenCounter:
                 self.encoding = tiktoken.get_encoding("cl100k_base")
             except Exception as e:
                 # If tiktoken is installed but any error occurs during init, fall back gracefully.
-                logger.debug(f"Failed to initialize tiktoken encoding for {default_model}: {e}")
+                logger.debug(
+                    f"Failed to initialize tiktoken encoding for {default_model}: {e}"
+                )
                 self.encoding = None
 
     def calculate_cost(self, tokens: int, usd_per_1k: float) -> float:
@@ -298,7 +302,9 @@ class TokenCounter:
             logger.debug(f"Unknown model for tiktoken, falling back to estimation: {e}")
             return self._estimate_tokens(text, model)
         except (ValueError, TypeError) as e:
-            logger.debug(f"Invalid text input or encoding failure, falling back to estimation: {e}")
+            logger.debug(
+                f"Invalid text input or encoding failure, falling back to estimation: {e}"
+            )
             return self._estimate_tokens(text, model)
         except Exception as e:
             logger.error(
@@ -339,13 +345,17 @@ class TokenCounter:
                 )
 
         # Final fallback
-        logger.warning(f"Unknown model for tiktoken: {model}, using cl100k_base as fallback")
+        logger.warning(
+            f"Unknown model for tiktoken: {model}, using cl100k_base as fallback"
+        )
         encoding = tiktoken.get_encoding("cl100k_base")
         self.encoding_cache[model] = encoding
         return encoding
 
     @functools.lru_cache(maxsize=1)
-    def _load_ratio_overrides(self, env_var: str = "FBA_TOKEN_RATIOS_FILE") -> Dict[str, float]:
+    def _load_ratio_overrides(
+        self, env_var: str = "FBA_TOKEN_RATIOS_FILE"
+    ) -> Dict[str, float]:
         """
         Load model-specific token ratio overrides from an environment-specified JSON file.
 
@@ -398,11 +408,15 @@ class TokenCounter:
                 logger.debug(f"No valid ratio overrides found in {file_path}.")
 
         except FileNotFoundError:
-            logger.debug(f"Ratio overrides file not found at {file_path}. No overrides loaded.")
+            logger.debug(
+                f"Ratio overrides file not found at {file_path}. No overrides loaded."
+            )
         except json.JSONDecodeError:
             logger.debug(f"Error decoding JSON from {file_path}. No overrides loaded.")
         except PermissionError:
-            logger.debug(f"Permission denied when reading {file_path}. No overrides loaded.")
+            logger.debug(
+                f"Permission denied when reading {file_path}. No overrides loaded."
+            )
         except ValueError:  # Catches other potential value errors during processing
             logger.debug(f"ValueError processing {file_path}. No overrides loaded.")
 
@@ -465,7 +479,11 @@ class TokenCounter:
         text_sample = text[:100] + "..." if len(text) > 100 else text
 
         return TokenCountResult(
-            count=count, model=model, method="estimate", text_sample=text_sample, estimated=True
+            count=count,
+            model=model,
+            method="estimate",
+            text_sample=text_sample,
+            estimated=True,
         )
 
     def count_messages(
@@ -497,7 +515,9 @@ class TokenCounter:
 
         # Count tokens based on method
         if method == "tiktoken" and TIKTOKEN_AVAILABLE:
-            return self._count_messages_with_tiktoken(messages, model, provider=provider)
+            return self._count_messages_with_tiktoken(
+                messages, model, provider=provider
+            )
         else:
             return self._estimate_message_tokens(messages, model)
 
@@ -512,7 +532,9 @@ class TokenCounter:
         compat: legacy alias expected by some tests.
         Mirrors count_messages(...) API and semantics exactly.
         """
-        return self.count_messages(messages, model=model, method=method, provider=provider)
+        return self.count_messages(
+            messages, model=model, method=method, provider=provider
+        )
 
     def _count_messages_with_tiktoken(
         self, messages: List[Dict[str, str]], model: str, provider: Optional[str] = None
@@ -556,7 +578,11 @@ class TokenCounter:
         text_sample = ""
         if messages:
             first_content = messages[0].get("content", "")
-            text_sample = first_content[:100] + "..." if len(first_content) > 100 else first_content
+            text_sample = (
+                first_content[:100] + "..."
+                if len(first_content) > 100
+                else first_content
+            )
 
         return TokenCountResult(
             count=total_tokens,
@@ -626,7 +652,11 @@ class TokenCounter:
         text_sample = ""
         if messages:
             first_content = messages[0].get("content", "")
-            text_sample = first_content[:100] + "..." if len(first_content) > 100 else first_content
+            text_sample = (
+                first_content[:100] + "..."
+                if len(first_content) > 100
+                else first_content
+            )
 
         return TokenCountResult(
             count=estimated_tokens,

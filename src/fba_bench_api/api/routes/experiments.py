@@ -678,7 +678,7 @@ async def get_experiment_progress(
             perf_score = progress * 50 + 25  # Range: 25-75 while running
         else:
             perf_score = 50.0  # Default mid-range
-        
+
         participant_status.append(
             {
                 "agent_id": participant.agent_id,
@@ -695,9 +695,10 @@ async def get_experiment_progress(
                 },
             }
         )
-    
+
     # Calculate actual memory usage (estimate based on run complexity)
     import sys
+
     base_memory = 50.0  # Base memory for framework
     tick_memory = (active_run.current_tick or 0) * 0.5  # ~0.5 MB per tick accumulated
     participant_memory = len(active_run.participants) * 10.0  # ~10 MB per participant

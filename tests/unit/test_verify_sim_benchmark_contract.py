@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from scripts.verify_sim_benchmark_contract import load_contract, validate_results_payload
+from scripts.verify_sim_benchmark_contract import (
+    load_contract,
+    validate_results_payload,
+)
 
 
 def _valid_payload() -> dict:

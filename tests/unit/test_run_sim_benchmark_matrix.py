@@ -81,7 +81,9 @@ def test_compare_live_and_replay_ok_on_identical_payloads() -> None:
             {"decisions_raw": {"accept_all_orders": True}, "results": {"profit": 5.0}},
         ],
     }
-    report = compare_live_and_replay(live_payload=payload, replay_payload=payload, contract=contract)
+    report = compare_live_and_replay(
+        live_payload=payload, replay_payload=payload, contract=contract
+    )
     assert report["ok"] is True
     assert report["mismatches"] == []
 
@@ -98,13 +100,19 @@ def test_compare_live_and_replay_flags_mismatch() -> None:
     live = {
         "results": {"net_profit": 10.0},
         "daily_performance": {"profit": [10.0]},
-        "decisions": [{"decisions_raw": {"accept_all_orders": True}, "results": {"profit": 10.0}}],
+        "decisions": [
+            {"decisions_raw": {"accept_all_orders": True}, "results": {"profit": 10.0}}
+        ],
     }
     replay = {
         "results": {"net_profit": 9.0},
         "daily_performance": {"profit": [9.0]},
-        "decisions": [{"decisions_raw": {"accept_all_orders": True}, "results": {"profit": 9.0}}],
+        "decisions": [
+            {"decisions_raw": {"accept_all_orders": True}, "results": {"profit": 9.0}}
+        ],
     }
-    report = compare_live_and_replay(live_payload=live, replay_payload=replay, contract=contract)
+    report = compare_live_and_replay(
+        live_payload=live, replay_payload=replay, contract=contract
+    )
     assert report["ok"] is False
     assert report["mismatches"]

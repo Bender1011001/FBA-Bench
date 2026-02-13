@@ -30,9 +30,7 @@ class GenericOpenAIClient(BaseLLMClient):
                 "GenericOpenAIClient requires a base_url for the OpenAI-compatible endpoint."
             )
         if not api_key:
-            raise ValueError(
-                "GenericOpenAIClient requires an API key."
-            )
+            raise ValueError("GenericOpenAIClient requires an API key.")
 
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
@@ -75,14 +73,14 @@ class GenericOpenAIClient(BaseLLMClient):
             ("gpt-5", "gpt-4.1", "o4", "o4-mini")
         ) or bool(kwargs.pop("use_max_completion_tokens", False))
         token_key = "max_completion_tokens" if wants_completion_tokens else "max_tokens"
-        
+
         if wants_completion_tokens:
             kwargs.pop("max_tokens", None)
 
         effective_temperature = kwargs.pop("temperature", temperature)
         if wants_completion_tokens:
             effective_temperature = 1
-        
+
         payload: Dict[str, Any] = {
             "model": self.model_name,
             "messages": messages,
@@ -106,7 +104,7 @@ class GenericOpenAIClient(BaseLLMClient):
                 raise LLMClientError(
                     f"Response missing 'choices' list: {response_data}"
                 )
-            
+
             first_choice = response_data["choices"][0]
             if (
                 not first_choice.get("message")

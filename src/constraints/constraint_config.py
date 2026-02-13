@@ -152,7 +152,9 @@ class ConstraintConfig:
         budget_constraints: Dict[str, Any] = config_dict.get("budget_constraints", {})
         enforcement: Dict[str, Any] = config_dict.get("enforcement", {})
 
-        if "budget_constraints" in config_dict and not isinstance(budget_constraints, dict):
+        if "budget_constraints" in config_dict and not isinstance(
+            budget_constraints, dict
+        ):
             raise ValueError("`budget_constraints` must be a mapping (dict)")
 
         if "enforcement" in config_dict and not isinstance(enforcement, dict):
@@ -164,7 +166,9 @@ class ConstraintConfig:
             )
 
         if "budget_constraints" not in config_dict:
-            logger.debug("Defaulting `budget_constraints` to {} for backward-compatibility.")
+            logger.debug(
+                "Defaulting `budget_constraints` to {} for backward-compatibility."
+            )
         if "enforcement" not in config_dict:
             logger.debug("Defaulting `enforcement` to {} for backward-compatibility.")
 

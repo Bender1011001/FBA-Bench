@@ -196,7 +196,9 @@ try:
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.requests import Request
     from starlette.responses import Response
-except ImportError:  # pragma: no cover - Starlette present with FastAPI; guard for import-time use
+except (
+    ImportError
+):  # pragma: no cover - Starlette present with FastAPI; guard for import-time use
     BaseHTTPMiddleware = object  # type: ignore
     Request = object  # type: ignore
     Response = object  # type: ignore

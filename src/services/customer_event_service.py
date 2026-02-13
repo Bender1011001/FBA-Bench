@@ -75,14 +75,14 @@ class CustomerEventService:
 
     Combines clean architecture from fba_bench_good_sim with
     comprehensive event tracking and financial accuracy from FBA-bench-main.
-    
+
     Uses seeded random number generator for reproducible simulations.
     """
 
     def __init__(self, config: Dict, seed: int = None):
         """
         Initialize customer event service with configuration.
-        
+
         Args:
             config: Service configuration dictionary
             seed: Optional random seed for reproducible results. If None, uses config["seed"]
@@ -91,7 +91,7 @@ class CustomerEventService:
         self.config = config
         self.events: List[CustomerEvent] = []
         self.customer_profiles: Dict[str, CustomerBehaviorProfile] = {}
-        
+
         # Initialize seeded random number generator for reproducibility
         rng_seed = seed if seed is not None else config.get("seed", None)
         self._rng = random.Random(rng_seed)
@@ -441,7 +441,8 @@ class CustomerEventService:
             base_rating = 3.5
             quality_adjustment = (profile.quality_sensitivity - 0.5) * 2  # -1 to 1
             rating = max(
-                1, min(5, base_rating + quality_adjustment + self._rng.uniform(-0.5, 0.5))
+                1,
+                min(5, base_rating + quality_adjustment + self._rng.uniform(-0.5, 0.5)),
             )
 
             metadata.update(

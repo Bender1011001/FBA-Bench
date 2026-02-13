@@ -212,11 +212,12 @@ def validate_config(
         agent_type = (cfg or {}).get("agent_type")
         if agent_type and agent_type not in {"advanced", "baseline"}:
             from .base_runner import AgentRunnerError
+
             raise AgentRunnerError(f"Invalid DIY agent_type: {agent_type!r}")
 
     # Defer to registry-specific validators when available
     validated_dict = _validate_config(nk, cfg or {})
-    
+
     # Ensure mandatory fields for AgentRunnerConfig are present
     if "agent_id" not in validated_dict:
         validated_dict["agent_id"] = (cfg or {}).get("agent_id") or "default"
@@ -225,6 +226,7 @@ def validate_config(
 
     # Return as AgentRunnerConfig object for test compatibility
     from .configs.config_schema import AgentRunnerConfig
+
     return AgentRunnerConfig.from_dict(validated_dict)
 
 

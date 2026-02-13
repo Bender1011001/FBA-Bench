@@ -145,11 +145,15 @@ async def stop_simulation(
         raise SimulationStateError(
             simulation_id, expected="running", actual=current.get("status", "unknown")
         )
-    
+
     # Stop the real simulation runner if it exists
     # (imported after the function definitions below to avoid circular import)
     try:
-        from fba_bench_api.core.simulation_runner import get_simulation as get_runner, cleanup_simulation
+        from fba_bench_api.core.simulation_runner import (
+            get_simulation as get_runner,
+            cleanup_simulation,
+        )
+
         runner = get_runner(simulation_id)
         if runner:
             await cleanup_simulation(simulation_id)
@@ -158,7 +162,7 @@ async def stop_simulation(
         pass  # Runner module not available
     except Exception as e:
         logger.warning(f"Error stopping simulation runner: {e}")
-    
+
     updates = {"status": "stopped", "updated_at": _now()}
     updated = await pm.simulations().update(simulation_id, updates)
     await _publish_status(simulation_id, "stopped")
@@ -187,20 +191,20 @@ async def _run_real_simulation(
 ) -> None:
     """
     Background task that runs a REAL simulation using the production engine.
-    
+
     This uses:
     - SimulationOrchestrator for tick generation
     - WorldStore for canonical state management
     - MarketSimulationService for demand calculation (elasticity + agent-based)
     - EventBus for typed event pub/sub
-    
+
     All results are deterministic when seeded and based on actual economic models.
     """
     runner = None
     try:
         # Get Redis client for publishing updates
         redis = await get_redis()
-        
+
         # Create and register the real simulation runner
         runner = RealSimulationRunner(
             simulation_id=simulation_id,
@@ -209,21 +213,21 @@ async def _run_real_simulation(
         )
         register_simulation(runner)
         _running_simulations[simulation_id] = runner
-        
+
         # Start the simulation (runs until completion or stop)
         await runner.start()
-        
+
         # Wait for completion
         while runner.get_state().status == "running":
             await asyncio.sleep(0.5)
-        
+
         logger.info(
             f"Simulation {simulation_id} completed with status: {runner.get_state().status}"
         )
-        
+
     except Exception as e:
         logger.error(f"Real simulation error for {simulation_id}: {e}", exc_info=True)
-        
+
         # Publish error to Redis
         try:
             redis = await get_redis()
@@ -256,27 +260,31 @@ async def run_simulation(
 ):
     """
     Start a simulation run with REAL economic simulation.
-    
+
     This endpoint integrates with the production simulation engine:
     - Uses MarketSimulationService with demand elasticity and customer agent pools
     - WorldStore handles canonical state management and command arbitration
     - SimulationOrchestrator generates deterministic tick events
-    
+
     All results are reproducible when the same seed is used.
     Publishes real-time updates to Redis for GUI consumption.
     """
     current = await pm.simulations().get(simulation_id)
     if not current:
         raise SimulationNotFoundError(simulation_id)
-    
+
     if current["status"] != "running":
         raise SimulationStateError(
             simulation_id, expected="running", actual=current.get("status", "unknown")
         )
-    
+
     if simulation_id in _running_simulations:
-        return {"ok": True, "message": "Simulation already running", "simulation_id": simulation_id}
-    
+        return {
+            "ok": True,
+            "message": "Simulation already running",
+            "simulation_id": simulation_id,
+        }
+
     # Build simulation configuration from metadata
     metadata = current.get("metadata", {})
     config = {
@@ -290,10 +298,10 @@ async def run_simulation(
         "asins": metadata.get("asins", ["ASIN001", "ASIN002", "ASIN003"]),
         "initial_products": metadata.get("initial_products", None),
     }
-    
+
     # Start the real simulation in background
     background_tasks.add_task(_run_real_simulation, simulation_id, config)
-    
+
     return {
         "ok": True,
         "message": "Real simulation started",

@@ -209,7 +209,7 @@ class LedgerCore:
         strict_validation: bool = True,
     ) -> None:
         """Post a transaction to the ledger and update account balances.
-        
+
         Enhanced with strict validation:
         - Balance check (debits must equal credits)
         - Account existence and type validation
@@ -217,11 +217,11 @@ class LedgerCore:
         - Duplicate transaction detection
         - Amount bounds checking (no negative amounts)
         - Atomic: rolls back on any error
-        
+
         Args:
             transaction: The transaction to post.
             strict_validation: If True, enforce all validation rules.
-        
+
         Raises:
             ValueError: If transaction fails validation.
             AccountingError: If posting would violate accounting equation.
@@ -230,16 +230,16 @@ class LedgerCore:
         async with self._lock:
             # Track changes for rollback
             balance_changes: Dict[str, Money] = {}
-            
+
             try:
                 # === VALIDATION PHASE ===
-                
+
                 # 1. Check for duplicate transaction
                 if transaction.transaction_id in self.transactions:
                     raise ValueError(
                         f"Duplicate transaction: {transaction.transaction_id} already posted"
                     )
-                
+
                 # 2. Validate balance (debits == credits)
                 if not transaction.is_balanced():
                     debit_total = sum(e.amount.cents for e in transaction.debits)
@@ -248,7 +248,7 @@ class LedgerCore:
                         f"Transaction {transaction.transaction_id} is not balanced: "
                         f"debits={debit_total/100:.2f} != credits={credit_total/100:.2f}"
                     )
-                
+
                 # 3. Validate all accounts exist and entries are valid
                 all_entries = list(transaction.debits) + list(transaction.credits)
                 for entry in all_entries:
@@ -257,7 +257,7 @@ class LedgerCore:
                         raise ValueError(
                             f"Account {entry.account_id} not found in chart of accounts"
                         )
-                    
+
                     if strict_validation:
                         # Check for negative amounts
                         if entry.amount.cents < 0:
@@ -265,44 +265,44 @@ class LedgerCore:
                                 f"Negative amount {entry.amount} not allowed for "
                                 f"account {entry.account_id}"
                             )
-                        
+
                         # Check for zero amounts (typically a mistake)
                         if entry.amount.cents == 0:
                             logger.warning(
                                 f"Zero-amount entry for account {entry.account_id} "
                                 f"in transaction {transaction.transaction_id}"
                             )
-                
+
                 # === POSTING PHASE (with rollback support) ===
-                
+
                 # 4. Update account balances - DEBITS
                 for entry in transaction.debits:
                     account = self.accounts[entry.account_id]
-                    
+
                     # Store original for rollback
                     if entry.account_id not in balance_changes:
                         balance_changes[entry.account_id] = Money(account.balance.cents)
-                    
+
                     # Apply debit: increase for debit-normal, decrease for credit-normal
                     if account.normal_balance == "debit":
                         account.balance += entry.amount
                     else:
                         account.balance -= entry.amount
-    
+
                 # 5. Update account balances - CREDITS
                 for entry in transaction.credits:
                     account = self.accounts[entry.account_id]
-                    
+
                     # Store original for rollback
                     if entry.account_id not in balance_changes:
                         balance_changes[entry.account_id] = Money(account.balance.cents)
-                    
+
                     # Apply credit: increase for credit-normal, decrease for debit-normal
                     if account.normal_balance == "credit":
                         account.balance += entry.amount
                     else:
                         account.balance -= entry.amount
-    
+
                 # 6. Verify trial balance still holds (optional strict check)
                 if strict_validation:
                     if not self._is_trial_balance_balanced():
@@ -311,36 +311,35 @@ class LedgerCore:
                             f"Transaction {transaction.transaction_id} would break "
                             f"trial balance by {diff}"
                         )
-    
+
                 # === FINALIZATION ===
-                
+
                 # 7. Mark as posted
                 transaction.is_posted = True
-    
+
                 # 8. Store transaction
                 self.transactions[transaction.transaction_id] = transaction
-    
+
                 # 9. Remove from unposted if it was there
                 if transaction in self.unposted_transactions:
                     self.unposted_transactions.remove(transaction)
-    
+
                 logger.debug(
                     f"Posted transaction {transaction.transaction_id}: "
                     f"{len(transaction.debits)} debits, {len(transaction.credits)} credits"
                 )
-    
+
             except Exception as e:
                 # ROLLBACK: Restore original balances
                 for account_id, original_balance in balance_changes.items():
                     if account_id in self.accounts:
                         self.accounts[account_id].balance = original_balance
-                
+
                 logger.error(
                     f"Error posting transaction {transaction.transaction_id}: {e} "
                     f"(rolled back {len(balance_changes)} account changes)"
                 )
                 raise
-
 
     async def post_all_unposted_transactions(self) -> None:
         """Post all unposted transactions."""
@@ -460,16 +459,16 @@ class LedgerCore:
             trial_balance_diff = self._get_trial_balance_difference()
             return {
                 "total_accounts": len(self.accounts),
-            "total_transactions": len(self.transactions),
-            "unposted_transactions": len(self.unposted_transactions),
-            "trial_balance_balanced": self._is_trial_balance_balanced(),
-            "trial_balance_difference": str(trial_balance_diff),
-            "last_transaction_time": (
-                max(t.timestamp for t in self.transactions.values())
-                if self.transactions
-                else None
-            ),
-        }
+                "total_transactions": len(self.transactions),
+                "unposted_transactions": len(self.unposted_transactions),
+                "trial_balance_balanced": self._is_trial_balance_balanced(),
+                "trial_balance_difference": str(trial_balance_diff),
+                "last_transaction_time": (
+                    max(t.timestamp for t in self.transactions.values())
+                    if self.transactions
+                    else None
+                ),
+            }
 
     async def inject_equity(
         self, amount: Money, description: str = "Initial capital injection"
@@ -521,36 +520,36 @@ class LedgerCore:
 
     def verify_integrity(self, raise_on_failure: bool = True) -> bool:
         """Verify the fundamental accounting equation: Assets = Liabilities + Equity.
-        
+
         This is the "Panic Button" - if the accounting equation is violated,
         the simulation should halt immediately and dump the event journal
         for forensic analysis.
-        
+
         The accounting equation verification includes:
         - Assets (normal debit balance)
-        - Liabilities (normal credit balance)  
+        - Liabilities (normal credit balance)
         - Equity (normal credit balance)
-        
+
         Revenue and Expense accounts affect Retained Earnings (Equity) and
         are included in the equity calculation for a complete picture.
-        
+
         Args:
             raise_on_failure: If True (default), raises AccountingError on violation.
                              If False, returns False instead.
-        
+
         Returns:
             True if the accounting equation holds.
-            
+
         Raises:
             AccountingError: If raise_on_failure=True and Assets != Liabilities + Equity.
         """
         total_assets = Money.zero()
         total_liabilities = Money.zero()
         total_equity = Money.zero()
-        
+
         for account_id, account in self.accounts.items():
             balance = account.balance
-            
+
             if account.account_type == AccountType.ASSET:
                 total_assets += balance
             elif account.account_type == AccountType.LIABILITY:
@@ -563,11 +562,11 @@ class LedgerCore:
             elif account.account_type == AccountType.EXPENSE:
                 # Expenses decrease equity (debit normal, so subtract)
                 total_equity -= balance
-        
+
         # Fundamental accounting equation: A = L + E
         liabilities_plus_equity = total_liabilities + total_equity
         is_balanced = total_assets.cents == liabilities_plus_equity.cents
-        
+
         if not is_balanced:
             error_msg = (
                 f"LEDGER INTEGRITY FAILURE: Accounting equation violated!\n"
@@ -579,15 +578,15 @@ class LedgerCore:
                 f"  Total transactions:    {len(self.transactions)}"
             )
             logger.critical(error_msg)
-            
+
             if raise_on_failure:
                 raise AccountingError(error_msg)
-        
+
         return is_balanced
 
     def get_accounting_equation_summary(self) -> Dict[str, Any]:
         """Return a summary of the accounting equation components.
-        
+
         Useful for debugging and audit reports.
         """
         total_assets = Money.zero()
@@ -595,10 +594,10 @@ class LedgerCore:
         total_equity = Money.zero()
         total_revenue = Money.zero()
         total_expenses = Money.zero()
-        
+
         for account_id, account in self.accounts.items():
             balance = account.balance
-            
+
             if account.account_type == AccountType.ASSET:
                 total_assets += balance
             elif account.account_type == AccountType.LIABILITY:
@@ -609,10 +608,10 @@ class LedgerCore:
                 total_revenue += balance
             elif account.account_type == AccountType.EXPENSE:
                 total_expenses += balance
-        
+
         net_income = total_revenue - total_expenses
         equity_with_pl = total_equity + net_income
-        
+
         return {
             "total_assets": total_assets,
             "total_liabilities": total_liabilities,
@@ -621,5 +620,6 @@ class LedgerCore:
             "total_expenses": total_expenses,
             "net_income": net_income,
             "equity_with_retained_earnings": equity_with_pl,
-            "equation_balanced": total_assets.cents == (total_liabilities + equity_with_pl).cents,
+            "equation_balanced": total_assets.cents
+            == (total_liabilities + equity_with_pl).cents,
         }

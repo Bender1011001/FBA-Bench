@@ -26,6 +26,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # as they were legacy/orphan code not used by the persistence layer.
 # See fba_bench_api/models/ for active ORM models.
 
+
 def create_db_tables():
     """DEPRECATED: Prefer create_db_tables_async in database_async.py"""
     Base.metadata.create_all(bind=engine)

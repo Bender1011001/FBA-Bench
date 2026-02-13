@@ -147,11 +147,13 @@ class DisputeService:
 
         try:
             # Use evidence-based logic instead of random coin flip
-            evidence = getattr(event, 'evidence_strength', 0.5)  # Default to 0.5 if not present
-            
+            evidence = getattr(
+                event, "evidence_strength", 0.5
+            )  # Default to 0.5 if not present
+
             # Use Money arithmetic to preserve currency
             zero = event.dispute_amount * 0
-            
+
             if evidence >= 0.7:
                 # Strong evidence - full refund
                 resolution_type = "upheld"

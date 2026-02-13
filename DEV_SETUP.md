@@ -49,7 +49,7 @@ Or prefix with `poetry run` (e.g., `poetry run pytest`).
 ### 3. Verify Installation
 Run a quick check:
 ```
-poetry run python -c "import src.fba_bench_core; print('Core imported successfully')"
+poetry run python -c "import fba_bench_core; print('Core imported successfully')"
 ```
 Expected: No errors, confirming `src/` imports.
 
@@ -100,7 +100,7 @@ This creates tables (e.g., `users`, `experiments`, `metrics`) in the DB. For SQL
 ### API Server
 Start the FastAPI app:
 ```
-poetry run uvicorn src.fba_bench_api.main:app --reload --host 0.0.0.0 --port 8000
+poetry run uvicorn fba_bench_api.main:get_app --factory --reload --host 0.0.0.0 --port 8000
 ```
 - `--reload`: Auto-restarts on code changes (dev only).
 - Access: http://localhost:8000/docs (Swagger UI), /redoc (ReDoc).
