@@ -3,8 +3,8 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError
 
-from src.fba_bench_api.models.experiment import ExperimentORM
-from src.fba_bench_api.models.experiments import (
+from fba_bench_api.models.experiment import ExperimentORM
+from fba_bench_api.models.experiments import (
     BenchmarkConfigRequest,
     ConfigTemplateSave,
     ExperimentCreateRequest,

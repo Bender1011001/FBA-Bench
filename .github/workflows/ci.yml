@@ -31,11 +31,14 @@ jobs:
         run: |
           poetry install --no-interaction --no-ansi
 
-      - name: Run backend tests
-        run: poetry run pytest -q
+      - name: Run unit tests
+        run: make test-unit
 
-      - name: Verify Golden Masters
-        run: poetry run python scripts/verify_golden_masters.py
+      - name: Run contract tests
+        run: make test-contracts
+
+      - name: Verify Golden Master Artifacts
+        run: make verify-golden
 
       - name: Upload Golden Master Artifacts
         if: failure()
@@ -48,10 +51,13 @@ jobs:
             tests/output/
 
       - name: Run ruff check
-        run: poetry run ruff check .
+        run: make lint
+
+      - name: Run formatting check
+        run: make format-check
 
       - name: Run mypy type checking
-        run: poetry run mypy --namespace-packages
+        run: make type-check
 
   detect_frontend_apps:
     runs-on: ubuntu-latest

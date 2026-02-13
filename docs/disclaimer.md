@@ -1,6 +1,6 @@
 # Legal Disclaimer
 
-**IMPORTANT: READ CAREFULLY**
+## IMPORTANT: READ CAREFULLY
 
 ## 1. Not Financial Advice
 
@@ -17,4 +17,3 @@ Engaging in e-commerce, Amazon FBA, or any business venture involves significant
 ## 4. Use at Your Own Risk
 
 FBA-Bench and its creators are not responsible for any financial losses, business failures, or negative outcomes resulting from the use of information found on this site. You are solely responsible for your own business decisions.
-

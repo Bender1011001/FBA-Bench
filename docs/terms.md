@@ -28,4 +28,3 @@ You agree to indemnify and hold harmless FBA-Bench Enterprise against any claims
 ## 6. Donations
 
 Donations made to the crypto addresses listed on this site are voluntary contributions to support the research and operation of the benchmark. Donations are non-refundable and do not constitute a purchase of services or equity.
-

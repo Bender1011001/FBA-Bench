@@ -11,6 +11,8 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel, Field
 
+from .results import ScenarioResult
+
 
 class MetricsAggregationMode(Enum):
     """
@@ -32,6 +34,14 @@ class RunStatus(Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     ABORTED = "aborted"
+
+
+class ValidationMode(Enum):
+    """Validation modes for benchmark execution/verification."""
+
+    NONE = "none"
+    BASIC = "basic"
+    STRICT = "strict"
 
 
 class BenchmarkResult(BaseModel):
@@ -75,3 +85,14 @@ class BenchmarkSummary(BaseModel):
     std_metrics: Dict[str, float] = Field(default_factory=dict)
     total_time: float = Field(0.0)
     success_rate: float = Field(1.0, ge=0.0, le=1.0)
+
+
+__all__ = [
+    "MetricsAggregationMode",
+    "RunStatus",
+    "ValidationMode",
+    "BenchmarkResult",
+    "ExperimentConfig",
+    "BenchmarkSummary",
+    "ScenarioResult",
+]

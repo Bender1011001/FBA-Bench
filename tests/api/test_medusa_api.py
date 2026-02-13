@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from src.fba_bench_api.server.app_factory import create_app
+from fba_bench_api.server.app_factory import create_app
 
 
 @pytest.fixture

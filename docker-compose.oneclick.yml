@@ -5,9 +5,6 @@
 #
 # Usage:
 #   docker compose -f docker-compose.oneclick.yml up -d --build
-#
-version: "3.9"
-
 services:
   redis:
     image: redis:7-alpine
@@ -84,4 +81,3 @@ volumes:
 networks:
   backend:
     driver: bridge
-

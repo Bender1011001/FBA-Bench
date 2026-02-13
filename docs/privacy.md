@@ -17,4 +17,3 @@ As we do not collect personal information, we do not share, sell, or rent user d
 ## 4. External Links
 
 Our site contains links to external sites (e.g., GitHub). We are not responsible for the privacy practices or content of these third-party websites.
-

@@ -16,10 +16,19 @@ warnings.warn(
 )
 
 from fba_events.adversarial import AdversarialResponse
+from fba_events.competitor import CompetitorPricesUpdated, CompetitorState
+from fba_events.inventory import WorldStateSnapshotEvent
 from fba_events.pricing import ProductPriceUpdated, SetPriceCommand
+from fba_events.sales import SaleOccurred
+from fba_events.time_events import TickEvent
 
 __all__ = [
     "AdversarialResponse",
+    "CompetitorPricesUpdated",
+    "CompetitorState",
     "ProductPriceUpdated",
+    "SaleOccurred",
     "SetPriceCommand",
+    "TickEvent",
+    "WorldStateSnapshotEvent",
 ]

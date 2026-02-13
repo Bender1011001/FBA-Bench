@@ -10,16 +10,35 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-# Import deterministic RNG for reproducible scenario generation
+# Import deterministic RNG for reproducible scenario generation.
+#
+# Important: do not initialize a component RNG at import time. The deterministic RNG
+# requires a master seed to be set (typically at simulation start). Import-time side
+# effects break test collection and other tooling that imports modules eagerly.
 try:
     from reproducibility.deterministic_rng import DeterministicRNG
+
     _HAS_DETERMINISTIC_RNG = True
-    # Get module-level RNG instance
-    _scenario_rng = DeterministicRNG.for_component("scenario_framework")
-except ImportError:
-    import random
+except ImportError:  # pragma: no cover
+    import random  # noqa: F401
+
     _HAS_DETERMINISTIC_RNG = False
-    _scenario_rng = None
+
+_scenario_rng = None
+
+
+def _get_scenario_rng():
+    if not _HAS_DETERMINISTIC_RNG:
+        return None
+    global _scenario_rng
+    if _scenario_rng is not None:
+        return _scenario_rng
+    try:
+        _scenario_rng = DeterministicRNG.for_component("scenario_framework")
+    except ValueError:
+        # Master seed not set yet: fall back to deterministic (non-random) behavior.
+        return None
+    return _scenario_rng
 
 
 class ScenarioValidator:
@@ -91,20 +110,21 @@ class ScenarioGenerator:
     @staticmethod
     def calculate_event_timing(event: Dict[str, Any], timeline: int) -> int:
         """Calculate event timing with deterministic randomness."""
+        scenario_rng = _get_scenario_rng()
         if "timing_preference" in event:
             pref = event["timing_preference"]
             if pref == "early":
-                if _scenario_rng:
-                    return _scenario_rng.randint(1, max(1, timeline // 3))
+                if scenario_rng:
+                    return scenario_rng.randint(1, max(1, timeline // 3))
                 else:
                     return timeline // 6  # Deterministic fallback
             elif pref == "late":
-                if _scenario_rng:
-                    return _scenario_rng.randint(max(1, 2 * timeline // 3), timeline)
+                if scenario_rng:
+                    return scenario_rng.randint(max(1, 2 * timeline // 3), timeline)
                 else:
                     return 5 * timeline // 6  # Deterministic fallback
-        if _scenario_rng:
-            return _scenario_rng.randint(1, max(1, timeline))
+        if scenario_rng:
+            return scenario_rng.randint(1, max(1, timeline))
         else:
             return timeline // 2  # Deterministic fallback: midpoint
 

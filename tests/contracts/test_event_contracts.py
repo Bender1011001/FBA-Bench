@@ -1,9 +1,9 @@
 from decimal import Decimal
 from uuid import UUID
 
-from src.fba_bench_core.events import SaleProcessedEvent, TrustScoreCalculationRequested
-from src.fba_bench_core.models.sales_result import SalesResult
-from src.fba_bench_core.money import Money
+from fba_bench_core.events import SaleProcessedEvent, TrustScoreCalculationRequested
+from fba_bench_core.models.sales_result import SalesResult
+from fba_bench_core.money import Money
 
 
 def test_sale_processed_event_contract():
