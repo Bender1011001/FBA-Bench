@@ -85,6 +85,12 @@ sim-matrix-dry-run:
 	$(POETRY) run python scripts/run_sim_benchmark_matrix.py --days 14 --seeds 42,43,44 --print-only
 
 # -----------------------------------------------------------------------------
+# Website and Documentation
+# -----------------------------------------------------------------------------
+build-docs:
+	$(POETRY) run python generate_github_pages.py
+
+# -----------------------------------------------------------------------------
 # CI parity aggregate
 # -----------------------------------------------------------------------------
 ci-local:
@@ -96,6 +102,7 @@ ci-local:
 	$(MAKE) test-unit
 	$(MAKE) test-contracts
 	$(MAKE) verify-golden
+	$(MAKE) build-docs
 
 # -----------------------------------------------------------------------------
 # Pre-commit helpers

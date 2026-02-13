@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent
 DOCS_DIR = ROOT_DIR / "docs"
 INDEX_PATH = DOCS_DIR / "index.html"
-DOCS_HTML_PATH = DOCS_DIR / "docs.html"
+DOCS_HTML_PATH = DOCS_DIR / "docs" / "index.html"
 
 
 def write_index_html() -> None:
@@ -68,7 +68,7 @@ def write_index_html() -> None:
         <div class="chips">
           <a class="chip" href="api/leaderboard.json" target="_blank" rel="noreferrer">leaderboard.json</a>
           <a class="chip" href="api/live.json" target="_blank" rel="noreferrer">live.json</a>
-          <a class="chip" href="docs.html">docs</a>
+          <a class="chip" href="docs/">docs</a>
           <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
         </div>
       </section>
@@ -155,9 +155,9 @@ def write_index_html() -> None:
 
       <footer class="footer">
         <div class="footer-links">
-          <a href="docs.html#terms.md">Terms</a>
-          <a href="docs.html#privacy.md">Privacy</a>
-          <a href="docs.html#disclaimer.md">Disclaimer</a>
+          <a href="docs/#terms.md">Terms</a>
+          <a href="docs/#privacy.md">Privacy</a>
+          <a href="docs/#disclaimer.md">Disclaimer</a>
         </div>
         <div>FBA-Bench Enterprise. Built for the era of agentic AI.</div>
         <div class="muted">If the leaderboard looks stale, the publisher is not running or results are not deployed.</div>
@@ -319,6 +319,7 @@ def write_index_html() -> None:
 
 def write_docs_html() -> None:
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    (DOCS_DIR / "docs").mkdir(parents=True, exist_ok=True)
 
     # Documentation categorization
     sections = [
@@ -374,7 +375,7 @@ def write_docs_html() -> None:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>FBA-Bench | Documentation</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="../style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -403,7 +404,7 @@ def write_docs_html() -> None:
         </div>
       </div>
       <div class="right">
-        <a href="index.html" class="chip">Leaderboard</a>
+        <a href="../index.html" class="chip">Leaderboard</a>
       </div>
     </header>
 
@@ -444,7 +445,7 @@ def write_docs_html() -> None:
         }});
 
         try {{
-          const res = await fetch(filename, {{ cache: 'no-cache' }});
+          const res = await fetch('../' + filename, {{ cache: 'no-cache' }});
           if (!res.ok) throw new Error('Failed to load ' + filename);
           const md = await res.text();
           contentDiv.innerHTML = marked.parse(md);
