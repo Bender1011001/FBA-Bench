@@ -9,7 +9,7 @@ try:
 except ImportError:  # pragma: no cover
     yaml = None  # YAML overlay becomes a no-op if PyYAML is missing
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -52,6 +52,22 @@ class AppSettings(BaseSettings):
 
     # API
     api_rate_limit: str = Field(default="100/minute", validation_alias="API_RATE_LIMIT")
+
+    # Contact / Messaging (website -> backend)
+    contact_to_email: Optional[str] = Field(default=None, validation_alias="CONTACT_TO_EMAIL")
+    contact_fallback_email: Optional[str] = Field(
+        default=None, validation_alias="CONTACT_FALLBACK_EMAIL"
+    )
+
+    # Email (SMTP)
+    smtp_host: Optional[str] = Field(default=None, validation_alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, validation_alias="SMTP_PORT")
+    smtp_user: Optional[str] = Field(default=None, validation_alias="SMTP_USER")
+    smtp_password: Optional[str] = Field(default=None, validation_alias="SMTP_PASSWORD")
+    smtp_from: Optional[str] = Field(
+        default=None, validation_alias=AliasChoices("SMTP_FROM", "EMAIL_FROM")
+    )
+    smtp_use_tls_raw: Optional[str] = Field(default=None, validation_alias="SMTP_USE_TLS")
 
     # CORS
     cors_allow_origins_raw: Optional[str] = Field(
@@ -312,6 +328,20 @@ class AppSettings(BaseSettings):
     @property
     def logging_include_tracebacks(self) -> bool:
         return _truthy(self.logging_include_tracebacks_raw, default=True)
+
+    @property
+    def smtp_use_tls(self) -> bool:
+        return _truthy(self.smtp_use_tls_raw, default=True)
+
+    @property
+    def contact_reply_to(self) -> Optional[str]:
+        v = (self.contact_to_email or "").strip()
+        return v or None
+
+    @property
+    def contact_fallback(self) -> Optional[str]:
+        v = (self.contact_fallback_email or self.contact_to_email or "").strip()
+        return v or None
 
     @property
     def preferred_redis_url(self) -> Optional[str]:

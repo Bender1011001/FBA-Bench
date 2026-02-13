@@ -8,6 +8,7 @@ from .agent import AgentORM, FrameworkEnum
 from .base import Base, JSONEncoded, TimestampMixin, utcnow
 from .experiment import ExperimentORM, ExperimentStatusEnum
 from .simulation import SimulationORM, SimulationStatusEnum, websocket_topic
+from .contact_message import ContactMessageORM
 from .user import User
 
 # Pydantic Schemas for API
@@ -55,6 +56,7 @@ __all__ = [
     "SimulationORM",
     "SimulationStatusEnum",
     "websocket_topic",
+    "ContactMessageORM",
     "User",
     # Scenario Schemas
     "Scenario",

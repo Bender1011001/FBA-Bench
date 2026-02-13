@@ -24,7 +24,7 @@ load_dotenv()
 # Import application's SQLAlchemy metadata
 from fba_bench_api.models.base import Base
 # Import all models to register tables with metadata
-from fba_bench_api.models import agent, experiment, simulation, user
+from fba_bench_api.models import agent, contact_message, experiment, simulation, user
 
 target_metadata = Base.metadata
 

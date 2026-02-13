@@ -13,6 +13,7 @@ publish on GitHub Pages).
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 
@@ -20,6 +21,16 @@ ROOT_DIR = Path(__file__).parent
 DOCS_DIR = ROOT_DIR / "docs"
 INDEX_PATH = DOCS_DIR / "index.html"
 DOCS_HTML_PATH = DOCS_DIR / "docs" / "index.html"
+CONTACT_PATH = DOCS_DIR / "contact.html"
+
+
+def _get_contact_fallback_email() -> str:
+    # Used for the static site as a fallback when /api/v1/contact is unavailable (e.g., GitHub Pages).
+    # Operators can override at build time.
+    return (
+        (os.getenv("CONTACT_FALLBACK_EMAIL") or os.getenv("CONTACT_TO_EMAIL") or "").strip()
+        or "contact@fbabench.com"
+    )
 
 
 def write_index_html() -> None:
@@ -69,6 +80,7 @@ def write_index_html() -> None:
           <a class="chip" href="api/leaderboard.json" target="_blank" rel="noreferrer">leaderboard.json</a>
           <a class="chip" href="api/live.json" target="_blank" rel="noreferrer">live.json</a>
           <a class="chip" href="docs/">docs</a>
+          <a class="chip" href="contact.html">message me</a>
           <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
         </div>
       </section>
@@ -158,6 +170,7 @@ def write_index_html() -> None:
           <a href="docs/#terms.md">Terms</a>
           <a href="docs/#privacy.md">Privacy</a>
           <a href="docs/#disclaimer.md">Disclaimer</a>
+          <a href="contact.html">Message me</a>
         </div>
         <div>FBA-Bench Enterprise. Built for the era of agentic AI.</div>
         <div class="muted">If the leaderboard looks stale, the publisher is not running or results are not deployed.</div>
@@ -357,6 +370,7 @@ def write_docs_html() -> None:
                 {"name": "Terms of Service", "file": "terms.md"},
                 {"name": "Privacy Policy", "file": "privacy.md"},
                 {"name": "Legal Disclaimer", "file": "disclaimer.md"},
+                {"name": "Message me", "href": "../contact.html"},
             ]
         }
     ]
@@ -366,7 +380,10 @@ def write_docs_html() -> None:
     for sec in sections:
         sidebar_html += f'<div class="doc-nav-group"><div class="doc-nav-title">{sec["title"]}</div><ul class="doc-nav-links">'
         for link in sec["links"]:
-            sidebar_html += f'<li><a href="#{link["file"]}" class="doc-nav-link" data-file="{link["file"]}">{link["name"]}</a></li>'
+            if "href" in link:
+                sidebar_html += f'<li><a href="{link["href"]}" class="doc-nav-link">{link["name"]}</a></li>'
+            else:
+                sidebar_html += f'<li><a href="#{link["file"]}" class="doc-nav-link" data-file="{link["file"]}">{link["name"]}</a></li>'
         sidebar_html += "</ul></div>"
 
     html = f"""<!doctype html>
@@ -476,9 +493,153 @@ def write_docs_html() -> None:
 
 
 
+def write_contact_html() -> None:
+    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    fallback_email = _get_contact_fallback_email()
+
+    html = f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FBA-Bench | Message Me</title>
+    <meta name="description" content="Send a message to the FBA-Bench maintainer." />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <header class="wrap header">
+      <div class="brand">
+        <div class="logo">FBA</div>
+        <div class="brand-text">
+          <div class="title">FBA-Bench</div>
+          <div class="sub">Message me</div>
+        </div>
+      </div>
+      <div class="right">
+        <a href="index.html" class="chip">Leaderboard</a>
+        <a href="docs/" class="chip">Docs</a>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="panel">
+        <div class="panel-h">
+          <div class="panel-title">Send a message</div>
+          <div class="panel-note">This posts to <span class="mono">/api/v1/contact</span> when the API is available.</div>
+        </div>
+
+        <div class="contact-grid">
+          <form id="contactForm" class="contact-form" autocomplete="on" novalidate>
+            <label class="field">
+              <div class="field-k">Your name (optional)</div>
+              <input name="name" type="text" maxlength="255" placeholder="Jane Doe" />
+            </label>
+
+            <label class="field">
+              <div class="field-k">Your email</div>
+              <input name="email" type="email" maxlength="255" placeholder="you@example.com" required />
+            </label>
+
+            <label class="field">
+              <div class="field-k">Subject (optional)</div>
+              <input name="subject" type="text" maxlength="255" placeholder="Quick question about FBA-Bench" />
+            </label>
+
+            <label class="field">
+              <div class="field-k">Message</div>
+              <textarea name="message" rows="8" maxlength="10000" placeholder="Write your message..." required></textarea>
+            </label>
+
+            <!-- Honeypot: bots will often fill it -->
+            <label class="field hp" aria-hidden="true">
+              <div class="field-k">Company</div>
+              <input name="company" type="text" tabindex="-1" autocomplete="off" />
+            </label>
+
+            <div class="actions">
+              <button class="btn" type="submit">Send</button>
+              <a class="chip" href="mailto:{fallback_email}">Email instead</a>
+            </div>
+
+            <div id="contactStatus" class="muted" style="margin-top: 12px;">Ready.</div>
+          </form>
+
+          <div class="contact-side">
+            <div class="card">
+              <div class="card-k">Fallback</div>
+              <div class="card-v">If the API is not running (e.g., GitHub Pages), use email.</div>
+            </div>
+            <div class="card">
+              <div class="card-k">Privacy</div>
+              <div class="card-v">Messages may be stored on the server to help respond.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("contactForm");
+      const statusEl = document.getElementById("contactStatus");
+
+      function setStatus(text, cls) {{
+        statusEl.className = cls || "muted";
+        statusEl.textContent = text;
+      }}
+
+      async function postJson(url, data) {{
+        const res = await fetch(url, {{
+          method: "POST",
+          headers: {{ "Content-Type": "application/json" }},
+          body: JSON.stringify(data),
+        }});
+        const contentType = res.headers.get("content-type") || "";
+        const body = contentType.includes("application/json") ? await res.json() : await res.text();
+        if (!res.ok) {{
+          const msg = (body && body.detail) ? body.detail : ("HTTP " + res.status);
+          throw new Error(msg);
+        }}
+        return body;
+      }}
+
+      form.addEventListener("submit", async (e) => {{
+        e.preventDefault();
+        const fd = new FormData(form);
+        const payload = {{
+          name: (fd.get("name") || "").toString(),
+          email: (fd.get("email") || "").toString(),
+          subject: (fd.get("subject") || "").toString(),
+          message: (fd.get("message") || "").toString(),
+          hp: (fd.get("company") || "").toString(),
+          source: window.location.pathname,
+        }};
+
+        setStatus("Sending...", "muted");
+        try {{
+          await postJson("/api/v1/contact", payload);
+          form.reset();
+          setStatus("Sent. If you do not hear back soon, use the email fallback.", "q-good");
+        }} catch (err) {{
+          setStatus("Could not send via API (" + err.message + "). Use the email fallback.", "q-warn");
+        }}
+      }});
+    </script>
+  </body>
+</html>
+"""
+
+    CONTACT_PATH.write_text(html, encoding="utf-8")
+
+
 def main() -> int:
     write_index_html()
     write_docs_html()
+    write_contact_html()
     return 0
 
 

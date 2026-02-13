@@ -18,6 +18,7 @@ from fba_bench_api.api.exception_handlers import add_exception_handlers
 from fba_bench_api.api.routes import (
     agents as agents_routes,
     benchmarks as benchmarks_routes,
+    contact as contact_routes,
     config as config_routes,
     demo as demo_routes,
     experiments as exp_routes,
@@ -245,6 +246,7 @@ UNPROTECTED_PATHS = {
     "/api/v1/public/leaderboard/widget",
     "/api/v1/public/leaderboard/embed",
     "/api/v1/public/stats",
+    "/api/v1/contact",
 }
 
 
@@ -638,6 +640,7 @@ def create_app() -> FastAPI:
     # Routers
     app.include_router(root_routes.router)
     app.include_router(config_routes.router)
+    app.include_router(contact_routes.router)
     # Place realtime BEFORE simulation to avoid '/api/v1/simulation/{simulation_id}' catching 'events'
     app.include_router(realtime_routes.router)
     app.include_router(sim_routes.router)

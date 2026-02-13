@@ -85,6 +85,7 @@ async def create_db_tables_async() -> None:
     # Import ORM models to register tables
     for mod in (
         "fba_bench_api.models.agent",
+        "fba_bench_api.models.contact_message",
         "fba_bench_api.models.experiment",
         "fba_bench_api.models.simulation",
     ):
