@@ -1,4 +1,4 @@
-.PHONY: be-migrate be-test lint format-check format-fix type-check test-contracts test-all coverage ci-local pre-commit-install pre-commit-run sim-contract-check sim-matrix-dry-run
+.PHONY: be-migrate be-test lint format-check format-fix type-check type-check-strict test-contracts test-all coverage ci-local pre-commit-install pre-commit-run sim-contract-check sim-matrix-dry-run
 
 # Use Poetry to run all Python tooling by default
 # Detect Poetry command (Windows-friendly)
@@ -28,6 +28,9 @@ format-fix:
 
 type-check:
 	$(POETRY) run mypy --namespace-packages
+
+type-check-strict:
+	$(POETRY) run mypy --config-file mypy_strict.ini
 
 # -----------------------------------------------------------------------------
 # Tests

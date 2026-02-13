@@ -318,7 +318,24 @@ a { color: inherit; }
   font-size: 12px;
 }
 
+.footer-links {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.footer-links a:hover {
+  color: var(--text);
+  border-bottom-color: var(--border);
+}
+
 .support {
+
   margin-top: 16px;
   border: 1px solid var(--border);
   background: var(--panel);
@@ -374,9 +391,156 @@ a { color: inherit; }
   display: block;
 }
 
+/* Documentation Layout */
+.doc-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  margin-top: 32px;
+  align-items: start;
+}
+
+.doc-sidebar {
+  position: sticky;
+  top: 32px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  padding-right: 24px;
+}
+
+.doc-sidebar::-webkit-scrollbar { width: 4px; }
+.doc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.doc-nav-group {
+  margin-bottom: 24px;
+}
+
+.doc-nav-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.doc-nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.doc-nav-link {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.doc-nav-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.doc-nav-link.active {
+  background: rgba(50, 255, 126, 0.1);
+  color: var(--green);
+  border: 1px solid rgba(50, 255, 126, 0.2);
+}
+
+.doc-main {
+  min-height: 500px;
+  padding-bottom: 64px;
+}
+
+/* Markdown Content Styling */
+.doc-content {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.doc-content h1, .doc-content h2, .doc-content h3 {
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  color: var(--green);
+  letter-spacing: -0.01em;
+}
+
+.doc-content h1:first-child { margin-top: 0; }
+
+.doc-content p { margin-bottom: 1.25em; }
+
+.doc-content code {
+  font-family: inherit;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: var(--cyan);
+}
+
+.doc-content pre {
+  background: #0d0d0d;
+  padding: 20px;
+  border-radius: 12px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  margin: 1.5em 0;
+}
+
+.doc-content pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 13px;
+}
+
+.doc-content blockquote {
+  border-left: 4px solid var(--green);
+  background: rgba(50, 255, 126, 0.05);
+  margin: 1.5em 0;
+  padding: 16px 24px;
+  border-radius: 0 12px 12px 0;
+  color: var(--muted);
+}
+
+.doc-content ul, .doc-content ol {
+  margin-bottom: 1.5em;
+  padding-left: 1.5em;
+}
+
+.doc-content li { margin-bottom: 0.5em; }
+
+.doc-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+
+.doc-content th, .doc-content td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.doc-content th {
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 700;
+  color: var(--muted);
+}
+
 @media (max-width: 900px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .right { align-items: flex-start; flex-direction: column; }
   .crypto-grid { grid-template-columns: 1fr; }
+  .doc-layout { grid-template-columns: 1fr; }
+  .doc-sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 24px; }
 }
+
 

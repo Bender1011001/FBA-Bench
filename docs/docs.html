@@ -3,26 +3,100 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>FBA-Bench | Docs</title>
+    <title>FBA-Bench | Documentation</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+    <!-- Markdown Rendering Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <style>
+      /* Prism theme adjustments for our dark mode */
+      pre[class*="language-"] { background: #0d0d0d !important; text-shadow: none !important; }
+      code[class*="language-"] { text-shadow: none !important; }
+    </style>
   </head>
   <body>
     <div class="bg-grid" aria-hidden="true"></div>
-    <main class="wrap">
-      <section class="hero">
-        <h1>Docs</h1>
-        <p class="hook">Operator notes and technical documentation.</p>
-        <div class="chips">
-          <a class="chip" href="index.html">leaderboard</a>
-          <a class="chip" href="API.md">api.md</a>
-          <a class="chip" href="architecture.md">architecture.md</a>
-          <a class="chip" href="deployment.md">deployment.md</a>
-          <a class="chip" href="README.md">docs/readme.md</a>
+
+    <header class="wrap header">
+      <div class="brand">
+        <div class="logo">FBA</div>
+        <div class="brand-text">
+          <div class="title">FBA-Bench</div>
+          <div class="sub">Documentation</div>
+        </div>
+      </div>
+      <div class="right">
+        <a href="index.html" class="chip">Leaderboard</a>
+      </div>
+    </header>
+
+    <main class="wrap doc-layout">
+      <aside class="doc-sidebar">
+        <div class="doc-nav-group"><div class="doc-nav-title">Core</div><ul class="doc-nav-links"><li><a href="#README.md" class="doc-nav-link" data-file="README.md">Getting Started</a></li><li><a href="#benchmark_philosophy.md" class="doc-nav-link" data-file="benchmark_philosophy.md">Philosophy</a></li><li><a href="#architecture.md" class="doc-nav-link" data-file="architecture.md">Architecture</a></li></ul></div><div class="doc-nav-group"><div class="doc-nav-title">Operational</div><ul class="doc-nav-links"><li><a href="#RUNBOOK_SIM_BENCHMARK_V1.md" class="doc-nav-link" data-file="RUNBOOK_SIM_BENCHMARK_V1.md">Simulation Runbook</a></li><li><a href="#RUNBOOK_SIM_THEATER.md" class="doc-nav-link" data-file="RUNBOOK_SIM_THEATER.md">Theater Runbook</a></li><li><a href="#STARTUP.md" class="doc-nav-link" data-file="STARTUP.md">Startup Guide</a></li><li><a href="#leaderboard_publisher.md" class="doc-nav-link" data-file="leaderboard_publisher.md">Leaderboard Publisher</a></li></ul></div><div class="doc-nav-group"><div class="doc-nav-title">Technical</div><ul class="doc-nav-links"><li><a href="#API.md" class="doc-nav-link" data-file="API.md">API Reference</a></li><li><a href="#configuration.md" class="doc-nav-link" data-file="configuration.md">Configuration</a></li><li><a href="#deployment.md" class="doc-nav-link" data-file="deployment.md">Deployment</a></li><li><a href="#observability.md" class="doc-nav-link" data-file="observability.md">Observability</a></li><li><a href="#testing.md" class="doc-nav-link" data-file="testing.md">Testing</a></li><li><a href="#why_it_takes_hours.md" class="doc-nav-link" data-file="why_it_takes_hours.md">Performance FAQ</a></li></ul></div><div class="doc-nav-group"><div class="doc-nav-title">Legal</div><ul class="doc-nav-links"><li><a href="#terms.md" class="doc-nav-link" data-file="terms.md">Terms of Service</a></li><li><a href="#privacy.md" class="doc-nav-link" data-file="privacy.md">Privacy Policy</a></li><li><a href="#disclaimer.md" class="doc-nav-link" data-file="disclaimer.md">Legal Disclaimer</a></li></ul></div>
+        <footer class="footer" style="padding: 24px 0 0; margin-top: 32px; border-top: 1px solid var(--border);">
+          <div class="footer-links" style="flex-direction: column; gap: 8px;">
+            <a href="#terms.md">Terms of Service</a>
+            <a href="#privacy.md">Privacy Policy</a>
+            <a href="#disclaimer.md">Legal Disclaimer</a>
+          </div>
+          <div style="margin-top: 16px; font-size: 11px;">FBA-Bench Enterprise &copy; 2026</div>
+        </footer>
+      </aside>
+
+      <section class="doc-main">
+        <div id="docContent" class="doc-content">
+          <div class="muted">Loading documentation...</div>
         </div>
       </section>
     </main>
+
+    <script>
+      const contentDiv = document.getElementById('docContent');
+      const navLinks = document.querySelectorAll('.doc-nav-link');
+
+      async function loadDoc(filename) {
+        contentDiv.innerHTML = '<div class="muted">Loading ' + filename + '...</div>';
+        
+        // Update active state in sidebar
+        navLinks.forEach(link => {
+          if (link.getAttribute('data-file') === filename) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+
+        try {
+          const res = await fetch(filename, { cache: 'no-cache' });
+          if (!res.ok) throw new Error('Failed to load ' + filename);
+          const md = await res.text();
+          contentDiv.innerHTML = marked.parse(md);
+          
+          // Trigger syntax highlighting
+          Prism.highlightAllUnder(contentDiv);
+          
+          // Reset scroll
+          window.scrollTo(0, 0);
+        } catch (e) {
+          contentDiv.innerHTML = '<div class="q-bad">Error loading documentation: ' + e.message + '</div>';
+        }
+      }
+
+      function handleRoute() {
+        const hash = window.location.hash.substring(1);
+        const target = hash || 'README.md';
+        loadDoc(target);
+      }
+
+      window.addEventListener('hashchange', handleRoute);
+      handleRoute(); // Initial load
+    </script>
   </body>
 </html>

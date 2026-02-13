@@ -22,18 +22,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Python project and dependencies
+      - name: Install Poetry
         run: |
-          pip install -r requirements.txt
-          pip install "fba-bench-core>=1.0.0"
-          pip install pytest pytest-cov ruff mypy
-          pip install . # Installs the project for CI environment
+          python -m pip install --upgrade pip
+          pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction --no-ansi
 
       - name: Run backend tests
-        run: pytest -q
+        run: poetry run pytest -q
 
       - name: Verify Golden Masters
-        run: python scripts/verify_golden_masters.py
+        run: poetry run python scripts/verify_golden_masters.py
 
       - name: Upload Golden Master Artifacts
         if: failure()
@@ -46,10 +48,10 @@ jobs:
             tests/output/
 
       - name: Run ruff check
-        run: ruff check .
+        run: poetry run ruff check .
 
       - name: Run mypy type checking
-        run: mypy --ignore-missing-imports # As requested
+        run: poetry run mypy --namespace-packages
 
   detect_frontend_apps:
     runs-on: ubuntu-latest

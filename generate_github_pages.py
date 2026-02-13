@@ -154,6 +154,11 @@ def write_index_html() -> None:
       </section>
 
       <footer class="footer">
+        <div class="footer-links">
+          <a href="docs.html#terms.md">Terms</a>
+          <a href="docs.html#privacy.md">Privacy</a>
+          <a href="docs.html#disclaimer.md">Disclaimer</a>
+        </div>
         <div>FBA-Bench Enterprise. Built for the era of agentic AI.</div>
         <div class="muted">If the leaderboard looks stale, the publisher is not running or results are not deployed.</div>
       </footer>
@@ -314,36 +319,160 @@ def write_index_html() -> None:
 
 def write_docs_html() -> None:
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    html = """<!doctype html>
+
+    # Documentation categorization
+    sections = [
+        {
+            "title": "Core",
+            "links": [
+                {"name": "Getting Started", "file": "README.md"},
+                {"name": "Philosophy", "file": "benchmark_philosophy.md"},
+                {"name": "Architecture", "file": "architecture.md"},
+            ]
+        },
+        {
+            "title": "Operational",
+            "links": [
+                {"name": "Simulation Runbook", "file": "RUNBOOK_SIM_BENCHMARK_V1.md"},
+                {"name": "Theater Runbook", "file": "RUNBOOK_SIM_THEATER.md"},
+                {"name": "Startup Guide", "file": "STARTUP.md"},
+                {"name": "Leaderboard Publisher", "file": "leaderboard_publisher.md"},
+            ]
+        },
+        {
+            "title": "Technical",
+            "links": [
+                {"name": "API Reference", "file": "API.md"},
+                {"name": "Configuration", "file": "configuration.md"},
+                {"name": "Deployment", "file": "deployment.md"},
+                {"name": "Observability", "file": "observability.md"},
+                {"name": "Testing", "file": "testing.md"},
+                {"name": "Performance FAQ", "file": "why_it_takes_hours.md"},
+            ]
+        },
+        {
+            "title": "Legal",
+            "links": [
+                {"name": "Terms of Service", "file": "terms.md"},
+                {"name": "Privacy Policy", "file": "privacy.md"},
+                {"name": "Legal Disclaimer", "file": "disclaimer.md"},
+            ]
+        }
+    ]
+
+    sidebar_html = ""
+
+    for sec in sections:
+        sidebar_html += f'<div class="doc-nav-group"><div class="doc-nav-title">{sec["title"]}</div><ul class="doc-nav-links">'
+        for link in sec["links"]:
+            sidebar_html += f'<li><a href="#{link["file"]}" class="doc-nav-link" data-file="{link["file"]}">{link["name"]}</a></li>'
+        sidebar_html += "</ul></div>"
+
+    html = f"""<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>FBA-Bench | Docs</title>
+    <title>FBA-Bench | Documentation</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+    <!-- Markdown Rendering Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <style>
+      /* Prism theme adjustments for our dark mode */
+      pre[class*="language-"] {{ background: #0d0d0d !important; text-shadow: none !important; }}
+      code[class*="language-"] {{ text-shadow: none !important; }}
+    </style>
   </head>
   <body>
     <div class="bg-grid" aria-hidden="true"></div>
-    <main class="wrap">
-      <section class="hero">
-        <h1>Docs</h1>
-        <p class="hook">Operator notes and technical documentation.</p>
-        <div class="chips">
-          <a class="chip" href="index.html">leaderboard</a>
-          <a class="chip" href="API.md">api.md</a>
-          <a class="chip" href="architecture.md">architecture.md</a>
-          <a class="chip" href="deployment.md">deployment.md</a>
-          <a class="chip" href="README.md">docs/readme.md</a>
+
+    <header class="wrap header">
+      <div class="brand">
+        <div class="logo">FBA</div>
+        <div class="brand-text">
+          <div class="title">FBA-Bench</div>
+          <div class="sub">Documentation</div>
+        </div>
+      </div>
+      <div class="right">
+        <a href="index.html" class="chip">Leaderboard</a>
+      </div>
+    </header>
+
+    <main class="wrap doc-layout">
+      <aside class="doc-sidebar">
+        {sidebar_html}
+        <footer class="footer" style="padding: 24px 0 0; margin-top: 32px; border-top: 1px solid var(--border);">
+          <div class="footer-links" style="flex-direction: column; gap: 8px;">
+            <a href="#terms.md">Terms of Service</a>
+            <a href="#privacy.md">Privacy Policy</a>
+            <a href="#disclaimer.md">Legal Disclaimer</a>
+          </div>
+          <div style="margin-top: 16px; font-size: 11px;">FBA-Bench Enterprise &copy; 2026</div>
+        </footer>
+      </aside>
+
+      <section class="doc-main">
+        <div id="docContent" class="doc-content">
+          <div class="muted">Loading documentation...</div>
         </div>
       </section>
     </main>
+
+    <script>
+      const contentDiv = document.getElementById('docContent');
+      const navLinks = document.querySelectorAll('.doc-nav-link');
+
+      async function loadDoc(filename) {{
+        contentDiv.innerHTML = '<div class="muted">Loading ' + filename + '...</div>';
+        
+        // Update active state in sidebar
+        navLinks.forEach(link => {{
+          if (link.getAttribute('data-file') === filename) {{
+            link.classList.add('active');
+          }} else {{
+            link.classList.remove('active');
+          }}
+        }});
+
+        try {{
+          const res = await fetch(filename, {{ cache: 'no-cache' }});
+          if (!res.ok) throw new Error('Failed to load ' + filename);
+          const md = await res.text();
+          contentDiv.innerHTML = marked.parse(md);
+          
+          // Trigger syntax highlighting
+          Prism.highlightAllUnder(contentDiv);
+          
+          // Reset scroll
+          window.scrollTo(0, 0);
+        }} catch (e) {{
+          contentDiv.innerHTML = '<div class="q-bad">Error loading documentation: ' + e.message + '</div>';
+        }}
+      }}
+
+      function handleRoute() {{
+        const hash = window.location.hash.substring(1);
+        const target = hash || 'README.md';
+        loadDoc(target);
+      }}
+
+      window.addEventListener('hashchange', handleRoute);
+      handleRoute(); // Initial load
+    </script>
   </body>
 </html>
 """
     DOCS_HTML_PATH.write_text(html, encoding="utf-8")
+
 
 
 def main() -> int:
