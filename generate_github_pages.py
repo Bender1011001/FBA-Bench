@@ -25,12 +25,9 @@ CONTACT_PATH = DOCS_DIR / "contact.html"
 
 
 def _get_contact_fallback_email() -> str:
-    # Used for the static site as a fallback when /api/v1/contact is unavailable (e.g., GitHub Pages).
-    # Operators can override at build time.
-    return (
-        (os.getenv("CONTACT_FALLBACK_EMAIL") or os.getenv("CONTACT_TO_EMAIL") or "").strip()
-        or "contact@fbabench.com"
-    )
+    # Deprecated: we intentionally do not embed real emails in the static site.
+    # Keep this for backward compatibility if older content still references it.
+    return "contact@fbabench.com"
 
 
 def write_index_html() -> None:
@@ -495,7 +492,6 @@ def write_docs_html() -> None:
 
 def write_contact_html() -> None:
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    fallback_email = _get_contact_fallback_email()
 
     html = f"""<!doctype html>
 <html lang="en">
@@ -563,7 +559,7 @@ def write_contact_html() -> None:
 
             <div class="actions">
               <button class="btn" type="submit">Send</button>
-              <a class="chip" href="mailto:{fallback_email}">Email instead</a>
+              <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
             </div>
 
             <div id="contactStatus" class="muted" style="margin-top: 12px;">Ready.</div>
@@ -572,7 +568,7 @@ def write_contact_html() -> None:
           <div class="contact-side">
             <div class="card">
               <div class="card-k">Fallback</div>
-              <div class="card-v">If the API is not running (e.g., GitHub Pages), use email.</div>
+              <div class="card-v">If the API is not running (e.g., GitHub Pages), this form cannot deliver. Email is intentionally not displayed.</div>
             </div>
             <div class="card">
               <div class="card-k">Privacy</div>
@@ -623,9 +619,9 @@ def write_contact_html() -> None:
         try {{
           await postJson("/api/v1/contact", payload);
           form.reset();
-          setStatus("Sent. If you do not hear back soon, use the email fallback.", "q-good");
+          setStatus("Sent.", "q-good");
         }} catch (err) {{
-          setStatus("Could not send via API (" + err.message + "). Use the email fallback.", "q-warn");
+          setStatus("Could not send via API (" + err.message + "). Try again later.", "q-warn");
         }}
       }});
     </script>

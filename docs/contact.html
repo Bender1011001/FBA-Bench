@@ -64,7 +64,7 @@
 
             <div class="actions">
               <button class="btn" type="submit">Send</button>
-              <a class="chip" href="mailto:contact@fbabench.com">Email instead</a>
+              <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
             </div>
 
             <div id="contactStatus" class="muted" style="margin-top: 12px;">Ready.</div>
@@ -73,7 +73,7 @@
           <div class="contact-side">
             <div class="card">
               <div class="card-k">Fallback</div>
-              <div class="card-v">If the API is not running (e.g., GitHub Pages), use email.</div>
+              <div class="card-v">If the API is not running (e.g., GitHub Pages), this form cannot deliver. Email is intentionally not displayed.</div>
             </div>
             <div class="card">
               <div class="card-k">Privacy</div>
@@ -124,9 +124,9 @@
         try {
           await postJson("/api/v1/contact", payload);
           form.reset();
-          setStatus("Sent. If you do not hear back soon, use the email fallback.", "q-good");
+          setStatus("Sent.", "q-good");
         } catch (err) {
-          setStatus("Could not send via API (" + err.message + "). Use the email fallback.", "q-warn");
+          setStatus("Could not send via API (" + err.message + "). Try again later.", "q-warn");
         }
       });
     </script>
