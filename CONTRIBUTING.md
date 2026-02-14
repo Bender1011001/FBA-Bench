@@ -60,7 +60,7 @@ Keep messages concise (<72 chars subject); body for details.
 
 ## Coding Standards
 
-Align with [AGENTS.md](AGENTS.md) and project tools:
+All contributions must strictly follow the rules documented in [AGENTS.md](AGENTS.md), including:
 
 - **Structure**: Code in `src/` packages. Small, focused modules. Avoid cyclic imports.
 - **Naming**:
