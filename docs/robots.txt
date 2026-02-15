@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fbabench.com/sitemap.xml

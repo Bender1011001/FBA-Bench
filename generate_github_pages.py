@@ -14,14 +14,21 @@ publish on GitHub Pages).
 from __future__ import annotations
 
 import os
+import sys
+import json
+import subprocess
 from pathlib import Path
+from datetime import datetime, timezone
 
 
 ROOT_DIR = Path(__file__).parent
 DOCS_DIR = ROOT_DIR / "docs"
+DOCS_API_DIR = DOCS_DIR / "api"
 INDEX_PATH = DOCS_DIR / "index.html"
 DOCS_HTML_PATH = DOCS_DIR / "docs" / "index.html"
 CONTACT_PATH = DOCS_DIR / "contact.html"
+
+DEFAULT_SITE_URL = "https://fbabench.com"
 
 
 def _get_contact_fallback_email() -> str:
@@ -30,8 +37,99 @@ def _get_contact_fallback_email() -> str:
     return "contact@fbabench.com"
 
 
+def _site_url() -> str:
+    # Used for canonical URLs and sitemap. Override for staging/dev via env var.
+    return os.environ.get("FBA_BENCH_SITE_URL", DEFAULT_SITE_URL).rstrip("/")
+
+
+def _json_escape(s: str) -> str:
+    # Minimal JSON string escape for safe embedding in JSON-LD.
+    return (
+        s.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "")
+    )
+
+
+def _seo_tags(*, title: str, description: str, canonical_path: str, theme_color: str, icon_href: str) -> str:
+    base = _site_url()
+    canonical_url = f"{base}{canonical_path}"
+    json_ld = (
+        '{'
+        '"@context":"https://schema.org",'
+        '"@type":"WebSite",'
+        f'"name":"{_json_escape("FBA-Bench")}",'
+        f'"url":"{_json_escape(base + "/")}"'
+        "}"
+    )
+
+    # Keep the set small but complete: canonical + OG + Twitter + JSON-LD.
+    return f"""
+    <meta name="description" content="{description}" />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <meta name="theme-color" content="{theme_color}" />
+    <link rel="canonical" href="{canonical_url}" />
+    <link rel="icon" href="{icon_href}" type="image/svg+xml" />
+    <meta property="og:site_name" content="FBA-Bench" />
+    <meta property="og:title" content="{title}" />
+    <meta property="og:description" content="{description}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{canonical_url}" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{title}" />
+    <meta name="twitter:description" content="{description}" />
+    <script type="application/ld+json">{json_ld}</script>""".rstrip()
+
+
+def write_seo_files() -> None:
+    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    base = _site_url()
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    robots = f"""User-agent: *
+Allow: /
+
+Sitemap: {base}/sitemap.xml
+"""
+    (DOCS_DIR / "robots.txt").write_text(robots, encoding="utf-8")
+
+    # Include only real HTML entry points.
+    url_entries: list[tuple[str, str, str]] = [
+        ("/", "daily", "1.0"),
+        ("/docs/", "weekly", "0.6"),
+        ("/sim-theater.html", "hourly", "0.5"),
+        ("/contact.html", "monthly", "0.3"),
+    ]
+    if not (DOCS_DIR / "sim-theater.html").exists():
+        url_entries = [e for e in url_entries if e[0] != "/sim-theater.html"]
+
+    urls_xml = "\n".join(
+        f"""  <url>
+    <loc>{base}{path}</loc>
+    <lastmod>{now}</lastmod>
+    <changefreq>{freq}</changefreq>
+    <priority>{prio}</priority>
+  </url>"""
+        for path, freq, prio in url_entries
+    )
+    sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{urls_xml}
+</urlset>
+"""
+    (DOCS_DIR / "sitemap.xml").write_text(sitemap, encoding="utf-8")
+
+
 def write_index_html() -> None:
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    seo = _seo_tags(
+        title="FBA-Bench | Live Leaderboard",
+        description="Live benchmark leaderboard for AI business agents under recession conditions.",
+        canonical_path="/",
+        theme_color="#0a0a0a",
+        icon_href="favicon.svg",
+    )
 
     html = """<!doctype html>
 <html lang="en">
@@ -39,7 +137,7 @@ def write_index_html() -> None:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>FBA-Bench | Live Leaderboard</title>
-    <meta name="description" content="Live benchmark leaderboard for AI business agents under recession conditions." />
+""" + seo + """
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -327,6 +425,104 @@ def write_index_html() -> None:
     INDEX_PATH.write_text(html, encoding="utf-8")
 
 
+def _ensure_live_json() -> None:
+    """
+    The static site polls docs/api/live.json. It's optional (the page catches 404),
+    but keeping a placeholder avoids noisy console errors and keeps docs/_headers meaningful.
+    """
+    DOCS_API_DIR.mkdir(parents=True, exist_ok=True)
+    live_path = DOCS_API_DIR / "live.json"
+    if live_path.exists():
+        return
+    payload = {
+        "active": False,
+        "status": "idle",
+        "completed": 0,
+        "total": 0,
+        "run_id": None,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    live_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _write_empty_leaderboard(*, tier: str = "T2") -> None:
+    DOCS_API_DIR.mkdir(parents=True, exist_ok=True)
+    now_human = datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC")
+    lb = {
+        "generated_at": now_human,
+        "benchmark_version": "2026.02-live",
+        "metric_mode": "agentic",
+        "active_run": {"active": False, "run_id": None, "tier": tier},
+        "total_models": 0,
+        "summary": {
+            "avg_quality_score": None,
+            "avg_success_rate": None,
+            "avg_total_profit": None,
+            "avg_roi_pct": None,
+            "total_profit_sum": None,
+            "total_llm_calls": None,
+            "total_tokens": 0,
+            "total_runs": 0,
+            "top_performer": None,
+        },
+        "rankings": [],
+    }
+    (DOCS_API_DIR / "leaderboard.json").write_text(json.dumps(lb, indent=2), encoding="utf-8")
+    (DOCS_API_DIR / "top10.json").write_text(
+        json.dumps({"generated_at": now_human, "rankings": []}, indent=2),
+        encoding="utf-8",
+    )
+
+
+def write_api_snapshots() -> None:
+    """
+    Generate JSON snapshots consumed by the static docs site.
+
+    GitHub Pages workflow runs this script directly (without Poetry), so keep it stdlib-only.
+    """
+    _ensure_live_json()
+
+    results_root = ROOT_DIR / "results" / "openrouter_tier_runs"
+    tier = None
+    for candidate in ("t2", "t1", "t0"):
+        if (results_root / candidate / "summary.json").exists():
+            tier = candidate.upper()
+            break
+
+    if tier is None:
+        _write_empty_leaderboard()
+        return
+
+    build_script = ROOT_DIR / "tools" / "build_live_leaderboard.py"
+    try:
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(build_script),
+                "--tier",
+                tier,
+                "--results-root",
+                str(results_root),
+                "--output-leaderboard",
+                str(DOCS_API_DIR / "leaderboard.json"),
+                "--output-top10",
+                str(DOCS_API_DIR / "top10.json"),
+                "--live-json",
+                str(DOCS_API_DIR / "live.json"),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except Exception:
+        _write_empty_leaderboard(tier=tier)
+        return
+
+    if proc.returncode != 0:
+        # Best effort: don't fail the whole site build if results are missing/malformed.
+        _write_empty_leaderboard(tier=tier)
+
+
 def write_docs_html() -> None:
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
     (DOCS_DIR / "docs").mkdir(parents=True, exist_ok=True)
@@ -383,12 +579,21 @@ def write_docs_html() -> None:
                 sidebar_html += f'<li><a href="#{link["file"]}" class="doc-nav-link" data-file="{link["file"]}">{link["name"]}</a></li>'
         sidebar_html += "</ul></div>"
 
+    seo = _seo_tags(
+        title="FBA-Bench | Documentation",
+        description="Documentation for FBA-Bench Enterprise: setup, architecture, API reference, deployment, runbooks, and testing.",
+        canonical_path="/docs/",
+        theme_color="#0a0a0a",
+        icon_href="../favicon.svg",
+    )
+
     html = f"""<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>FBA-Bench | Documentation</title>
+{seo}
     <link rel="stylesheet" href="../style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -436,6 +641,7 @@ def write_docs_html() -> None:
       </aside>
 
       <section class="doc-main">
+        <h1 style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden;">FBA-Bench Documentation</h1>
         <div id="docContent" class="doc-content">
           <div class="muted">Loading documentation...</div>
         </div>
@@ -492,6 +698,13 @@ def write_docs_html() -> None:
 
 def write_contact_html() -> None:
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    seo = _seo_tags(
+        title="FBA-Bench | Message Me",
+        description="Send a message to the FBA-Bench maintainer.",
+        canonical_path="/contact.html",
+        theme_color="#0a0a0a",
+        icon_href="favicon.svg",
+    )
 
     html = f"""<!doctype html>
 <html lang="en">
@@ -499,7 +712,7 @@ def write_contact_html() -> None:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>FBA-Bench | Message Me</title>
-    <meta name="description" content="Send a message to the FBA-Bench maintainer." />
+{seo}
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -524,6 +737,7 @@ def write_contact_html() -> None:
 
     <main class="wrap">
       <section class="panel">
+        <h1 style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden;">Contact FBA-Bench</h1>
         <div class="panel-h">
           <div class="panel-title">Send a message</div>
           <div class="panel-note">This posts to <span class="mono">/api/v1/contact</span> when the API is available.</div>
@@ -633,6 +847,8 @@ def write_contact_html() -> None:
 
 
 def main() -> int:
+    write_seo_files()
+    write_api_snapshots()
     write_index_html()
     write_docs_html()
     write_contact_html()

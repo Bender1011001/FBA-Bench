@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="FBA-Bench">
+  <rect width="128" height="128" rx="18" fill="#0a0a0a"/>
+  <path d="M18 42h92" stroke="rgba(255,255,255,0.10)" stroke-width="2"/>
+  <path d="M18 86h92" stroke="rgba(255,255,255,0.10)" stroke-width="2"/>
+  <text x="64" y="76" text-anchor="middle"
+        font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace"
+        font-size="44" font-weight="700" fill="#32ff7e">FBA</text>
+</svg>
+
