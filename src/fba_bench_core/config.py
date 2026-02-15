@@ -54,7 +54,9 @@ class AppSettings(BaseSettings):
     api_rate_limit: str = Field(default="100/minute", validation_alias="API_RATE_LIMIT")
 
     # Contact / Messaging (website -> backend)
-    contact_to_email: Optional[str] = Field(default=None, validation_alias="CONTACT_TO_EMAIL")
+    contact_to_email: Optional[str] = Field(
+        default=None, validation_alias="CONTACT_TO_EMAIL"
+    )
     contact_fallback_email: Optional[str] = Field(
         default=None, validation_alias="CONTACT_FALLBACK_EMAIL"
     )
@@ -67,7 +69,9 @@ class AppSettings(BaseSettings):
     smtp_from: Optional[str] = Field(
         default=None, validation_alias=AliasChoices("SMTP_FROM", "EMAIL_FROM")
     )
-    smtp_use_tls_raw: Optional[str] = Field(default=None, validation_alias="SMTP_USE_TLS")
+    smtp_use_tls_raw: Optional[str] = Field(
+        default=None, validation_alias="SMTP_USE_TLS"
+    )
 
     # CORS
     cors_allow_origins_raw: Optional[str] = Field(

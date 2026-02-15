@@ -51,7 +51,13 @@ def app():
 def setup_database():
     """Create all tables once for the test session (consolidated)."""
     # Ensure all ORM models are imported so Base.metadata contains every table.
-    from fba_bench_api.models import agent, contact_message, experiment, simulation, user  # noqa: F401
+    from fba_bench_api.models import (
+        agent,
+        contact_message,
+        experiment,
+        simulation,
+        user,
+    )  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
     yield

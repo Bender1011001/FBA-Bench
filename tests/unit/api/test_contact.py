@@ -33,4 +33,3 @@ def test_contact_honeypot_noop(client):
     assert data["status"] == "ok"
     # Honeypot should not return a message id.
     assert data.get("id") in (None, "")
-

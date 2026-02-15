@@ -69,7 +69,9 @@ def _send_smtp_email(
         server.send_message(msg)
 
 
-@router.post("", response_model=ContactCreateResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "", response_model=ContactCreateResponse, status_code=status.HTTP_202_ACCEPTED
+)
 async def create_contact_message(
     payload: ContactCreateRequest,
     request: Request,
@@ -109,7 +111,9 @@ async def create_contact_message(
         mail_from = (settings.smtp_from or settings.smtp_user or "").strip()
 
         if host and user and password and mail_from:
-            subject = payload.subject.strip() if payload.subject else "New website message"
+            subject = (
+                payload.subject.strip() if payload.subject else "New website message"
+            )
             body = "\n".join(
                 [
                     "New message from the website:",
@@ -154,4 +158,3 @@ async def create_contact_message(
         raise HTTPException(status_code=500, detail="Failed to store message") from e
 
     return ContactCreateResponse(status="received", id=msg_id, emailed=emailed)
-

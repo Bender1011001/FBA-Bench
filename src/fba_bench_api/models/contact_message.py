@@ -27,5 +27,6 @@ class ContactMessageORM(TimestampMixin, Base):
     user_agent: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     source: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-    status: Mapped[str] = mapped_column(String(32), nullable=False, default=ContactMessageStatus.received)
-
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default=ContactMessageStatus.received
+    )
