@@ -106,7 +106,23 @@ def main() -> int:
 
     try:
         # Godot 4 CLI: `--path` points at the project directory.
-        subprocess.run([godot_exe, "--path", str(godot_project)], check=False)
+        # Provide the GUI with connection info via environment variables so the project
+        # can run against either:
+        # - backend-only (default :8000), or
+        # - one-click stack (use --no-backend --port 8080).
+        ui_host = args.host
+        if ui_host in ("0.0.0.0", "::"):
+            ui_host = "127.0.0.1"
+
+        godot_env = os.environ.copy()
+        godot_env.setdefault("FBA_BENCH_HTTP_BASE_URL", f"http://{ui_host}:{args.port}")
+        godot_env.setdefault(
+            "FBA_BENCH_WS_URL", f"ws://{ui_host}:{args.port}/ws/realtime"
+        )
+
+        subprocess.run(
+            [godot_exe, "--path", str(godot_project)], check=False, env=godot_env
+        )
     finally:
         # Leave backend running; launcher is a convenience tool and shouldn't kill user processes.
         pass
@@ -115,4 +131,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

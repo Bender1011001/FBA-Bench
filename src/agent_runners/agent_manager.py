@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from fba_bench.core.types import (
     AgentObservation,
-    SetPriceCommand,
     SimulationState,
     TickEvent,
     ToolCall,
@@ -22,6 +21,8 @@ from agents.multi_domain_controller import MultiDomainController
 from agents.skill_coordinator import SkillCoordinator
 from agents.skill_modules.base_skill import SkillAction, SkillOutcome
 from agents.skill_modules.product_sourcing import ProductSourcingSkill
+from fba_events.base import BaseEvent
+from fba_events.pricing import SetPriceCommand
 from fba_events.supplier import PlaceOrderCommand
 from fba_events.agent import AgentDecisionEvent
 
@@ -165,6 +166,27 @@ class AgentManager:
             os.getenv("AGENT_TIMEOUT_THRESHOLD", "3") or "3"
         )
 
+        # ---------------------------------------------------------------------
+        # Tick-aware event buffering + decision history
+        # ---------------------------------------------------------------------
+        # These buffers let us provide "yesterday's events" to agents even when
+        # EventBus recording is disabled (default), and power per-day memory consolidation.
+        self._current_tick: int = 0
+        self._current_simulation_time: Optional[datetime] = None
+        self._events_by_tick: Dict[int, List[Dict[str, Any]]] = {}
+        self._tool_calls_by_tick: Dict[int, Dict[str, List[ToolCall]]] = {}
+
+        # Keep bounded history to avoid unbounded growth in long runs.
+        self._keep_event_history_ticks: int = int(
+            os.getenv("AGENT_EVENT_HISTORY_TICKS", "3") or "3"
+        )
+        self._max_events_per_tick: int = int(
+            os.getenv("AGENT_EVENTS_PER_TICK_MAX", "250") or "250"
+        )
+
+        # Track last tick consolidated (manager-level guard; runners may also guard internally).
+        self._last_memory_consolidation_tick: int = -1
+
     # -------------------------------------------------------------------------
     # Back-compat lightweight AgentManager surface expected by tests
     # -------------------------------------------------------------------------
@@ -297,8 +319,12 @@ class AgentManager:
             h3 = await self.event_bus.subscribe(
                 TickEvent, self._handle_tick_event_for_skills
             )
+            # Subscribe to all canonical events so we can build tick-scoped summaries for agents/memory.
+            h4 = await self.event_bus.subscribe(
+                BaseEvent, self._handle_any_event_for_buffer
+            )
             # Record handles for clean unsubscription later
-            self._subscription_handles.extend([h1, h2, h3])
+            self._subscription_handles.extend([h1, h2, h3, h4])
             logger.info(
                 "AgentManager subscribed to core events (decision cycle, command ack, skills pipeline)."
             )
@@ -348,8 +374,22 @@ class AgentManager:
         # Cleanup all agent runners
         for agent_id, agent_reg in self.agent_registry.all_agents().items():
             try:
-                if agent_reg.runner:  # Ensure runner exists before calling cleanup
-                    await agent_reg.runner.cleanup()
+                runner = getattr(agent_reg, "runner", None)
+                if not runner:
+                    continue
+
+                # AgentRunner.cleanup() is synchronous; prefer async_cleanup() when available.
+                async_cleanup = getattr(runner, "async_cleanup", None)
+                if callable(async_cleanup):
+                    await async_cleanup()
+                    continue
+
+                cleanup = getattr(runner, "cleanup", None)
+                if callable(cleanup):
+                    maybe = cleanup()
+                    # Defensive: some legacy runners expose an async cleanup.
+                    if asyncio.iscoroutine(maybe):
+                        await maybe
             except AgentRunnerCleanupError as e:
                 logger.warning(f"Failed to cleanup agent {agent_id}: {e}")
 
@@ -590,19 +630,15 @@ class AgentManager:
 
     def _build_shared_context(self) -> Dict[str, Any]:
         """Build a shared context for agent decisions."""
+        tick = int(self._current_tick or 0)
+        # For decisions at tick T, provide a bounded set of events from tick T-1 ("yesterday").
+        prev_tick = max(0, tick - 1)
+        recent_events = list(self._events_by_tick.get(prev_tick, []))
         return {
-            "tick": self.event_bus.get_current_tick() if self.event_bus else 0,
-            "simulation_time": datetime.now(),
-            "products": (
-                list(self.world_store.get_all_product_states().values())
-                if self.world_store
-                else []
-            ),
-            "recent_events": (
-                list(self.event_bus.get_recorded_events())
-                if self.event_bus and self.event_bus.is_recording
-                else []
-            ),
+            "tick": tick,
+            "simulation_time": self._current_simulation_time or datetime.now(timezone.utc),
+            "products": self._serialize_products_for_agents() if self.world_store else [],
+            "recent_events": recent_events,
         }
 
     async def _process_decision_result(
@@ -618,6 +654,13 @@ class AgentManager:
 
         # Run arbitration and dispatch
         processed = await self._arbitrate_and_dispatch(agent_id, result)
+
+        # Store raw tool calls for memory consolidation ("what did I do today?")
+        try:
+            tick = int(context.get("tick", 0))
+            self._tool_calls_by_tick.setdefault(tick, {})[agent_id] = list(result or [])
+        except Exception:
+            pass
 
         # Update statistics in primary registry
         reg = self.agent_registry.get_agent(agent_id)
@@ -842,7 +885,7 @@ class AgentManager:
             try:
                 if action.action_type == "place_order":
                     params = action.parameters or {}
-                    supplier_id = params.get("supplier_id")
+                    supplier_id = params.get("supplier_id") or "S001"
                     asin = params.get("asin")
                     quantity = int(params.get("quantity", 0))
                     max_price_raw = params.get("max_price")
@@ -859,14 +902,13 @@ class AgentManager:
                     po = PlaceOrderCommand(
                         event_id=f"po_{agent_id}_{uuid.uuid4()}",
                         timestamp=datetime.now(),
+                        agent_id=agent_id,
                         supplier_id=supplier_id,
                         asin=asin,
                         quantity=quantity,
                         max_price=max_price,
                         reason=action.reasoning or "product_sourcing",
                     )
-                    # Optional: add agent_id for traceability
-                    po.agent_id = agent_id
                     await self.event_bus.publish(po)
                     logger.info(
                         f"Published PlaceOrderCommand from ProductSourcingSkill for agent {agent_id}: asin={asin} qty={quantity}"
@@ -1007,18 +1049,31 @@ class AgentManager:
         params = tool_call.parameters or {}
         if tool_call.tool_name == "set_price":
             asin = params.get("asin")
-            price = float(params.get("price", 0))
-            if asin and price > 0:
-                cmd = SetPriceCommand(
-                    event_id=f"sp_{agent_id}_{uuid.uuid4().hex[:8]}",
-                    agent_id=agent_id,
-                    asin=asin,
-                    price=price,
-                )
-                await self.event_bus.publish(cmd)
-                logger.info(
-                    f"Dispatched SetPriceCommand from LLM tool for {agent_id}: {asin} @ {price}"
-                )
+            price_raw = params.get("price", params.get("new_price"))
+            if asin and price_raw is not None:
+                # Tool calls usually specify dollars. Canonical SetPriceCommand expects Money.
+                try:
+                    if isinstance(price_raw, Money):
+                        new_price = price_raw
+                    else:
+                        s = str(price_raw).strip().replace("$", "").replace(",", "")
+                        new_price = Money.from_dollars(s)
+                except Exception:
+                    new_price = Money.zero()
+
+                if getattr(new_price, "cents", 0) > 0:
+                    cmd = SetPriceCommand(
+                        event_id=f"sp_{agent_id}_{uuid.uuid4().hex[:8]}",
+                        timestamp=datetime.now(),
+                        agent_id=agent_id,
+                        asin=str(asin),
+                        new_price=new_price,
+                        reason=tool_call.reasoning,
+                    )
+                    await self.event_bus.publish(cmd)
+                    logger.info(
+                        f"Dispatched SetPriceCommand from LLM tool for {agent_id}: {asin} @ {new_price}"
+                    )
 
         elif tool_call.tool_name == "place_order":
             supplier_id = (
@@ -1026,18 +1081,22 @@ class AgentManager:
             )  # Default if not specified
             asin = params.get("asin")
             quantity = int(params.get("quantity", 0))
-            max_price_raw = params.get("max_price")
+            max_price_raw = params.get("max_price", params.get("max_price_dollars"))
 
             if asin and quantity > 0:
                 # Defensive Money parsing
                 if isinstance(max_price_raw, Money):
                     max_price = max_price_raw
                 else:
-                    max_price = (
-                        Money(amount=float(max_price_raw))
-                        if max_price_raw is not None
-                        else Money(amount=0)
-                    )
+                    try:
+                        s = str(max_price_raw).strip().replace("$", "").replace(",", "")
+                        max_price = (
+                            Money.from_dollars(s)
+                            if max_price_raw is not None
+                            else Money.zero()
+                        )
+                    except Exception:
+                        max_price = Money.zero()
 
                 po = PlaceOrderCommand(
                     event_id=f"po_{agent_id}_{uuid.uuid4().hex[:8]}",
@@ -1056,6 +1115,212 @@ class AgentManager:
 
         else:
             logger.warning(f"No explicit handler for tool call: {tool_call.tool_name}")
+
+    # -------------------------------------------------------------------------
+    # Tick-aware event buffering + memory consolidation support
+    # -------------------------------------------------------------------------
+    def _serialize_products_for_agents(self) -> List[Dict[str, Any]]:
+        """
+        Convert WorldStore ProductState objects into plain dicts suitable for LLM prompts.
+
+        We intentionally return dicts (not dataclass objects) to keep runner inputs
+        stable across frameworks and avoid Pydantic validation issues.
+        """
+        if not self.world_store:
+            return []
+        try:
+            states = list(self.world_store.get_all_product_states().values())
+        except Exception:
+            return []
+
+        out: List[Dict[str, Any]] = []
+        for st in states:
+            if isinstance(st, dict):
+                out.append(dict(st))
+                continue
+            to_dict = getattr(st, "to_dict", None)
+            if callable(to_dict):
+                try:
+                    d = to_dict()
+                    if isinstance(d, dict):
+                        out.append(d)
+                        continue
+                except Exception:
+                    pass
+            # Best-effort fallback
+            try:
+                out.append(dict(vars(st)))
+            except Exception:
+                out.append({"repr": repr(st)})
+        return out
+
+    def _summarize_event_for_agents(self, event: Any) -> Dict[str, Any]:
+        """
+        Best-effort event summary for UI/debugging and LLM prompting.
+
+        Stable schema (similar to EventBus recording):
+          {"event_type": str, "timestamp": str, "tick": int, "data": dict}
+        """
+        event_type = getattr(event, "__class__", type(event)).__name__
+        ts_obj = getattr(event, "timestamp", None)
+        try:
+            ts = ts_obj.isoformat() if hasattr(ts_obj, "isoformat") else None
+        except Exception:
+            ts = None
+        if not ts:
+            ts = datetime.now(timezone.utc).isoformat()
+
+        # Prefer explicit to_summary_dict()
+        data: Dict[str, Any] = {}
+        try:
+            to_sum = getattr(event, "to_summary_dict", None)
+            if callable(to_sum):
+                payload = to_sum()
+                if isinstance(payload, dict):
+                    data = payload
+        except Exception:
+            data = {}
+        if not data:
+            try:
+                raw = vars(event)
+                data = raw if isinstance(raw, dict) else {"repr": repr(event)}
+            except Exception:
+                data = {"repr": repr(event)}
+
+        # Normalize to JSON-friendly primitives (avoid leaking Money/datetime objects)
+        def _jsonable(v: Any) -> Any:
+            if v is None or isinstance(v, (bool, int, float, str)):
+                return v
+            if hasattr(v, "isoformat"):
+                try:
+                    return v.isoformat()
+                except Exception:
+                    pass
+            try:
+                return str(v)
+            except Exception:
+                return repr(v)
+
+        safe_data: Dict[str, Any] = {}
+        for k, v in (data or {}).items():
+            try:
+                if isinstance(v, dict):
+                    safe_data[str(k)] = {
+                        str(kk): _jsonable(vv) for kk, vv in v.items()
+                    }
+                elif isinstance(v, list):
+                    safe_data[str(k)] = [_jsonable(i) for i in v]
+                else:
+                    safe_data[str(k)] = _jsonable(v)
+            except Exception:
+                safe_data[str(k)] = _jsonable(v)
+
+        tick = self._current_tick
+        try:
+            if hasattr(event, "tick_number") and isinstance(
+                getattr(event, "tick_number"), int
+            ):
+                tick = int(getattr(event, "tick_number"))
+        except Exception:
+            tick = self._current_tick
+
+        return {
+            "event_type": event_type,
+            "timestamp": ts,
+            "tick": int(tick),
+            "data": safe_data,
+        }
+
+    async def _handle_any_event_for_buffer(self, event: BaseEvent) -> None:
+        """
+        Capture all simulation events into a bounded per-tick buffer.
+
+        This provides stable, tick-scoped "recent_events" even when EventBus recording
+        is disabled (default), and enables end-of-day memory consolidation.
+        """
+        try:
+            summary = self._summarize_event_for_agents(event)
+            tick = int(summary.get("tick", self._current_tick))
+            buf = self._events_by_tick.setdefault(tick, [])
+            # Enforce per-tick cap (drop oldest)
+            if len(buf) >= self._max_events_per_tick:
+                del buf[0 : max(1, len(buf) - self._max_events_per_tick + 1)]
+            buf.append(summary)
+        except Exception:
+            # Never let buffering impact the simulation loop
+            return None
+
+    def _trim_event_history(self) -> None:
+        """Drop tick buffers older than the configured retention window."""
+        try:
+            keep_from = max(
+                0, int(self._current_tick) - int(self._keep_event_history_ticks)
+            )
+        except Exception:
+            keep_from = 0
+        to_delete = [t for t in list(self._events_by_tick.keys()) if int(t) < keep_from]
+        for t in to_delete:
+            self._events_by_tick.pop(t, None)
+            self._tool_calls_by_tick.pop(t, None)
+
+    async def _maybe_consolidate_memory_for_previous_tick(self) -> None:
+        """
+        Trigger per-agent memory consolidation for the previous simulation day.
+
+        We run consolidation at the start of tick T for tick T-1 to give the
+        event loop time to process and buffer all events from the previous day.
+        """
+        prev_tick = int(self._current_tick) - 1
+        if prev_tick < 0:
+            return
+        if prev_tick <= self._last_memory_consolidation_tick:
+            return
+
+        # Trim history before consolidation to keep memory bounded.
+        self._trim_event_history()
+
+        events = list(self._events_by_tick.get(prev_tick, []))
+        if not events:
+            self._last_memory_consolidation_tick = prev_tick
+            return
+
+        active_regs = list(self.agent_registry.active_agents().values())
+        if not active_regs:
+            self._last_memory_consolidation_tick = prev_tick
+            return
+
+        async def _consolidate_one(reg: Any) -> None:
+            runner = getattr(reg, "runner", None)
+            if not runner:
+                return
+            try:
+                agent_tool_calls = list(
+                    self._tool_calls_by_tick.get(prev_tick, {}).get(reg.agent_id, [])
+                )
+                ctx = {
+                    "tick": prev_tick,
+                    "simulation_time": self._current_simulation_time,
+                    "products": self._serialize_products_for_agents(),
+                    "recent_events": events,
+                    "agent_tool_calls": [
+                        {
+                            "tool_name": tc.tool_name,
+                            "parameters": tc.parameters,
+                            "reasoning": tc.reasoning,
+                            "confidence": tc.confidence,
+                            "priority": getattr(tc, "priority", 0),
+                        }
+                        for tc in agent_tool_calls
+                    ],
+                }
+                await runner.consolidate_memory(ctx)
+            except Exception as e:
+                logger.debug(f"Memory consolidation failed for {reg.agent_id}: {e}")
+
+        await asyncio.gather(
+            *(_consolidate_one(r) for r in active_regs), return_exceptions=True
+        )
+        self._last_memory_consolidation_tick = prev_tick
 
     def _create_pydantic_config_from_dict(
         self, agent_id: str, framework: str, config: Dict[str, Any]
@@ -1140,6 +1405,16 @@ class AgentManager:
         logger.debug(
             f"AgentManager received TickEvent for tick {event.tick_number}. Triggering decision cycle."
         )
+        # Update tick context (used by _build_shared_context and event buffering)
+        try:
+            self._current_tick = int(getattr(event, "tick_number", 0))
+        except Exception:
+            self._current_tick = 0
+        self._current_simulation_time = getattr(event, "simulation_time", None) or None
+
+        # Consolidate memory for the previous day (tick-1) before agents act today.
+        await self._maybe_consolidate_memory_for_previous_tick()
+
         await self.run_decision_cycle()
 
     async def _handle_agent_command_acknowledgement(

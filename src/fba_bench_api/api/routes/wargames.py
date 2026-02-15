@@ -189,7 +189,6 @@ async def _run_real_simulation(
 
     # Configure adversarial events based on request
     enabled_events = [e for e in request.events if e.enabled]
-    total_severity = sum(e.severity for e in enabled_events)
 
     # Tier difficulty affects event probability and impact
     tier_config = {
@@ -268,7 +267,7 @@ async def _run_real_simulation(
                 logger.warning(f"Agent decision failed on tick {day}: {e}")
 
         # Process market simulation for this tick
-        market_sim.process_for_asin(product_asin)
+        await market_sim.process_for_asin(product_asin)
 
         # Get current state for tick result
         current_inventory = world_store.get_inventory(product_asin)

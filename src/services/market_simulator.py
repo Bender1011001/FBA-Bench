@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 from money import Money
 from collections import deque
 
-from fba_bench_core.domain.market.customer import Customer, CustomerPool
+from fba_bench_core.domain.market.customer import CustomerPool
 from services.trust_score_service import TrustScoreService
 from services.fee_calculation_service import FeeCalculationService
 from services.world_store import WorldStore
@@ -353,7 +353,7 @@ class MarketSimulationService:
             "customers_per_tick": self._customers_per_tick,
         }
 
-    async def process_for_asin(self, asin: str) -> None:
+    async def process_for_asin(self, asin: str) -> Dict[str, Any]:
         """
         Execute market simulation for a single ASIN for the current tick:
         - Read canonical price and inventory from WorldStore
@@ -367,7 +367,7 @@ class MarketSimulationService:
                 logger.debug(
                     f"No product state for ASIN {asin}, skipping market processing."
                 )
-                return
+                return {"asin": asin, "skipped": True}
 
             current_price = product.price
             ref_price = self._compute_price_reference(asin, current_price)
@@ -555,8 +555,24 @@ class MarketSimulationService:
                 f"demand={units_demanded}, sold={units_sold}, revenue={revenue}"
             )
 
+            # Return a stable summary for callers that want to update their own UI/state
+            # without depending on async event dispatch ordering.
+            return {
+                "asin": asin,
+                "skipped": False,
+                "units_demanded": int(units_demanded),
+                "units_sold": int(units_sold),
+                "inventory_before": int(inventory_qty),
+                "inventory_after": int(max(0, inventory_qty - units_sold)),
+                "price_cents": int(getattr(current_price, "cents", 0)),
+                "revenue_cents": int(getattr(revenue, "cents", 0)),
+                "profit_cents": int(getattr(total_profit, "cents", 0)),
+                "fees_cents": int(getattr(total_fees, "cents", 0)),
+            }
+
         except (TypeError, AttributeError, RuntimeError) as e:
             logger.error(
                 f"Error in MarketSimulationService.process_for_asin for {asin}: {e}",
                 exc_info=True,
             )
+            return {"asin": asin, "skipped": True, "error": str(e)}

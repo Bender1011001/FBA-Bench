@@ -16,7 +16,7 @@ signal tick_received(tick_data: Dictionary)
 signal agent_event_received(agent_id: String, event_type: String, data: Dictionary)
 signal market_event_received(data: Dictionary)
 
-const WS_URL = "ws://localhost:8000/ws/realtime"
+var ws_url: String = "ws://localhost:8080/ws/realtime"
 const RECONNECT_DELAY = 3.0
 const PING_INTERVAL = 20.0
 
@@ -30,14 +30,46 @@ var auto_reconnect: bool = true
 
 func _ready():
 	set_process(true)
+	ws_url = _resolve_ws_url()
+	print("[WS] URL: ", ws_url)
 	# Optional: connect_to_server()
+
+func _resolve_ws_url() -> String:
+	# Prefer explicit WS URL. Otherwise derive from HTTP base URL envs.
+	var u = OS.get_environment("FBA_BENCH_WS_URL")
+	if u != "":
+		return _normalize_url(u)
+
+	var http_base = OS.get_environment("FBA_BENCH_HTTP_BASE_URL")
+	if http_base == "":
+		http_base = OS.get_environment("FBA_BENCH_BASE_URL")
+	if http_base == "":
+		return "ws://localhost:8080/ws/realtime" # One-click demo default
+
+	return _derive_ws_url(_normalize_url(http_base))
+
+func _normalize_url(u: String) -> String:
+	if u.ends_with("/"):
+		return u.substr(0, u.length() - 1)
+	return u
+
+func _derive_ws_url(http_base: String) -> String:
+	var base = http_base
+	if base.begins_with("https://"):
+		base = "wss://" + base.substr(8)
+	elif base.begins_with("http://"):
+		base = "ws://" + base.substr(7)
+	# If caller already provided a ws(s) URL, keep it.
+	if base.find("/ws/") == -1:
+		base += "/ws/realtime"
+	return base
 
 func connect_to_server():
 	if socket.get_ready_state() != WebSocketPeer.STATE_CLOSED:
 		return
 	
-	socket.connect_to_url(WS_URL)
-	print("[WS] Connecting to: ", WS_URL)
+	socket.connect_to_url(ws_url)
+	print("[WS] Connecting to: ", ws_url)
 
 func disconnect_from_server():
 	auto_reconnect = false

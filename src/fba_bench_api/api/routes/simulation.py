@@ -175,10 +175,8 @@ from fastapi import BackgroundTasks
 # Import the real simulation runner
 from fba_bench_api.core.simulation_runner import (
     RealSimulationRunner,
-    get_simulation,
     register_simulation,
     unregister_simulation,
-    cleanup_simulation,
 )
 
 # Store for running background simulation tasks (legacy compatibility)
@@ -286,11 +284,42 @@ async def run_simulation(
         }
 
     # Build simulation configuration from metadata
-    metadata = current.get("metadata", {})
+    metadata = current.get("metadata", {}) or {}
+
+    # Speed controls (used by godot_gui/):
+    # - metadata.speed is treated as a multiplier where higher = faster wall-clock execution
+    # - We keep the simulated time delta per tick stable by applying the multiplier to
+    #   time_acceleration while inversely scaling tick_interval.
+    #
+    # Callers can override this by providing explicit tick_interval and/or time_acceleration.
+    default_tick_interval = 0.1
+    try:
+        base_tick_interval = float(metadata.get("tick_interval", default_tick_interval))
+    except Exception:
+        base_tick_interval = default_tick_interval
+
+    tick_interval = base_tick_interval
+    try:
+        time_acceleration = float(metadata.get("time_acceleration", 1.0))
+    except Exception:
+        time_acceleration = 1.0
+
+    if "speed" in metadata and "tick_interval" not in metadata:
+        try:
+            speed = float(metadata.get("speed", 1.0))
+        except Exception:
+            speed = 1.0
+        if speed <= 0:
+            speed = 1.0
+        tick_interval = base_tick_interval / speed
+        if "time_acceleration" not in metadata:
+            time_acceleration = speed
+
     config = {
         "max_ticks": metadata.get("max_ticks", 100),
         "seed": metadata.get("seed", 42),
-        "tick_interval": metadata.get("tick_interval", 0.1),
+        "tick_interval": tick_interval,
+        "time_acceleration": time_acceleration,
         "base_demand": metadata.get("base_demand", 100),
         "elasticity": metadata.get("elasticity", 1.5),
         "use_agent_mode": metadata.get("use_agent_mode", True),

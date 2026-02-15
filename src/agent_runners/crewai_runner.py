@@ -18,7 +18,7 @@ import logging
 import os
 import time
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -30,6 +30,13 @@ from .base_runner import (
 )
 
 logger = logging.getLogger(__name__)
+
+from .long_term_memory import (  # isort: skip
+    LongTermMemoryStore,
+    build_day_digest_text,
+    build_reflection_prompt,
+    extract_json_object,
+)
 
 
 # ----------------------------- Config Schemas ---------------------------------
@@ -73,6 +80,22 @@ class CrewAIRunnerConfig(BaseModel):
     system_prompt: Optional[str] = Field(
         default="You are an FBA pricing expert. Provide JSON-only outputs.",
     )
+    competition_awareness: Literal["aware", "unaware"] = Field(
+        default="unaware",
+        description="Whether the agent is explicitly told it is competing against other agents.",
+    )
+
+    # LLM-driven long-term memory (per simulation day)
+    long_term_memory_enabled: bool = Field(
+        default=False,
+        description="Enable per-day long-term memory consolidation (LLM reflection).",
+    )
+    long_term_memory_max_items: int = Field(default=50, ge=1)
+    long_term_memory_prompt_items: int = Field(default=10, ge=0)
+    long_term_memory_max_additions_per_day: int = Field(default=5, ge=0)
+    long_term_memory_max_forgets_per_day: int = Field(default=5, ge=0)
+    long_term_memory_max_chars_per_item: int = Field(default=400, ge=40)
+    long_term_memory_reflection_max_event_lines: int = Field(default=20, ge=0)
     agent_name: Optional[str] = Field(default="CrewAI Pricing Agent")
     allow_delegation: Optional[bool] = Field(default=False)
     verbose: Optional[bool] = Field(
@@ -163,21 +186,45 @@ def _normalize_tools(
     return norm
 
 
-def _format_task_prompt(cfg: CrewAIRunnerConfig, ti: CrewAITaskInput) -> str:
+def _effective_system_prompt(cfg: CrewAIRunnerConfig) -> str:
+    base = (cfg.system_prompt or "").strip()
+    if cfg.competition_awareness == "aware":
+        extra = (
+            "You are competing against other agents in a multi-agent simulation. "
+            "Your goal is to maximize relative performance (profit, survival, and strategic advantage). "
+            "Assume rivals will adapt; avoid brittle strategies."
+        )
+        base = (base + "\n\n" + extra).strip() if base else extra
+    return base
+
+
+def _format_task_prompt(
+    cfg: CrewAIRunnerConfig,
+    ti: CrewAITaskInput,
+    *,
+    long_term_memory_text: Optional[str],
+) -> str:
     """Create a deterministic prompt for CrewAI Task."""
     parts: List[str] = []
-    if cfg.system_prompt:
-        parts.append(cfg.system_prompt)
+    sys_prompt = _effective_system_prompt(cfg)
+    if sys_prompt:
+        parts.append(sys_prompt)
     if ti.prompt:
         parts.append(ti.prompt)
+    ltm = (long_term_memory_text or "").strip()
+    if ltm:
+        parts.append(ltm)
 
     # Include structured context succinctly
     if ti.products:
         parts.append("PRODUCTS:")
         for p in ti.products:
+            price = p.get("current_price", p.get("price", "?"))
+            cost = p.get("cost", p.get("cost_basis", "?"))
+            rank = p.get("sales_rank", p.get("bsr", p.get("rank", "?")))
+            inv = p.get("inventory", p.get("inventory_quantity", "?"))
             parts.append(
-                f"- ASIN={p.get('asin','?')} price={p.get('current_price','?')} cost={p.get('cost','?')} "
-                f"rank={p.get('sales_rank','?')} inv={p.get('inventory','?')}"
+                f"- ASIN={p.get('asin','?')} price={price} cost={cost} rank={rank} inv={inv}"
             )
     if ti.market_conditions:
         parts.append("MARKET:")
@@ -208,6 +255,11 @@ class CrewAIRunner(AgentRunner):
         self._cfg = CrewAIRunnerConfig.model_validate(config or {})
         self._crewai_agent = None
         self._crew = None
+        self._ltm_store = LongTermMemoryStore(
+            max_items=self._cfg.long_term_memory_max_items,
+            prompt_items=self._cfg.long_term_memory_prompt_items,
+            max_chars_per_item=self._cfg.long_term_memory_max_chars_per_item,
+        )
         self._tools_spec: List[ToolSpec] = _normalize_tools(self._cfg.tools)
         super().__init__(agent_id, config)
 
@@ -336,10 +388,18 @@ class CrewAIRunner(AgentRunner):
         wrapped_tools = self._wrap_tools_for_crewai(tools_spec)
 
         # Build prompt and Task
-        prompt = _format_task_prompt(self._cfg, inp)
-        steps.append({"role": "system", "content": self._cfg.system_prompt or ""})
-        if inp.prompt:
-            steps.append({"role": "user", "content": inp.prompt})
+        ltm_text = (
+            self._ltm_store.render_for_prompt()
+            if bool(self._cfg.long_term_memory_enabled)
+            else ""
+        )
+        prompt = _format_task_prompt(
+            self._cfg, inp, long_term_memory_text=ltm_text
+        )
+        steps.append(
+            {"role": "system", "content": _effective_system_prompt(self._cfg)}
+        )
+        steps.append({"role": "user", "content": prompt})
 
         try:
             from crewai import Task  # type: ignore
@@ -435,13 +495,121 @@ class CrewAIRunner(AgentRunner):
                 agent_id=self.agent_id,
                 framework="CrewAI",
             )
-        # Adapt as a plain dict for ToolCall wrapper upstream
-        return result
+        parsed = extract_json_object(str(result.get("output") or "")) or {}
+        if not isinstance(parsed, dict):
+            parsed = {}
+        if "decisions" not in parsed or not isinstance(parsed.get("decisions"), list):
+            parsed["decisions"] = []
+        meta = parsed.get("meta")
+        if not isinstance(meta, dict):
+            meta = {}
+            parsed["meta"] = meta
+        meta.setdefault("tick", int(context.get("tick", 0)))
+        return parsed
 
     def _do_cleanup(self) -> None:
         self._crewai_agent = None
         self._crew = None
         logger.info("CrewAI runner %s cleaned up", self.agent_id)
+
+    async def consolidate_memory(self, context: Dict[str, Any]) -> None:
+        """
+        End-of-day long-term memory consolidation via LLM reflection (CrewAI kickoff).
+
+        Expected context shape (best-effort):
+          - tick: int
+          - recent_events: list[dict]
+          - agent_tool_calls: list[dict]
+        """
+        if not bool(getattr(self._cfg, "long_term_memory_enabled", False)):
+            return
+
+        try:
+            tick = int(context.get("tick", -1))
+        except Exception:
+            tick = -1
+        if tick < 0:
+            return
+        if tick <= int(getattr(self._ltm_store, "last_consolidated_tick", -1)):
+            return
+
+        # Ensure initialized so we have a crew to kickoff.
+        try:
+            if self.status != AgentRunnerStatus.READY or self._crew is None:
+                self._do_initialize()
+                self.status = AgentRunnerStatus.READY
+        except Exception:
+            return
+
+        events = context.get("recent_events") or []
+        tool_calls = context.get("agent_tool_calls") or []
+
+        digest = build_day_digest_text(
+            events,
+            tool_calls,
+            max_event_lines=int(self._cfg.long_term_memory_reflection_max_event_lines),
+        )
+        reflection_prompt = build_reflection_prompt(
+            agent_id=self.agent_id,
+            tick=tick,
+            digest_text=digest,
+            existing_memories=self._ltm_store.serialize_for_reflection(),
+            max_items=int(self._cfg.long_term_memory_max_items),
+            max_additions=int(self._cfg.long_term_memory_max_additions_per_day),
+            max_forgets=int(self._cfg.long_term_memory_max_forgets_per_day),
+        )
+
+        try:
+            from crewai import Task  # type: ignore
+
+            task = Task(
+                description=reflection_prompt,
+                agent=self._crewai_agent,
+                expected_output="JSON with promote/forget decisions",
+            )
+            # Replace tasks, run.
+            self._crew.tasks = [task]  # type: ignore[attr-defined]
+            result = await asyncio.to_thread(self._crew.kickoff)  # type: ignore[attr-defined]
+            raw = result if isinstance(result, str) else str(result)
+        except Exception as e:
+            logger.debug(
+                "CrewAI memory consolidation kickoff failed for %s at tick %s: %s",
+                self.agent_id,
+                tick,
+                e,
+            )
+            return
+
+        obj = extract_json_object(raw) or {}
+        promote = obj.get("promote") or []
+        forget = obj.get("forget") or []
+        if not isinstance(promote, list):
+            promote = []
+        if not isinstance(forget, list):
+            forget = []
+
+        try:
+            added, removed = self._ltm_store.apply_reflection(
+                tick=tick,
+                promote=promote,
+                forget_ids=[str(i) for i in forget],
+                max_additions=int(self._cfg.long_term_memory_max_additions_per_day),
+                max_forgets=int(self._cfg.long_term_memory_max_forgets_per_day),
+            )
+            self.metrics["long_term_memory"] = {
+                "enabled": True,
+                "items": int(len(self._ltm_store.items)),
+                "last_tick": int(self._ltm_store.last_consolidated_tick),
+                "added": int(added),
+                "removed": int(removed),
+            }
+        except Exception as e:
+            logger.debug(
+                "CrewAI memory consolidation apply failed for %s at tick %s: %s",
+                self.agent_id,
+                tick,
+                e,
+            )
 
 
 __all__ = ["CrewAIRunner", "CrewAIRunnerConfig", "CrewAITaskInput", "ToolSpec"]

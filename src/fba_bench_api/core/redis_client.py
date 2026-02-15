@@ -19,8 +19,12 @@ class RedisClient:
         # settings = get_settings()
         # Use the environment variable or a default (matching docker-compose)
         # self.redis_url = settings.redis_url or "redis://:fba_dev_redis@localhost:6379/0"
-        self.redis_url = os.getenv(
-            "REDIS_URL", "redis://:fba_dev_redis@localhost:6379/0"
+        # Support both legacy REDIS_URL and repo-standard FBA_BENCH_REDIS_URL.
+        # Compose files primarily set FBA_BENCH_REDIS_URL.
+        self.redis_url = (
+            os.getenv("REDIS_URL")
+            or os.getenv("FBA_BENCH_REDIS_URL")
+            or "redis://:fba_dev_redis@localhost:6379/0"
         )
         self._redis: Optional[redis.Redis] = None
 
@@ -28,7 +32,8 @@ class RedisClient:
         """Establishes the Redis connection pool."""
         if not self._redis:
             self._redis = redis.from_url(self.redis_url, decode_responses=True)
-            logger.info(f"Connected to Redis at {self.redis_url}")
+            # Avoid logging credentials embedded in URLs.
+            logger.info("Connected to Redis")
 
     async def close(self):
         """Closes the Redis connection."""

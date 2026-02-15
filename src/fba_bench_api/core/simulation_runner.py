@@ -23,11 +23,9 @@ from fba_bench_core.simulation_orchestrator import (
     SimulationConfig,
     SimulationOrchestrator,
 )
-from fba_bench_core.event_bus import EventBus, get_event_bus
+from fba_bench_core.event_bus import EventBus
 from fba_events.time_events import TickEvent
-from fba_events.sales import SaleOccurred
 from fba_events.inventory import InventoryUpdate
-from fba_events.pricing import ProductPriceUpdated
 
 from services.world_store import WorldStore, ProductState
 from services.market_simulator import MarketSimulationService
@@ -53,6 +51,8 @@ class SimulationState:
     total_units_sold: int = 0
     total_profit_cents: int = 0
     inventory_value_cents: int = 0
+    inventory_units: int = 0
+    pending_orders: int = 0
 
     # Agent tracking
     agents: List[Dict[str, Any]] = field(default_factory=list)
@@ -67,6 +67,9 @@ class SimulationState:
                 "total_profit": self.total_profit_cents / 100.0,
                 "units_sold": self.total_units_sold,
                 "inventory_value": self.inventory_value_cents / 100.0,
+                # Back-compat for existing UI fields in godot_gui/
+                "inventory_count": self.inventory_units,
+                "pending_orders": int(self.pending_orders),
             },
             "agents": self.agents,
             "status": self.status,
@@ -122,8 +125,31 @@ class RealSimulationRunner:
         self._running = False
         self._runner_task: Optional[asyncio.Task] = None
 
-        # Event accumulator for tick
-        self._tick_sales: List[SaleOccurred] = []
+        # Per-tick stats (for UI)
+        self._tick_units_sold: int = 0
+        self._tick_units_demanded: int = 0
+
+        # Auto-restock (demo-friendly). This keeps long runs visually interesting.
+        # It is intentionally simple: schedule inbound replenishment when inventory is low.
+        self._restock_enabled: bool = bool(self.config.get("restock_enabled", True))
+        self._restock_reorder_ratio: float = float(
+            self.config.get("restock_reorder_ratio", 0.06)
+        )
+        self._restock_target_ratio: float = float(
+            self.config.get("restock_target_ratio", 1.0)
+        )
+        self._restock_lead_time_min: int = int(
+            self.config.get("restock_lead_time_min_ticks", 3)
+        )
+        self._restock_lead_time_max: int = int(
+            self.config.get("restock_lead_time_max_ticks", 7)
+        )
+        self._inventory_baseline: Dict[str, int] = {}
+        # asin -> {"arrival_tick": int}
+        self._pending_restocks: Dict[str, Dict[str, int]] = {}
+        import random as _random
+
+        self._restock_rng = _random.Random(int(self._seed) + 1337)
 
         logger.info(f"RealSimulationRunner initialized for simulation {simulation_id}")
 
@@ -161,7 +187,6 @@ class RealSimulationRunner:
         self._orchestrator = SimulationOrchestrator(orchestrator_config)
 
         # Subscribe to events for aggregation
-        await self._event_bus.subscribe(SaleOccurred, self._on_sale_occurred)
         await self._event_bus.subscribe(TickEvent, self._on_tick_event)
 
         logger.info(
@@ -189,6 +214,7 @@ class RealSimulationRunner:
                     metadata=product_cfg.get("metadata", {}),
                 )
                 self._world_store.set_product_state(asin, ps)
+                self._inventory_baseline[asin] = int(ps.inventory_quantity)
         else:
             # Generate default products with seeded randomness
             for i, asin in enumerate(self._asins):
@@ -210,42 +236,142 @@ class RealSimulationRunner:
                     },
                 )
                 self._world_store.set_product_state(asin, ps)
+                self._inventory_baseline[asin] = int(ps.inventory_quantity)
 
         logger.info(f"Initialized {len(self._asins)} products in WorldStore")
-
-    async def _on_sale_occurred(self, event: SaleOccurred) -> None:
-        """Accumulate sales events per tick."""
-        self._tick_sales.append(event)
-
-        # Update aggregate metrics
-        self._state.total_revenue_cents += event.total_revenue.cents
-        self._state.total_profit_cents += event.total_profit.cents
-        self._state.total_units_sold += event.units_sold
 
     async def _on_tick_event(self, event: TickEvent) -> None:
         """Process each tick: run market simulation and publish state."""
         self._state.current_tick = event.tick_number
 
-        # Clear tick accumulators
-        self._tick_sales.clear()
+        # Apply inbound restocks first (arrivals happen at the start of a tick).
+        if self._restock_enabled:
+            await self._apply_due_restocks(event.tick_number)
 
-        # Process market simulation for each ASIN
+        # Clear per-tick counters
+        self._tick_units_sold = 0
+        self._tick_units_demanded = 0
+
+        # Process market simulation for each ASIN and update state synchronously.
+        tick_rev_cents = 0
+        tick_profit_cents = 0
         for asin in self._asins:
-            await self._market_service.process_for_asin(asin)
+            summary = await self._market_service.process_for_asin(asin)
+            if not isinstance(summary, dict) or summary.get("skipped", False):
+                continue
+
+            units_demanded = int(summary.get("units_demanded", 0))
+            units_sold = int(summary.get("units_sold", 0))
+            inv_after = int(summary.get("inventory_after", 0))
+
+            self._tick_units_demanded += max(0, units_demanded)
+            self._tick_units_sold += max(0, units_sold)
+
+            tick_rev_cents += int(summary.get("revenue_cents", 0))
+            tick_profit_cents += int(summary.get("profit_cents", 0))
+
+            # Ensure WorldStore state is updated before we publish the tick payload.
+            product = self._world_store.get_product_state(asin) if self._world_store else None
+            if product:
+                product.inventory_quantity = max(0, inv_after)
+                product.last_updated = datetime.now(timezone.utc)
+
+        # Aggregate totals (cumulative)
+        self._state.total_revenue_cents += tick_rev_cents
+        self._state.total_profit_cents += tick_profit_cents
+        self._state.total_units_sold += self._tick_units_sold
+
+        # Schedule new restocks after sales
+        if self._restock_enabled:
+            self._schedule_restocks(event.tick_number)
+        self._state.pending_orders = len(self._pending_restocks)
 
         # Calculate current inventory value
         total_inv_value = 0
+        total_inv_units = 0
         for asin in self._asins:
             product = self._world_store.get_product_state(asin)
             if product:
+                total_inv_units += int(product.inventory_quantity)
                 total_inv_value += product.inventory_quantity * product.cost_basis.cents
         self._state.inventory_value_cents = total_inv_value
+        self._state.inventory_units = total_inv_units
 
         # Build agent state from sales data
         self._state.agents = await self._build_agent_state()
 
         # Publish to Redis if available
         await self._publish_tick_update()
+
+    async def _apply_due_restocks(self, tick_number: int) -> None:
+        """Apply any inbound shipments scheduled for this tick."""
+        if not self._world_store or not self._event_bus:
+            return
+
+        due: List[str] = []
+        for asin, payload in list(self._pending_restocks.items()):
+            arrival = int(payload.get("arrival_tick", 0))
+            if tick_number >= arrival:
+                due.append(asin)
+
+        if not due:
+            return
+
+        for asin in due:
+            product = self._world_store.get_product_state(asin)
+            if not product:
+                self._pending_restocks.pop(asin, None)
+                continue
+
+            prev_qty = int(product.inventory_quantity)
+            baseline = int(self._inventory_baseline.get(asin, prev_qty))
+            target = int(max(prev_qty, round(baseline * self._restock_target_ratio)))
+            if target <= prev_qty:
+                self._pending_restocks.pop(asin, None)
+                continue
+
+            product.inventory_quantity = target
+            product.last_updated = datetime.now(timezone.utc)
+
+            try:
+                await self._event_bus.publish(
+                    InventoryUpdate(
+                        event_id=f"restock_{asin}_{tick_number}",
+                        timestamp=datetime.now(timezone.utc),
+                        asin=asin,
+                        new_quantity=target,
+                        previous_quantity=prev_qty,
+                        change_reason="inbound_shipment",
+                        agent_id="auto_restock",
+                        cost_basis=product.cost_basis,
+                    )
+                )
+            except Exception:
+                # Restock is best-effort for demo stability.
+                pass
+
+            self._pending_restocks.pop(asin, None)
+
+    def _schedule_restocks(self, tick_number: int) -> None:
+        """Schedule inbound shipments for low-inventory products."""
+        if not self._world_store:
+            return
+
+        # Clamp lead time range to avoid invalid randint bounds
+        lead_min = max(1, int(self._restock_lead_time_min))
+        lead_max = max(lead_min, int(self._restock_lead_time_max))
+
+        for asin in self._asins:
+            if asin in self._pending_restocks:
+                continue
+            baseline = int(self._inventory_baseline.get(asin, 0))
+            if baseline <= 0:
+                continue
+            reorder_point = max(0, int(round(baseline * float(self._restock_reorder_ratio))))
+            current_qty = int(self._world_store.get_product_inventory_quantity(asin))
+            if current_qty <= reorder_point:
+                lead = int(self._restock_rng.randint(lead_min, lead_max))
+                self._pending_restocks[asin] = {"arrival_tick": int(tick_number + lead)}
 
     async def _build_agent_state(self) -> List[Dict[str, Any]]:
         """Build agent visualization state from current simulation state."""
@@ -282,7 +408,7 @@ class RealSimulationRunner:
                 "y": 300,
                 "state": "Processing",
                 "metrics": {
-                    "tick_sales": len(self._tick_sales),
+                    "tick_sales": int(self._tick_units_sold),
                     "total_revenue": self._state.total_revenue_cents / 100.0,
                 },
             }

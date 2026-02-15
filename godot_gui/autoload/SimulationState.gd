@@ -64,12 +64,17 @@ func _process_tick(data: Dictionary):
 func _process_snapshot(data: Dictionary):
 	# Map snapshot format to tick-like structure for UI consumption
 	var kpis = data.get("kpis", {})
+	if not (kpis is Dictionary):
+		kpis = {}
 	var snapshot_tick_data = {
-		"tick": data.get("tick", last_tick),
+		"tick": int(data.get("tick", last_tick)),
 		"metrics": {
-			"total_revenue": kpis.get("revenue", 0.0),
-			"inventory_count": kpis.get("units_sold", 0),
-			"pending_orders": 0
+			"total_revenue": float(kpis.get("revenue", 0.0)),
+			"total_profit": float(kpis.get("profit", 0.0)),
+			"units_sold": int(kpis.get("units_sold", 0)),
+			# Snapshot KPIs don't include inventory/pending orders yet; keep sane defaults.
+			"inventory_count": int(kpis.get("inventory_count", kpis.get("inventory_units", 0))),
+			"pending_orders": int(kpis.get("pending_orders", 0)),
 		},
 		"agents": data.get("agents", []),
 		"world": {},

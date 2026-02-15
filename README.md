@@ -63,13 +63,23 @@ poetry run uvicorn fba_bench_api.main:get_app --factory --reload --host 127.0.0.
 Swagger UI: http://localhost:8000/docs
 
 ### Godot GUI (Local)
-Option 1: Open Godot 4.5+, import `godot_gui/`, press F5.
+The GUI reads connection settings from environment variables:
+- `FBA_BENCH_HTTP_BASE_URL` (default: `http://localhost:8080`)
+- `FBA_BENCH_WS_URL` (default: derived from HTTP base, `/ws/realtime`)
 
-Option 2: Use the launcher (starts backend if needed):
+Option 1: Use the launcher (starts backend if needed):
 ```
-python launch_godot_gui.py
+poetry run python launch_godot_gui.py
 ```
 If Godot is not on PATH, set `GODOT_EXE` to your Godot executable path.
+
+Option 2: Connect the GUI to the one-click Docker stack (nginx on `:8080`):
+```
+docker compose -f docker-compose.oneclick.yml up -d --build
+poetry run python launch_godot_gui.py --no-backend --port 8080
+```
+
+Tip: toggle "Cinematic Mode" (or press `C`) to hide UI, enable auto-camera, and show the end-of-run recap.
 
 ## Development Setup
 See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile commands for linting (`make lint`), testing (`make test-all`), and local CI (`make ci-local`).

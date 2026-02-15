@@ -18,7 +18,7 @@ import logging
 import os
 import time
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -30,6 +30,13 @@ from .base_runner import (
 )
 
 logger = logging.getLogger(__name__)
+
+from .long_term_memory import (  # isort: skip
+    LongTermMemoryStore,
+    build_day_digest_text,
+    build_reflection_prompt,
+    extract_json_object,
+)
 
 
 # ----------------------------- Config Schemas ---------------------------------
@@ -69,6 +76,22 @@ class LangChainRunnerConfig(BaseModel):
     system_prompt: Optional[str] = Field(
         default="You are an FBA pricing expert. Provide JSON-only outputs."
     )
+    competition_awareness: Literal["aware", "unaware"] = Field(
+        default="unaware",
+        description="Whether the agent is explicitly told it is competing against other agents.",
+    )
+
+    # LLM-driven long-term memory (per simulation day)
+    long_term_memory_enabled: bool = Field(
+        default=False,
+        description="Enable per-day long-term memory consolidation (LLM reflection).",
+    )
+    long_term_memory_max_items: int = Field(default=50, ge=1)
+    long_term_memory_prompt_items: int = Field(default=10, ge=0)
+    long_term_memory_max_additions_per_day: int = Field(default=5, ge=0)
+    long_term_memory_max_forgets_per_day: int = Field(default=5, ge=0)
+    long_term_memory_max_chars_per_item: int = Field(default=400, ge=40)
+    long_term_memory_reflection_max_event_lines: int = Field(default=20, ge=0)
     agent_name: Optional[str] = Field(default="LangChain Pricing Agent")
     llm_model_kwargs: Optional[Dict[str, Any]] = Field(
         default=None, description="Additional model kwargs for the LLM"
@@ -93,6 +116,8 @@ class LangChainRunnerConfig(BaseModel):
                     "temperature": 0.2,
                     "max_tokens": 1024,
                     "memory": False,
+                    "competition_awareness": "unaware",
+                    "long_term_memory_enabled": True,
                     "system_prompt": "Pricing specialist; output strictly JSON.",
                     "agent_name": "lc_pricing_agent_1",
                 },
@@ -174,21 +199,51 @@ def _normalize_tools(
     return norm
 
 
+def _effective_system_prompt(cfg: LangChainRunnerConfig) -> str:
+    base = (cfg.system_prompt or "").strip()
+    if cfg.competition_awareness == "aware":
+        extra = (
+            "You are competing against other agents in a multi-agent simulation. "
+            "Your goal is to maximize relative performance (profit, survival, and strategic advantage). "
+            "Assume rivals will adapt; avoid brittle strategies."
+        )
+        base = (base + "\n\n" + extra).strip() if base else extra
+    return base
+
+
 def _format_context_prompt(cfg: LangChainRunnerConfig, ti: LangChainTaskInput) -> str:
-    """Create a deterministic context prompt."""
+    """Create a deterministic context prompt.
+
+    Note: system prompt is sent separately (when supported) so we avoid duplicating it
+    in the user prompt.
+    """
+    return _format_context_prompt_with_memory(cfg, ti, long_term_memory_text=None)
+
+
+def _format_context_prompt_with_memory(
+    cfg: LangChainRunnerConfig,
+    ti: LangChainTaskInput,
+    *,
+    long_term_memory_text: Optional[str],
+) -> str:
+    """Create a deterministic context prompt, optionally including LTM snippet."""
     parts: List[str] = []
-    if cfg.system_prompt:
-        parts.append(cfg.system_prompt)
     if ti.prompt:
         parts.append(ti.prompt)
+    ltm = (long_term_memory_text or "").strip()
+    if ltm:
+        parts.append(ltm)
 
     # Include structured context succinctly
     if ti.products:
         parts.append("PRODUCTS:")
         for p in ti.products:
+            price = p.get("current_price", p.get("price", "?"))
+            cost = p.get("cost", p.get("cost_basis", "?"))
+            rank = p.get("sales_rank", p.get("bsr", p.get("rank", "?")))
+            inv = p.get("inventory", p.get("inventory_quantity", "?"))
             parts.append(
-                f"- ASIN={p.get('asin','?')} price={p.get('current_price','?')} cost={p.get('cost','?')} "
-                f"rank={p.get('sales_rank','?')} inv={p.get('inventory','?')}"
+                f"- ASIN={p.get('asin','?')} price={price} cost={cost} rank={rank} inv={inv}"
             )
     if ti.market_conditions:
         parts.append("MARKET:")
@@ -219,6 +274,11 @@ class LangChainRunner(AgentRunner):
         self._cfg = LangChainRunnerConfig.model_validate(config or {})
         self._llm = None
         self._agent = None
+        self._ltm_store = LongTermMemoryStore(
+            max_items=self._cfg.long_term_memory_max_items,
+            prompt_items=self._cfg.long_term_memory_prompt_items,
+            max_chars_per_item=self._cfg.long_term_memory_max_chars_per_item,
+        )
         self._tools_spec: List[ToolSpec] = _normalize_tools(self._cfg.tools)
         super().__init__(agent_id, config)
 
@@ -370,10 +430,18 @@ class LangChainRunner(AgentRunner):
                 logger.debug("Failed to rebuild agent with per-run tools: %s", e)
                 self._agent = None
 
-        prompt = _format_context_prompt(self._cfg, inp)
-        steps.append({"role": "system", "content": self._cfg.system_prompt or ""})
-        if inp.prompt:
-            steps.append({"role": "user", "content": inp.prompt})
+        system_prompt = _effective_system_prompt(self._cfg)
+        ltm_text = (
+            self._ltm_store.render_for_prompt()
+            if bool(self._cfg.long_term_memory_enabled)
+            else ""
+        )
+        prompt = _format_context_prompt_with_memory(
+            self._cfg, inp, long_term_memory_text=ltm_text
+        )
+        if system_prompt:
+            steps.append({"role": "system", "content": system_prompt})
+        steps.append({"role": "user", "content": prompt})
 
         try:
             await _maybe_publish_progress(
@@ -382,7 +450,12 @@ class LangChainRunner(AgentRunner):
 
             if self._agent is not None:
                 # Use agent with tools
-                result_text = await asyncio.to_thread(self._agent.run, prompt)  # type: ignore
+                agent_prompt = (
+                    (system_prompt + "\n\n" + prompt).strip()
+                    if system_prompt
+                    else prompt
+                )
+                result_text = await asyncio.to_thread(self._agent.run, agent_prompt)  # type: ignore
                 # We don't have direct tool trace without deeper callbacks; record available tools
                 for ts in tools_spec:
                     tool_calls.append(
@@ -398,13 +471,18 @@ class LangChainRunner(AgentRunner):
 
                 if SystemMessage and HumanMessage:
                     msgs = []
-                    if self._cfg.system_prompt:
-                        msgs.append(SystemMessage(content=self._cfg.system_prompt))
+                    if system_prompt:
+                        msgs.append(SystemMessage(content=system_prompt))
                     msgs.append(HumanMessage(content=prompt))
                     resp = await asyncio.to_thread(self._llm.invoke, msgs)  # type: ignore
                 else:
                     # Fallback: pass a plain string to .invoke
-                    resp = await asyncio.to_thread(self._llm.invoke, prompt)  # type: ignore
+                    combined = (
+                        (system_prompt + "\n\n" + prompt).strip()
+                        if system_prompt
+                        else prompt
+                    )
+                    resp = await asyncio.to_thread(self._llm.invoke, combined)  # type: ignore
 
                 # resp could be a Message or dict-like
                 result_text = getattr(resp, "content", None) or str(resp)
@@ -471,12 +549,127 @@ class LangChainRunner(AgentRunner):
                 agent_id=self.agent_id,
                 framework="LangChain",
             )
-        return result
+        parsed = extract_json_object(str(result.get("output") or "")) or {}
+        if not isinstance(parsed, dict):
+            parsed = {}
+        if "decisions" not in parsed or not isinstance(parsed.get("decisions"), list):
+            parsed["decisions"] = []
+        meta = parsed.get("meta")
+        if not isinstance(meta, dict):
+            meta = {}
+            parsed["meta"] = meta
+        meta.setdefault("tick", int(context.get("tick", 0)))
+        return parsed
 
     def _do_cleanup(self) -> None:
         self._agent = None
         self._llm = None
         logger.info("LangChain runner %s cleaned up", self.agent_id)
+
+    async def consolidate_memory(self, context: Dict[str, Any]) -> None:
+        """
+        End-of-day long-term memory consolidation via LLM reflection.
+
+        Expected context shape (best-effort):
+          - tick: int
+          - recent_events: list[dict]
+          - agent_tool_calls: list[dict]
+        """
+        if not bool(getattr(self._cfg, "long_term_memory_enabled", False)):
+            return
+
+        try:
+            tick = int(context.get("tick", -1))
+        except Exception:
+            tick = -1
+        if tick < 0:
+            return
+        if tick <= int(getattr(self._ltm_store, "last_consolidated_tick", -1)):
+            return
+
+        # Ensure initialized so we have an LLM client.
+        try:
+            if self.status != AgentRunnerStatus.READY or self._llm is None:
+                self._do_initialize()
+                self.status = AgentRunnerStatus.READY
+        except Exception:
+            return
+
+        events = context.get("recent_events") or []
+        tool_calls = context.get("agent_tool_calls") or []
+
+        digest = build_day_digest_text(
+            events,
+            tool_calls,
+            max_event_lines=int(self._cfg.long_term_memory_reflection_max_event_lines),
+        )
+        reflection_prompt = build_reflection_prompt(
+            agent_id=self.agent_id,
+            tick=tick,
+            digest_text=digest,
+            existing_memories=self._ltm_store.serialize_for_reflection(),
+            max_items=int(self._cfg.long_term_memory_max_items),
+            max_additions=int(self._cfg.long_term_memory_max_additions_per_day),
+            max_forgets=int(self._cfg.long_term_memory_max_forgets_per_day),
+        )
+
+        try:
+            try:
+                from langchain_core.messages import HumanMessage, SystemMessage  # type: ignore
+            except (ImportError, AttributeError, TypeError):
+                SystemMessage = None  # type: ignore
+                HumanMessage = None  # type: ignore
+
+            if SystemMessage and HumanMessage:
+                msgs = [
+                    SystemMessage(
+                        content="You are a long-term memory consolidation module. Respond with JSON only."
+                    ),
+                    HumanMessage(content=reflection_prompt),
+                ]
+                resp = await asyncio.to_thread(self._llm.invoke, msgs)  # type: ignore
+            else:
+                resp = await asyncio.to_thread(self._llm.invoke, reflection_prompt)  # type: ignore
+            raw = getattr(resp, "content", None) or str(resp)
+        except Exception as e:
+            logger.debug(
+                "LangChain memory consolidation LLM call failed for %s at tick %s: %s",
+                self.agent_id,
+                tick,
+                e,
+            )
+            return
+
+        obj = extract_json_object(raw) or {}
+        promote = obj.get("promote") or []
+        forget = obj.get("forget") or []
+        if not isinstance(promote, list):
+            promote = []
+        if not isinstance(forget, list):
+            forget = []
+
+        try:
+            added, removed = self._ltm_store.apply_reflection(
+                tick=tick,
+                promote=promote,
+                forget_ids=[str(i) for i in forget],
+                max_additions=int(self._cfg.long_term_memory_max_additions_per_day),
+                max_forgets=int(self._cfg.long_term_memory_max_forgets_per_day),
+            )
+            self.metrics["long_term_memory"] = {
+                "enabled": True,
+                "items": int(len(self._ltm_store.items)),
+                "last_tick": int(self._ltm_store.last_consolidated_tick),
+                "added": int(added),
+                "removed": int(removed),
+            }
+        except Exception as e:
+            logger.debug(
+                "LangChain memory consolidation apply failed for %s at tick %s: %s",
+                self.agent_id,
+                tick,
+                e,
+            )
 
 
 __all__ = ["LangChainRunner", "LangChainRunnerConfig", "LangChainTaskInput", "ToolSpec"]
