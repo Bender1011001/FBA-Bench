@@ -13,17 +13,18 @@
 [![Benchmark Status](https://img.shields.io/badge/Benchmark-Results_Ready-success?style=flat-square)](https://fbabench.com)
 <!-- LEADERBOARD_BADGE_END -->
 
-## 🎯 Two Benchmarks. Know Which One You Need.
+## 🎯 Two Benchmark Modes. Know Which One You Need.
 
-| | 🧠 **LLM Benchmark** | 🤖 **Agent Benchmark** |
+| | 🧠 **Prompt Battery (`prompt`)** | 🤖 **Agentic Simulation (`agentic`)** |
 |---|:---:|:---:|
-| **Tests** | Raw model capability | Your agent system |
+| **Tests** | Raw model capability | Your full agent system |
 | **Memory/RAG** | ❌ None | ✅ Bring your own |
 | **If it fails** | Model's fault | System's fault |
-| **Runtime** | 6 hours / year | Varies |
+| **Typical runtime** | Minutes | Hours to days |
+| **Typical calls** | Dozens of prompts | 180–365 decision steps |
 | **Use when** | Comparing LLMs | Comparing architectures |
 
-**The LLM Benchmark is honest.** No scaffolding. No memory crutches. No excuses. Just 365 API calls with real feedback loops. [Why it takes hours →](docs/why_it_takes_hours.md)
+The prompt battery is the cheap, fast gate. The agentic simulation is the high-fidelity benchmark. The live site supports both: `?mode=prompt` and `?mode=agentic`. For why the agentic benchmark is slow, see [docs/why_it_takes_hours.md](docs/why_it_takes_hours.md).
 
 ---
 
