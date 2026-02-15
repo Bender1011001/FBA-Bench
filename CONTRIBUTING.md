@@ -9,7 +9,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 ## Getting Started
 
 ### Prerequisites
-- Python 3.9–3.12
+- Python 3.10–3.13
 - Poetry (install: `curl -sSL https://install.python-poetry.org | python3 -`)
 - Git
 - Make (or Git Bash/WSL on Windows)

@@ -1,9 +1,20 @@
 /api/leaderboard.json
   Cache-Control: no-store, max-age=0
 
+/api/leaderboard_agentic.json
+  Cache-Control: no-store, max-age=0
+
+/api/leaderboard_prompt.json
+  Cache-Control: no-store, max-age=0
+
 /api/top10.json
+  Cache-Control: no-store, max-age=0
+
+/api/top10_agentic.json
+  Cache-Control: no-store, max-age=0
+
+/api/top10_prompt.json
   Cache-Control: no-store, max-age=0
 
 /api/live.json
   Cache-Control: no-store, max-age=0
-

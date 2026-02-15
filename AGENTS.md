@@ -61,7 +61,7 @@ FBA-Bench Enterprise is a high-fidelity business simulation benchmark for evalua
 ## Environment
 
 - **Required tools/versions:**
-  - Python 3.9–3.12
+  - Python 3.10–3.13
   - Poetry
   - Make
   - Godot 4.5+ (optional, for GUI)
@@ -71,7 +71,7 @@ FBA-Bench Enterprise is a high-fidelity business simulation benchmark for evalua
 
 ## Conventions (hard rules)
 
-- **Language/framework patterns:** Python 3.9+; Pydantic for data models/settings; FastAPI for API.
+- **Language/framework patterns:** Python 3.10+; Pydantic for data models/settings; FastAPI for API.
 - **Formatting/lint rules:** Ruff for linting, Black for formatting, Mypy for strict typing on `src/`.
 - **Error handling/logging expectations:** Use structured logging; keep public APIs typed; avoid cyclic imports.
 - **API/client conventions:** Use Conventional Commits (`feat(scope): ...`). PRs require rationale and validation results.

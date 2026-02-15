@@ -108,6 +108,8 @@ htmlcov/
 # Generated benchmark artifacts and result data
 artifacts/
 results/
+public_results/openrouter_tier_runs/
+docs/api/*.json
 
 # Database files (development/testing only)
 *.db

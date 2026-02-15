@@ -1,0 +1,24 @@
+{
+  "model_slug": "x-ai/grok-4.1-fast",
+  "success": true,
+  "tier": "T2",
+  "metrics": {
+    "total_profit": -4874.2,
+    "tokens_used": 970693,
+    "roi_pct": -48.742,
+    "llm_calls": 180,
+    "avg_call_seconds": 32.14361356944686,
+    "composite_score": -4874.2,
+    "errors": [
+      "Expecting value: line 1 column 1 (char 0)"
+    ]
+  },
+  "timestamp": "2026-02-10T10:36:10.330570+00:00",
+  "started_at": "2026-02-10T08:59:42.270315+00:00",
+  "duration_seconds": 5788.060263156891,
+  "run_id": "run-20260210-085941",
+  "exit_code": 0,
+  "log_path": "artifacts/year_runs/run-20260210-085941/T2_x-ai_grok-4.1-fast.log",
+  "result_path": "results/openrouter_tier_runs/t2/x-ai_grok-4.1-fast.json",
+  "raw_path": "artifacts/openrouter_runs/run-20260210-085941/x-ai_grok-4.1-fast.json"
+}

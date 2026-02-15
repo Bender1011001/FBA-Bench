@@ -7,7 +7,7 @@
 
 ## Tech Stack
 
-- Python 3.9–3.12
+- Python 3.10–3.13
 - Poetry (Package Management)
 - FastAPI (API Server)
 - Pydantic (Data Models/Settings)

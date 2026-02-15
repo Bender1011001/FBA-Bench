@@ -10,6 +10,8 @@ authors = ["FBA-Bench Team"]
 license = "Proprietary"
 readme = "README.md"
 repository = "https://github.com/Bender1011001/FBA-Bench-Enterprise"
+homepage = "https://fbabench.com"
+documentation = "https://fbabench.com/docs/"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",

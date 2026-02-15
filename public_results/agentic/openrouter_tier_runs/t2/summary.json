@@ -1,0 +1,136 @@
+[
+  {
+    "model_slug": "deepseek/deepseek-r1",
+    "success": false,
+    "tier": "T2",
+    "metrics": {
+      "total_profit": 0.0,
+      "tokens_used": 0,
+      "composite_score": 0.0,
+      "errors": [
+        "raw output missing"
+      ]
+    },
+    "timestamp": "2026-02-10T13:32:10.146304+00:00",
+    "started_at": "2026-02-10T08:59:42.259761+00:00",
+    "duration_seconds": 16347.886546373367,
+    "run_id": "run-20260210-085941",
+    "exit_code": 1,
+    "log_path": "artifacts/year_runs/run-20260210-085941/T2_deepseek_deepseek-r1.log",
+    "result_path": "results/openrouter_tier_runs/t2/deepseek_deepseek-r1.json",
+    "raw_path": "artifacts/openrouter_runs/run-20260210-085941/deepseek_deepseek-r1.json"
+  },
+  {
+    "model_slug": "google/gemini-3-pro-preview",
+    "success": true,
+    "tier": "T2",
+    "metrics": {
+      "total_profit": 8512.42,
+      "tokens_used": 952579,
+      "roi_pct": 85.1242,
+      "llm_calls": 180,
+      "avg_call_seconds": 36.354596758892555,
+      "composite_score": 8512.42,
+      "errors": [
+        "Expecting value: line 1 column 1 (char 0)"
+      ]
+    },
+    "timestamp": "2026-02-10T10:48:48.332542+00:00",
+    "started_at": "2026-02-10T08:59:42.267106+00:00",
+    "duration_seconds": 6546.065443515778,
+    "run_id": "run-20260210-085941",
+    "exit_code": 0,
+    "log_path": "artifacts/year_runs/run-20260210-085941/T2_google_gemini-3-pro-preview.log",
+    "result_path": "results/openrouter_tier_runs/t2/google_gemini-3-pro-preview.json",
+    "raw_path": "artifacts/openrouter_runs/run-20260210-085941/google_gemini-3-pro-preview.json"
+  },
+  {
+    "model_slug": "x-ai/grok-4.1-fast",
+    "success": true,
+    "tier": "T2",
+    "metrics": {
+      "total_profit": -4874.2,
+      "tokens_used": 970693,
+      "roi_pct": -48.742,
+      "llm_calls": 180,
+      "avg_call_seconds": 32.14361356944686,
+      "composite_score": -4874.2,
+      "errors": [
+        "Expecting value: line 1 column 1 (char 0)"
+      ]
+    },
+    "timestamp": "2026-02-10T10:36:10.330570+00:00",
+    "started_at": "2026-02-10T08:59:42.270315+00:00",
+    "duration_seconds": 5788.060263156891,
+    "run_id": "run-20260210-085941",
+    "exit_code": 0,
+    "log_path": "artifacts/year_runs/run-20260210-085941/T2_x-ai_grok-4.1-fast.log",
+    "result_path": "results/openrouter_tier_runs/t2/x-ai_grok-4.1-fast.json",
+    "raw_path": "artifacts/openrouter_runs/run-20260210-085941/x-ai_grok-4.1-fast.json"
+  },
+  {
+    "model_slug": "openai/gpt-5.2",
+    "success": false,
+    "tier": "T2",
+    "metrics": {
+      "total_profit": 0.0,
+      "tokens_used": 0,
+      "composite_score": 0.0,
+      "errors": [
+        "raw output missing"
+      ]
+    },
+    "timestamp": "2026-02-10T10:05:41.589472+00:00",
+    "started_at": "2026-02-10T08:59:42.263281+00:00",
+    "duration_seconds": 3959.326183080673,
+    "run_id": "run-20260210-085941",
+    "exit_code": 1,
+    "log_path": "artifacts/year_runs/run-20260210-085941/T2_openai_gpt-5.2.log",
+    "result_path": "results/openrouter_tier_runs/t2/openai_gpt-5.2.json",
+    "raw_path": "artifacts/openrouter_runs/run-20260210-085941/openai_gpt-5.2.json"
+  },
+  {
+    "model_slug": "anthropic/claude-opus-4.6",
+    "success": true,
+    "tier": "T2",
+    "metrics": {
+      "total_profit": 12488.74,
+      "tokens_used": 363242,
+      "roi_pct": 124.8874,
+      "llm_calls": 180,
+      "avg_call_seconds": 5.763510344440066,
+      "composite_score": 12488.74,
+      "errors": []
+    },
+    "timestamp": "2026-02-10T09:17:01.763466+00:00",
+    "started_at": "2026-02-10T08:59:42.265352+00:00",
+    "duration_seconds": 1039.4981172084808,
+    "run_id": "run-20260210-085941",
+    "exit_code": 0,
+    "log_path": "artifacts/year_runs/run-20260210-085941/T2_anthropic_claude-opus-4.6.log",
+    "result_path": "results/openrouter_tier_runs/t2/anthropic_claude-opus-4.6.json",
+    "raw_path": "artifacts/openrouter_runs/run-20260210-085941/anthropic_claude-opus-4.6.json"
+  },
+  {
+    "model_slug": "meta-llama/llama-3.3-70b-instruct",
+    "success": true,
+    "tier": "T2",
+    "metrics": {
+      "total_profit": -9576.039999999999,
+      "tokens_used": 312099,
+      "roi_pct": -95.7604,
+      "llm_calls": 180,
+      "avg_call_seconds": 3.3737594538879216,
+      "composite_score": -9576.039999999999,
+      "errors": []
+    },
+    "timestamp": "2026-02-10T09:09:51.727353+00:00",
+    "started_at": "2026-02-10T08:59:42.268711+00:00",
+    "duration_seconds": 609.4586455821991,
+    "run_id": "run-20260210-085941",
+    "exit_code": 0,
+    "log_path": "artifacts/year_runs/run-20260210-085941/T2_meta-llama_llama-3.3-70b-instruct.log",
+    "result_path": "results/openrouter_tier_runs/t2/meta-llama_llama-3.3-70b-instruct.json",
+    "raw_path": "artifacts/openrouter_runs/run-20260210-085941/meta-llama_llama-3.3-70b-instruct.json"
+  }
+]

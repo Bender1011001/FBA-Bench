@@ -17,14 +17,14 @@ Write-Host "`n-- Checking prerequisites --"
 try {
   $pyVerStr = & python --version 2>&1
 } catch {
-  throw "Python not found. Install Python 3.9–3.12 and ensure 'python' is on PATH."
+  throw "Python not found. Install Python 3.10–3.13 and ensure 'python' is on PATH."
 }
 $pyVerMatch = [regex]::Match($pyVerStr, 'Python\s+(\d+)\.(\d+)\.(\d+)')
 if (-not $pyVerMatch.Success) { throw "Unable to parse Python version output: $pyVerStr" }
 $pyMajor = [int]$pyVerMatch.Groups[1].Value
 $pyMinor = [int]$pyVerMatch.Groups[2].Value
-if ($pyMajor -ne 3 -or $pyMinor -lt 9 -or $pyMinor -gt 12) {
-  throw "Python 3.9–3.12 required, found $($pyVerMatch.Groups[1].Value).$($pyVerMatch.Groups[2].Value).$($pyVerMatch.Groups[3].Value)"
+if ($pyMajor -ne 3 -or $pyMinor -lt 10 -or $pyMinor -gt 13) {
+  throw "Python 3.10–3.13 required, found $($pyVerMatch.Groups[1].Value).$($pyVerMatch.Groups[2].Value).$($pyVerMatch.Groups[3].Value)"
 }
 
 try { & poetry --version | Out-Null } catch { throw "Poetry is required. Install from https://python-poetry.org/docs/#installation" }

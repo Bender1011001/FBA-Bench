@@ -4,7 +4,7 @@ This guide provides step-by-step instructions for setting up the FBA-Bench Enter
 
 ## Prerequisites
 
-- **Python**: 3.9–3.12 (tested with 3.10+; Poetry manages versions).
+- **Python**: 3.10–3.13 (tested with 3.10+; Poetry manages versions).
 - **Poetry**: Dependency and environment manager. Install via:
   ```
   curl -sSL https://install.python-poetry.org | python3 -

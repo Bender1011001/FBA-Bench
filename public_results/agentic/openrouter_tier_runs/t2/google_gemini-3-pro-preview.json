@@ -1,0 +1,24 @@
+{
+  "model_slug": "google/gemini-3-pro-preview",
+  "success": true,
+  "tier": "T2",
+  "metrics": {
+    "total_profit": 8512.42,
+    "tokens_used": 952579,
+    "roi_pct": 85.1242,
+    "llm_calls": 180,
+    "avg_call_seconds": 36.354596758892555,
+    "composite_score": 8512.42,
+    "errors": [
+      "Expecting value: line 1 column 1 (char 0)"
+    ]
+  },
+  "timestamp": "2026-02-10T10:48:48.332542+00:00",
+  "started_at": "2026-02-10T08:59:42.267106+00:00",
+  "duration_seconds": 6546.065443515778,
+  "run_id": "run-20260210-085941",
+  "exit_code": 0,
+  "log_path": "artifacts/year_runs/run-20260210-085941/T2_google_gemini-3-pro-preview.log",
+  "result_path": "results/openrouter_tier_runs/t2/google_gemini-3-pro-preview.json",
+  "raw_path": "artifacts/openrouter_runs/run-20260210-085941/google_gemini-3-pro-preview.json"
+}

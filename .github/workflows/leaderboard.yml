@@ -1,180 +1,50 @@
-name: FBA-Bench Leaderboard Update
+name: Leaderboard Build (Smoke)
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
-  workflow_dispatch: # Allows manual trigger
+    branches: [ main ]
+    paths:
+      - "public_results/**"
+      - "tools/build_live_leaderboard.py"
+      - "generate_github_pages.py"
+      - "docs/**"
+  push:
+    branches: [ main ]
+    paths:
+      - "public_results/**"
+      - "tools/build_live_leaderboard.py"
+      - "generate_github_pages.py"
+      - "docs/**"
+  workflow_dispatch:
 
 jobs:
-  run_benchmarks_and_update_leaderboard:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up Python and Poetry
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11' # Align with project's main Python version as per Dockerfile/backend-ci.yml
-          cache: 'poetry' # Use built-in Poetry caching
-
-      - name: Install backend dependencies (Poetry)
-        run: poetry install --no-root --with dev --no-interaction --no-ansi
-
-      - name: Run Benchmarks and Update Leaderboard
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Running FBA-Bench simulations for bots and collecting results..."
-          mkdir -p artifacts/bot_results
-          export PYTHONPATH=$(pwd) # Ensure Python can find project modules
-
-          BOTS=("GreedyScript" "GPT-3.5" "Claude-3.5-Sonnet") # Update with actual bot names
-
-          for BOT_NAME in "${BOTS[@]}"; do
-            echo "Running benchmark for bot: $BOT_NAME"
-            OUTPUT_DIR="artifacts/bot_results/${BOT_NAME// /-}" # Sanitize bot name for directory
-            poetry run python experiment_cli.py run --agent-name "$BOT_NAME" --output-dir "$OUTPUT_DIR"
-            if [ $? -ne 0 ]; then
-              echo "Error running benchmark for $BOT_NAME. Exiting."
-              exit 1
-            fi
-            echo "Benchmark for $BOT_NAME completed. Results in $OUTPUT_DIR"
-          done
-
-          python -c "
-            import json
-            import os
-            import asyncio
-            from leaderboard.score_tracker import ScoreTracker
-            from leaderboard.leaderboard_manager import LeaderboardManager
-            from leaderboard.leaderboard_renderer import LeaderboardRenderer
-
-            tracker = ScoreTracker()
-            renderer = LeaderboardRenderer(template_path='leaderboard/templates')
-            manager = LeaderboardManager(tracker, renderer)
-
-            BOT_NAMES = [\"GreedyScript\", \"GPT-3.5\", \"Claude-3.5-Sonnet\"] # Must match BOT_NAMES in bash script
-            for bot_name in BOT_NAMES:
-                sanitized_bot_name = bot_name.replace(' ', '-')
-                results_dir = f'artifacts/bot_results/{sanitized_bot_name}'
-                summary_path = os.path.join(results_dir, 'summary.json')
-
-                if os.path.exists(summary_path):
-                    with open(summary_path, 'r') as f:
-                        result_data = json.load(f)
-                    score = result_data.get('metrics', {}).get('overall_score', 0.0) # Adjust key based on actual summary.json structure
-                    tier = result_data.get('tier', 'T0') # Adjust key based on actual summary.json structure, or determine dynamically
-                    print(f'Adding result for {bot_name}: Score={score:.2f}, Tier={tier}')
-                    manager.score_tracker.add_run_result(bot_name, tier, score, result_data)
-                else:
-                    print(f'Warning: No summary.json found for {bot_name} at {summary_path}. Skipping.')
-
-            print('Generating leaderboard artifacts...')
-            async def generate():
-                await manager.generate_leaderboard_artifacts()
-            asyncio.run(generate())
-
-            latest_leaderboard_data = manager.leaderboard_renderer.get_latest_leaderboard_data()
-            if latest_leaderboard_data:
-                badge_markdown = manager.leaderboard_renderer.generate_badge_markdown(latest_leaderboard_data)
-                with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-                    print(f'badge_markdown={badge_markdown}', file=fh)
-            print('Leaderboard generation complete.') # Added for clarity
-          "
-
-      - name: Upload Leaderboard Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: fba-bench-leaderboard
-          path: artifacts/
-
-      - name: Update README.md with Leaderboard Badge
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          README_FILE="README.md"
-          BADGE_START="<!-- LEADERBOARD_BADGE_START -->"
-          BADGE_END="<!-- LEADERBOARD_BADGE_END -->"
-          NEW_BADGE="${{ steps.run_benchmarks_and_update_leaderboard.outputs.badge_markdown }}"
-
-          if [ ! -f "$README_FILE" ]; then
-            touch "$README_FILE"
-          fi
-
-          if grep -q "$BADGE_START" "$README_FILE" && grep -q "$BADGE_END" "$README_FILE"; then
-              awk -v start="$BADGE_START" -v end="$BADGE_END" -v new_badge="$NEW_BADGE" '
-                  BEGIN { in_badge_section=0 }
-                  {
-                      if ($0 ~ start) { print; print new_badge; in_badge_section=1; }
-                      else if ($0 ~ end) { print; in_badge_section=0; }
-                      else if (in_badge_section==0) { print; }
-                  }
-              ' "$README_FILE" > temp_readme.md && mv temp_readme.md "$README_FILE"
-              echo "Updated existing leaderboard badge in $README_FILE"
-          else
-              echo -e "\n$BADGE_START\n$NEW_BADGE\n$BADGE_END" >> "$README_FILE"
-              echo "Appended new leaderboard badge to $README_FILE"
-          fi
-
-          git add "$README_FILE"
-          git commit -m "Update leaderboard badge [skip ci]" || echo "No changes to commit"
-          git push
-
-  regression_detection: # Separated into a new job for clarity and dependency management
-    runs-on: ubuntu-latest
-    needs: run_benchmarks_and_update_leaderboard # Ensures this runs after artifacts are available
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download Leaderboard Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: fba-bench-leaderboard
-          path: artifacts/
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: "3.11"
 
-      - name: Install dependencies for CI integration
+      - name: Build static site + API snapshots
         run: |
-          python -m pip install --upgrade pip
-          pip install requests # For GitHub API calls
+          python generate_github_pages.py
+          touch docs/.nojekyll
 
-      - name: Run Regression Detection
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Validate JSON outputs
         run: |
-          python -c "
-            import json
-            import os
-            from leaderboard.ci_integration import CIIntegration
+          python -m json.tool docs/api/leaderboard.json > /dev/null
+          python -m json.tool docs/api/top10.json > /dev/null
+          python -m json.tool docs/api/live.json > /dev/null
+          if [ -f docs/api/leaderboard_agentic.json ]; then python -m json.tool docs/api/leaderboard_agentic.json > /dev/null; fi
+          if [ -f docs/api/leaderboard_prompt.json ]; then python -m json.tool docs/api/leaderboard_prompt.json > /dev/null; fi
 
-            ci_integrator = CIIntegration(artifacts_dir='artifacts')
-            new_data = ci_integrator.get_latest_leaderboard_data()
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: docs/
 
-            # Fetch previous leaderboard data using the new method
-            previous_data = ci_integrator.get_previous_leaderboard_data(branch='main')
-            if not previous_data:
-                print('Warning: Could not fetch previous leaderboard data from main branch. Assuming no regression for first run or missing history.')
-
-            if new_data:
-                regressions = ci_integrator.detect_regression(new_data, previous_data)
-                if regressions:
-                    print('::error title=Leaderboard Regression Detected::' + '\\n'.join(regressions))
-                    exit(1) # Fail the CI job
-                else:
-                    print('No significant regressions detected.')
-            else:
-                print('No new leaderboard data to check for regressions (leaderboard.json not found).')
-          "

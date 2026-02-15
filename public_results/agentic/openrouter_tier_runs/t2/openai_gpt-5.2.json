@@ -1,0 +1,21 @@
+{
+  "model_slug": "openai/gpt-5.2",
+  "success": false,
+  "tier": "T2",
+  "metrics": {
+    "total_profit": 0.0,
+    "tokens_used": 0,
+    "composite_score": 0.0,
+    "errors": [
+      "raw output missing"
+    ]
+  },
+  "timestamp": "2026-02-12T01:25:16.795410+00:00",
+  "started_at": "2026-02-12T00:36:05.280677+00:00",
+  "duration_seconds": 2951.5147438049316,
+  "run_id": "run-20260211-v2-consolidated",
+  "exit_code": 3221225786,
+  "log_path": "artifacts/year_runs/run-20260211-v2-consolidated/T2_openai_gpt-5.2.log",
+  "result_path": "results/openrouter_tier_runs/t2/openai_gpt-5.2.json",
+  "raw_path": "artifacts/openrouter_runs/run-20260211-v2-consolidated/openai_gpt-5.2.json"
+}

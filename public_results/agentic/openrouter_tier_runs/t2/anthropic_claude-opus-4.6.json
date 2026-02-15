@@ -1,0 +1,22 @@
+{
+  "model_slug": "anthropic/claude-opus-4.6",
+  "success": true,
+  "tier": "T2",
+  "metrics": {
+    "total_profit": 12488.74,
+    "tokens_used": 363242,
+    "roi_pct": 124.8874,
+    "llm_calls": 180,
+    "avg_call_seconds": 5.763510344440066,
+    "composite_score": 12488.74,
+    "errors": []
+  },
+  "timestamp": "2026-02-10T09:17:01.763466+00:00",
+  "started_at": "2026-02-10T08:59:42.265352+00:00",
+  "duration_seconds": 1039.4981172084808,
+  "run_id": "run-20260210-085941",
+  "exit_code": 0,
+  "log_path": "artifacts/year_runs/run-20260210-085941/T2_anthropic_claude-opus-4.6.log",
+  "result_path": "results/openrouter_tier_runs/t2/anthropic_claude-opus-4.6.json",
+  "raw_path": "artifacts/openrouter_runs/run-20260210-085941/anthropic_claude-opus-4.6.json"
+}

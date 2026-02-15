@@ -45,5 +45,3 @@ To ensure the security of your FBA-Bench Enterprise deployment, please follow th
 *   Limit user privileges based on the principle of least privilege.
 
 Refer to the [CONTRIBUTING.md](CONTRIBUTING.md) for information on development environment setup and coding standards.
-
-For broader security guidelines and policies, please refer to [POLICY.md](POLICY.md) (if such a file exists, otherwise remove this line or create it).

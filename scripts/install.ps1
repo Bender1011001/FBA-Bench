@@ -62,7 +62,7 @@ try {
   }
 
   if (-not $pythonCmd) {
-    Write-ErrorLn "Python 3.9+ is not installed. Install from https://www.python.org/downloads/windows/"
+    Write-ErrorLn "Python 3.10+ is not installed. Install from https://www.python.org/downloads/windows/"
     exit 1
   }
 
@@ -75,8 +75,8 @@ try {
   } else {
     $major = [int]$verParts[0]
     $minor = [int]$verParts[1]
-    if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 9)) {
-      Write-ErrorLn "Python 3.9+ required. Found: $ver"
+    if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 10)) {
+      Write-ErrorLn "Python 3.10+ required. Found: $ver"
       exit 1
     }
   }
@@ -108,7 +108,7 @@ try {
   ""
   Write-Info "Next steps:"
   Write-Host " - Run the API locally:" -ForegroundColor Gray
-  Write-Host "     $pythonCmd -m poetry run uvicorn fba_bench_api.main:create_app --factory --host 0.0.0.0 --port 8000 --reload"
+  Write-Host "     $pythonCmd -m poetry run uvicorn fba_bench_api.main:get_app --factory --host 0.0.0.0 --port 8000 --reload"
   Write-Host " - Optional: Start ClearML Server for experiment tracking (if Compose file present):" -ForegroundColor Gray
   Write-Host "     docker compose -f docker-compose.clearml.yml up -d"
 }

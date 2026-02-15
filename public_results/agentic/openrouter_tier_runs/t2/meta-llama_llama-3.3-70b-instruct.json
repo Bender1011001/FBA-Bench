@@ -1,0 +1,22 @@
+{
+  "model_slug": "meta-llama/llama-3.3-70b-instruct",
+  "success": true,
+  "tier": "T2",
+  "metrics": {
+    "total_profit": -9576.039999999999,
+    "tokens_used": 312099,
+    "roi_pct": -95.7604,
+    "llm_calls": 180,
+    "avg_call_seconds": 3.3737594538879216,
+    "composite_score": -9576.039999999999,
+    "errors": []
+  },
+  "timestamp": "2026-02-10T09:09:51.727353+00:00",
+  "started_at": "2026-02-10T08:59:42.268711+00:00",
+  "duration_seconds": 609.4586455821991,
+  "run_id": "run-20260210-085941",
+  "exit_code": 0,
+  "log_path": "artifacts/year_runs/run-20260210-085941/T2_meta-llama_llama-3.3-70b-instruct.log",
+  "result_path": "results/openrouter_tier_runs/t2/meta-llama_llama-3.3-70b-instruct.json",
+  "raw_path": "artifacts/openrouter_runs/run-20260210-085941/meta-llama_llama-3.3-70b-instruct.json"
+}

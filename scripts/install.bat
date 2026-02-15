@@ -7,7 +7,7 @@ setlocal enabledelayedexpansion
 REM Python check
 python --version >nul 2>&1
 if %errorLevel% neq 0 (
-  echo [ERROR] Python is not installed. Install Python 3.9+ from https://python.org
+  echo [ERROR] Python is not installed. Install Python 3.10+ from https://python.org
   exit /b 1
 )
 for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
@@ -38,7 +38,7 @@ echo [SUCCESS] Installation completed.
 echo.
 echo [INFO] Next steps:
 echo   - Run the API locally:
-echo       python -m poetry run uvicorn fba_bench_api.main:create_app --factory --host 0.0.0.0 --port 8000 --reload
+echo       python -m poetry run uvicorn fba_bench_api.main:get_app --factory --host 0.0.0.0 --port 8000 --reload
 echo   - Optional: Start ClearML Server for experiment tracking:
 echo       docker compose -f docker-compose.clearml.yml up -d
 exit /b 0

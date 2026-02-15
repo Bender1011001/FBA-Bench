@@ -279,9 +279,18 @@ def build_leaderboard(
     values = list(by_model.values())
     metric_mode = "agentic" if any(r.is_agentic for r in values) else "prompt"
     if metric_mode == "agentic":
-        ranked = sorted(values, key=lambda r: (r.total_profit, r.roi_pct, r.tokens_used), reverse=True)
+        # Keep failures visible, but push them below successful runs.
+        ranked = sorted(
+            values,
+            key=lambda r: (bool(r.success), r.total_profit, r.roi_pct, r.tokens_used),
+            reverse=True,
+        )
     else:
-        ranked = sorted(values, key=lambda r: (r.quality_score, r.success_rate), reverse=True)
+        ranked = sorted(
+            values,
+            key=lambda r: (bool(r.success), r.quality_score, r.success_rate),
+            reverse=True,
+        )
 
     rankings: List[Dict[str, Any]] = []
     total_tokens = 0
@@ -321,6 +330,8 @@ def build_leaderboard(
                 "roi_pct": round(r.roi_pct, 3) if metric_mode == "agentic" else None,
                 "llm_calls": int(r.llm_calls) if metric_mode == "agentic" else None,
                 "avg_call_seconds": round(r.avg_call_seconds, 2) if (metric_mode == "agentic" and r.avg_call_seconds is not None) else None,
+                # Debug/diagnostic.
+                "error_count": int(len(r.metrics.get("errors") or [])),
                 "total_runs": 1,
                 "badge": badge,
                 "timestamp": r.timestamp,

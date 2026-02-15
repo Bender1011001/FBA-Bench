@@ -6,6 +6,7 @@ on:
     branches: [ main ]
     paths:
       - 'docs/**'
+      - 'public_results/**'
       - 'generate_github_pages.py'
 
 permissions:

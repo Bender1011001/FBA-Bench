@@ -1,0 +1,45 @@
+name: Compute Sponsorship / Partnership
+description: Offer API credits, hardware, or sponsorship for running more benchmark sims.
+title: "[Sponsorship] <org> / <handle>"
+labels:
+  - sponsorship
+body:
+  - type: input
+    id: org
+    attributes:
+      label: Organization / Name
+      placeholder: "Acme AI"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sponsorship_type
+    attributes:
+      label: Sponsorship Type
+      options:
+        - API credits (OpenRouter)
+        - API credits (direct provider)
+        - Cash sponsorship
+        - Hardware / hosting
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What can you provide, any limits, and what you want evaluated.
+      placeholder: "We can provide $500 in credits for running 10 models on the prompt battery."
+    validations:
+      required: true
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact
+      description: Best way to reach you (email, Discord, etc.).
+      placeholder: "name@company.com"
+    validations:
+      required: true
+

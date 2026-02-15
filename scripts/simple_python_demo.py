@@ -7,7 +7,7 @@ without Docker, external services, or API keys. It shows agents sending
 commands, world store arbitration, and event propagation.
 
 Requirements:
-- Python 3.9+
+- Python 3.10+
 - Clone the repo and run from root: python scripts/simple_python_demo.py
 
 Expected Output:

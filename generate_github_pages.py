@@ -9,6 +9,9 @@ For live benchmark runs we instead serve a dynamic page that fetches:
 
 Those JSON files are updated locally by tools/watch_and_build.py (and can be committed to
 publish on GitHub Pages).
+
+For CI/GitHub Pages builds, we prefer checked-in artifacts under public_results/ so the
+site can ship with non-empty snapshots without running expensive benchmarks in CI.
 """
 
 from __future__ import annotations
@@ -19,6 +22,7 @@ import json
 import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
+from typing import Optional
 
 
 ROOT_DIR = Path(__file__).parent
@@ -166,15 +170,18 @@ def write_index_html() -> None:
 
     <main class="wrap">
       <section class="hero">
-        <h1>GPT-5.2 vs DeepSeek R1: The Bankruptcy Test</h1>
+        <h1 id="heroTitle">FBA-Bench Leaderboard</h1>
         <p class="hook">
-          We are not testing if they can write poetry. We are testing if they can survive a six-month recession.
+          <span id="heroHook">Loading benchmark mode...</span>
           <span id="statusLine">Status: awaiting data.</span>
         </p>
         <div class="chips">
+          <a class="chip" href="?mode=agentic">agentic</a>
+          <a class="chip" href="?mode=prompt">prompt</a>
           <a class="chip" href="api/leaderboard.json" target="_blank" rel="noreferrer">leaderboard.json</a>
           <a class="chip" href="api/live.json" target="_blank" rel="noreferrer">live.json</a>
           <a class="chip" href="docs/">docs</a>
+          <a class="chip" href="docs/#sponsorship.md">sponsor</a>
           <a class="chip" href="contact.html">message me</a>
           <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
         </div>
@@ -184,9 +191,8 @@ def write_index_html() -> None:
         <div class="support-content">
           <h2>Support the Research</h2>
           <p>
-            We'd love to run more sims, but the API costs are currently more than my construction job can support. 
-            If you find this research valuable, consider helping out with server costs. 
-            Every donation allows for more benchmark runs and better data.
+            The benchmark is expensive to run (tokens + infra). If you want the leaderboard updated more often or want a
+            specific model evaluated, consider sponsoring compute credits or a run.
           </p>
           <div class="crypto-grid">
             <div class="crypto-card">
@@ -265,6 +271,7 @@ def write_index_html() -> None:
           <a href="docs/#terms.md">Terms</a>
           <a href="docs/#privacy.md">Privacy</a>
           <a href="docs/#disclaimer.md">Disclaimer</a>
+          <a href="docs/#sponsorship.md">Sponsor</a>
           <a href="contact.html">Message me</a>
         </div>
         <div>FBA-Bench Enterprise. Built for the era of agentic AI.</div>
@@ -313,36 +320,69 @@ def write_index_html() -> None:
         return "q-warn";
       }
 
+      function applyModeUI(mode) {
+        const heroTitle = document.getElementById("heroTitle");
+        const heroHook = document.getElementById("heroHook");
+        const panelNote = document.getElementById("panelNote");
+        const colK1 = document.getElementById("colK1");
+        const colK2 = document.getElementById("colK2");
+        const colK3 = document.getElementById("colK3");
+        const colK4 = document.getElementById("colK4");
+
+        if (mode === "prompt") {
+          if (heroTitle) heroTitle.textContent = "Tier-2 Prompt Battery (Fast)";
+          if (heroHook) heroHook.textContent = "Scoring structured decision quality and format reliability. No tools. No memory. No scaffolding.";
+          if (panelNote) panelNote.textContent = "Tier-2 prompt suite (cheap + reproducible).";
+          if (colK1) colK1.textContent = "Quality";
+          if (colK2) colK2.textContent = "Success";
+          if (colK3) colK3.textContent = "Avg RT";
+          if (colK4) colK4.textContent = "Errors";
+        } else {
+          if (heroTitle) heroTitle.textContent = "The Bankruptcy Test (Agentic)";
+          if (heroHook) heroHook.textContent = "Long-horizon e-commerce sim under shocks: can the model stay solvent across months of decisions?";
+          if (panelNote) panelNote.textContent = "Tick-based simulation, scored by profit and survival under compounding consequences.";
+          if (colK1) colK1.textContent = "Net Profit";
+          if (colK2) colK2.textContent = "ROI";
+          if (colK3) colK3.textContent = "Calls";
+          if (colK4) colK4.textContent = "Avg Call";
+        }
+      }
+
       function render(lb, live) {
         const rankings = (lb && lb.rankings) ? lb.rankings : [];
         const mode = (lb && typeof lb.metric_mode === "string") ? lb.metric_mode : "agentic";
+
+        applyModeUI(mode);
 
         document.getElementById("lastUpdated").textContent = (lb && lb.generated_at) ? lb.generated_at : "Unknown";
         document.getElementById("runId").textContent = (lb && lb.active_run && lb.active_run.run_id) ? lb.active_run.run_id : "--";
         document.getElementById("tier").textContent = (lb && lb.active_run && lb.active_run.tier) ? lb.active_run.tier : "--";
         document.getElementById("totalTokens").textContent = (lb && lb.summary) ? fmtNum(lb.summary.total_tokens) : "--";
 
-        // Metric cards (prefer agentic profit metrics; fall back to prompt-scoring if needed).
+        // Metric cards (switch labels by benchmark mode).
         const k1 = document.getElementById("metricK1");
         const v1 = document.getElementById("metricV1");
         const k2 = document.getElementById("metricK2");
         const v2 = document.getElementById("metricV2");
 
-        k1.textContent = "Avg profit";
-        k2.textContent = "Avg ROI";
-        if (lb && lb.summary && typeof lb.summary.avg_total_profit === "number") {
-          v1.textContent = fmtMoney(lb.summary.avg_total_profit);
-        } else if (lb && lb.summary && typeof lb.summary.avg_quality_score === "number") {
-          v1.textContent = fmtNum(lb.summary.avg_quality_score);
+        if (mode === "prompt") {
+          k1.textContent = "Avg quality";
+          k2.textContent = "Avg success";
+          v1.textContent = (lb && lb.summary && typeof lb.summary.avg_quality_score === "number")
+            ? fmtNum(lb.summary.avg_quality_score)
+            : "--";
+          v2.textContent = (lb && lb.summary && typeof lb.summary.avg_success_rate === "number")
+            ? fmtPctFraction(lb.summary.avg_success_rate)
+            : "--";
         } else {
-          v1.textContent = "--";
-        }
-        if (lb && lb.summary && typeof lb.summary.avg_roi_pct === "number") {
-          v2.textContent = fmtPct(lb.summary.avg_roi_pct);
-        } else if (lb && lb.summary && typeof lb.summary.avg_success_rate === "number") {
-          v2.textContent = fmtPctFraction(lb.summary.avg_success_rate);
-        } else {
-          v2.textContent = "--";
+          k1.textContent = "Avg profit";
+          k2.textContent = "Avg ROI";
+          v1.textContent = (lb && lb.summary && typeof lb.summary.avg_total_profit === "number")
+            ? fmtMoney(lb.summary.avg_total_profit)
+            : "--";
+          v2.textContent = (lb && lb.summary && typeof lb.summary.avg_roi_pct === "number")
+            ? fmtPct(lb.summary.avg_roi_pct)
+            : "--";
         }
 
         const active = !!(live && live.active);
@@ -368,6 +408,7 @@ def write_index_html() -> None:
             const q = (typeof r.quality_score === "number") ? r.quality_score : 0;
             const sr = (typeof r.success_rate === "number") ? r.success_rate : 0;
             const rt = (typeof r.avg_response_time === "number") ? r.avg_response_time : null;
+            const ec = (typeof r.error_count === "number") ? r.error_count : ((r.success === false) ? 1 : 0);
             return `
               <tr>
                 <td><span class="rank">${r.rank}</span></td>
@@ -376,7 +417,7 @@ def write_index_html() -> None:
                 <td><span class="pill ${profitClass(q - 0.85)}">${fmtNum(q)}</span></td>
                 <td><span class="pill ${sr >= 1.0 ? "q-good" : sr >= 0.8 ? "q-warn" : "q-bad"}">${fmtPctFraction(sr)}</span></td>
                 <td class="mono">${fmtSec(rt)}</td>
-                <td>${fmtSec(null)}</td>
+                <td><span class="pill ${ec > 0 ? "q-bad" : "q-good"}">${fmtNum(ec)}</span></td>
                 <td class="mono">${fmtNum(r.total_tokens)}</td>
               </tr>
             `;
@@ -402,16 +443,25 @@ def write_index_html() -> None:
         }).join("");
       }
 
+      function leaderboardPath() {
+        const qs = new URLSearchParams(window.location.search);
+        const m = (qs.get("mode") || "").toLowerCase();
+        if (m === "prompt") return "api/leaderboard_prompt.json";
+        if (m === "agentic") return "api/leaderboard_agentic.json";
+        return "api/leaderboard.json";
+      }
+
       async function tick() {
         try {
+          const lbPath = leaderboardPath();
           const [lb, live] = await Promise.all([
-            fetchJson("api/leaderboard.json"),
+            fetchJson(lbPath).catch(() => fetchJson("api/leaderboard.json")),
             fetchJson("api/live.json").catch(() => null),
           ]);
           render(lb, live);
         } catch (e) {
           const rows = document.getElementById("rows");
-          rows.innerHTML = '<tr><td colspan="7" class="muted">Failed to load leaderboard.json</td></tr>';
+          rows.innerHTML = '<tr><td colspan="8" class="muted">Failed to load leaderboard.json</td></tr>';
         }
       }
 
@@ -482,45 +532,97 @@ def write_api_snapshots() -> None:
     """
     _ensure_live_json()
 
-    results_root = ROOT_DIR / "results" / "openrouter_tier_runs"
-    tier = None
-    for candidate in ("t2", "t1", "t0"):
-        if (results_root / candidate / "summary.json").exists():
-            tier = candidate.upper()
-            break
+    def _detect_tier(root: Path) -> Optional[str]:
+        for candidate in ("t2", "t1", "t0"):
+            if (root / candidate / "summary.json").exists():
+                return candidate.upper()
+        return None
 
-    if tier is None:
-        _write_empty_leaderboard()
-        return
+    def _run_build(*, tier: str, results_root: Path, out_lb: Path, out_top10: Path) -> bool:
+        build_script = ROOT_DIR / "tools" / "build_live_leaderboard.py"
+        try:
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(build_script),
+                    "--tier",
+                    tier,
+                    "--results-root",
+                    str(results_root),
+                    "--output-leaderboard",
+                    str(out_lb),
+                    "--output-top10",
+                    str(out_top10),
+                    "--live-json",
+                    str(DOCS_API_DIR / "live.json"),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        except Exception:
+            return False
+        return proc.returncode == 0
 
-    build_script = ROOT_DIR / "tools" / "build_live_leaderboard.py"
-    try:
-        proc = subprocess.run(
-            [
-                sys.executable,
-                str(build_script),
-                "--tier",
-                tier,
-                "--results-root",
-                str(results_root),
-                "--output-leaderboard",
-                str(DOCS_API_DIR / "leaderboard.json"),
-                "--output-top10",
-                str(DOCS_API_DIR / "top10.json"),
-                "--live-json",
-                str(DOCS_API_DIR / "live.json"),
-            ],
-            check=False,
-            capture_output=True,
-            text=True,
+    def _copy(src: Path, dst: Path) -> None:
+        dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+
+    DOCS_API_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Build two snapshots when available: agentic and prompt.
+    agentic_root = ROOT_DIR / "public_results" / "agentic" / "openrouter_tier_runs"
+    prompt_root = ROOT_DIR / "public_results" / "prompt" / "openrouter_tier_runs"
+
+    built_agentic = False
+    built_prompt = False
+
+    agentic_tier = _detect_tier(agentic_root)
+    if agentic_tier:
+        built_agentic = _run_build(
+            tier=agentic_tier,
+            results_root=agentic_root,
+            out_lb=DOCS_API_DIR / "leaderboard_agentic.json",
+            out_top10=DOCS_API_DIR / "top10_agentic.json",
         )
-    except Exception:
-        _write_empty_leaderboard(tier=tier)
+
+    prompt_tier = _detect_tier(prompt_root)
+    if prompt_tier:
+        built_prompt = _run_build(
+            tier=prompt_tier,
+            results_root=prompt_root,
+            out_lb=DOCS_API_DIR / "leaderboard_prompt.json",
+            out_top10=DOCS_API_DIR / "top10_prompt.json",
+        )
+
+    # Default snapshot: agentic if present, else prompt, else fall back to local results/.
+    if built_agentic:
+        _copy(DOCS_API_DIR / "leaderboard_agentic.json", DOCS_API_DIR / "leaderboard.json")
+        _copy(DOCS_API_DIR / "top10_agentic.json", DOCS_API_DIR / "top10.json")
         return
 
-    if proc.returncode != 0:
-        # Best effort: don't fail the whole site build if results are missing/malformed.
-        _write_empty_leaderboard(tier=tier)
+    if built_prompt:
+        _copy(DOCS_API_DIR / "leaderboard_prompt.json", DOCS_API_DIR / "leaderboard.json")
+        _copy(DOCS_API_DIR / "top10_prompt.json", DOCS_API_DIR / "top10.json")
+        return
+
+    # Local dev convenience: if someone is running locally, try results/openrouter_tier_runs as a fallback.
+    local_root = ROOT_DIR / "results" / "openrouter_tier_runs"
+    local_tier = _detect_tier(local_root)
+    if local_tier:
+        ok = _run_build(
+            tier=local_tier,
+            results_root=local_root,
+            out_lb=DOCS_API_DIR / "leaderboard.json",
+            out_top10=DOCS_API_DIR / "top10.json",
+        )
+        if ok:
+            return
+
+    # Best effort: keep any previously-generated snapshot (avoid "blanking" GH Pages on CI).
+    if (DOCS_API_DIR / "leaderboard.json").exists() and (DOCS_API_DIR / "top10.json").exists():
+        return
+
+    _write_empty_leaderboard()
 
 
 def write_docs_html() -> None:
@@ -545,6 +647,13 @@ def write_docs_html() -> None:
                 {"name": "Startup Guide", "file": "STARTUP.md"},
                 {"name": "Leaderboard Publisher", "file": "leaderboard_publisher.md"},
             ]
+        },
+        {
+            "title": "Business",
+            "links": [
+                {"name": "Sponsorship", "file": "sponsorship.md"},
+                {"name": "Leaderboard Submissions", "file": "leaderboard_submissions.md"},
+            ],
         },
         {
             "title": "Technical",
@@ -782,7 +891,7 @@ def write_contact_html() -> None:
           <div class="contact-side">
             <div class="card">
               <div class="card-k">Fallback</div>
-              <div class="card-v">If the API is not running (e.g., GitHub Pages), this form cannot deliver. Email is intentionally not displayed.</div>
+              <div class="card-v">If the API is not running (e.g., GitHub Pages), this form cannot deliver. Email: support [at] fba-bench [dot] com.</div>
             </div>
             <div class="card">
               <div class="card-k">Privacy</div>

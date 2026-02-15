@@ -1,0 +1,71 @@
+name: Leaderboard Run Request
+description: Request a model/agent run on the public leaderboard.
+title: "[Run Request] <model id>"
+labels:
+  - leaderboard
+body:
+  - type: dropdown
+    id: benchmark_type
+    attributes:
+      label: Benchmark Type
+      options:
+        - prompt (fast)
+        - agentic (slow)
+    validations:
+      required: true
+
+  - type: input
+    id: model_id
+    attributes:
+      label: Model ID
+      description: OpenRouter-style id (example: deepseek/deepseek-chat-v3.1:free)
+      placeholder: deepseek/deepseek-chat-v3.1:free
+    validations:
+      required: true
+
+  - type: input
+    id: provider
+    attributes:
+      label: Provider / Endpoint
+      description: OpenRouter, direct provider, or OpenAI-compatible base URL.
+      placeholder: OpenRouter
+    validations:
+      required: true
+
+  - type: input
+    id: tier
+    attributes:
+      label: Tier
+      description: T0/T1/T2 (if unsure, use T2).
+      placeholder: T2
+    validations:
+      required: false
+
+  - type: input
+    id: days
+    attributes:
+      label: Days (agentic only)
+      description: Simulated days for agentic runs (example: 180 or 365).
+      placeholder: "180"
+    validations:
+      required: false
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints / Notes
+      description: Any budget caps, latency constraints, or special instructions.
+      placeholder: "Budget cap: $50. Prefer :free models."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: sponsorship
+    attributes:
+      label: Sponsorship
+      options:
+        - label: I can sponsor compute credits / a run (if needed).
+        - label: I am a provider and can supply credits for evaluation.
+    validations:
+      required: false
+

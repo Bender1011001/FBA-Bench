@@ -93,7 +93,11 @@ curl -sS http://localhost:8000/openapi.json > openapi.json
 
 The static docs site references JSON snapshot files under `docs/api/`:
 - `docs/api/leaderboard.json`
+- `docs/api/leaderboard_agentic.json`
+- `docs/api/leaderboard_prompt.json`
 - `docs/api/top10.json`
+- `docs/api/top10_agentic.json`
+- `docs/api/top10_prompt.json`
 - `docs/api/live.json`
 - `docs/api/sim_theater_live.json`
 
