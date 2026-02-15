@@ -12,6 +12,14 @@
 - **Custom Evaluation Report**: private run(s) on requested scenarios with a PDF-style readout of failure modes.
 - **Enterprise Support**: integration help, scenario authoring, hosted/private deployments.
 
+## Why They Buy: Financial Fidelity
+
+- **Hard Audit Trails**: Unlike roleplay benchmarks, we track every cent with a strict double-entry ledger.
+- **ROI Confidence**: Use the "Panic Button" guarantee—if the math breaks, the sim halts. No hallucinated profits.
+- **Security & Resilience**: The "Red Team" Gauntlet tests if agents fall for phishing or hallucinated compliance traps.
+- **Cognitive Fidelity**: "Sleep Cycles" and active reflection simulate long-term memory consolidation, preventing context saturation.
+- **GAAP Standard**: The ledger structure mirrors real-world ERPs, making results intelligible to CFOs, not just engineers.
+
 ## What We Give Away
 
 - Public leaderboard + public run artifacts (`public_results/`).

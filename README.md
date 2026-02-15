@@ -36,13 +36,21 @@ Unlike academic benchmarks that run in minutes, FBA-Bench simulates **real conse
 
 ## Key Features
 
-- **Tick-Based Simulation**: Each day is a separate LLM call with real feedback loops
-- **Modular Agent Ecosystem**: Supports CrewAI, LangChain, and custom frameworks via `src/agent_runners/`
-- **Rich Scenarios**: Supply chain shocks, price wars, demand spikes, and compliance traps
-- **Live Visualization**: Watch decisions happen in real-time with `run_grok_live.py`
-- **API & Dashboard**: FastAPI backend with WebSocket streaming
-- **Observability**: ClearML, Prometheus, and OpenTelemetry integration
-- **Settings File**: Configure everything in `simulation_settings.yaml`
+- **Tick-Based Simulation**: Each day is a separate LLM call with real feedback loops.
+- **Strict Double-Entry Ledger**: Enforces GAAP rules ($A=L+E$). Includes an integrity check ("Panic Button") you can treat as a hard stop on math violations.
+- **"Red Team" Gauntlet**: Automated adversarial attacks (phishing, compliance traps) to test agent security.
+- **Long-Term Memory (Per-Day Consolidation)**: Agents reflect nightly to promote/forget memories (prevents context saturation).
+- **Competition Awareness Modes**: Agents can be configured to be "aware" vs "unaware" of competition.
+- **Agent-Based Consumer Modeling**: Customers make utility-based purchase decisions, not simple demand curves.
+- **Budget & Cost Constraints**: Enforce token/cost budgets per tick/run and per tool.
+- **Reproducibility Toolkit**: Deterministic seeding + LLM response caching + golden-master regression checks.
+- **Plugin Framework**: Extend with scenario/agent/tool/metrics plugins.
+- **Modular Agent Ecosystem**: Supports CrewAI, LangChain, and custom frameworks via `src/agent_runners/`.
+- **Rich Scenarios**: Supply chain shocks, price wars, demand spikes, and compliance traps.
+- **Live Visualization**: Watch decisions happen in real-time with `run_grok_live.py`.
+- **API & Dashboard**: FastAPI backend with WebSocket streaming.
+- **Observability**: ClearML, Prometheus, and OpenTelemetry integration.
+- **Settings File**: Configure everything in `simulation_settings.yaml`.
 
 ## Quick Start
 
@@ -98,6 +106,15 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 - [API Reference](docs/api/README.md): Endpoints, auth, and realtime WebSocket.
 - [Testing Strategy](docs/testing.md): Guidelines for unit, integration, and performance tests.
 - [Deployment Guide](docs/deployment.md): Docker Compose setups for dev/prod.
+- [Ledger System](docs/ledger_system.md): Double-entry accounting primitives and integrity checks.
+- [Red Team Gauntlet](docs/red_team_gauntlet.md): Adversarial injection (phishing, compliance traps, manipulation).
+- [Long-Term Memory & Modes](docs/cognitive_memory.md): Per-day memory consolidation + competition awareness.
+- [Agent-Based Consumer Modeling](docs/consumer_utility_model.md): Utility-based shoppers + visibility multipliers.
+- [Simulation Services](docs/simulation_services.md): WorldStore + market simulation + supply chain disruptions.
+- [Metrics Suite](docs/metrics_suite.md): Finance/ops/trust/stress/adversarial/cost scoring.
+- [Budget Constraints](docs/budget_constraints.md): Token/cost budgets and tier configs.
+- [Reproducibility Toolkit](docs/reproducibility.md): Deterministic seeding, caches, and golden masters.
+- [Plugin Framework](docs/plugin_framework.md): Extension points for scenarios, agents, tools, and metrics.
 - [Contribution Guidelines](CONTRIBUTING.md): Coding standards and PR process.
 
 ## Contributing

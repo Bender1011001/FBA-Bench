@@ -59,6 +59,12 @@ This list is intentionally high-level; use Swagger/OpenAPI for the canonical sch
   - Routes are mounted under `/api/v1/benchmarks/...`
 - Metrics (Prometheus-style):
   - `GET /api/metrics`
+- Golden Masters:
+  - Routes are mounted under `/api/v1/golden/...`
+- Medusa:
+  - Routes are mounted under `/api/v1/medusa/...`
+- War Games (experimental):
+  - Routes are mounted under `/api/v1/wargames/...` (see note below)
 
 ## Realtime WebSocket
 
@@ -70,6 +76,13 @@ Typical usage:
 1. Connect to `/ws/realtime`
 2. Subscribe to topics (JSON frames)
 3. Receive events as the simulation runs
+
+## Notes On “War Games”
+
+The codebase includes a `/api/v1/wargames` route group (`src/fba_bench_api/api/routes/wargames.py`).
+Treat it as experimental until it is fully aligned with the production service wiring.
+
+See: `docs/api/extra_endpoints.md`
 
 ## Error Format
 

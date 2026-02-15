@@ -92,6 +92,76 @@ var best_rev_delta: float = 0.0
 var best_units_tick: int = -1
 var best_units_delta: int = 0
 
+# Demo automation (for screen recordings)
+var demo_autostart: bool = false
+var demo_autoquit: bool = false
+var demo_done_file: String = ""
+var demo_start_delay_s: float = 3.0
+var demo_end_hold_s: float = 4.0
+
+func _env_bool(name: String, default_value: bool = false) -> bool:
+	var v = OS.get_environment(name)
+	if v == "":
+		return default_value
+	v = v.strip_edges().to_lower()
+	return v == "1" or v == "true" or v == "yes" or v == "y" or v == "on"
+
+func _env_int(name: String, default_value: int) -> int:
+	var v = OS.get_environment(name)
+	if v == "":
+		return default_value
+	var n = int(v)
+	return n
+
+func _env_float(name: String, default_value: float) -> float:
+	var v = OS.get_environment(name)
+	if v == "":
+		return default_value
+	var n = float(v)
+	return n
+
+func _select_option_by_text(opt: OptionButton, label: String) -> void:
+	if opt == null:
+		return
+	var target = str(label).strip_edges()
+	if target == "":
+		return
+	for i in range(opt.item_count):
+		if str(opt.get_item_text(i)) == target:
+			opt.select(i)
+			return
+
+func _configure_demo_from_env() -> void:
+	demo_autostart = _env_bool("FBA_BENCH_DEMO_AUTOSTART", false)
+	if not demo_autostart:
+		return
+
+	demo_autoquit = _env_bool("FBA_BENCH_DEMO_AUTOQUIT", true)
+	demo_done_file = OS.get_environment("FBA_BENCH_DEMO_DONE_FILE")
+	demo_start_delay_s = _env_float("FBA_BENCH_DEMO_START_DELAY_SECONDS", 3.0)
+	demo_end_hold_s = _env_float("FBA_BENCH_DEMO_ENDCARD_HOLD_SECONDS", 4.0)
+
+	_select_option_by_text(scenario_dropdown, OS.get_environment("FBA_BENCH_DEMO_SCENARIO"))
+	_select_option_by_text(agent_dropdown, OS.get_environment("FBA_BENCH_DEMO_AGENT"))
+
+	seed_input.value = float(_env_int("FBA_BENCH_DEMO_SEED", int(seed_input.value)))
+	max_ticks_input.value = float(_env_int("FBA_BENCH_DEMO_MAX_TICKS", int(max_ticks_input.value)))
+	speed_slider.value = _env_float("FBA_BENCH_DEMO_SPEED", float(speed_slider.value))
+
+	if _env_bool("FBA_BENCH_DEMO_CINEMATIC", true):
+		cinematic_toggle.button_pressed = true
+		_set_cinematic_mode(true)
+
+	if _env_bool("FBA_BENCH_DEMO_FULLSCREEN", false):
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+	# Delay start so recording can begin cleanly.
+	var delay = max(0.1, float(demo_start_delay_s))
+	get_tree().create_timer(delay).timeout.connect(func():
+		if not is_running:
+			_on_start_pressed()
+	)
+
 func _ready():
 	_connect_signals()
 	_update_button_states()
@@ -146,6 +216,7 @@ func _ready():
 
 	# Start in non-cinematic mode but keep toggle state consistent
 	_set_cinematic_mode(bool(cinematic_toggle.button_pressed))
+	_configure_demo_from_env()
 		
 	print("[SimViewer] Ready - Dropdowns populated")
 
@@ -1040,6 +1111,18 @@ func _on_simulation_finished(results: Dictionary) -> void:
 	)
 
 	end_card.visible = true
+
+	# Demo mode: auto-quit after showing end card (and optionally write a sentinel file).
+	if demo_autostart and demo_autoquit:
+		var hold = max(0.1, float(demo_end_hold_s))
+		get_tree().create_timer(hold).timeout.connect(func():
+			if demo_done_file != "":
+				var f = FileAccess.open(demo_done_file, FileAccess.WRITE)
+				if f != null:
+					f.store_string("done\n")
+					f.close()
+			get_tree().quit()
+		)
 
 func _compute_run_highlights() -> Dictionary:
 	# Prefer incremental tracking (covers full runs even when tick_history is capped).
