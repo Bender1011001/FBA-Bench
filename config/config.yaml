@@ -1,7 +1,7 @@
 # FBA Benchmark Application Configuration
 
 app:
-  name: "FBA-Bench Enterprise"
+  name: "FBA-Bench"
   version: "1.0.0"
   domain: "fbabench.com"  # Production domain
   debug: false # Set to true for development

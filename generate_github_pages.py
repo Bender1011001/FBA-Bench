@@ -183,7 +183,7 @@ def write_index_html() -> None:
           <a class="chip" href="docs/">docs</a>
           <a class="chip" href="docs/#sponsorship.md">sponsor</a>
           <a class="chip" href="contact.html">message me</a>
-          <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
+          <a class="chip" href="https://github.com/Bender1011001/FBA-Bench" target="_blank" rel="noreferrer">github</a>
         </div>
       </section>
 
@@ -274,7 +274,7 @@ def write_index_html() -> None:
           <a href="docs/#sponsorship.md">Sponsor</a>
           <a href="contact.html">Message me</a>
         </div>
-        <div>FBA-Bench Enterprise. Built for the era of agentic AI.</div>
+        <div>FBA-Bench. Built for the era of agentic AI.</div>
         <div class="muted">If the leaderboard looks stale, the publisher is not running or results are not deployed.</div>
       </footer>
     </main>
@@ -728,7 +728,7 @@ def write_docs_html() -> None:
 
     seo = _seo_tags(
         title="FBA-Bench | Documentation",
-        description="Documentation for FBA-Bench Enterprise: setup, architecture, API reference, deployment, runbooks, and testing.",
+        description="Documentation for FBA-Bench: setup, architecture, API reference, deployment, runbooks, and testing.",
         canonical_path="/docs/",
         theme_color="#0a0a0a",
         icon_href="../favicon.svg",
@@ -783,7 +783,7 @@ def write_docs_html() -> None:
             <a href="#privacy.md">Privacy Policy</a>
             <a href="#disclaimer.md">Legal Disclaimer</a>
           </div>
-          <div style="margin-top: 16px; font-size: 11px;">FBA-Bench Enterprise &copy; 2026</div>
+          <div style="margin-top: 16px; font-size: 11px;">FBA-Bench &copy; 2026</div>
         </footer>
       </aside>
 
@@ -920,7 +920,7 @@ def write_contact_html() -> None:
 
             <div class="actions">
               <button class="btn" type="submit">Send</button>
-              <a class="chip" href="https://github.com/Bender1011001/FBA-Bench-Enterprise" target="_blank" rel="noreferrer">github</a>
+              <a class="chip" href="https://github.com/Bender1011001/FBA-Bench" target="_blank" rel="noreferrer">github</a>
             </div>
 
             <div id="contactStatus" class="muted" style="margin-top: 12px;">Ready.</div>

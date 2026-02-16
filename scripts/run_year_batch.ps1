@@ -1,4 +1,4 @@
-# Year-like Tier 0/1 batch runner for FBA-Bench Enterprise
+# Year-like Tier 0/1 batch runner for FBA-Bench
 $ErrorActionPreference = 'Continue'
 
 # Models to run

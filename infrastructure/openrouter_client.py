@@ -15,7 +15,7 @@ def _build_default_headers(api_key: str) -> Dict[str, str]:
     if not api_key:
         raise ValueError("OpenRouter API key is required")
 
-    referer = os.getenv("OPENROUTER_REFERER", "https://github.com/fba-bench/fba-bench-enterprise")
+    referer = os.getenv("OPENROUTER_REFERER", "https://github.com/fba-bench/fba-bench")
     title = os.getenv("OPENROUTER_TITLE", "FBA-Bench")
 
     headers = {

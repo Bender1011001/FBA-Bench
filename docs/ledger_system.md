@@ -2,7 +2,7 @@
 
 ## Overview
 
-FBA-Bench Enterprise distinguishes itself from other "roleplay" based simulations by enforcing **strict financial fidelity**. At the core of the simulation lies a professional-grade Double-Entry Ledger that adheres to Generally Accepted Accounting Principles (GAAP).
+FBA-Bench distinguishes itself from other "roleplay" based simulations by enforcing **strict financial fidelity**. At the core of the simulation lies a professional-grade Double-Entry Ledger that adheres to Generally Accepted Accounting Principles (GAAP).
 
 Unlike systems that simply track "points" or "money" as a single variable, our ledger ensures that every penny is accounted for through balanced debits and credits.
 

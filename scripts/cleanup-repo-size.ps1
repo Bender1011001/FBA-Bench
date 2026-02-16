@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Repository Size Cleanup Script for FBA-Bench-Enterprise
+    Repository Size Cleanup Script for FBA-Bench
 
 .DESCRIPTION
     This script helps reduce repository size by identifying large files and providing

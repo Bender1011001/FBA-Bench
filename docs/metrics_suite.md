@@ -2,7 +2,7 @@
 
 ## Overview
 
-FBA-Bench Enterprise includes a multi-dimensional scoring system intended to measure more than “final profit”.
+FBA-Bench includes a multi-dimensional scoring system intended to measure more than “final profit”.
 
 Core modules live in:
 - `src/metrics/metric_suite.py` (orchestration + weighting)

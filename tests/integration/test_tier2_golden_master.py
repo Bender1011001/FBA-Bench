@@ -17,10 +17,10 @@ def load_tier2_scenario():
 
 
 @pytest.mark.asyncio
-async def test_create_enterprise_v1_0_baseline():
+async def test_create_fba_bench_v1_0_baseline():
     """
     Runs the Tier 2 detailed scenario ("supply chain crisis") and saves the
-    results as the 'Enterprise Version 1.0 Baseline'.
+    results as the 'FBA-Bench Version 1.0 Baseline'.
     """
     scenario_data = load_tier2_scenario()
 
@@ -105,9 +105,9 @@ async def test_create_enterprise_v1_0_baseline():
     events = event_bus.get_recorded_events()
     event_bus.stop_recording()
 
-    # Save as Enterprise Version 1.0 Baseline
+    # Save as FBA-Bench Version 1.0 Baseline
     # Using the naming convention requested
-    git_sha = "enterprise_v1.0"
+    git_sha = "fba_bench_v1.0"
     run_id = "baseline"
 
     EventSnapshot.dump_events(events, git_sha, run_id)
@@ -115,4 +115,4 @@ async def test_create_enterprise_v1_0_baseline():
     # Also verify that we actually saved it
     snapshot_path = EventSnapshot.ARTIFACTS_DIR / f"{git_sha}_{run_id}.parquet"
     assert snapshot_path.exists(), "Snapshot file was not created!"
-    print(f"[OK] Saved Enterprise V1.0 Baseline to {snapshot_path}")
+    print(f"[OK] Saved FBA-Bench V1.0 Baseline to {snapshot_path}")

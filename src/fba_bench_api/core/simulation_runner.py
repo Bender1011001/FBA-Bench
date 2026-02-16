@@ -1,5 +1,5 @@
 """
-Real Simulation Runner for FBA-Bench Enterprise API.
+Real Simulation Runner for FBA-Bench API.
 
 This module provides the production simulation runner that integrates:
 - SimulationOrchestrator for tick generation

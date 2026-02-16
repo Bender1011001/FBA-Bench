@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FBA-Bench Enterprise: 2-Year Complex Simulation with Grok 4.1 Fast via OpenRouter
+FBA-Bench: 2-Year Complex Simulation with Grok 4.1 Fast via OpenRouter
 
 This script runs a comprehensive 2-year e-commerce simulation using:
 - Model: x-ai/grok-4-1-mini-fast (via OpenRouter API)

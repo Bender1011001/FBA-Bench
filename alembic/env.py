@@ -1,4 +1,4 @@
-"""Alembic environment script for FBA-Bench Enterprise migrations.
+"""Alembic environment script for FBA-Bench migrations.
 
 Configures Alembic to use the application's SQLAlchemy metadata and DATABASE_URL
 from environment variables.
@@ -35,7 +35,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set the SQLAlchemy URL from environment
-database_url = os.getenv("DATABASE_URL", "sqlite:///./enterprise.db")
+database_url = os.getenv("DATABASE_URL", "sqlite:///./fba_bench.db")
 config.set_main_option("sqlalchemy.url", database_url)
 
 def run_migrations_offline() -> None:

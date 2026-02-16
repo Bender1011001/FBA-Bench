@@ -4,7 +4,7 @@
 
 ## 1. Nature of Service (Simulation Only)
 
-FBA-Bench Enterprise ("the Service") is an automated simulation tool utilizing Artificial Intelligence. **It is not a financial advisor.** All data, including "Best Seller Rank" predictions, profit margins, and competitor analysis, are **simulated estimates** and must not be used as the sole basis for real-world financial decisions.
+FBA-Bench ("the Service") is an automated simulation tool utilizing Artificial Intelligence. **It is not a financial advisor.** All data, including "Best Seller Rank" predictions, profit margins, and competitor analysis, are **simulated estimates** and must not be used as the sole basis for real-world financial decisions.
 
 ## 2. No Warranty (The "As-Is" Clause)
 
@@ -23,7 +23,7 @@ You acknowledge that the Service uses Large Language Models (LLMs) which are pro
 
 ## 5. Indemnification
 
-You agree to indemnify and hold harmless FBA-Bench Enterprise against any claims, disputes, demands, liabilities, damages, losses, and costs and expenses, including, without limitation, reasonable legal and accounting fees arising out of or in any way connected with your access to or use of the Service.
+You agree to indemnify and hold harmless FBA-Bench against any claims, disputes, demands, liabilities, damages, losses, and costs and expenses, including, without limitation, reasonable legal and accounting fees arising out of or in any way connected with your access to or use of the Service.
 
 ## 6. Donations
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-FBA-Bench Enterprise includes a built-in **Red Team Gauntlet** designed to test an agent's security posture and resilience against adversarial attacks. Unlike standard benchmarks that only test business logic, the Red Team Gauntlet proactively attempts to compromise the agent.
+FBA-Bench includes a built-in **Red Team Gauntlet** designed to test an agent's security posture and resilience against adversarial attacks. Unlike standard benchmarks that only test business logic, the Red Team Gauntlet proactively attempts to compromise the agent.
 
 ## Core Injection Vectors
 

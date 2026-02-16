@@ -11,7 +11,7 @@ Real failures look like this:
 
 If you want to know whether an LLM can survive a real operating environment, you need a benchmark that looks like an operating environment.
 
-That is the thesis behind FBA-Bench Enterprise: a tick-based e-commerce simulation where the model makes at least one decision per simulated day, receives feedback, and carries the consequences forward. It is not about writing clean JSON once. It is about staying solvent.
+That is the thesis behind FBA-Bench: a tick-based e-commerce simulation where the model makes at least one decision per simulated day, receives feedback, and carries the consequences forward. It is not about writing clean JSON once. It is about staying solvent.
 
 ## What FBA-Bench Actually Measures
 

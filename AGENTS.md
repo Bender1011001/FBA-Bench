@@ -2,7 +2,7 @@
 
 ## What this is
 
-FBA-Bench Enterprise is a high-fidelity business simulation benchmark for evaluating AI in complex e-commerce scenarios. It simulates market dynamics, inventory management, and adversarial events over extended timelines.
+FBA-Bench is a high-fidelity business simulation benchmark for evaluating AI in complex e-commerce scenarios. It simulates market dynamics, inventory management, and adversarial events over extended timelines.
 
 ## Current goal
 

@@ -1,4 +1,4 @@
-# FBA-Bench Enterprise Root
+# FBA-Bench Root
 
 ## Status
 

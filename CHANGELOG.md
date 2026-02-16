@@ -1,13 +1,13 @@
 # Changelog
 
-All notable changes to FBA-Bench Enterprise will be documented in this file.
+All notable changes to FBA-Bench will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.0-rc1] - 2026-01-07
 
 ### Added
-- **Enterprise Version 1.0 Release Candidate**: Production-ready release with all critical issues resolved
+- **FBA-Bench Version 1.0 Release Candidate**: Production-ready release with all critical issues resolved
 - Redis-backed experiment run persistence via `ExperimentRunStore` class
 - Comprehensive investment readiness improvements
 - Security hardening for production deployments
@@ -34,8 +34,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
-- **Enterprise Version 1.0 Baseline**: Created golden master baseline from Tier 2 ("supply chain crisis") scenarios, saved as `artifacts/enterprise_v1.0_baseline.parquet`.
-- New integration test `tests/integration/test_tier2_golden_master.py` for generating and validating the Enterprise V1.0 Baseline.
+- **FBA-Bench Version 1.0 Baseline**: Created golden master baseline from Tier 2 ("supply chain crisis") scenarios, saved as `artifacts/fba_bench_v1.0_baseline.parquet`.
+- New integration test `tests/integration/test_tier2_golden_master.py` for generating and validating the FBA-Bench V1.0 Baseline.
 - Updated `scripts/verify_golden_masters.py` to include Tier 2 golden master verification.
 - Enhanced DB session lifecycle using `scoped_session` for thread-safety and `expire_on_commit=False`.
 - Implemented canonical dependency exports from `api/dependencies.py` for standardized imports.
@@ -52,7 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.0.0] - TBD
 
 ### Added
-- Initial stable release of FBA-Bench Enterprise
+- Initial stable release of FBA-Bench
 - Core features for JWT authentication, SQLite stability improvements, and Pydantic v2 integration
 - Stripe compatibility for payment processing
 - Performance shims and optimizations

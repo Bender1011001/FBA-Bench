@@ -10,7 +10,7 @@ These are short-form captions and scripts designed for posting alongside a scree
 
 ## 30-Second Voiceover (Video Script)
 
-“This is FBA-Bench Enterprise, a high-fidelity Amazon-style business simulation for evaluating AI agents over weeks, not minutes. Each day the agent manages pricing, inventory, supply chain, and marketing, while the environment generates realistic events and competitors react. We also run an automated red-team gauntlet to see if agents fall for phishing, compliance traps, or bad intel. And instead of dumping everything into a vector store, agents can consolidate long-term memories after each sim day to preserve strategy over time. If you’re building agentic systems, this is where you test them under pressure.”
+“This is FBA-Bench, a high-fidelity Amazon-style business simulation for evaluating AI agents over weeks, not minutes. Each day the agent manages pricing, inventory, supply chain, and marketing, while the environment generates realistic events and competitors react. We also run an automated red-team gauntlet to see if agents fall for phishing, compliance traps, or bad intel. And instead of dumping everything into a vector store, agents can consolidate long-term memories after each sim day to preserve strategy over time. If you’re building agentic systems, this is where you test them under pressure.”
 
 ## LinkedIn Post (Short)
 
@@ -31,7 +31,7 @@ Red-team attacks. Long-term memory consolidation. Realistic market + ops dynamic
 
 ## YouTube Description (Paste)
 
-FBA-Bench Enterprise is a high-fidelity business simulation benchmark for evaluating AI agents in long-horizon e-commerce scenarios.
+FBA-Bench is a high-fidelity business simulation benchmark for evaluating AI agents in long-horizon e-commerce scenarios.
 
 Highlights in this run:
 - End-to-end business loop (inventory, pricing, marketing, operations)

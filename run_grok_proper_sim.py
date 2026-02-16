@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FBA-Bench Enterprise: PROPER Tick-Based Simulation with Feedback Loop
+FBA-Bench: PROPER Tick-Based Simulation with Feedback Loop
 
 This is a REAL simulation where:
 1. Each day is a separate LLM call

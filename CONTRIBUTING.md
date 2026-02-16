@@ -1,6 +1,6 @@
-# Contributing to FBA-Bench Enterprise
+# Contributing to FBA-Bench
 
-Thank you for considering contributing to FBA-Bench Enterprise! We value contributions that improve the codebase, documentation, or features while adhering to our standards for quality, security, and maintainability. All contributors must follow these guidelines.
+Thank you for considering contributing to FBA-Bench! We value contributions that improve the codebase, documentation, or features while adhering to our standards for quality, security, and maintainability. All contributors must follow these guidelines.
 
 ## Code of Conduct
 
@@ -142,4 +142,4 @@ PRs must include:
 - **Releases**: Follow Semantic Versioning; changelog updates in PRs.
 - **Community**: Join discussions for ideas; credits in CHANGELOG for significant contribs.
 
-For questions, open an issue or discuss on GitHub. We appreciate your efforts to make FBA-Bench Enterprise better!
+For questions, open an issue or discuss on GitHub. We appreciate your efforts to make FBA-Bench better!

@@ -1,6 +1,6 @@
 # Features Overview
 
-This page is the “map” of the major systems in FBA-Bench Enterprise and where to find the implementation.
+This page is the “map” of the major systems in FBA-Bench and where to find the implementation.
 
 ## Core Benchmark Modes
 

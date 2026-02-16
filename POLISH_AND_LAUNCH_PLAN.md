@@ -1,4 +1,4 @@
-# FBA-Bench Enterprise: Launch Plan
+# FBA-Bench: Launch Plan
 
 This is an execution checklist for shipping a public-facing demo (observer-first), verified run instructions, and outbound-ready marketing assets.
 

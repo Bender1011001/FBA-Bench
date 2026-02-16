@@ -1,6 +1,6 @@
 param(
   [string]$Output = "artifacts/promo/fba_bench_demo.mp4",
-  [string]$WindowTitle = "FBA-Bench-Enterprise-GUI",
+  [string]$WindowTitle = "FBA-Bench-GUI",
 
   [string]$Host = "127.0.0.1",
   [int]$Port = 8000,

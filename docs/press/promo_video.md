@@ -30,7 +30,7 @@ Notes:
 
 ## Suggested Shot List (30s)
 
-1. 0-2s: Title card overlay (add in post): "FBA-Bench Enterprise: long-horizon agent simulation"
+1. 0-2s: Title card overlay (add in post): "FBA-Bench: long-horizon agent simulation"
 2. 2-10s: Cinematic Mode: camera sweeps the warehouse zones while the live feed shows events.
 3. 10-25s: A couple "shock" spikes (inventory drops, restock arrives, demand jumps).
 4. 25-30s: End card recap: revenue, profit, units, highlights.

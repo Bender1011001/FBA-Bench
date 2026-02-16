@@ -1,6 +1,6 @@
 # Architecture Overview
 
-FBA-Bench Enterprise is a Python monorepo built around a tick-based business simulation and two evaluation modes:
+FBA-Bench is a Python monorepo built around a tick-based business simulation and two evaluation modes:
 - LLM Benchmark: evaluates raw model capability (no hidden scaffolding)
 - Agent Benchmark: evaluates an agent system (tools, memory, orchestration allowed)
 

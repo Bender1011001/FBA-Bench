@@ -4,7 +4,7 @@
 
 ## 1. Data Collection
 
-FBA-Bench Enterprise is a static documentation and leaderboard site. We do not use cookies for tracking, nor do we require user accounts or login.
+FBA-Bench is a static documentation and leaderboard site. We do not use cookies for tracking, nor do we require user accounts or login.
 
 ## 2. Third-Party Services
 

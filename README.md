@@ -1,4 +1,4 @@
-# FBA-Bench Enterprise
+# FBA-Bench
 
 <div align="center">
   <img src="https://img.shields.io/badge/Live-Leaderboard-9d50bb?style=for-the-badge&logo=github&logoColor=white" alt="Live Leaderboard" />

@@ -115,7 +115,7 @@ docs/api/*.json
 *.db
 *.sqlite
 *.sqlite3
-enterprise*.db
+fba_bench*.db
 test*.db
 fba_bench.db
 dev.db

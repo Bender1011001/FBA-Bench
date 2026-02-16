@@ -2,7 +2,7 @@
 
 ## Overview
 
-FBA-Bench Enterprise includes a **budget enforcement layer** intended to make agent comparisons fair and to prevent "unlimited tool/LLM usage" from dominating results.
+FBA-Bench includes a **budget enforcement layer** intended to make agent comparisons fair and to prevent "unlimited tool/LLM usage" from dominating results.
 
 The core components are:
 - `src/constraints/budget_enforcer.py` (`BudgetEnforcer`): meters tokens/cost/calls per agent, per tool, per tick and per run.

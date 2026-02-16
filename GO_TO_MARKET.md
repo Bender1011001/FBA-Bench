@@ -10,7 +10,7 @@
 
 - **Sponsored Agentic Run**: "Bankruptcy Test" run for a specific model + published artifacts + short writeup.
 - **Custom Evaluation Report**: private run(s) on requested scenarios with a PDF-style readout of failure modes.
-- **Enterprise Support**: integration help, scenario authoring, hosted/private deployments.
+- **Platform Support**: integration help, scenario authoring, hosted/private deployments.
 
 ## Why They Buy: Financial Fidelity
 

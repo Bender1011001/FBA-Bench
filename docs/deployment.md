@@ -58,7 +58,7 @@ Use `docker-compose.prod.yml` for secure, scaled deployment.
    The production domain is configured in `config/config.yaml`:
    ```yaml
    app:
-     name: "FBA-Bench Enterprise"
+     name: "FBA-Bench"
      version: "1.0.0"
      domain: "fbabench.com"
    

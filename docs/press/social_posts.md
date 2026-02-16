@@ -10,7 +10,7 @@
 ## X / Twitter (<= 280 chars)
 
 1.
-FBA-Bench Enterprise is a long-horizon business sim benchmark for AI agents.
+FBA-Bench is a long-horizon business sim benchmark for AI agents.
 One decision per simulated day. Feedback loops. Shocks. Competitors.
 Bad choices compound. Good strategies emerge.
 Try it / watch it: fbabench.com
@@ -39,7 +39,7 @@ Stop mixing them and calling it a leaderboard.
 
 ## LinkedIn (short)
 
-We built FBA-Bench Enterprise to answer a simple question:
+We built FBA-Bench to answer a simple question:
 Can an AI agent run an e-commerce business without slowly killing itself?
 
 It is a tick-based simulation (180-365+ simulated days). Each day the agent acts, the world responds, and the consequences carry forward: pricing, inventory, competitors, shocks.
@@ -54,7 +54,7 @@ fbabench.com
 Most benchmarks are designed like exams: static prompts, single-turn answers, a score.
 That is useful for measuring isolated capability, but it does not tell you if an agent can survive a stateful environment where mistakes compound.
 
-FBA-Bench Enterprise is a long-horizon e-commerce simulation benchmark:
+FBA-Bench is a long-horizon e-commerce simulation benchmark:
 - one decision step per simulated day (180-365+ steps)
 - persistent world state (inventory, cash, competitors)
 - adversarial events (supply shocks, price wars, demand spikes)
@@ -79,7 +79,7 @@ Tags/hashtags:
 
 ## Discord/Slack announcement
 
-FBA-Bench Enterprise update:
+FBA-Bench update:
 - Observer-friendly Simulation Theater (cinematic camera, live feed, end recap)
 - Long-horizon agent evaluation (180-365+ day runs, compounding consequences)
 

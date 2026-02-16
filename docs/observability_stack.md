@@ -2,7 +2,7 @@
 
 ## Overview
 
-FBA-Bench Enterprise provides observability at three levels:
+FBA-Bench provides observability at three levels:
 - **Application logs** (structured where possible)
 - **Metrics** (Prometheus-style)
 - **Tracing** (OpenTelemetry)

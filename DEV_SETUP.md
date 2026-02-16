@@ -1,6 +1,6 @@
-# FBA-Bench Enterprise Development Setup
+# FBA-Bench Development Setup
 
-This guide provides step-by-step instructions for setting up the FBA-Bench Enterprise project for local development. It reflects the standardized Poetry workflow, `src/` package structure, and Makefile-based commands for consistency and reproducibility.
+This guide provides step-by-step instructions for setting up the FBA-Bench project for local development. It reflects the standardized Poetry workflow, `src/` package structure, and Makefile-based commands for consistency and reproducibility.
 
 ## Prerequisites
 
@@ -21,8 +21,8 @@ Ensure your system meets these for smooth operation. No additional global packag
 
 ### 1. Clone the Repository
 ```
-git clone https://github.com/your-org/FBA-Bench-Enterprise.git
-cd FBA-Bench-Enterprise
+git clone https://github.com/your-org/FBA-Bench.git
+cd FBA-Bench
 ```
 
 ### 2. Install Dependencies with Poetry

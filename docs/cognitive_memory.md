@@ -2,7 +2,7 @@
 
 ## Overview
 
-FBA-Bench Enterprise includes a built-in, LLM-driven **Long-Term Memory (LTM)** system designed for long-horizon runs: after each simulation day, agents can *choose what to remember* and *what to forget*.
+FBA-Bench includes a built-in, LLM-driven **Long-Term Memory (LTM)** system designed for long-horizon runs: after each simulation day, agents can *choose what to remember* and *what to forget*.
 
 Separately, agent runners support **behavior modes** like competition awareness (agents are explicitly told they are competing vs. not told).
 

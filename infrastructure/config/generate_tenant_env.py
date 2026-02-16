@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Per-tenant configuration generator for FBA-Bench Enterprise.
+Per-tenant configuration generator for FBA-Bench.
 
 Renders templates for backend .env and optional Terraform .tfvars files.
 Uses string.Template for simple placeholder substitution.
@@ -190,7 +190,7 @@ def main():
         else:
             with open(start_script, 'w') as f:
                 f.write("#!/bin/bash\n")
-                f.write("echo 'Starting FBA-Bench Enterprise Demo...'\n")
+                f.write("echo 'Starting FBA-Bench Demo...'\n")
                 f.write("docker compose up -d\n")
                 f.write("echo 'Services started.'\n")
                 f.write(f"echo 'API: http://localhost:{args.api_port}'\n")
@@ -210,7 +210,7 @@ def main():
         else:
             with open(start_bat, 'w') as f:
                 f.write("@echo off\n")
-                f.write("echo Starting FBA-Bench Enterprise Demo...\n")
+                f.write("echo Starting FBA-Bench Demo...\n")
                 f.write("docker compose up -d\n")
                 f.write("echo Services started.\n")
                 f.write(f"echo API: http://localhost:{args.api_port}\n")
@@ -224,7 +224,7 @@ def main():
             print(f"Skipping {readme_file}: file exists")
         else:
             with open(readme_file, 'w') as f:
-                f.write(f"FBA-Bench Enterprise - Demo Package ({args.tenant_id})\n")
+                f.write(f"FBA-Bench - Demo Package ({args.tenant_id})\n")
                 f.write("===================================================\n\n")
                 f.write("Instructions:\n")
                 f.write("1. START BACKEND SERVICES\n")

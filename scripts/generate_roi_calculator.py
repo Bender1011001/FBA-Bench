@@ -130,6 +130,6 @@ for ws in [ws_inputs, ws_results, ws_sample]:
         ws.column_dimensions[column_letter].width = adjusted_width
 
 # Save the workbook
-output_path = "repos/fba-bench-enterprise/marketing/tools/roi_calculator.xlsx"
+output_path = "repos/fba-bench/marketing/tools/roi_calculator.xlsx"
 wb.save(output_path)
 print(f"ROI Calculator generated at {output_path}")

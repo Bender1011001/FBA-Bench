@@ -40,7 +40,7 @@ services:
       - ${tenant}-net
 
   api:
-    image: fba-bench-enterprise:${api_image_tag}
+    image: fba-bench:${api_image_tag}
     container_name: ${tenant}-api
     # If using local build:
     # build:

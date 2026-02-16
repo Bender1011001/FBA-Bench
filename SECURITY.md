@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The following versions of FBA-Bench Enterprise are actively supported with security updates:
+The following versions of FBA-Bench are actively supported with security updates:
 
 *   `main` branch (development HEAD)
 *   Latest stable release (e.g., vX.Y.Z) - *Specify latest release tag if applicable*
@@ -11,7 +11,7 @@ Older versions are not supported and may have unpatched vulnerabilities.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in FBA-Bench Enterprise, please report it to us as soon as possible so that we can address it. We ask that you use the contact information provided below.
+If you discover a security vulnerability in FBA-Bench, please report it to us as soon as possible so that we can address it. We ask that you use the contact information provided below.
 
 **Contact:**
 Email: security@fba-bench.com
@@ -27,7 +27,7 @@ We will acknowledge your report within 48 hours and will keep you updated on the
 
 ## Security Best Practices for Users
 
-To ensure the security of your FBA-Bench Enterprise deployment, please follow these best practices:
+To ensure the security of your FBA-Bench deployment, please follow these best practices:
 
 ### Environment Variables and Secrets
 *   **Never** commit sensitive information (API keys, database credentials, secrets) directly into the codebase.

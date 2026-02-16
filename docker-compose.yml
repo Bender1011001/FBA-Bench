@@ -1,4 +1,4 @@
-# Default Docker Compose configuration for FBA-Bench Enterprise
+# Default Docker Compose configuration for FBA-Bench
 # Usage: docker compose up -d
 # For other environments, use specific compose files:
 #   Development: docker-compose.dev.yml

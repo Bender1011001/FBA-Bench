@@ -33,7 +33,7 @@ except ImportError:
                     pass
 
 
-# Import from Enterprise
+# Import from FBA-Bench API
 from fba_bench_api.core.redis_client import RedisClient
 
 # Try to import SimulationORM, fallback to Mock if fails (e.g. due to sqlalchemy version)
@@ -45,9 +45,9 @@ except ImportError:
         pass
 
 
-class EnterpriseSimulationAdapter:
+class FBABenchSimulationAdapter:
     """
-    Bridges the gap between the FBA-Bench-Core engine and the Enterprise API.
+    Bridges the gap between the FBA-Bench-Core engine and the FBA-Bench API.
     Manages the lifecycle of a simulation run.
     """
 
@@ -66,7 +66,7 @@ class EnterpriseSimulationAdapter:
         if not hasattr(self.orchestrator, "event_bus"):
             self.orchestrator.event_bus = CoreBus()
 
-        # Hook into the Core Event Bus to stream updates to Enterprise Redis
+        # Hook into the Core Event Bus to stream updates to Redis
         # Subscription is handled in start() to support async event buses
 
     async def start(self):
@@ -208,5 +208,5 @@ class EnterpriseSimulationAdapter:
             print(f"[Error] Failed to inject agent action {action}: {e}")
 
     async def _handle_core_event(self, event):
-        """Log core events to the Enterprise Audit Trail."""
+        """Log core events to the FBA-Bench Audit Trail."""
         await self.redis.lpush(f"sim:{self.run_id}:events", event.json())

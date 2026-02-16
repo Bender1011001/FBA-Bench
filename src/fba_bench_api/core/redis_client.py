@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class RedisClient:
     """
-    Async Redis client wrapper for FBA-Bench Enterprise.
+    Async Redis client wrapper for FBA-Bench.
     """
 
     def __init__(self):

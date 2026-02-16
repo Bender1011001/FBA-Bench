@@ -1,4 +1,4 @@
-# Development Docker Compose configuration for FBA-Bench Enterprise
+# Development Docker Compose configuration for FBA-Bench
 # - Optimized for rapid development with hot-reload
 # - Uses Poetry for dependency management
 # - SQLite for simplicity in development

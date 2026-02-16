@@ -1,4 +1,4 @@
-# Test Docker Compose configuration for FBA-Bench Enterprise
+# Test Docker Compose configuration for FBA-Bench
 # - Optimized for testing and CI/CD environments
 # - Uses lightweight configurations
 # - Includes all necessary services for integration tests
