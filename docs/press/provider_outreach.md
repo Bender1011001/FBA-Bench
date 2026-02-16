@@ -33,4 +33,4 @@ If this is interesting, I can send a concrete run plan (models, tiers, days, est
 
 Thanks,
 <Your name>
-support@fba-bench.com
+support@fbabench.com

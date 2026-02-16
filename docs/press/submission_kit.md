@@ -23,8 +23,8 @@ FBA-Bench is a tick-based e-commerce simulation benchmark: inventory, pricing, c
 ## Links (fill these in)
 
 1. Repo: https://github.com/Bender1011001/FBA-Bench-Enterprise
-2. Leaderboard: https://bender1011001.github.io/FBA-Bench-Enterprise/
-3. Custom domain (optional): https://fbabench.com
+2. Leaderboard: https://fbabench.com
+3. Website: https://fbabench.com
 
 ## Show HN post (template)
 
@@ -42,7 +42,7 @@ We built FBA-Bench Enterprise to answer a simple question: can a model survive a
 FBA-Bench is a tick-based e-commerce sim (inventory, pricing, competitors, adversarial events). Each simulated day is a separate model decision with feedback loops and persistent state. Scoring is objective: profit/ROI and survival, plus token and latency metrics.
 
 Links:
-- Leaderboard: https://bender1011001.github.io/FBA-Bench-Enterprise/
+- Leaderboard: https://fbabench.com
 - Repo: https://github.com/Bender1011001/FBA-Bench-Enterprise
 
 If you want a quick mental model: most benchmarks are exams; this is a six-month job.
@@ -61,7 +61,7 @@ Body:
 
 We built FBA-Bench to test long-horizon agent behavior under compounding consequences. It is an e-commerce simulation where each simulated day is a separate model decision (pricing, restock, order acceptance) under adversarial events (price wars, supply shocks, demand spikes/crashes). Runs are scored by objective outcomes: profit/ROI and survival.
 
-Leaderboard: https://bender1011001.github.io/FBA-Bench-Enterprise/
+Leaderboard: https://fbabench.com
 Repo: https://github.com/Bender1011001/FBA-Bench-Enterprise
 
 ## Product Hunt listing (template)
@@ -90,7 +90,7 @@ Hi <Name>,
 
 We are launching FBA-Bench Enterprise: a long-horizon agent benchmark where models run an e-commerce store for months of simulated time (one decision per day with feedback loops). We rank runs by profit/ROI and stability under shocks like price wars and supply chain disruptions.
 
-Leaderboard: https://bender1011001.github.io/FBA-Bench-Enterprise/
+Leaderboard: https://fbabench.com
 Repo: https://github.com/Bender1011001/FBA-Bench-Enterprise
 
 If you cover evaluation/agent reliability, we think this is a useful contrast to static QA benchmarks because failures compound over time instead of showing up as a single wrong answer.

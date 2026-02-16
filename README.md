@@ -134,13 +134,13 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 We welcome contributions! Follow [CONTRIBUTING.md](CONTRIBUTING.md) for setup, coding standards (ruff, black, mypy), and Conventional Commits. Run `make ci-local` before submitting PRs.
 
 ## Sponsorship / Compute Credits
-Running long-horizon sims costs money (tokens + infra). If you want the leaderboard updated more often, want a specific model evaluated, or want to sponsor compute credits, see [docs/sponsorship.md](docs/sponsorship.md) or email `support@fba-bench.com`.
+Running long-horizon sims costs money (tokens + infra). If you want the leaderboard updated more often, want a specific model evaluated, or want to sponsor compute credits, see [docs/sponsorship.md](docs/sponsorship.md) or email `support@fbabench.com`.
 
 ## Get On The Leaderboard
 Open a GitHub issue using the "Leaderboard Run Request" template, or see [docs/leaderboard_submissions.md](docs/leaderboard_submissions.md).
 
 ## License
-This project is proprietary. See [LICENSE](LICENSE) for details. For support, contact support@fba-bench.com.
+This project is source-available under a non-commercial license. You can use it for personal/research/educational purposes, but commercial use requires a separate license. See [LICENSE](LICENSE) for details. Commercial licensing: `support@fbabench.com`.
 
 ## Support
 - Issues: [GitHub Issues](../../issues)

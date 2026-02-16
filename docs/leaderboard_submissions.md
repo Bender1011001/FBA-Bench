@@ -7,7 +7,7 @@ There are two benchmarks:
 
 ## Request A Run (Recommended)
 
-Open a GitHub issue or email `support [at] fba-bench [dot] com` with:
+Open a GitHub issue or email `support [at] fbabench [dot] com` with:
 
 - model id (example: `deepseek/deepseek-chat-v3.1:free`)
 - benchmark type: `prompt` or `agentic`

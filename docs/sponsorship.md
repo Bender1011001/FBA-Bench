@@ -15,11 +15,11 @@ If you can provide API credits (OpenRouter or a direct provider), we can run:
 - prompt battery runs (cheap + reproducible)
 - long-horizon agentic sims (expensive; best for sponsored slots)
 
-Contact: `support [at] fba-bench [dot] com`
+Contact: `support [at] fbabench [dot] com`
 
 ### 2) Sponsor A Specific Run
 
-Email `support [at] fba-bench [dot] com` with:
+Email `support [at] fbabench [dot] com` with:
 
 - model id (example: `openai/gpt-5.2` or `deepseek/deepseek-r1`)
 - provider / endpoint (OpenRouter or direct)
@@ -35,4 +35,3 @@ Crypto donation addresses are listed on the homepage.
 - Sponsored runs are labeled as sponsored.
 - Sponsors do not get to change scoring, ranking, or published results.
 - Run configs and artifacts are published so others can audit and rerun.
-

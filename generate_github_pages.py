@@ -929,7 +929,7 @@ def write_contact_html() -> None:
           <div class="contact-side">
             <div class="card">
               <div class="card-k">Fallback</div>
-              <div class="card-v">If the API is not running (e.g., GitHub Pages), this form cannot deliver. Email: support [at] fba-bench [dot] com.</div>
+              <div class="card-v">If the API is not running (e.g., GitHub Pages), this form cannot deliver. Email: support [at] fbabench [dot] com.</div>
             </div>
             <div class="card">
               <div class="card-k">Privacy</div>

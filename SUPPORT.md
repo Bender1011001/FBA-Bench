@@ -12,6 +12,9 @@ Use GitHub Issues for:
 - feature requests
 - documentation fixes
 
+Email support:
+- `support@fbabench.com` (general support and commercial licensing inquiries)
+
 Include:
 - reproduction steps
 - logs (redact secrets)
@@ -20,4 +23,3 @@ Include:
 ## Security
 
 For vulnerabilities, follow `SECURITY.md` instead of filing a public issue.
-

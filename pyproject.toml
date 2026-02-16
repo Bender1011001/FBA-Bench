@@ -7,7 +7,7 @@ name = "fba-bench-enterprise"
 version = "1.0.0-rc1"
 description = "FBA-Bench Enterprise: benchmarking and simulation platform"
 authors = ["FBA-Bench Team"]
-license = "Proprietary"
+license = "LicenseRef-FBABench-NonCommercial-1.0"
 readme = "README.md"
 repository = "https://github.com/Bender1011001/FBA-Bench-Enterprise"
 homepage = "https://fbabench.com"
@@ -19,7 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "License :: Other/Proprietary License",
+    "License :: Free for non-commercial use",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
