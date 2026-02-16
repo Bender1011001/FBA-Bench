@@ -24,8 +24,9 @@ Navigation
 - Scenarios System: ./scenarios_system.md
 - Benchmarking System: ./benchmarking_system.md
 - Metrics Suite: ./metrics_suite.md
-- Budget Constraints: ./budget_constraints.md
-- Reproducibility Toolkit: ./reproducibility.md
+  - Budget Constraints: ./budget_constraints.md
+  - Audit & Replay: ./audit_and_replay.md
+  - Reproducibility Toolkit: ./reproducibility.md
   - Plugin Framework: ./plugin_framework.md
   - Troubleshooting: ./troubleshooting/README.md
   - Testing: ./testing.md

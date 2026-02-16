@@ -119,6 +119,7 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 - [Metrics Suite](docs/metrics_suite.md): Finance/ops/trust/stress/adversarial/cost scoring.
 - [Budget Constraints](docs/budget_constraints.md): Token/cost budgets and tier configs.
 - [Reproducibility Toolkit](docs/reproducibility.md): Deterministic seeding, caches, and golden masters.
+- [Audit & Replay](docs/audit_and_replay.md): Where artifacts land, how to replay runs, and audit layers.
 - [Plugin Framework](docs/plugin_framework.md): Extension points for scenarios, agents, tools, and metrics.
 - [Contribution Guidelines](CONTRIBUTING.md): Coding standards and PR process.
 

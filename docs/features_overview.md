@@ -36,6 +36,7 @@ See: `docs/benchmark_philosophy.md`
 ## Reproducibility
 
 - Deterministic seeding + response caching + golden masters: `docs/reproducibility.md`
+- Audit and replay (artifacts, playback paths, and audit layers): `docs/audit_and_replay.md`
 
 ## Extensibility
 

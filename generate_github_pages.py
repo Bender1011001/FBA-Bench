@@ -662,6 +662,7 @@ def write_docs_html() -> None:
                 {"name": "Metrics Suite", "file": "metrics_suite.md"},
                 {"name": "Budget Constraints", "file": "budget_constraints.md"},
                 {"name": "Reproducibility", "file": "reproducibility.md"},
+                {"name": "Audit & Replay", "file": "audit_and_replay.md"},
                 {"name": "Plugin Framework", "file": "plugin_framework.md"},
                 {"name": "Red Team Gauntlet", "file": "red_team_gauntlet.md"},
                 {"name": "Long-Term Memory & Modes", "file": "cognitive_memory.md"},
