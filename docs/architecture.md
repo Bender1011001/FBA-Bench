@@ -56,4 +56,4 @@ Production stack (typical):
 - API: `docs/api/README.md`
 - Testing: `docs/testing.md`
 - Deployment: `docs/deployment/README.md`
-
+- Features map: `docs/features_overview.md`

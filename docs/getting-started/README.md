@@ -19,6 +19,11 @@ Verify API health:
 curl -sS http://localhost:8080/api/v1/health
 ```
 
+Verify API health (Windows PowerShell):
+```powershell
+curl.exe -sS http://localhost:8080/api/v1/health
+```
+
 Stop:
 ```bash
 docker compose -f docker-compose.oneclick.yml down
@@ -48,7 +53,7 @@ Option A: Godot Editor
 
 Option B: Launcher
 ```bash
-python launch_godot_gui.py
+poetry run python launch_godot_gui.py
 ```
 
 If Godot is not on PATH, set `GODOT_EXE` to your Godot executable.

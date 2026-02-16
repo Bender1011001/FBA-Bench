@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Live-Leaderboard-9d50bb?style=for-the-badge&logo=github&logoColor=white" alt="Live Leaderboard" />
   <img src="https://img.shields.io/badge/Status-Active-00d2ff?style=for-the-badge" alt="Status" />
   <br/>
-  <strong><a href="https://fbabench.com">\ud83c\udf10 View the Live Benchmark Leaderboard</a></strong>
+  <strong><a href="https://fbabench.com">View the Live Benchmark Leaderboard</a></strong>
 </div>
 
 <br/>
@@ -13,12 +13,12 @@
 [![Benchmark Status](https://img.shields.io/badge/Benchmark-Results_Ready-success?style=flat-square)](https://fbabench.com)
 <!-- LEADERBOARD_BADGE_END -->
 
-## 🎯 Two Benchmark Modes. Know Which One You Need.
+## Two Benchmark Modes
 
-| | 🧠 **Prompt Battery (`prompt`)** | 🤖 **Agentic Simulation (`agentic`)** |
+| | **Prompt Battery (`prompt`)** | **Agentic Simulation (`agentic`)** |
 |---|:---:|:---:|
 | **Tests** | Raw model capability | Your full agent system |
-| **Memory/RAG** | ❌ None | ✅ Bring your own |
+| **Memory/RAG** | None | Bring your own |
 | **If it fails** | Model's fault | System's fault |
 | **Typical runtime** | Minutes | Hours to days |
 | **Typical calls** | Dozens of prompts | 180–365 decision steps |
@@ -37,8 +37,8 @@ Unlike academic benchmarks that run in minutes, FBA-Bench simulates **real conse
 ## Key Features
 
 - **Tick-Based Simulation**: Each day is a separate LLM call with real feedback loops.
-- **Strict Double-Entry Ledger**: Enforces GAAP rules ($A=L+E$). Includes an integrity check ("Panic Button") you can treat as a hard stop on math violations.
-- **"Red Team" Gauntlet**: Automated adversarial attacks (phishing, compliance traps) to test agent security.
+- **Double-Entry Ledger Subsystem**: GAAP-style accounting primitives and an optional integrity check ("Panic Button") for hard-stop validation on math violations.
+- **Red Team Gauntlet**: Automated adversarial attacks (phishing, compliance traps) to test agent security.
 - **Long-Term Memory (Per-Day Consolidation)**: Agents reflect nightly to promote/forget memories (prevents context saturation).
 - **Competition Awareness Modes**: Agents can be configured to be "aware" vs "unaware" of competition.
 - **Agent-Based Consumer Modeling**: Customers make utility-based purchase decisions, not simple demand curves.
@@ -47,7 +47,7 @@ Unlike academic benchmarks that run in minutes, FBA-Bench simulates **real conse
 - **Plugin Framework**: Extend with scenario/agent/tool/metrics plugins.
 - **Modular Agent Ecosystem**: Supports CrewAI, LangChain, and custom frameworks via `src/agent_runners/`.
 - **Rich Scenarios**: Supply chain shocks, price wars, demand spikes, and compliance traps.
-- **Live Visualization**: Watch decisions happen in real-time with `run_grok_live.py`.
+- **Observer-Mode Visualization**: Godot Simulation Theater (cinematic camera, live feed, end-of-run recap) for recording runs.
 - **API & Dashboard**: FastAPI backend with WebSocket streaming.
 - **Observability**: ClearML, Prometheus, and OpenTelemetry integration.
 - **Settings File**: Configure everything in `simulation_settings.yaml`.
@@ -55,16 +55,16 @@ Unlike academic benchmarks that run in minutes, FBA-Bench simulates **real conse
 ## Quick Start
 
 ### One-Click Local Demo (Docker)
-```
+```powershell
 docker compose -f docker-compose.oneclick.yml up -d --build
 ```
 Open http://localhost:8080
 
-- API health (proxied): `curl -sS http://localhost:8080/api/v1/health`
+- API health (proxied): `curl.exe -sS http://localhost:8080/api/v1/health`
 - FastAPI docs (proxied): http://localhost:8080/docs
 
 ### Backend Only (Local, No Docker)
-```
+```powershell
 poetry install
 poetry run uvicorn fba_bench_api.main:get_app --factory --reload --host 127.0.0.1 --port 8000
 ```
@@ -76,13 +76,13 @@ The GUI reads connection settings from environment variables:
 - `FBA_BENCH_WS_URL` (default: derived from HTTP base, `/ws/realtime`)
 
 Option 1: Use the launcher (starts backend if needed):
-```
+```powershell
 poetry run python launch_godot_gui.py
 ```
 If Godot is not on PATH, set `GODOT_EXE` to your Godot executable path.
 
 Option 2: Connect the GUI to the one-click Docker stack (nginx on `:8080`):
-```
+```powershell
 docker compose -f docker-compose.oneclick.yml up -d --build
 poetry run python launch_godot_gui.py --no-backend --port 8080
 ```
@@ -106,16 +106,26 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 - [API Reference](docs/api/README.md): Endpoints, auth, and realtime WebSocket.
 - [Testing Strategy](docs/testing.md): Guidelines for unit, integration, and performance tests.
 - [Deployment Guide](docs/deployment.md): Docker Compose setups for dev/prod.
+- [Features Overview](docs/features_overview.md): Map of major systems and where they live.
 - [Ledger System](docs/ledger_system.md): Double-entry accounting primitives and integrity checks.
 - [Red Team Gauntlet](docs/red_team_gauntlet.md): Adversarial injection (phishing, compliance traps, manipulation).
 - [Long-Term Memory & Modes](docs/cognitive_memory.md): Per-day memory consolidation + competition awareness.
 - [Agent-Based Consumer Modeling](docs/consumer_utility_model.md): Utility-based shoppers + visibility multipliers.
 - [Simulation Services](docs/simulation_services.md): WorldStore + market simulation + supply chain disruptions.
+- [Market Dynamics](docs/market_dynamics.md): Competitors, reviews, ranking, and marketing/ads.
+- [Agent Runners](docs/agent_runners.md): Runner adapters, modes, and configuration entry points.
+- [Services Catalog](docs/services_catalog.md): Index of `src/services/` modules.
+- [Benchmarking System](docs/benchmarking_system.md): Benchmark engine, configs, validators, and adapters.
 - [Metrics Suite](docs/metrics_suite.md): Finance/ops/trust/stress/adversarial/cost scoring.
 - [Budget Constraints](docs/budget_constraints.md): Token/cost budgets and tier configs.
 - [Reproducibility Toolkit](docs/reproducibility.md): Deterministic seeding, caches, and golden masters.
 - [Plugin Framework](docs/plugin_framework.md): Extension points for scenarios, agents, tools, and metrics.
 - [Contribution Guidelines](CONTRIBUTING.md): Coding standards and PR process.
+
+## Press / Recording
+
+- [Promo Video Runbook](docs/press/promo_video.md): Record an observer-mode run (Godot + ffmpeg).
+- [Social Post Copy](docs/press/social_posts.md): Ready-to-paste launch content.
 
 ## Contributing
 We welcome contributions! Follow [CONTRIBUTING.md](CONTRIBUTING.md) for setup, coding standards (ruff, black, mypy), and Conventional Commits. Run `make ci-local` before submitting PRs.

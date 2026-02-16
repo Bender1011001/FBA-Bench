@@ -45,10 +45,17 @@ See: `docs/benchmark_philosophy.md`
 
 - Multi-axis metrics suite (finance/ops/trust/stress/adversarial/cost): `docs/metrics_suite.md`
 
+## Observability
+
+- Logs, metrics, tracing, ClearML hooks: `docs/observability_stack.md`
+
+## Learning / Research
+
+- Learning modules and post-run analysis tooling: `docs/learning_systems.md`
+
 ## Visualization / Observer Mode
 
 - Godot Simulation Theater (observer-friendly GUI) and recording workflows:
   - `docs/RUNBOOK_SIM_THEATER.md`
   - `docs/press/promo_video.md`
   - `scripts/record_godot_demo.ps1`
-

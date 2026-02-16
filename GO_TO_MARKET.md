@@ -14,8 +14,8 @@
 
 ## Why They Buy: Financial Fidelity
 
-- **Hard Audit Trails**: Unlike roleplay benchmarks, we track every cent with a strict double-entry ledger.
-- **ROI Confidence**: Use the "Panic Button" guarantee—if the math breaks, the sim halts. No hallucinated profits.
+- **Hard Audit Trails**: Unlike roleplay benchmarks, we can track cashflows with a double-entry ledger subsystem (for ledger-backed runs and validations).
+- **ROI Confidence**: The ledger subsystem includes an integrity check ("Panic Button") that can be treated as a hard-stop validator when enabled. No hallucinated profits.
 - **Security & Resilience**: The "Red Team" Gauntlet tests if agents fall for phishing or hallucinated compliance traps.
 - **Cognitive Fidelity**: "Sleep Cycles" and active reflection simulate long-term memory consolidation, preventing context saturation.
 - **GAAP Standard**: The ledger structure mirrors real-world ERPs, making results intelligible to CFOs, not just engineers.
@@ -48,4 +48,3 @@
 - Provider outreach: `docs/press/provider_outreach.md`
 - Sponsorship: `docs/sponsorship.md`
 - Run requests: GitHub issue templates under `.github/ISSUE_TEMPLATE/`
-

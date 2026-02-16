@@ -21,6 +21,7 @@ Would you be open to sponsoring evaluation credits for:
 
 - a fast prompt battery (cheap, reproducible)
 - periodic long-horizon agentic runs (the "Bankruptcy Test")
+- optional security stress tests (red-team phishing/compliance traps) and long-horizon memory modes
 
 What you get:
 
@@ -33,4 +34,3 @@ If this is interesting, I can send a concrete run plan (models, tiers, days, est
 Thanks,
 <Your name>
 support@fba-bench.com
-

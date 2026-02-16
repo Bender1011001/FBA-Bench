@@ -17,6 +17,10 @@ That is the thesis behind FBA-Bench Enterprise: a tick-based e-commerce simulati
 
 FBA-Bench is an e-commerce business simulation benchmark: inventory, pricing, competitors, and adversarial market events (supply shocks, price wars, demand spikes/crashes). The objective is financial and measurable: maximize profit and avoid cash-flow death.
 
+In addition, the platform includes optional “agent system” stressors that are hard to evaluate with static QA:
+- adversarial red-team style injections (phishing and compliance traps)
+- long-horizon memory modes where agents must decide what to retain and what to forget
+
 In the "LLM Benchmark" mode, the model is the agent. There is no hidden scaffolding to save it:
 
 1. Each simulated day is a separate LLM call.
@@ -98,4 +102,3 @@ From there, the roadmap is obvious:
 
 If you are building agents for real workflows, you do not need a benchmark that flatters the model.
 You need one that tries to bankrupt it.
-

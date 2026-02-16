@@ -18,6 +18,7 @@ FBA-Bench is a tick-based e-commerce simulation benchmark: inventory, pricing, c
 3. Objective scoring (profit/ROI) instead of "vibes" grading.
 4. Stress testing via shocks: supply chain disruptions, price wars, demand spikes/crashes.
 5. Separates "LLM Benchmark" (model-only) from "Agent Benchmark" (your system).
+6. Built-in adversarial testing (red-team style phishing/compliance traps) and long-term memory consolidation (agent-runner dependent).
 
 ## Links (fill these in)
 
@@ -96,4 +97,3 @@ If you cover evaluation/agent reliability, we think this is a useful contrast to
 
 Thanks,
 <You>
-

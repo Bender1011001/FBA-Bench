@@ -17,7 +17,8 @@ $$ \text{Assets} = \text{Liabilities} + \text{Equity} $$
 If this equation is ever violated—even by a fraction of a cent—the ledger’s `verify_integrity(...)` check can be used as a "Panic Button".
 
 *   **Behavior**: The simulation immediately halts.
-*   **Forensics**: The ledger logs a critical error message and (when configured) raises `AccountingError` so callers can treat it as a hard stop.
+*   **Behavior**: Callers can treat integrity failure as a hard stop (the ledger logs a critical error and can raise `AccountingError`).
+*   **Forensics**: The critical log includes a full accounting equation breakdown and transaction counts for debugging.
 *   **Why it matters**: This guarantees that the simulation results are mathematically impossible to "hallucinate." Profit is not an opinion; it is a derived fact from balanced transactions.
 
 ### 2. Atomic Transactions & Concurrency

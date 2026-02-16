@@ -5,6 +5,7 @@
 - The bankruptcy test for AI agents: can your agent survive 365 simulated days of pricing, inventory, competitors, and shocks?
 - Static benchmarks measure answers. FBA-Bench measures survival.
 - Watch an e-commerce world run in real time: ticks, events, and compounding consequences.
+- Includes adversarial “red team” injections and per-day long-term memory consolidation (when enabled), so you can test security and long-horizon strategy.
 
 ## X / Twitter (<= 280 chars)
 
@@ -84,4 +85,3 @@ FBA-Bench Enterprise update:
 
 If you want to compare agent architectures (not just models), this is the sandbox.
 fbabench.com
-

@@ -31,7 +31,7 @@ docker compose -f docker-compose.oneclick.yml up -d --build
 ```
 Open http://localhost:8080
 
-- API health (proxied): `curl -sS http://localhost:8080/api/v1/health`
+- API health (proxied): `curl.exe -sS http://localhost:8080/api/v1/health`
 - FastAPI docs (proxied): http://localhost:8080/docs
 
 ### Option B: Backend Only (No Docker)

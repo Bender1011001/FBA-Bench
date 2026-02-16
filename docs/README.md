@@ -12,8 +12,21 @@ Navigation
 - API Reference: ./api/README.md
 - Architecture: ./architecture.md
 - Configuration: ./configuration.md
+- LLM Interface: ./llm_interface.md
 - Deployment: ./deployment/README.md
 - Observability: ./observability.md
+- Features Overview: ./features_overview.md
+- Codebase Map: ./codebase_map.md
+- Agent Runners: ./agent_runners.md
+- Simulation Services: ./simulation_services.md
+- Services Catalog: ./services_catalog.md
+- Market Dynamics: ./market_dynamics.md
+- Scenarios System: ./scenarios_system.md
+- Benchmarking System: ./benchmarking_system.md
+- Metrics Suite: ./metrics_suite.md
+- Budget Constraints: ./budget_constraints.md
+- Reproducibility Toolkit: ./reproducibility.md
+- Plugin Framework: ./plugin_framework.md
 - Troubleshooting: ./troubleshooting/README.md
 - Testing: ./testing.md
 - Golden Masters: ./quality/golden_master.md
@@ -44,7 +57,7 @@ Contributing to the docs
 
 Validating docs locally:
 - Run: `docker compose -f docker-compose.oneclick.yml up -d --build`
-- Verify health: `curl -sS http://localhost:8080/api/v1/health`
+- Verify health: `curl.exe -sS http://localhost:8080/api/v1/health`
 - Browse Swagger UI: http://localhost:8080/docs
 
 Security reminders
