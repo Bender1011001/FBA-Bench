@@ -62,15 +62,15 @@ test-performance:
 	$(POETRY) run pytest -m performance --cov=src --cov-report=xml --cov-report=term-missing
 
 test-all:
-	$(POETRY) run pytest -m "not slow" --cov=src --cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml --cov-fail-under=80 --ignore=integration_tests --ignore=medusa_experiments --ignore=scripts
+	$(POETRY) run pytest -m "not slow" --cov=src --cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml --cov-fail-under=80 --ignore=integration_tests --ignore=scripts
 
 # Timeboxed full test run to avoid local hangs; respects pytest-timeout settings from pyproject
 test-all-timeboxed:
-	$(POETRY) run pytest -m "not slow and not performance" --cov=src --cov-report=xml --maxfail=1 -vv -s --ignore=integration_tests --ignore=medusa_experiments --ignore=scripts
+	$(POETRY) run pytest -m "not slow and not performance" --cov=src --cov-report=xml --maxfail=1 -vv -s --ignore=integration_tests --ignore=scripts
 
 # Run all including slow and performance tests (use with caution)
 test-complete:
-	$(POETRY) run pytest --cov=src --cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml --cov-fail-under=80 --ignore=integration_tests --ignore=medusa_experiments --ignore=scripts
+	$(POETRY) run pytest --cov=src --cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml --cov-fail-under=80 --ignore=integration_tests --ignore=scripts
 
 coverage: test-all
 

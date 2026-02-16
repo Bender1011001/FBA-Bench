@@ -150,55 +150,6 @@ Low-level simulation control.
 Subscribe to WebSocket topic for real-time progress via the `/ws/realtime` endpoint (send `{"type":"subscribe", "topic":"..."}`).
 Verify with `scripts/smoke/ws_smoke.py`.
 
-### Medusa (/api/v1/medusa)
-
-Endpoints for managing the Medusa trainer process, implemented in [src/fba_bench_api/api/routes/medusa.py](src/fba_bench_api/api/routes/medusa.py). All under `/api/v1/medusa`. No authentication required in dev mode.
-
-- **POST /medusa/start**
-  Launches the Medusa trainer as a background subprocess (poetry run python medusa_trainer.py). Includes single-instance guard (409 if already running).
-  **Request**: Empty body.
-  **Response** (200): `{"status": "started", "message": "Medusa trainer started with PID: 1234"}`
-  **Example curl**:
-  ```bash
-  curl -X POST "http://localhost:8000/api/v1/medusa/start"
-  ```
-
-- **POST /medusa/stop**
-  Gracefully terminates the running trainer (SIGTERM, 5s wait), falls back to force-kill (SIGKILL). Returns 404 if not running.
-  **Request**: Empty body.
-  **Response** (200): `{"status": "stopped", "message": "Medusa trainer with PID 1234 stopped."}`
-  **Example curl**:
-  ```bash
-  curl -X POST "http://localhost:8000/api/v1/medusa/stop"
-  ```
-
-- **GET /medusa/status**
-  Returns current trainer status and optional PID.
-  **Request**: None.
-  **Response** (200): `{"status": "running", "pid": 1234}` or `{"status": "stopped"}`
-  **Example curl**:
-  ```bash
-  curl "http://localhost:8000/api/v1/medusa/status"
-  ```
-
-- **GET /medusa/logs**
-  Returns full contents of the trainer log file as plain text (text/plain). Returns message if file not found.
-  **Request**: None.
-  **Response** (200): Log text or "Log file not found...".
-  **Example curl**:
-  ```bash
-  curl "http://localhost:8000/api/v1/medusa/logs"
-  ```
-
-- **GET /medusa/analysis**
-  Synchronously runs the Medusa analyzer and returns the JSON report. May take time to complete.
-  **Request**: None.
-  **Response** (200): JSON analysis report (application/json).
-  **Example curl**:
-  ```bash
-  curl "http://localhost:8000/api/v1/medusa/analysis"
-  ```
-
 ## Request/Response Examples
 
 ### POST /api/v1/experiments (Create)

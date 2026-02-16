@@ -12,13 +12,6 @@ Purpose:
 - Create and validate golden-run artifacts
 - Support regression checks and credibility workflows
 
-## Medusa
-
-Route module: `src/fba_bench_api/api/routes/medusa.py`
-
-Purpose:
-- Internal evaluation/analysis route group used by benchmark workflows
-
 ## War Games (Experimental)
 
 Route module: `src/fba_bench_api/api/routes/wargames.py`
@@ -29,4 +22,3 @@ Purpose:
 Important:
 - Treat this route group as **experimental** until it is aligned with the current production services
   (there are signs of stale imports and older ledger interfaces in the module).
-

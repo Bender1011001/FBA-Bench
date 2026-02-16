@@ -61,8 +61,6 @@ This list is intentionally high-level; use Swagger/OpenAPI for the canonical sch
   - `GET /api/metrics`
 - Golden Masters:
   - Routes are mounted under `/api/v1/golden/...`
-- Medusa:
-  - Routes are mounted under `/api/v1/medusa/...`
 - War Games (experimental):
   - Routes are mounted under `/api/v1/wargames/...` (see note below)
 

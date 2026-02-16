@@ -25,7 +25,6 @@ from fba_bench_api.api.routes import (
     golden as golden_routes,
     leaderboard as leaderboard_routes,
     llm as llm_routes,
-    medusa as medusa_router,
     metrics as metrics_routes,
     public_leaderboard as public_leaderboard_routes,
     realtime as realtime_routes,
@@ -660,7 +659,6 @@ def create_app() -> FastAPI:
     # Mount Benchmarks router with normalized prefix
     app.include_router(benchmarks_routes.router, prefix="/api/v1")
     app.include_router(templates_routes.router, prefix="/api/v1")
-    app.include_router(medusa_router.router, prefix="/api/v1", tags=["Medusa"])
     app.include_router(templates_routes.router, prefix="/api/v1", tags=["Templates"])
     # War Games API - connects React frontend to simulation engine
     app.include_router(wargames_routes.router)

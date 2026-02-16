@@ -27,6 +27,5 @@ Demo:
 
 Special / experimental:
 - `golden.py`: golden master / deterministic replay workflows
-- `medusa.py`: internal evaluation route group
 - `wargames.py`: war-games micro-sim route group (experimental)
 
