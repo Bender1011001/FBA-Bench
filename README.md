@@ -126,6 +126,8 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 
 - [Promo Video Runbook](docs/press/promo_video.md): Record an observer-mode run (Godot + ffmpeg).
 - [Social Post Copy](docs/press/social_posts.md): Ready-to-paste launch content.
+- [Ad Creatives](docs/press/ad_creatives.md): Captions, voiceover script, and thumbnail text.
+- [Outreach Tracker](docs/press/outreach_tracker.md): Lightweight template to track provider outreach.
 
 ## Contributing
 We welcome contributions! Follow [CONTRIBUTING.md](CONTRIBUTING.md) for setup, coding standards (ruff, black, mypy), and Conventional Commits. Run `make ci-local` before submitting PRs.

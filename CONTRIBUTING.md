@@ -10,7 +10,11 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ### Prerequisites
 - Python 3.10–3.13
-- Poetry (install: `curl -sSL https://install.python-poetry.org | python3 -`)
+- Poetry
+  - macOS/Linux:
+    - `curl -sSL https://install.python-poetry.org | python3 -`
+  - Windows (PowerShell):
+    - `(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -`
 - Git
 - Make (or Git Bash/WSL on Windows)
 - Docker (recommended for integration and deployment testing)
@@ -29,18 +33,20 @@ This ensures your environment matches production standards.
 
 ### Branching
 - Use feature branches: `git checkout -b feat/your-feature-name`
-- Base on `main` for new features; `develop` if exists for ongoing work.
+- Base on `main` for new features.
 - Keep branches small and focused.
 
 ### Making Changes
 1. **Identify Issue**: Use or create a GitHub issue for your work.
-2. **Code**: Implement in `src/` packages. Use absolute imports (e.g., `from src.fba_bench_core import ...`).
+2. **Code**: Implement in `src/` packages. Prefer importing the installed package names (e.g., `from fba_bench_core...`, `from fba_bench_api...`).
 3. **Test Locally**: 
-   - Unit/Contracts: `poetry run pytest -q`
-   - Full: `make test-all`
-   - Integration: `poetry run pytest -m integration -v`
+    - Unit/Contracts: `poetry run pytest -q`
+    - Full: `make test-all`
+    - Integration: `poetry run pytest -m integration -v`
 4. **Lint and Format**: `make lint && make format-fix`
-5. **Type Check**: `make type-check`
+5. **Type Check**:
+   - Fast/local: `make type-check` (non-blocking)
+   - Strict gate (CI-quality): `make type-check-strict`
 6. **CI Parity**: `make ci-local` (must pass before push).
 
 ### Commit Messages
@@ -67,10 +73,10 @@ All contributions must strictly follow the rules documented in [AGENTS.md](AGENT
   - Modules/functions: `snake_case`
   - Classes: `PascalCase`
   - Constants: `UPPER_SNAKE_CASE`
-- **Formatting**: 4-space indent, 100-char lines. Use black, ruff-format, isort (profile=black).
-- **Linting**: Ruff for checks (pre-commit enforces).
+- **Formatting**: 4-space indent, 100-char lines. Use Black (repo standard).
+- **Linting**: Ruff for checks (CI/Makefile enforces).
 - **Typing**: Mypy strict on `src/`. All public APIs typed; use `typing` or `pydantic`.
-- **Imports**: Absolute from `src/` (pytest importlib mode). Group: stdlib, third-party, local.
+- **Imports**: Use absolute imports (no relative imports). Prefer the installed package names (`fba_bench_core`, `fba_bench_api`, etc.).
 - **Security**: No secrets in code. Use Pydantic Settings for configs. Sanitize inputs.
 - **Dependencies**: Add via Poetry (`poetry add package` for prod, `--group dev` for tools). Pin in `pyproject.toml`.
 - **Async**: Use async where beneficial (e.g., API, LLM calls); pytest-asyncio for tests.
@@ -121,7 +127,7 @@ PRs must include:
 - Merge via GitHub (squash/rebase preferred; require approvals).
 
 ### Post-Merge
-- Update branch: `git checkout main && git pull upstream main`
+- Update branch: `git checkout main && git pull --rebase origin main`
 - Delete branch.
 
 ## Security and Sensitive Contributions

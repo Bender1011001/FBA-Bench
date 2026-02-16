@@ -153,7 +153,7 @@ Info "GUI Dashboard: http://localhost:5173 (wait ~30s for Vite)"
 Info "Logs: $LogFile"
 Info "Stop: .\scripts\start-dev.ps1 -Stop"
 Info "Monitor jobs: Get-Job | Receive-Job -Wait"
-Info "Health: curl http://localhost:8000/api/v1/health or browser"
+Info "Health: curl.exe -sS http://localhost:8000/api/v1/health or browser"
 
 # Keep script running to monitor (optional; Ctrl+C to stop)
 try {

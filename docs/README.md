@@ -26,10 +26,15 @@ Navigation
 - Metrics Suite: ./metrics_suite.md
 - Budget Constraints: ./budget_constraints.md
 - Reproducibility Toolkit: ./reproducibility.md
-- Plugin Framework: ./plugin_framework.md
-- Troubleshooting: ./troubleshooting/README.md
-- Testing: ./testing.md
-- Golden Masters: ./quality/golden_master.md
+  - Plugin Framework: ./plugin_framework.md
+  - Troubleshooting: ./troubleshooting/README.md
+  - Testing: ./testing.md
+  - Golden Masters: ./quality/golden_master.md
+  - Press / Recording:
+    - Promo Video Runbook: ./press/promo_video.md
+    - Social Post Copy: ./press/social_posts.md
+    - Ad Creatives: ./press/ad_creatives.md
+    - Outreach Tracker: ./press/outreach_tracker.md
 
 Local demo (one-click)
 - Start: `docker compose -f docker-compose.oneclick.yml up -d --build`

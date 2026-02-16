@@ -4,6 +4,8 @@ The FBA-Bench API is built with [FastAPI](https://fastapi.tiangolo.com/), provid
 
 All endpoints are under `/api/v1/` (versioned). Base URL: http://localhost:8000 (dev).
 
+Note (Windows PowerShell): `curl` is an alias for `Invoke-WebRequest`. Use `curl.exe` if you want curl-compatible flags.
+
 ## Accessing Auto-Generated Docs
 
 - **Swagger UI**: http://localhost:8000/docs (interactive, try requests)
@@ -13,8 +15,14 @@ All endpoints are under `/api/v1/` (versioned). Base URL: http://localhost:8000 
 In production, docs are protected (AUTH_PROTECT_DOCS=true); use JWT Bearer token.
 
 To export spec:
+macOS/Linux:
 ```bash
-curl http://localhost:8000/openapi.json > fba-openapi.json
+curl -sS http://localhost:8000/openapi.json -o fba-openapi.json
+```
+
+Windows (PowerShell):
+```powershell
+curl.exe -sS http://localhost:8000/openapi.json -o fba-openapi.json
 ```
 Use tools like [Swagger Editor](https://editor.swagger.io/) or [Postman](https://postman.com/) to import.
 

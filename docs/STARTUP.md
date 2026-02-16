@@ -97,7 +97,7 @@ After startup, verify status:
 
 | Component       | Endpoint/Command                              | Expected Status                          |
 |-----------------|-----------------------------------------------|------------------------------------------|
-| API             | `curl http://localhost:8000/api/v1/health`    | `{"status": "healthy", ...}` or `{"status": "degraded"}` |
+| API             | `curl.exe -sS http://localhost:8000/api/v1/health` | `{"status": "healthy", ...}` or `{"status": "degraded"}` |
 | Database        | `docker compose logs fba-postgres`            | No errors; connections accepted          |
 | Redis           | `docker exec fba-redis redis-cli -a fba_dev_redis ping` | `PONG`                       |
 | Godot GUI       | Launch via Godot Editor                       | Green "Connected" status indicator       |

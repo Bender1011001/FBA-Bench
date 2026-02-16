@@ -649,6 +649,29 @@ def write_docs_html() -> None:
             ]
         },
         {
+            "title": "Features",
+            "links": [
+                {"name": "Features Overview", "file": "features_overview.md"},
+                {"name": "Codebase Map", "file": "codebase_map.md"},
+                {"name": "Agent Runners", "file": "agent_runners.md"},
+                {"name": "Simulation Services", "file": "simulation_services.md"},
+                {"name": "Services Catalog", "file": "services_catalog.md"},
+                {"name": "Market Dynamics", "file": "market_dynamics.md"},
+                {"name": "Scenarios System", "file": "scenarios_system.md"},
+                {"name": "Benchmarking System", "file": "benchmarking_system.md"},
+                {"name": "Metrics Suite", "file": "metrics_suite.md"},
+                {"name": "Budget Constraints", "file": "budget_constraints.md"},
+                {"name": "Reproducibility", "file": "reproducibility.md"},
+                {"name": "Plugin Framework", "file": "plugin_framework.md"},
+                {"name": "Red Team Gauntlet", "file": "red_team_gauntlet.md"},
+                {"name": "Long-Term Memory & Modes", "file": "cognitive_memory.md"},
+                {"name": "Consumer Utility Model", "file": "consumer_utility_model.md"},
+                {"name": "Observability Stack", "file": "observability_stack.md"},
+                {"name": "Learning Systems", "file": "learning_systems.md"},
+                {"name": "Ledger System", "file": "ledger_system.md"},
+            ],
+        },
+        {
             "title": "Business",
             "links": [
                 {"name": "Sponsorship", "file": "sponsorship.md"},
@@ -659,12 +682,26 @@ def write_docs_html() -> None:
             "title": "Technical",
             "links": [
                 {"name": "API Reference", "file": "API.md"},
+                {"name": "API (Routes)", "file": "api/routes_catalog.md"},
+                {"name": "API (Extra)", "file": "api/extra_endpoints.md"},
                 {"name": "Configuration", "file": "configuration.md"},
                 {"name": "Deployment", "file": "deployment.md"},
                 {"name": "Observability", "file": "observability.md"},
                 {"name": "Testing", "file": "testing.md"},
                 {"name": "Performance FAQ", "file": "why_it_takes_hours.md"},
             ]
+        },
+        {
+            "title": "Press",
+            "links": [
+                {"name": "Promo Video Runbook", "file": "press/promo_video.md"},
+                {"name": "Social Posts", "file": "press/social_posts.md"},
+                {"name": "Ad Creatives", "file": "press/ad_creatives.md"},
+                {"name": "Submission Kit", "file": "press/submission_kit.md"},
+                {"name": "Provider Outreach", "file": "press/provider_outreach.md"},
+                {"name": "Outreach Tracker", "file": "press/outreach_tracker.md"},
+                {"name": "Article Draft", "file": "press/article.md"},
+            ],
         },
         {
             "title": "Legal",
