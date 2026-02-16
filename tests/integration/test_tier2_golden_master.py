@@ -17,6 +17,7 @@ def load_tier2_scenario():
 
 
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_create_fba_bench_v1_0_baseline():
     """
     Runs the Tier 2 detailed scenario ("supply chain crisis") and saves the

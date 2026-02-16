@@ -447,70 +447,65 @@ class TestResourceManager(unittest.TestCase):
             self.resource_manager.enforce_cost_limits(50.0)
 
 
-class TestDeploymentManager(unittest.TestCase):
-    """Test suite for the DeploymentManager class."""
+class TestDeploymentManager(unittest.IsolatedAsyncioTestCase):
+    """Test suite for the async DeploymentManager class."""
 
     def setUp(self):
         """Set up test fixtures before each test method."""
         self.config = DeploymentConfig(
             environment=DeploymentEnvironment.LOCAL,
             deployment_type=DeploymentType.DOCKER_COMPOSE,
-            resource_limits={"cpu": "2", "memory": "4GB"},
-            scaling_config={"min_instances": 1, "max_instances": 3},
+            resources={"limits": {"cpu": "2", "memory": "4GB"}},
         )
-        self.deployment_manager = DeploymentManager(self.config)
+        self.deployment_manager = DeploymentManager()
 
-    def test_deployment_manager_initialization(self):
+    async def test_deployment_manager_initialization(self):
         """Test that the deployment manager initializes correctly."""
         self.assertIsNotNone(self.deployment_manager)
-        self.assertEqual(self.deployment_manager.config, self.config)
+        self.assertTrue(hasattr(self.deployment_manager, "_deployments"))
 
-    def test_set_default_resources(self):
-        """Test setting default resources."""
-        self.deployment_manager._set_default_resources()
+    async def test_deploy_and_get_status(self):
+        """Test creating a deployment and reading status."""
+        deployment_id = await self.deployment_manager.deploy(
+            {
+                "name": "unit-test",
+                "type": "benchmark",
+                "resources": self.config.resources,
+                "scaling": {"enabled": True, "min_instances": 1, "max_instances": 2},
+            }
+        )
 
-        self.assertIsNotNone(self.deployment_manager.resource_limits)
-        self.assertIn("cpu", self.deployment_manager.resource_limits)
-        self.assertIn("memory", self.deployment_manager.resource_limits)
+        status = await self.deployment_manager.get_status(deployment_id)
+        self.assertEqual(status["deployment_id"], deployment_id)
+        self.assertEqual(status["name"], "unit-test")
+        self.assertEqual(status["status"], "running")
 
-    @patch("subprocess.run")
-    def test_deploy_docker_compose(self, mock_run):
-        """Test deploying with Docker Compose."""
-        mock_run.return_value = Mock(returncode=0)
+    async def test_scale_deployment(self):
+        """Test scaling an existing deployment."""
+        deployment_id = await self.deployment_manager.deploy({"name": "scale-test"})
+        result = await self.deployment_manager.scale(deployment_id, 3)
 
-        result = self.deployment_manager._deploy_docker_compose()
-
+        status = await self.deployment_manager.get_status(deployment_id)
         self.assertTrue(result)
-        mock_run.assert_called_once()
+        self.assertEqual(status["status"], "running")
+        self.assertEqual(status["scaling"]["max_instances"], 3)
 
-    @patch("subprocess.run")
-    def test_deploy_kubernetes(self, mock_run):
-        """Test deploying with Kubernetes."""
-        mock_run.return_value = Mock(returncode=0)
+    async def test_list_deployments(self):
+        """Test listing deployments."""
+        await self.deployment_manager.deploy({"name": "list-a"})
+        await self.deployment_manager.deploy({"name": "list-b"})
 
-        result = self.deployment_manager._deploy_kubernetes()
+        deployments = await self.deployment_manager.list_deployments()
+        self.assertGreaterEqual(len(deployments), 2)
 
+    async def test_teardown_deployment(self):
+        """Test tearing down a deployment."""
+        deployment_id = await self.deployment_manager.deploy({"name": "teardown-test"})
+        result = await self.deployment_manager.teardown(deployment_id)
+
+        status = await self.deployment_manager.get_status(deployment_id)
         self.assertTrue(result)
-        mock_run.assert_called_once()
-
-    @patch("subprocess.run")
-    def test_deploy_local(self, mock_run):
-        """Test deploying locally."""
-        mock_run.return_value = Mock(returncode=0)
-
-        result = self.deployment_manager._deploy_local()
-
-        self.assertTrue(result)
-
-    @patch("subprocess.run")
-    def test_status_docker_compose(self, mock_run):
-        """Test getting status with Docker Compose."""
-        mock_run.return_value = Mock(stdout="Running", returncode=0)
-
-        status = self.deployment_manager._status_docker_compose()
-
-        self.assertIn("status", status)
-        mock_run.assert_called_once()
+        self.assertEqual(status["status"], "terminated")
 
 
 if __name__ == "__main__":

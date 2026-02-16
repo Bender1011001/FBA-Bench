@@ -1,5 +1,6 @@
 """Security utilities for password hashing and JWT token management."""
 
+import logging
 import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
@@ -8,8 +9,19 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-# Password context for hashing and verification
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+logger = logging.getLogger(__name__)
+
+# Password context for hashing and verification.
+# Prefer bcrypt when backend is available; fall back to pbkdf2 for portability.
+try:
+    _bcrypt_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    _bcrypt_ctx.hash("fba-bench-password-context-check")
+    pwd_context = _bcrypt_ctx
+except Exception:
+    logger.warning(
+        "bcrypt backend unavailable; falling back to pbkdf2_sha256 for password hashing."
+    )
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # JWT Configuration
 import os
@@ -23,9 +35,7 @@ if not SECRET_KEY:
         raise RuntimeError("FATAL: SECRET_KEY must be set in production!")
     else:
         # Fallback for local dev only - still risky but better than silent random
-        import logging
-
-        logging.getLogger(__name__).warning(
+        logger.warning(
             "Using unsafe default SECRET_KEY for development."
         )
         SECRET_KEY = "dev-secret-change-me"

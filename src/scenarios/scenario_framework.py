@@ -1,5 +1,5 @@
 """
-Scenario Framework for FBA-Bench Enterprise.
+Scenario Framework for FBA-Bench.
 
 All randomness in this module uses deterministic RNG to ensure perfect
 reproducibility when provided with the same master seed.

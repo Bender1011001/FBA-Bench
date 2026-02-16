@@ -821,7 +821,7 @@ def generate_input(
             "(4) Maintain operational continuity during supply chain disruptions. "
             "Report your adversarial event responses in 'adversarial_responses' field."
         ),
-        "scenario_tier": "enterprise_adversarial",  # Indicates advanced difficulty
+        "scenario_tier": "advanced_adversarial",  # Indicates advanced difficulty
         "benchmark_differentiators": [
             "supply_chain_shocks",
             "competitor_price_wars", 
@@ -953,7 +953,7 @@ async def run(
             _decimal(fulfilled_rate).quantize(Decimal("0.0001"), rounding=ROUND_CTX)
         ),
         "policy_violations": int(policy_violations),
-        # Adversarial resilience metrics (enterprise differentiator)
+        # Adversarial resilience metrics (benchmark differentiator)
         "adversarial_resilience_score": adversarial_metrics["resilience_score"],
         "adversarial_metrics": adversarial_metrics,
         "details": {

@@ -89,6 +89,7 @@ Pipfile.lock
 # pytest
 .pytest_cache/
 .coverage
+.coverage_tmp
 coverage.xml
 htmlcov/
 

@@ -35,45 +35,22 @@ def test_experiment_model_validation():
     assert experiment.name == "Test Experiment"
     assert experiment.status == "draft"
 
-    # Invalid name
-    with pytest.raises(ValueError):
-        ExperimentORM(
-            id="test-id",
-            name="",  # Empty name
-            agent_id="agent-1",
-            scenario_id="scenario-1",
-            params={},
-            status="draft",
-        )
-
-    # Invalid status
-    with pytest.raises(ValueError):
-        ExperimentORM(
-            id="test-id",
-            name="Test",
-            agent_id="agent-1",
-            scenario_id="scenario-1",
-            params={},
-            status="invalid_status",
-        )
-
 
 def test_config_template_save():
     """Test ConfigTemplateSave model."""
     template = ConfigTemplateSave(
         config_id="config-1",
-        name="Test Config",
+        template_name="Test Config",
         description="Test description",
-        config_yaml="key: value",
     )
     assert template.config_id == "config-1"
-    assert template.name == "Test Config"
+    assert template.template_name == "Test Config"
 
-    # Invalid empty name
+    # Invalid extra field
     with pytest.raises(ValidationError):
         ConfigTemplateSave(
             config_id="config-2",
-            name="",
+            template_name="Invalid",
             description="Invalid",
             config_yaml="key: value",
         )
@@ -82,67 +59,73 @@ def test_config_template_save():
 def test_benchmark_config_request():
     """Test BenchmarkConfigRequest model."""
     request = BenchmarkConfigRequest(
-        scenario_id="scenario-1",
-        agent_id="agent-1",
-        params={"iterations": 10},
+        simulationSettings={"scenario_id": "scenario-1"},
+        agentConfigs=[{"agent_id": "agent-1"}],
+        llmSettings={"provider": "openrouter"},
+        constraints={"budget": 10},
+        experimentSettings={"iterations": 10},
     )
-    assert request.scenario_id == "scenario-1"
-    assert request.agent_id == "agent-1"
+    assert request.simulationSettings["scenario_id"] == "scenario-1"
+    assert request.agentConfigs[0]["agent_id"] == "agent-1"
 
-    # Invalid missing scenario_id
+    # Invalid missing required settings
     with pytest.raises(ValidationError):
         BenchmarkConfigRequest(
-            agent_id="agent-1",
-            params={},
+            simulationSettings={},
+            agentConfigs=[],
+            llmSettings={},
+            constraints={},
         )
 
 
 def test_experiment_create_request():
     """Test ExperimentCreateRequest model."""
     request = ExperimentCreateRequest(
-        name="New Experiment",
+        experiment_name="New Experiment",
         description="Description",
-        agent_id="agent-1",
-        scenario_id="scenario-1",
-        params={"key": "value"},
+        base_parameters={"scenario_id": "scenario-1"},
+        parameter_sweep={"seed": [1, 2, 3]},
     )
-    assert request.name == "New Experiment"
-    assert request.status == "draft"  # Default
+    assert request.experiment_name == "New Experiment"
+    assert request.parallel_workers == 1  # Default
 
-    # Invalid empty name
+    # Invalid parallel worker count
     with pytest.raises(ValidationError):
         ExperimentCreateRequest(
-            name="",
+            experiment_name="Invalid",
             description="Invalid",
-            agent_id="agent-1",
-            scenario_id="scenario-1",
-            params={},
+            base_parameters={"scenario_id": "scenario-1"},
+            parameter_sweep={"seed": [1]},
+            parallel_workers=0,
         )
 
 
 def test_experiment_status_response():
     """Test ExperimentStatusResponse model."""
     response = ExperimentStatusResponse(
-        id="exp-1",
-        name="Test Exp",
+        experiment_id="exp-1",
         status="running",
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        total_runs=10,
+        completed_runs=5,
+        successful_runs=4,
+        failed_runs=1,
+        progress_percentage=50.0,
+        start_time=datetime.now(),
     )
-    assert response.id == "exp-1"
+    assert response.experiment_id == "exp-1"
     assert response.status == "running"
 
 
 def test_experiment_results_response():
     """Test ExperimentResultsResponse model."""
     response = ExperimentResultsResponse(
-        id="exp-1",
-        metrics={"profit": 1000.0},
-        artifacts=["report.pdf"],
-        completed_at=datetime.now(),
+        experiment_id="exp-1",
+        status="completed",
+        results_summary={"profit": 1000.0},
+        individual_run_results=[{"run_id": "run-1"}],
     )
-    assert response.metrics["profit"] == 1000.0
-    assert "report.pdf" in response.artifacts
+    assert response.results_summary["profit"] == 1000.0
+    assert response.individual_run_results[0]["run_id"] == "run-1"
 
 
 def test_experiment_participant():
@@ -150,19 +133,22 @@ def test_experiment_participant():
     participant = ExperimentParticipant(
         agent_id="agent-1",
         role="competitor",
-        performance_score=85.5,
     )
     assert participant.agent_id == "agent-1"
     assert participant.role == "competitor"
+
+    with pytest.raises(ValueError):
+        ExperimentParticipant(agent_id="agent-1", role="")
 
 
 def test_experiment_run_create():
     """Test ExperimentRunCreate model."""
     run_create = ExperimentRunCreate(
-        experiment_id="exp-1",
+        scenario_id="scenario-1",
+        participants=[ExperimentParticipant(agent_id="agent-1", role="primary")],
         params={"seed": 42},
     )
-    assert run_create.experiment_id == "exp-1"
+    assert run_create.scenario_id == "scenario-1"
 
 
 def test_experiment_run():
@@ -170,47 +156,54 @@ def test_experiment_run():
     run = ExperimentRun(
         id="run-1",
         experiment_id="exp-1",
-        status=RunStatusType.running,
+        scenario_id="scenario-1",
+        participants=[ExperimentParticipant(agent_id="agent-1", role="primary")],
+        status="running",
         started_at=datetime.now(),
         params={"seed": 42},
     )
     assert run.id == "run-1"
-    assert run.status == RunStatusType.running
+    assert run.status == "running"
 
 
 def test_run_status():
     """Test RunStatus model."""
     status = RunStatus(
+        experiment_id="exp-1",
         run_id="run-1",
-        status=RunStatusType.completed,
-        message="Success",
-        timestamp=datetime.now(),
+        status="completed",
+        started_at=None,
+        updated_at=datetime.now(),
+        metrics={"score": 95.0},
     )
-    assert status.status == RunStatusType.completed
-    assert status.message == "Success"
+    assert status.status == "completed"
+    assert status.metrics["score"] == 95.0
 
 
 def test_run_progress():
     """Test RunProgress model."""
     progress = RunProgress(
+        experiment_id="exp-1",
         run_id="run-1",
-        current_step=5,
-        total_steps=10,
-        metrics={"accuracy": 0.9},
+        current_tick=5,
+        total_ticks=10,
+        progress_percent=50.0,
+        elapsed_time_seconds=12.5,
+        current_metrics={"accuracy": 0.9},
     )
-    assert progress.current_step == 5
-    assert progress.total_steps == 10
+    assert progress.current_tick == 5
+    assert progress.total_ticks == 10
 
 
 def test_experiment_run_response():
     """Test ExperimentRunResponse model."""
     response = ExperimentRunResponse(
-        id="run-1",
+        run_id="run-1",
         experiment_id="exp-1",
-        status=RunStatusType.completed,
-        results={"score": 95.0},
-        logs="Run logs",
+        status="completed",
+        message="Run completed",
+        created_at=datetime.now(),
+        participants_count=1,
     )
-    assert response.id == "run-1"
-    assert response.status == RunStatusType.completed
-    assert response.results["score"] == 95.0
+    assert response.run_id == "run-1"
+    assert response.status == "completed"

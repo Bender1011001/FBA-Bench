@@ -47,7 +47,7 @@ theme_override_constants/separation = 20
 [node name="Title" type="Label" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "FBA-BENCH ENTERPRISE"
+text = "FBA-BENCH"
 
 [node name="VSeparator" type="VSeparator" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer"]
 layout_mode = 2

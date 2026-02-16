@@ -9,6 +9,9 @@ from datetime import datetime
 
 import websockets
 
+# This module is a manual connectivity script, not part of automated pytest runs.
+__test__ = False
+
 
 async def test_websocket_events():
     """Test the /ws/events WebSocket endpoint."""

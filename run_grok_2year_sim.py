@@ -367,7 +367,7 @@ async def run_simulation():
     Executes a 2-year complex marketplace simulation using Grok 4.1 Fast.
     """
     print("\n" + "="*80)
-    print("🦅 FBA-BENCH ENTERPRISE: 2-YEAR GROK SIMULATION")
+    print("🦅 FBA-BENCH: 2-YEAR GROK SIMULATION")
     print("="*80)
     print(f"📅 Start Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"🤖 Model: {SIMULATION_CONFIG['model']['model_name']}")

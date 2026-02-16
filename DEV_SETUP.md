@@ -21,7 +21,7 @@ Ensure your system meets these for smooth operation. No additional global packag
 
 ### 1. Clone the Repository
 ```
-git clone https://github.com/your-org/FBA-Bench.git
+git clone https://github.com/Bender1011001/FBA-Bench.git
 cd FBA-Bench
 ```
 
