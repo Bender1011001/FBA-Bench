@@ -4,7 +4,12 @@
 # Detect Poetry command (Windows-friendly)
 # Use the CLI entrypoint instead of `py -m poetry` because Poetry has no __main__.
 # Use the most robust way to invoke Poetry on Windows/Anaconda.
-POETRY := $(shell python -m poetry --version >/dev/null 2>&1 && echo python -m poetry || echo poetry)
+ifeq ($(OS),Windows_NT)
+NULLDEV := NUL
+else
+NULLDEV := /dev/null
+endif
+POETRY := $(shell python -m poetry --version >$(NULLDEV) 2>&1 && echo python -m poetry || echo poetry)
 
 
 # -----------------------------------------------------------------------------
