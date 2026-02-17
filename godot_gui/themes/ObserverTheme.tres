@@ -1,0 +1,222 @@
+[gd_resource type="Theme" load_steps=14 format=3]
+
+[sub_resource type="SystemFont" id="SystemFont_ui"]
+font_names = PackedStringArray("Bahnschrift", "Segoe UI", "Noto Sans", "DejaVu Sans")
+font_weight = 450
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_base"]
+bg_color = Color(0.0666667, 0.117647, 0.196078, 0.86)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.239216, 0.478431, 0.721569, 0.4)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_topbar"]
+bg_color = Color(0.0352941, 0.0588235, 0.109804, 0.95)
+border_width_bottom = 1
+border_color = Color(0.203922, 0.65098, 0.980392, 0.45)
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_inset"]
+bg_color = Color(0.0352941, 0.0588235, 0.109804, 0.7)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.192157, 0.329412, 0.501961, 0.65)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+bg_color = Color(0.0823529, 0.14902, 0.254902, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.301961, 0.545098, 0.807843, 0.45)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.121569, 0.227451, 0.376471, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.262745, 0.717647, 1, 0.75)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.188235, 0.529412, 0.760784, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.611765, 0.878431, 1, 0.95)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
+bg_color = Color(0.0901961, 0.12549, 0.180392, 0.55)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.266667, 0.321569, 0.396078, 0.35)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input"]
+bg_color = Color(0.0313726, 0.0509804, 0.0941176, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.266667, 0.454902, 0.694118, 0.55)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input_focus"]
+bg_color = Color(0.0313726, 0.0509804, 0.0941176, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.301961, 0.729412, 1, 0.95)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chip"]
+bg_color = Color(0.111111, 0.219608, 0.372549, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.247059, 0.588235, 0.854902, 0.7)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress"]
+bg_color = Color(0.0784314, 0.113725, 0.172549, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.231373, 0.360784, 0.537255, 0.65)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
+bg_color = Color(0.188235, 0.639216, 0.988235, 0.85)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[resource]
+default_base_scale = 1.0
+default_font = SubResource("SystemFont_ui")
+default_font_size = 16
+
+Button/colors/font_color = Color(0.909804, 0.956863, 1, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(0.984314, 0.996078, 1, 1)
+Button/colors/font_disabled_color = Color(0.588235, 0.658824, 0.756863, 1)
+Button/constants/h_separation = 10
+Button/constants/v_separation = 4
+Button/constants/outline_size = 0
+Button/font_sizes/font_size = 15
+Button/styles/normal = SubResource("StyleBoxFlat_button_normal")
+Button/styles/hover = SubResource("StyleBoxFlat_button_hover")
+Button/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+Button/styles/focus = SubResource("StyleBoxFlat_button_hover")
+
+CheckBox/colors/font_color = Color(0.909804, 0.956863, 1, 1)
+CheckBox/colors/font_hover_color = Color(1, 1, 1, 1)
+CheckBox/font_sizes/font_size = 15
+
+Label/colors/font_color = Color(0.909804, 0.956863, 1, 1)
+Label/font_sizes/font_size = 15
+
+LineEdit/colors/font_color = Color(0.933333, 0.964706, 1, 1)
+LineEdit/colors/font_placeholder_color = Color(0.588235, 0.662745, 0.756863, 0.9)
+LineEdit/font_sizes/font_size = 15
+LineEdit/styles/normal = SubResource("StyleBoxFlat_input")
+LineEdit/styles/focus = SubResource("StyleBoxFlat_input_focus")
+LineEdit/styles/read_only = SubResource("StyleBoxFlat_input")
+
+OptionButton/font_sizes/font_size = 15
+OptionButton/styles/normal = SubResource("StyleBoxFlat_input")
+OptionButton/styles/hover = SubResource("StyleBoxFlat_input_focus")
+OptionButton/styles/pressed = SubResource("StyleBoxFlat_input_focus")
+OptionButton/styles/focus = SubResource("StyleBoxFlat_input_focus")
+
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel_base")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_progress")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill")
+ProgressBar/font_sizes/font_size = 13
+
+RichTextLabel/font_sizes/normal_font_size = 15
+SpinBox/font_sizes/font_size = 15
+SpinBox/styles/updown = SubResource("StyleBoxFlat_input")
+TabContainer/font_sizes/font_size = 14
+Tree/font_sizes/font_size = 14
+
+ObserverTitle/base_type = &"Label"
+ObserverTitle/colors/font_color = Color(0.294118, 0.780392, 1, 1)
+ObserverTitle/font_sizes/font_size = 30
+
+ObserverSection/base_type = &"Label"
+ObserverSection/colors/font_color = Color(0.545098, 0.729412, 0.937255, 1)
+ObserverSection/font_sizes/font_size = 19
+
+ObserverValue/base_type = &"Label"
+ObserverValue/colors/font_color = Color(0.972549, 0.992157, 1, 1)
+ObserverValue/font_sizes/font_size = 24
+
+ObserverMuted/base_type = &"Label"
+ObserverMuted/colors/font_color = Color(0.588235, 0.662745, 0.756863, 1)
+ObserverMuted/font_sizes/font_size = 14
+
+ObserverPanel/base_type = &"PanelContainer"
+ObserverPanel/styles/panel = SubResource("StyleBoxFlat_panel_base")
+
+ObserverTopBar/base_type = &"PanelContainer"
+ObserverTopBar/styles/panel = SubResource("StyleBoxFlat_panel_topbar")
+
+ObserverInsetPanel/base_type = &"PanelContainer"
+ObserverInsetPanel/styles/panel = SubResource("StyleBoxFlat_panel_inset")
+
+ObserverChip/base_type = &"Button"
+ObserverChip/styles/normal = SubResource("StyleBoxFlat_chip")
+ObserverChip/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ObserverChip/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ObserverChip/font_sizes/font_size = 13

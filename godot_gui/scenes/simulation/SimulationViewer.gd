@@ -3,6 +3,17 @@ extends Control
 ## SimulationViewer.gd
 ## Main simulation visualization controller with agent introspection
 
+const REPLAY_CONTROLS_SCENE := preload("res://scenes/components/ReplayControlsBar.tscn")
+const STORY_FEED_SCENE := preload("res://scenes/components/StoryFeedPanel.tscn")
+const METRIC_CARD_SCENE := preload("res://scenes/components/MetricCard.tscn")
+const MAX_TICK_BUFFER := 2400
+const MAX_STORY_LINES := 14
+const REPLAY_FRAME_STEP := 0.14
+const CARD_TONE_NEUTRAL := 0
+const CARD_TONE_GOOD := 1
+const CARD_TONE_WARN := 2
+const CARD_TONE_DANGER := 3
+
 # UI References
 @onready var scenario_dropdown = $HSplitContainer/LeftPanel/VBoxContainer/ScenarioDropdown
 @onready var agent_dropdown = $HSplitContainer/LeftPanel/VBoxContainer/AgentDropdown
@@ -57,6 +68,11 @@ var profit_chart: Control
 var products_container: Node2D
 var effects_container: Node2D
 var event_feed: RichTextLabel
+var story_feed_panel: Control
+var replay_controls: Control
+var revenue_card: Control
+var units_card: Control
+var risk_card: Control
 var cinematic_hud: Control
 var cinematic_hud_metrics: Label
 var cinematic_hud_hint: Label
@@ -74,17 +90,26 @@ var last_product_inventory: Dictionary = {}
 var last_product_price: Dictionary = {}
 
 var feed_lines: Array[String] = []
+var story_timeline: Array[Dictionary] = []
+var replay_buffer: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
 
 var last_total_revenue: float = 0.0
+var last_total_profit: float = 0.0
 var last_total_units_sold: int = 0
 var last_tick_seen: int = -1
 var cinematic_mode: bool = false
-var _split_offset_prev: int = 250
+var replay_mode: bool = false
+var replay_playing: bool = false
+var replay_cursor: int = -1
+var replay_speed: float = 1.0
+var replay_accumulator: float = 0.0
+var _split_offset_prev: int = 340
 var _main_top_prev_visible: bool = true
 var _main_bottom_prev_visible: bool = true
 var _cinematic_last_focus_tick: int = -9999
 var low_stock_warned: Dictionary = {}
+var agent_last_strategy: Dictionary = {}
 
 # End-card highlight tracking (computed incrementally so we don't need full tick history).
 var best_rev_tick: int = -1
@@ -163,20 +188,18 @@ func _configure_demo_from_env() -> void:
 	)
 
 func _ready():
+	UiDesignSystem.apply_to_control(self)
 	_connect_signals()
 	_update_button_states()
 	rng.randomize()
 	_fetch_initial_data()
+	_setup_metric_cards()
 	_setup_charts()
 	_setup_event_feed()
+	_setup_replay_controls()
 	_setup_end_card()
 	_draw_warehouse_grid()
-	
-	# Apply premium theme
-	var theme = load("res://UITheme.tres")
-	if theme:
-		self.theme = theme
-		$Background.color = Color("#0f172a") # Ensure background matches theme concept
+	$Background.color = UiDesignSystem.COLOR_BG
 
 	
 	# Add fallback items if dropdowns are empty
@@ -219,6 +242,25 @@ func _ready():
 	_configure_demo_from_env()
 		
 	print("[SimViewer] Ready - Dropdowns populated")
+
+func _process(delta: float) -> void:
+	if not replay_mode or not replay_playing:
+		return
+	if replay_buffer.size() < 2:
+		replay_playing = false
+		_update_replay_controls_state()
+		return
+
+	replay_accumulator += delta * replay_speed
+	while replay_accumulator >= REPLAY_FRAME_STEP:
+		replay_accumulator -= REPLAY_FRAME_STEP
+		replay_cursor += 1
+		if replay_cursor >= replay_buffer.size():
+			replay_cursor = replay_buffer.size() - 1
+			replay_playing = false
+			break
+		_render_replay_frame(replay_cursor)
+	_update_replay_controls_state()
 
 func _draw_warehouse_grid():
 	zone_rects.clear()
@@ -308,6 +350,28 @@ func _draw_warehouse_grid():
 		label.add_theme_font_size_override("font_size", 12)
 		grid.add_child(label)
 
+func _setup_metric_cards():
+	var header = Label.new()
+	header.text = "STORY METRICS"
+	header.theme_type_variation = &"ObserverSection"
+	left_vbox.add_child(header)
+
+	var row = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	left_vbox.add_child(row)
+
+	revenue_card = METRIC_CARD_SCENE.instantiate()
+	units_card = METRIC_CARD_SCENE.instantiate()
+	risk_card = METRIC_CARD_SCENE.instantiate()
+
+	row.add_child(revenue_card)
+	row.add_child(units_card)
+	row.add_child(risk_card)
+
+	revenue_card.configure("Revenue", "$0.00", "No change")
+	units_card.configure("Units", "0", "No sales")
+	risk_card.configure("Inventory", "Stable", "No alerts")
+
 func _setup_charts():
 	var chart_script = load("res://scenes/simulation/PerformanceChart.gd")
 	
@@ -315,30 +379,40 @@ func _setup_charts():
 	revenue_chart.set_script(chart_script)
 	revenue_chart.custom_minimum_size = Vector2(0, 80)
 	revenue_chart.label = "Revenue"
-	revenue_chart.line_color = Color.CYAN
+	revenue_chart.line_color = Color("#30b7ff")
 	left_vbox.add_child(revenue_chart)
 	
 	profit_chart = Control.new()
 	profit_chart.set_script(chart_script)
 	profit_chart.custom_minimum_size = Vector2(0, 80)
-	profit_chart.label = "Inventory"
-	profit_chart.line_color = Color.GREEN_YELLOW
+	profit_chart.label = "Profit"
+	profit_chart.line_color = Color("#8ee67a")
 	left_vbox.add_child(profit_chart)
 
 func _setup_event_feed():
-	# Lightweight live narration for screen recordings.
-	var header = Label.new()
-	header.text = "LIVE FEED"
-	header.add_theme_font_size_override("font_size", 12)
-	header.add_theme_color_override("font_color", Color("#3b82f6"))
-	left_vbox.add_child(header)
+	story_feed_panel = STORY_FEED_SCENE.instantiate()
+	story_feed_panel.custom_minimum_size = Vector2(0, 190)
+	left_vbox.add_child(story_feed_panel)
+	story_feed_panel.call("set_title", "Story Feed")
+	story_feed_panel.set("max_lines", MAX_STORY_LINES)
+	event_feed = story_feed_panel.get_node("Margin/VBox/Feed") as RichTextLabel
 
-	event_feed = RichTextLabel.new()
-	event_feed.bbcode_enabled = true
-	event_feed.scroll_active = false
-	event_feed.custom_minimum_size = Vector2(0, 170)
-	event_feed.text = "[color=gray]Waiting for tick data...[/color]"
-	left_vbox.add_child(event_feed)
+func _setup_replay_controls():
+	replay_controls = REPLAY_CONTROLS_SCENE.instantiate()
+	replay_controls.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	replay_controls.anchor_left = 0.5
+	replay_controls.anchor_right = 0.5
+	replay_controls.offset_left = -430.0
+	replay_controls.offset_right = 430.0
+	replay_controls.offset_top = -74.0
+	replay_controls.offset_bottom = -10.0
+	overlay_ui.add_child(replay_controls)
+
+	replay_controls.live_requested.connect(_on_replay_live_requested)
+	replay_controls.play_toggled.connect(_on_replay_play_toggled)
+	replay_controls.scrub_requested.connect(_on_replay_scrub_requested)
+	replay_controls.speed_changed.connect(_on_replay_speed_changed)
+	_update_replay_controls_state()
 
 func _setup_end_card():
 	# End-of-run summary card shown when we receive simulation_end.
@@ -358,14 +432,14 @@ func _setup_end_card():
 	overlay_ui.add_child(end_card)
 
 	var margin = MarginContainer.new()
-	margin.theme_override_constants.margin_left = 16
-	margin.theme_override_constants.margin_right = 16
-	margin.theme_override_constants.margin_top = 16
-	margin.theme_override_constants.margin_bottom = 16
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_bottom", 16)
 	end_card.add_child(margin)
 
 	var v = VBoxContainer.new()
-	v.theme_override_constants.separation = 10
+	v.add_theme_constant_override("separation", 10)
 	margin.add_child(v)
 
 	var title = Label.new()
@@ -384,7 +458,7 @@ func _setup_end_card():
 
 	var btn_row = HBoxContainer.new()
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	btn_row.theme_override_constants.separation = 10
+	btn_row.add_theme_constant_override("separation", 10)
 	v.add_child(btn_row)
 
 	var close_btn = Button.new()
@@ -409,6 +483,70 @@ func _connect_signals():
 	
 	ApiClient.request_completed.connect(_on_api_request_completed)
 	ApiClient.request_failed.connect(_on_api_request_failed)
+
+func _on_replay_live_requested() -> void:
+	replay_mode = false
+	replay_playing = false
+	replay_accumulator = 0.0
+	if replay_buffer.size() > 0:
+		replay_cursor = replay_buffer.size() - 1
+		_render_replay_frame(replay_cursor)
+	_update_replay_controls_state()
+
+func _on_replay_play_toggled(playing: bool) -> void:
+	if replay_buffer.size() < 2:
+		replay_playing = false
+		_update_replay_controls_state()
+		return
+	replay_mode = true
+	replay_playing = playing
+	replay_accumulator = 0.0
+	if replay_cursor >= replay_buffer.size() - 1:
+		replay_cursor = 0
+	_render_replay_frame(replay_cursor)
+	_update_replay_controls_state()
+
+func _on_replay_scrub_requested(index: int) -> void:
+	if replay_buffer.size() == 0:
+		return
+	replay_mode = true
+	replay_playing = false
+	replay_accumulator = 0.0
+	replay_cursor = clamp(index, 0, replay_buffer.size() - 1)
+	_render_replay_frame(replay_cursor)
+	_update_replay_controls_state()
+
+func _on_replay_speed_changed(multiplier: float) -> void:
+	replay_speed = multiplier
+	_update_replay_controls_state()
+
+func _update_replay_controls_state() -> void:
+	if replay_controls == null:
+		return
+	replay_controls.set_state(
+		"REPLAY" if replay_mode else "LIVE",
+		replay_buffer.size(),
+		max(0, replay_cursor),
+		replay_playing,
+		not replay_mode,
+		replay_buffer.size() > 1,
+		replay_speed
+	)
+
+func _append_replay_frame(data: Dictionary) -> void:
+	replay_buffer.append(data.duplicate(true))
+	if replay_buffer.size() > MAX_TICK_BUFFER:
+		replay_buffer.pop_front()
+	if replay_cursor == -1:
+		replay_cursor = replay_buffer.size() - 1
+	if not replay_mode:
+		replay_cursor = replay_buffer.size() - 1
+	_update_replay_controls_state()
+
+func _render_replay_frame(index: int) -> void:
+	if index < 0 or index >= replay_buffer.size():
+		return
+	_render_tick_data(replay_buffer[index], false, index)
 
 func _unhandled_input(event):
 	# Keyboard toggles for filming.
@@ -496,14 +634,14 @@ func _ensure_cinematic_hud():
 	overlay_ui.add_child(cinematic_hud)
 
 	var hud_margin = MarginContainer.new()
-	hud_margin.theme_override_constants.margin_left = 10
-	hud_margin.theme_override_constants.margin_right = 10
-	hud_margin.theme_override_constants.margin_top = 8
-	hud_margin.theme_override_constants.margin_bottom = 8
+	hud_margin.add_theme_constant_override("margin_left", 10)
+	hud_margin.add_theme_constant_override("margin_right", 10)
+	hud_margin.add_theme_constant_override("margin_top", 8)
+	hud_margin.add_theme_constant_override("margin_bottom", 8)
 	cinematic_hud.add_child(hud_margin)
 
 	var v = VBoxContainer.new()
-	v.theme_override_constants.separation = 2
+	v.add_theme_constant_override("separation", 2)
 	hud_margin.add_child(v)
 
 	cinematic_hud_metrics = Label.new()
@@ -517,7 +655,7 @@ func _ensure_cinematic_hud():
 	cinematic_hud_hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.65))
 	v.add_child(cinematic_hud_hint)
 
-	cinematic_feed_panel = PanelContainer.new()
+	cinematic_feed_panel = STORY_FEED_SCENE.instantiate()
 	cinematic_feed_panel.visible = false
 	cinematic_feed_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	cinematic_feed_panel.offset_left = 12
@@ -525,20 +663,9 @@ func _ensure_cinematic_hud():
 	cinematic_feed_panel.offset_bottom = -12
 	cinematic_feed_panel.offset_top = -12 - 200
 	overlay_ui.add_child(cinematic_feed_panel)
-
-	var feed_margin = MarginContainer.new()
-	feed_margin.theme_override_constants.margin_left = 10
-	feed_margin.theme_override_constants.margin_right = 10
-	feed_margin.theme_override_constants.margin_top = 8
-	feed_margin.theme_override_constants.margin_bottom = 8
-	cinematic_feed_panel.add_child(feed_margin)
-
-	cinematic_feed = RichTextLabel.new()
-	cinematic_feed.bbcode_enabled = true
-	cinematic_feed.scroll_active = false
-	cinematic_feed.fit_content = true
-	cinematic_feed.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	feed_margin.add_child(cinematic_feed)
+	cinematic_feed_panel.call("set_title", "Key Events")
+	cinematic_feed_panel.set("max_lines", MAX_STORY_LINES)
+	cinematic_feed = cinematic_feed_panel.get_node("Margin/VBox/Feed") as RichTextLabel
 
 func _on_api_request_completed(endpoint: String, response: Variant):
 	if endpoint == "/api/v1/scenarios":
@@ -597,6 +724,10 @@ func _update_button_states():
 
 func _on_start_pressed():
 	is_running = true
+	replay_mode = false
+	replay_playing = false
+	replay_cursor = -1
+	replay_accumulator = 0.0
 	_update_button_states()
 	_reset_observer_state()
 	if end_card:
@@ -620,42 +751,83 @@ func _on_stop_pressed():
 	is_running = false
 	_update_button_states()
 	WebSocketClient.disconnect_from_server()
-	_reset_observer_state()
+	replay_playing = false
+	replay_mode = true
+	if replay_buffer.size() > 0:
+		replay_cursor = replay_buffer.size() - 1
+	_render_replay_frame(replay_cursor)
+	_update_replay_controls_state()
 	if end_card:
 		end_card.visible = false
 
 func _on_simulation_tick(data: Dictionary):
+	_append_replay_frame(data)
+	_process_structured_events(data)
+	if replay_mode:
+		_update_replay_controls_state()
+		return
+	_render_tick_data(data, true, replay_buffer.size() - 1)
+
+func _render_tick_data(data: Dictionary, include_activity: bool, replay_index: int = -1) -> void:
 	var tick = int(data.get("tick", 0))
 	var metrics = data.get("metrics", {})
+	if not (metrics is Dictionary):
+		metrics = {}
 	var products = data.get("products", [])
 	if not (products is Array):
 		products = []
+
+	var revenue_total = float(metrics.get("total_revenue", 0.0))
+	var profit_total = float(metrics.get("total_profit", 0.0))
+	var units_total = int(metrics.get("units_sold", 0))
+	var inventory_total = int(metrics.get("inventory_count", 0))
+
+	var delta_revenue = 0.0
+	var delta_profit = 0.0
+	var delta_units = 0
+	if include_activity:
+		if last_tick_seen != -1:
+			delta_revenue = revenue_total - last_total_revenue
+			delta_profit = profit_total - last_total_profit
+			delta_units = units_total - last_total_units_sold
+	else:
+		var replay_delta = _metric_delta_for_replay(replay_index)
+		delta_revenue = float(replay_delta.get("revenue", 0.0))
+		delta_profit = float(replay_delta.get("profit", 0.0))
+		delta_units = int(replay_delta.get("units", 0))
 	
 	tick_label.text = "Tick: %d" % tick
-	revenue_label.text = "Revenue: $%.2f" % metrics.get("total_revenue", 0.0)
-	inventory_label.text = "Inventory: %d units" % metrics.get("inventory_count", 0)
+	revenue_label.text = "Revenue: $%.2f" % revenue_total
+	inventory_label.text = "Inventory: %d units" % inventory_total
 	orders_label.text = "Orders: %d pending" % metrics.get("pending_orders", 0)
 
 	if cinematic_hud_metrics:
 		cinematic_hud_metrics.text = "T:%d  Rev:$%.2f  P:$%.2f  Inv:%d" % [
 			tick,
-			float(metrics.get("total_revenue", 0.0)),
-			float(metrics.get("total_profit", 0.0)),
-			int(metrics.get("inventory_count", 0))
+			revenue_total,
+			profit_total,
+			inventory_total
 		]
+	_update_metric_cards(revenue_total, units_total, inventory_total, delta_revenue, delta_profit, delta_units)
 	
 	# Update Charts
-	if revenue_chart:
-		revenue_chart.add_point(metrics.get("total_revenue", 0.0))
-	if profit_chart:
-		profit_chart.add_point(float(metrics.get("inventory_count", 0)))
+	if include_activity and revenue_chart:
+		revenue_chart.add_point(revenue_total)
+	if include_activity and profit_chart:
+		profit_chart.add_point(profit_total)
 		
 	# Update visualization
 	_update_products(products)
-	_process_tick_activity(tick, metrics, products)
+	if include_activity:
+		_process_tick_activity(tick, metrics, products)
+	else:
+		_sync_feed_to_tick(tick)
 	_update_agents(data.get("agents", []))
 	_update_competitors(data.get("competitors", []))
 	_update_heatmap(data.get("heatmap", []))
+
+	if include_activity:
+		last_total_profit = profit_total
 	
 	# If inspector is open, update its data if it matches the current agent
 	if agent_inspector.visible:
@@ -666,23 +838,143 @@ func _on_simulation_tick(data: Dictionary):
 				agent_inspector.update_agent_data(agent)
 				break
 
+func _process_structured_events(data: Dictionary) -> void:
+	var tick = int(data.get("tick", max(0, last_tick_seen)))
+	var events = data.get("events", [])
+	if events is Array:
+		for evt in events:
+			if not (evt is Dictionary):
+				continue
+			var evt_type = str(evt.get("type", evt.get("event_type", ""))).to_lower()
+			var message = str(evt.get("message", evt.get("description", evt.get("summary", ""))))
+			if evt_type.find("attack") != -1 or evt_type.find("red_team") != -1:
+				_feed_push("[color=#ff7e89][b]ATTACK[/b][/color] %s" % message, tick)
+			elif evt_type.find("memory") != -1:
+				_feed_push("[color=#8fa8ff][b]MEMORY[/b][/color] %s" % message, tick)
+			elif evt_type.find("strategy") != -1:
+				_feed_push("[color=#30b7ff][b]STRATEGY[/b][/color] %s" % message, tick)
+			elif evt_type.find("win") != -1:
+				_feed_push("[color=#8ee67a][b]WIN[/b][/color] %s" % message, tick)
+			elif evt_type.find("loss") != -1 or evt_type.find("fail") != -1:
+				_feed_push("[color=#ff7e89][b]LOSS[/b][/color] %s" % message, tick)
+
+	var agents = data.get("agents", [])
+	if not (agents is Array):
+		return
+	for agent in agents:
+		if not (agent is Dictionary):
+			continue
+		var agent_id = str(agent.get("id", ""))
+		if agent_id == "":
+			continue
+		var strategy = str(agent.get("strategy", agent.get("plan", "")))
+		if strategy != "":
+			var prev_strategy = str(agent_last_strategy.get(agent_id, strategy))
+			if prev_strategy != strategy:
+				_feed_push("[color=#30b7ff]%s[/color] strategy shift: %s" % [agent_id, strategy], tick)
+			agent_last_strategy[agent_id] = strategy
+		var calls = agent.get("last_tool_calls", [])
+		if calls is Array:
+			for call in calls:
+				if not (call is Dictionary):
+					continue
+				var fn = str(call.get("function", {}).get("name", ""))
+				if fn.findn("memory") != -1:
+					_feed_push("[color=#8fa8ff]%s[/color] memory decision via [i]%s[/i]" % [agent_id, fn], tick)
+
+func _metric_delta_for_replay(index: int) -> Dictionary:
+	if index <= 0 or index >= replay_buffer.size():
+		return {"revenue": 0.0, "profit": 0.0, "units": 0}
+	var current_metrics = replay_buffer[index].get("metrics", {})
+	var prev_metrics = replay_buffer[index - 1].get("metrics", {})
+	if not (current_metrics is Dictionary):
+		current_metrics = {}
+	if not (prev_metrics is Dictionary):
+		prev_metrics = {}
+	return {
+		"revenue": float(current_metrics.get("total_revenue", 0.0)) - float(prev_metrics.get("total_revenue", 0.0)),
+		"profit": float(current_metrics.get("total_profit", 0.0)) - float(prev_metrics.get("total_profit", 0.0)),
+		"units": int(current_metrics.get("units_sold", 0)) - int(prev_metrics.get("units_sold", 0))
+	}
+
+func _update_metric_cards(revenue_total: float, units_total: int, inventory_total: int, delta_revenue: float, _delta_profit: float, delta_units: int) -> void:
+	if revenue_card == null or units_card == null or risk_card == null:
+		return
+	var revenue_tone = CARD_TONE_GOOD if delta_revenue >= 0.0 else CARD_TONE_DANGER
+	var revenue_prefix = "+" if delta_revenue >= 0.0 else "-"
+	revenue_card.call("configure",
+		"Revenue",
+		"$%.2f" % revenue_total,
+		"%s$%.2f / tick" % [revenue_prefix, abs(delta_revenue)],
+		revenue_tone
+	)
+	var units_tone = CARD_TONE_GOOD if delta_units > 0 else CARD_TONE_NEUTRAL
+	units_card.call("configure",
+		"Units",
+		"%d" % units_total,
+		("+%d this tick" % delta_units) if delta_units >= 0 else ("%d this tick" % delta_units),
+		units_tone
+	)
+	var risk_text = "Stable"
+	var risk_delta = "No alerts"
+	var risk_tone = CARD_TONE_GOOD
+	if inventory_total <= 0:
+		risk_text = "Stockout"
+		risk_delta = "Immediate restock required"
+		risk_tone = CARD_TONE_DANGER
+	elif inventory_total < 50:
+		risk_text = "Low"
+		risk_delta = "Reorder soon"
+		risk_tone = CARD_TONE_WARN
+	risk_card.call("configure", "Inventory", risk_text, risk_delta, risk_tone)
+
+func _sync_feed_to_tick(tick: int) -> void:
+	var lines: Array[String] = []
+	for i in range(story_timeline.size() - 1, -1, -1):
+		var entry = story_timeline[i]
+		if int(entry.get("tick", -1)) <= tick:
+			lines.push_front(str(entry.get("line", "")))
+		if lines.size() >= MAX_STORY_LINES:
+			break
+	feed_lines = lines
+	if story_feed_panel:
+		story_feed_panel.set_lines(feed_lines)
+	elif event_feed:
+		event_feed.text = "\n".join(feed_lines)
+	if cinematic_feed_panel and cinematic_feed_panel.has_method("set_lines"):
+		cinematic_feed_panel.call("set_lines", feed_lines)
+	elif cinematic_feed:
+		cinematic_feed.text = "\n".join(feed_lines)
+
 func _reset_observer_state():
 	product_baselines.clear()
 	last_product_inventory.clear()
 	last_product_price.clear()
 	last_total_revenue = 0.0
+	last_total_profit = 0.0
 	last_total_units_sold = 0
 	last_tick_seen = -1
 	feed_lines.clear()
+	story_timeline.clear()
+	replay_buffer.clear()
+	replay_mode = false
+	replay_playing = false
+	replay_cursor = -1
+	replay_accumulator = 0.0
 	low_stock_warned.clear()
+	agent_last_strategy.clear()
 	best_rev_tick = -1
 	best_rev_delta = 0.0
 	best_units_tick = -1
 	best_units_delta = 0
 
-	if event_feed:
+	if story_feed_panel:
+		story_feed_panel.clear_feed()
+	elif event_feed:
 		event_feed.text = "[color=gray]Waiting for tick data...[/color]"
-	if cinematic_feed:
+	if cinematic_feed_panel and cinematic_feed_panel.has_method("clear_feed"):
+		cinematic_feed_panel.call("clear_feed")
+	elif cinematic_feed:
 		cinematic_feed.text = "[color=gray]Waiting for tick data...[/color]"
 
 	if products_container:
@@ -691,6 +983,11 @@ func _reset_observer_state():
 	if effects_container:
 		for child in effects_container.get_children():
 			child.queue_free()
+	if revenue_chart and revenue_chart.has_method("clear_points"):
+		revenue_chart.clear_points()
+	if profit_chart and profit_chart.has_method("clear_points"):
+		profit_chart.clear_points()
+	_update_replay_controls_state()
 
 func _update_products(products: Array):
 	if products_container == null:
@@ -940,13 +1237,21 @@ func _process_tick_activity(tick: int, metrics: Dictionary, products: Array) -> 
 			_cinematic_focus(focus_target, focus_zoom, 0.75)
 			_cinematic_last_focus_tick = tick
 
-func _feed_push(line: String) -> void:
+func _feed_push(line: String, tick_hint: int = -1) -> void:
 	feed_lines.append(line)
 	if feed_lines.size() > 14:
 		feed_lines.pop_front()
-	if event_feed:
+	var event_tick = tick_hint if tick_hint >= 0 else max(0, last_tick_seen)
+	story_timeline.append({"tick": event_tick, "line": line})
+	if story_timeline.size() > 600:
+		story_timeline.pop_front()
+	if story_feed_panel:
+		story_feed_panel.set_lines(feed_lines)
+	elif event_feed:
 		event_feed.text = "\n".join(feed_lines)
-	if cinematic_feed:
+	if cinematic_feed_panel and cinematic_feed_panel.has_method("set_lines"):
+		cinematic_feed_panel.call("set_lines", feed_lines)
+	elif cinematic_feed:
 		cinematic_feed.text = "\n".join(feed_lines)
 
 func _tag_color(text: String, c: Color) -> String:
@@ -1084,6 +1389,11 @@ func _cinematic_focus(pos: Vector2, zoom: float, duration: float = 0.6) -> void:
 func _on_simulation_finished(results: Dictionary) -> void:
 	# Backend run completed; show end card summary.
 	is_running = false
+	replay_mode = true
+	replay_playing = false
+	if replay_buffer.size() > 0:
+		replay_cursor = replay_buffer.size() - 1
+	_update_replay_controls_state()
 	_update_button_states()
 
 	if end_card == null or end_card_body == null:
@@ -1095,6 +1405,9 @@ func _on_simulation_finished(results: Dictionary) -> void:
 	var units = int(results.get("total_units_sold", 0))
 	var inv_val = float(results.get("final_inventory_value", 0.0))
 	var margin = float(results.get("profit_margin", 0.0))
+	var outcome_line = "[color=#8ee67a]Win condition met[/color]"
+	if total_profit < 0.0:
+		outcome_line = "[color=#ff7e89]Loss: negative run profit[/color]"
 
 	var hi = _compute_run_highlights()
 	end_card_body.text = (
@@ -1106,8 +1419,9 @@ func _on_simulation_finished(results: Dictionary) -> void:
 		"- Final inventory value: $%.2f\n\n" % inv_val +
 		"[b]Highlights[/b]\n" +
 		"- Best revenue tick: T%03d  +$%.2f\n" % [int(hi.get("best_rev_tick", -1)), float(hi.get("best_rev_delta", 0.0))] +
-		"- Best units tick: T%03d  +%d units\n\n" % [int(hi.get("best_units_tick", -1)), int(hi.get("best_units_delta", 0))] +
-		"[color=gray]Tip: Press C to toggle Cinematic Mode.[/color]"
+		"- Best units tick: T%03d  +%d units\n" % [int(hi.get("best_units_tick", -1)), int(hi.get("best_units_delta", 0))] +
+		"- Outcome: %s\n\n" % outcome_line +
+		"[color=gray]Tip: Press C for cinematic mode or use replay controls to scrub timeline.[/color]"
 	)
 
 	end_card.visible = true

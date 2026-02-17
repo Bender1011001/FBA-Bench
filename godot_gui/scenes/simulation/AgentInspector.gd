@@ -22,13 +22,9 @@ signal dump_requested(agent_id)
 var current_agent_id: String = ""
 
 func _ready():
+	UiDesignSystem.apply_to_control(self)
 	close_btn.pressed.connect(func(): close_requested.emit())
 	debug_btn.pressed.connect(func(): dump_requested.emit(current_agent_id))
-	
-	# Load premium theme
-	var theme = load("res://UITheme.tres")
-	if theme:
-		self.theme = theme
 		
 	# Setup ToolCallList
 	tool_call_list.columns = 2

@@ -25,6 +25,7 @@ var pending_simulation_id: String = ""
 var current_websocket_topic: String = ""
 
 func _ready():
+	UiDesignSystem.apply_to_control(self)
 	_connect_signals()
 	_fetch_initial_data()
 

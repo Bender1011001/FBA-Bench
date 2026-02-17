@@ -22,10 +22,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-split_offset = 250
+split_offset = 340
 
 [node name="LeftPanel" type="PanelContainer" parent="HSplitContainer"]
-custom_minimum_size = Vector2(250, 0)
+custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/LeftPanel"]

@@ -32,16 +32,50 @@ The prompt battery is the cheap, fast gate. The agentic simulation is the high-f
 
 A business simulation benchmark for evaluating AI in complex e-commerce scenarios: inventory, pricing, competitors, and adversarial market events. 
 
+# FBA-Bench
+
+<div align="center">
+  <img src="https://img.shields.io/badge/Live-Leaderboard-9d50bb?style=for-the-badge&logo=github&logoColor=white" alt="Live Leaderboard" />
+  <img src="https://img.shields.io/badge/Status-Active-00d2ff?style=for-the-badge" alt="Status" />
+  <br/>
+  <strong><a href="https://fbabench.com">View the Live Benchmark Leaderboard</a></strong>
+</div>
+
+<br/>
+
+<!-- LEADERBOARD_BADGE_START -->
+[![Benchmark Status](https://img.shields.io/badge/Benchmark-Results_Ready-success?style=flat-square)](https://fbabench.com)
+<!-- LEADERBOARD_BADGE_END -->
+
+## Two Benchmark Modes
+
+| | **Prompt Battery (`prompt`)** | **Agentic Simulation (`agentic`)** |
+|---|:---:|:---:|
+| **Tests** | Raw model capability | Your full agent system |
+| **Memory/RAG** | None | Bring your own |
+| **If it fails** | Model's fault | System's fault |
+| **Typical runtime** | Minutes | Hours to days |
+| **Typical calls** | Dozens of prompts | 180–365 decision steps |
+| **Use when** | Comparing LLMs | Comparing architectures |
+
+The prompt battery is the cheap, fast gate. The agentic simulation is the high-fidelity benchmark. The live site supports both: `?mode=prompt` and `?mode=agentic`. For why the agentic benchmark is slow, see [docs/why_it_takes_hours.md](docs/why_it_takes_hours.md).
+
+---
+
+## What is FBA-Bench?
+
+A business simulation benchmark for evaluating AI in complex e-commerce scenarios: inventory, pricing, competitors, and adversarial market events. 
+
 Unlike academic benchmarks that run in minutes, FBA-Bench simulates **real consequences over time**. Each decision affects tomorrow's state. Bad choices compound. Good strategies emerge.
 
 ## Key Features
 
 - **Tick-Based Simulation**: Each day is a separate LLM call with real feedback loops.
 - **Double-Entry Ledger Subsystem**: GAAP-style accounting primitives and an optional integrity check ("Panic Button") for hard-stop validation on math violations.
-- **Red Team Gauntlet**: Automated adversarial attacks (phishing, compliance traps) to test agent security.
-- **Long-Term Memory (Per-Day Consolidation)**: Agents reflect nightly to promote/forget memories (prevents context saturation).
+- **Red Team Gauntlet**: Automated adversarial attacks (phishing, compliance traps) to test agent security. *(Requires RealSimulationRunner)*
+- **Long-Term Memory (Per-Day Consolidation)**: Agents reflect nightly to promote/forget memories. *(Requires RealSimulationRunner)*
 - **Competition Awareness Modes**: Agents can be configured to be "aware" vs "unaware" of competition.
-- **Agent-Based Consumer Modeling**: Customers make utility-based purchase decisions, not simple demand curves.
+- **Agent-Based Consumer Modeling**: Customers make utility-based purchase decisions, not simple demand curves. *(Requires RealSimulationRunner)*
 - **Budget & Cost Constraints**: Enforce token/cost budgets per tick/run and per tool.
 - **Reproducibility Toolkit**: Deterministic seeding + LLM response caching + golden-master regression checks.
 - **Plugin Framework**: Extend with scenario/agent/tool/metrics plugins.
@@ -88,6 +122,12 @@ poetry run python launch_godot_gui.py --no-backend --port 8080
 ```
 
 Tip: toggle "Cinematic Mode" (or press `C`) to hide UI, enable auto-camera, and show the end-of-run recap.
+Tip: click `Recording Layout` in the top bar to force a 1920x1080 capture-friendly window.
+Tip: after a run, use the replay bar (play/pause/scrub/speed) in Simulation view to capture specific story beats.
+
+Godot observer docs:
+- [Observer UI Design](docs/godot_gui_observer_design.md)
+- [Recording Mode Guide](docs/godot_gui_recording_mode.md)
 
 ## Development Setup
 See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile commands for linting (`make lint`), testing (`make test-all`), and local CI (`make ci-local`).
@@ -109,8 +149,8 @@ See [DEV_SETUP.md](DEV_SETUP.md) for detailed instructions, including Makefile c
 - [Features Overview](docs/features_overview.md): Map of major systems and where they live.
 - [Ledger System](docs/ledger_system.md): Double-entry accounting primitives and integrity checks.
 - [Red Team Gauntlet](docs/red_team_gauntlet.md): Adversarial injection (phishing, compliance traps, manipulation).
-- [Long-Term Memory & Modes](docs/cognitive_memory.md): Per-day memory consolidation + competition awareness.
-- [Agent-Based Consumer Modeling](docs/consumer_utility_model.md): Utility-based shoppers + visibility multipliers.
+- [Long-Term Memory & Modes](docs/cognitive_memory_consolidation.md): Per-day memory consolidation + competition awareness.
+- [Agent-Based Consumer Modeling](docs/agent_based_consumer_modeling.md): Utility-based shoppers + visibility multipliers.
 - [Simulation Services](docs/simulation_services.md): WorldStore + market simulation + supply chain disruptions.
 - [Market Dynamics](docs/market_dynamics.md): Competitors, reviews, ranking, and marketing/ads.
 - [Agent Runners](docs/agent_runners.md): Runner adapters, modes, and configuration entry points.

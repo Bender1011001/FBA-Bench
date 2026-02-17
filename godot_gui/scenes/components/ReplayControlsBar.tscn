@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/components/ReplayControlsBar.gd" id="1_replay"]
+
+[node name="ReplayControlsBar" type="PanelContainer"]
+custom_minimum_size = Vector2(860, 64)
+script = ExtResource("1_replay")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="Row" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Mode" type="Label" parent="Margin/Row"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+theme_type_variation = &"ObserverSection"
+text = "LIVE"
+
+[node name="Live" type="Button" parent="Margin/Row"]
+layout_mode = 2
+theme_type_variation = &"ObserverChip"
+text = "Go Live"
+
+[node name="PlayPause" type="Button" parent="Margin/Row"]
+layout_mode = 2
+text = "Play"
+
+[node name="Scrubber" type="HSlider" parent="Margin/Row"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+step = 1.0
+
+[node name="Tick" type="Label" parent="Margin/Row"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_type_variation = &"ObserverMuted"
+text = "T000 / 000"
+
+[node name="Speed" type="OptionButton" parent="Margin/Row"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2

@@ -1,177 +1,158 @@
 extends Control
 
 ## Main.gd
-## Main application controller with navigation and status management
+## App shell controller for view navigation, status, and presentation utilities.
 
-# UI References
-@onready var status_dot = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/StatusIndicator/Dot
-@onready var status_label = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/StatusIndicator/StatusLabel
-@onready var log_label = $VBoxContainer/BottomBar/MarginContainer/HBoxContainer/LogLabel
-@onready var theme_toggle = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/ThemeToggle
+@onready var status_dot: ColorRect = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/StatusIndicator/Dot
+@onready var status_label: Label = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/StatusIndicator/StatusLabel
+@onready var log_label: Label = $VBoxContainer/BottomBar/MarginContainer/HBoxContainer/LogLabel
+@onready var recording_toggle: Button = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/RecordingToggle
 
-# Navigation buttons
-@onready var sim_btn = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons/SimulationBtn
-@onready var leaderboard_btn = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons/LeaderboardBtn
-@onready var sandbox_btn = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons/SandboxBtn
+@onready var sim_btn: Button = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons/SimulationBtn
+@onready var leaderboard_btn: Button = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons/LeaderboardBtn
+@onready var sandbox_btn: Button = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/NavButtons/SandboxBtn
 
-# Views
-@onready var simulation_view = $VBoxContainer/Content/SimulationView
-@onready var leaderboard_view = $VBoxContainer/Content/LeaderboardView
-@onready var sandbox_view = $VBoxContainer/Content/SandboxView
+@onready var simulation_view: Control = $VBoxContainer/Content/SimulationView
+@onready var leaderboard_view: Control = $VBoxContainer/Content/LeaderboardView
+@onready var sandbox_view: Control = $VBoxContainer/Content/SandboxView
 
-var current_view: String = "simulation"
-var is_dark_theme: bool = true
+var current_view := "simulation"
+var recording_layout_enabled := false
+var transition_tween: Tween
 
-func _ready():
+func _ready() -> void:
+	UiDesignSystem.apply_to_control(self)
 	_connect_signals()
 	_update_nav_buttons()
-	_update_log("GUI Initialized. Connecting to backend...")
-	_setup_animations()
-	
-	# Attempt initial connection
+	_update_log("Observer shell ready. Checking services...")
+	_setup_status_animation()
+
 	WebSocketClient.connect_to_server()
 	_check_api_health()
-
 	_play_boot_sequence()
+	_add_disclaimer()
 
-	# Add disclaimer footer
-	var disclaimer = Label.new()
-	disclaimer.text = "FBA-Bench is a simulation tool. Not financial advice. © 2026 Proprietary."
-	disclaimer.add_theme_font_size_override("font_size", 10)
-	disclaimer.add_theme_color_override("font_color", Color(1, 1, 1, 0.5))
-	
-	# Position at bottom right
-	disclaimer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	disclaimer.position -= Vector2(10, 10) # Padding
-	
-	add_child(disclaimer)
+func _connect_signals() -> void:
+	sim_btn.pressed.connect(_show_simulation)
+	leaderboard_btn.pressed.connect(_show_leaderboard)
+	sandbox_btn.pressed.connect(_show_sandbox)
+	recording_toggle.pressed.connect(_toggle_recording_layout)
 
-func _play_boot_sequence():
-	# Hide main UI initially
+	WebSocketClient.connected.connect(_on_ws_connected)
+	WebSocketClient.disconnected.connect(_on_ws_disconnected)
+
+func _setup_status_animation() -> void:
+	var tween := create_tween().set_loops()
+	tween.tween_property(status_dot, "modulate:a", 0.5, 0.9).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(status_dot, "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE)
+
+func _check_api_health() -> void:
+	ApiClient.get_request("/api/v1/health")
+
+func _play_boot_sequence() -> void:
 	$VBoxContainer.visible = false
-	
-	# Create boot overlay
-	var overlay = ColorRect.new()
+
+	var overlay := ColorRect.new()
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.color = Color(0.05, 0.05, 0.08, 1.0)
+	overlay.color = UiDesignSystem.COLOR_BG
 	add_child(overlay)
-	
-	var center_box = VBoxContainer.new()
+
+	var center_box := VBoxContainer.new()
 	center_box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	center_box.add_theme_constant_override("separation", 10)
 	overlay.add_child(center_box)
-	
-	var label = Label.new()
-	label.text = "Initializing Kernel..."
+
+	var label := Label.new()
+	label.theme_type_variation = &"ObserverTitle"
+	label.text = "FBA-Bench Observer"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 16)
-	label.add_theme_color_override("font_color", Color(0.0, 0.8, 1.0))
 	center_box.add_child(label)
-	
-	var progress = ProgressBar.new()
-	progress.custom_minimum_size = Vector2(300, 4)
+
+	var subtitle := Label.new()
+	subtitle.theme_type_variation = &"ObserverMuted"
+	subtitle.text = "Loading simulation theater"
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	center_box.add_child(subtitle)
+
+	var progress := ProgressBar.new()
+	progress.custom_minimum_size = Vector2(320, 8)
 	progress.show_percentage = false
 	center_box.add_child(progress)
-	
-	# Animation Sequence
-	var tween = create_tween()
-	
-	# 0% -> 40% : Initializing Kernel
-	tween.tween_property(progress, "value", 40.0, 0.6).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_callback(func(): label.text = "Loading Market Data...")
-	
-	# 40% -> 80% : Loading Market Data
-	tween.tween_property(progress, "value", 80.0, 0.8).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_callback(func(): label.text = "Connecting to Neural Engine...")
-	
-	# 80% -> 100% : Connecting...
-	tween.tween_property(progress, "value", 100.0, 0.6).set_trans(Tween.TRANS_CUBIC)
-	
-	# Finish
+
+	var tween := create_tween()
+	tween.tween_property(progress, "value", 45.0, 0.5).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_callback(func(): subtitle.text = "Syncing API + realtime stream")
+	tween.tween_property(progress, "value", 82.0, 0.8).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_callback(func(): subtitle.text = "Preparing observer HUD")
+	tween.tween_property(progress, "value", 100.0, 0.5).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_callback(func():
 		overlay.queue_free()
 		$VBoxContainer.visible = true
 		$VBoxContainer.modulate.a = 0.0
-		create_tween().tween_property($VBoxContainer, "modulate:a", 1.0, 0.5)
+		create_tween().tween_property($VBoxContainer, "modulate:a", 1.0, 0.45)
 	)
 
-func _setup_animations():
-	# Simple glow animation for status dot
-	var tween = create_tween().set_loops()
-	tween.tween_property(status_dot, "modulate:a", 0.4, 1.0).set_trans(Tween.TRANS_SINE)
-	tween.tween_property(status_dot, "modulate:a", 1.0, 1.0).set_trans(Tween.TRANS_SINE)
+func _add_disclaimer() -> void:
+	var disclaimer := Label.new()
+	disclaimer.text = "Simulation output for benchmark visualization only."
+	disclaimer.theme_type_variation = &"ObserverMuted"
+	disclaimer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	disclaimer.position -= Vector2(12, 10)
+	add_child(disclaimer)
 
-func _switch_view(to_view: Control):
-	var views = [simulation_view, leaderboard_view, sandbox_view]
-	for v in views:
-		if v == to_view:
-			v.visible = true
-			v.modulate.a = 0
-			create_tween().tween_property(v, "modulate:a", 1.0, 0.3)
+func _switch_view(to_view: Control) -> void:
+	var views: Array[Control] = [simulation_view, leaderboard_view, sandbox_view]
+	for view in views:
+		if view == to_view:
+			view.visible = true
+			view.modulate.a = 0.0
+			view.position = Vector2(24, 0)
+			if transition_tween != null and transition_tween.is_running():
+				transition_tween.kill()
+			transition_tween = create_tween().set_parallel(true)
+			transition_tween.tween_property(view, "modulate:a", 1.0, 0.28).set_trans(Tween.TRANS_CUBIC)
+			transition_tween.tween_property(view, "position:x", 0.0, 0.28).set_trans(Tween.TRANS_CUBIC)
 		else:
-			v.visible = false
+			view.visible = false
 
-# Navigation
-func _show_simulation():
+func _show_simulation() -> void:
 	current_view = "simulation"
 	_switch_view(simulation_view)
 	_update_nav_buttons()
-	_update_log("Viewing: Simulation")
+	_update_log("View: Simulation Theater")
 
-func _show_leaderboard():
+func _show_leaderboard() -> void:
 	current_view = "leaderboard"
 	_switch_view(leaderboard_view)
 	_update_nav_buttons()
-	_update_log("Viewing: Leaderboard")
+	_update_log("View: Leaderboard")
 
-func _show_sandbox():
+func _show_sandbox() -> void:
 	current_view = "sandbox"
 	_switch_view(sandbox_view)
 	_update_nav_buttons()
-	_update_log("Viewing: Sandbox")
+	_update_log("View: Sandbox Lab")
 
-func _update_nav_buttons():
-	sim_btn.button_pressed = (current_view == "simulation")
-	leaderboard_btn.button_pressed = (current_view == "leaderboard")
-	sandbox_btn.button_pressed = (current_view == "sandbox")
+func _update_nav_buttons() -> void:
+	sim_btn.button_pressed = current_view == "simulation"
+	leaderboard_btn.button_pressed = current_view == "leaderboard"
+	sandbox_btn.button_pressed = current_view == "sandbox"
 
-func _toggle_theme():
-	is_dark_theme = !is_dark_theme
-	var theme_name = "Dark" if is_dark_theme else "Light"
-	
-	# Apply theme-based styling to main container
-	var bg_color = Color(0.11, 0.11, 0.14, 1.0) if is_dark_theme else Color(0.95, 0.95, 0.97, 1.0)
-	var text_color = Color(1, 1, 1, 1) if is_dark_theme else Color(0.1, 0.1, 0.1, 1)
-	
-	# Try to load theme resource if available
-	var theme_path = "res://themes/%s_theme.tres" % theme_name.to_lower()
-	if ResourceLoader.exists(theme_path):
-		self.theme = load(theme_path)
-		_update_log("Theme: %s (loaded)" % theme_name)
-	else:
-		# Fallback: Apply visual changes directly
-		self.modulate = Color(1, 1, 1, 1) if is_dark_theme else Color(0.9, 0.9, 0.95, 1)
-		_update_log("Theme: %s" % theme_name)
+func _toggle_recording_layout() -> void:
+	recording_layout_enabled = !recording_layout_enabled
+	UiDesignSystem.set_recording_layout(recording_layout_enabled)
+	recording_toggle.text = "Recording Layout: ON" if recording_layout_enabled else "Recording Layout"
+	_update_log("Recording layout %s" % ("enabled" if recording_layout_enabled else "disabled"))
 
-func _connect_signals():
-	sim_btn.pressed.connect(_show_simulation)
-	leaderboard_btn.pressed.connect(_show_leaderboard)
-	sandbox_btn.pressed.connect(_show_sandbox)
-	theme_toggle.pressed.connect(_toggle_theme)
-	WebSocketClient.connected.connect(_on_ws_connected)
-	WebSocketClient.disconnected.connect(_on_ws_disconnected)
-
-func _update_log(message: String):
+func _update_log(message: String) -> void:
 	log_label.text = message
 
-func _check_api_health():
-	ApiClient.get_request("/api/v1/health")
-
-func _on_ws_connected():
-	status_dot.color = Color(0.2, 1.0, 0.2, 1.0)  # Green
+func _on_ws_connected() -> void:
+	status_dot.color = Color("#8EE67A")
 	status_label.text = "Connected"
-	_update_log("WebSocket connected to backend")
+	_update_log("Realtime connected")
 
-func _on_ws_disconnected():
-	status_dot.color = Color(1.0, 0.2, 0.2, 1.0)  # Red
+func _on_ws_disconnected() -> void:
+	status_dot.color = Color("#FF7E89")
 	status_label.text = "Disconnected"
-	_update_log("WebSocket disconnected")
+	_update_log("Realtime disconnected")

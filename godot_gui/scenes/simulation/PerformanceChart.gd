@@ -5,7 +5,7 @@ extends Control
 
 @export var line_color: Color = Color(0.0, 1.0, 0.6) # Cyan-Green suitable for dark backgrounds
 @export var label: String = "Metric"
-@export var max_points: int = 50
+@export var max_points: int = 180
 @export var auto_scale: bool = true
 
 var data_points: Array[float] = []
@@ -26,7 +26,7 @@ func _draw():
 	var grid_color = Color(0.5, 0.5, 0.5, 0.2)
 	# Use the default font from the Control's theme context
 	var font = get_theme_default_font()
-	var font_size = 10
+	var font_size = 11
 	
 	# Vertical grid lines
 	var num_v_lines = 10
@@ -102,6 +102,12 @@ func add_point(value: float):
 	if auto_scale:
 		_calculate_range()
 	
+	queue_redraw()
+
+func clear_points() -> void:
+	data_points.clear()
+	max_value = 1.0
+	min_value = 0.0
 	queue_redraw()
 
 func _calculate_range():

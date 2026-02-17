@@ -25,6 +25,7 @@ var leaderboard_data: Array = []
 var selected_model: Dictionary = {}
 
 func _ready():
+	UiDesignSystem.apply_to_control(self)
 	_setup_tree()
 	_setup_filters()
 	_connect_signals()

@@ -14,11 +14,11 @@
 
 ## Why They Buy: Financial Fidelity
 
-- **Hard Audit Trails**: Unlike roleplay benchmarks, we can track cashflows with a double-entry ledger subsystem (for ledger-backed runs and validations).
-- **ROI Confidence**: The ledger subsystem includes an integrity check ("Panic Button") that can be treated as a hard-stop validator when enabled. No hallucinated profits.
-- **Security & Resilience**: The "Red Team" Gauntlet tests if agents fall for phishing or hallucinated compliance traps.
-- **Cognitive Fidelity**: "Sleep Cycles" and active reflection simulate long-term memory consolidation, preventing context saturation.
-- **GAAP Standard**: The ledger structure mirrors real-world ERPs, making results intelligible to CFOs, not just engineers.
+- **Hard Audit Trails**: Double-entry ledger subsystem enforces GAAP standards. No hallucinated profits. [Docs](docs/ledger_system.md)
+- **Security & Resilience (Red Team)**: Verify if agents survive phishing and compliance traps before deployment. [Docs](docs/red_team_gauntlet.md)
+- **Cognitive Fidelity**: "Sleep Cycles" prevent context drift via long-term memory consolidation. [Docs](docs/cognitive_memory_consolidation.md)
+- **Realistic Market Dynamics**: Agents face utility-based consumer models, not static demand curves. [Docs](docs/agent_based_consumer_modeling.md)
+- **GAAP Standard**: The ledger structure mirrors real-world ERPs, making results intelligible to CFOs.
 
 ## What We Give Away
 

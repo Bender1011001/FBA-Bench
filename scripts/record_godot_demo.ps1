@@ -2,7 +2,7 @@ param(
   [string]$Output = "artifacts/promo/fba_bench_demo.mp4",
   [string]$WindowTitle = "FBA-Bench-GUI",
 
-  [string]$Host = "127.0.0.1",
+  [string]$ApiHost = "127.0.0.1",
   [int]$Port = 8000,
   [switch]$NoBackend,
   [switch]$Reload,
@@ -64,7 +64,7 @@ Write-Host "  Output: $Output"
 Write-Host "  Duration (s): $duration"
 Write-Host "  Window title: $WindowTitle"
 
-$launcherArgs = @("--host", $Host, "--port", "$Port")
+$launcherArgs = @("--host", $ApiHost, "--port", "$Port")
 if ($NoBackend) { $launcherArgs += "--no-backend" }
 if ($Reload) { $launcherArgs += "--reload" }
 if ($GodotExe -ne "") { $launcherArgs += @("--godot", $GodotExe) }

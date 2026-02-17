@@ -21,12 +21,18 @@ config/icon="res://icon.svg"
 ApiClient="*res://autoload/ApiClient.gd"
 WebSocketClient="*res://autoload/WebSocketClient.gd"
 SimulationState="*res://autoload/SimulationState.gd"
+UiDesignSystem="*res://autoload/UiDesignSystem.gd"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+window/size/viewport_width=1600
+window/size/viewport_height=900
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://themes/ObserverTheme.tres"
 
 [rendering]
 
