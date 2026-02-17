@@ -1,38 +1,5 @@
 # FBA-Bench
 
-<div align="center">
-  <img src="https://img.shields.io/badge/Live-Leaderboard-9d50bb?style=for-the-badge&logo=github&logoColor=white" alt="Live Leaderboard" />
-  <img src="https://img.shields.io/badge/Status-Active-00d2ff?style=for-the-badge" alt="Status" />
-  <br/>
-  <strong><a href="https://fbabench.com">View the Live Benchmark Leaderboard</a></strong>
-</div>
-
-<br/>
-
-<!-- LEADERBOARD_BADGE_START -->
-[![Benchmark Status](https://img.shields.io/badge/Benchmark-Results_Ready-success?style=flat-square)](https://fbabench.com)
-<!-- LEADERBOARD_BADGE_END -->
-
-## Two Benchmark Modes
-
-| | **Prompt Battery (`prompt`)** | **Agentic Simulation (`agentic`)** |
-|---|:---:|:---:|
-| **Tests** | Raw model capability | Your full agent system |
-| **Memory/RAG** | None | Bring your own |
-| **If it fails** | Model's fault | System's fault |
-| **Typical runtime** | Minutes | Hours to days |
-| **Typical calls** | Dozens of prompts | 180–365 decision steps |
-| **Use when** | Comparing LLMs | Comparing architectures |
-
-The prompt battery is the cheap, fast gate. The agentic simulation is the high-fidelity benchmark. The live site supports both: `?mode=prompt` and `?mode=agentic`. For why the agentic benchmark is slow, see [docs/why_it_takes_hours.md](docs/why_it_takes_hours.md).
-
----
-
-## What is FBA-Bench?
-
-A business simulation benchmark for evaluating AI in complex e-commerce scenarios: inventory, pricing, competitors, and adversarial market events. 
-
-# FBA-Bench
 
 <div align="center">
   <img src="https://img.shields.io/badge/Live-Leaderboard-9d50bb?style=for-the-badge&logo=github&logoColor=white" alt="Live Leaderboard" />

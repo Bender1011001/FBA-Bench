@@ -5,7 +5,7 @@
 
 ## Overview
 
-The "Red Team" Gauntlet is a sophisticated adversarial testing subsystem built into FBA-Bench Enterprise. Unlike standard benchmarks that test agents in ideal conditions, the Gauntlet proactively injects realistic, chaotic, and malicious events into the simulation to test an agent's resilience, compliance, and crisis management capabilities.
+The "Red Team" Gauntlet is a sophisticated adversarial testing subsystem built into FBA-Bench. Unlike standard benchmarks that test agents in ideal conditions, the Gauntlet proactively injects realistic, chaotic, and malicious events into the simulation to test an agent's resilience, compliance, and crisis management capabilities.
 
 This system answers the critical question: **"Will this agent destroy my business if I leave it unattended?"**
 

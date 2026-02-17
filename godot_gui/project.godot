@@ -14,7 +14,7 @@ config/name="FBA-Bench-GUI"
 config/description="Immersive AI Agent Benchmarking Simulation"
 run/main_scene="res://scenes/main/Main.tscn"
 config/features=PackedStringArray("4.5", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://assets/icons/app_icon.png"
 
 [autoload]
 

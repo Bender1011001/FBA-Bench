@@ -5,7 +5,7 @@
 
 ## Overview
 
-Truly agentic behavior requires an understanding of time and history beyond a sliding context window. FBA-Bench Enterprise implements **Cognitive Memory Consolidation**, a system that mimics human "sleep cycles" to distill daily events into permanent, queryable long-term memory (LTM).
+Truly agentic behavior requires an understanding of time and history beyond a sliding context window. FBA-Bench implements **Cognitive Memory Consolidation**, a system that mimics human "sleep cycles" to distill daily events into permanent, queryable long-term memory (LTM).
 
 This allows agents to:
 *   Remember strategies that failed 30 days ago.

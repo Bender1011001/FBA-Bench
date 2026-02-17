@@ -6,6 +6,15 @@ extends Control
 const REPLAY_CONTROLS_SCENE := preload("res://scenes/components/ReplayControlsBar.tscn")
 const STORY_FEED_SCENE := preload("res://scenes/components/StoryFeedPanel.tscn")
 const METRIC_CARD_SCENE := preload("res://scenes/components/MetricCard.tscn")
+const TEXTURE_GRID := preload("res://assets/textures/floor_v2.png")
+const SPRITE_AGENT := preload("res://assets/sprites/agent_v2.png")
+const SPRITE_COMPETITOR := preload("res://assets/sprites/competitor_v2.png")
+const SPRITE_SHADOW := preload("res://assets/sprites/fx_shadow.png")
+const SPRITE_SCANNER := preload("res://assets/sprites/fx_scanner.png")
+const ICON_LEDGER := preload("res://assets/icons/ledger_icon.png")
+const ICON_RED_TEAM := preload("res://assets/icons/red_team_icon.png")
+const ICON_MEMORY := preload("res://assets/icons/memory_icon.png")
+const ICON_CONSUMER := preload("res://assets/icons/consumer_icon.png")
 const MAX_TICK_BUFFER := 2400
 const MAX_STORY_LINES := 14
 const REPLAY_FRAME_STEP := 0.14
@@ -189,17 +198,60 @@ func _configure_demo_from_env() -> void:
 
 func _ready():
 	UiDesignSystem.apply_to_control(self)
+	
+	# --- 1. ENTERPRISE LAYOUT RESTRUCTURE ---
+	# Goal: Simulation is Background, UI is Overlay.
+	
+	# A. Move CenterPanel (Sim) to Root Background
+	var center_panel = split_container.get_node("CenterPanel")
+	center_panel.reparent(self)
+	move_child(center_panel, 0) # Send to back
+	center_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	
+	# B. Move LeftPanel to Root Overlay
+	# Note: We need to ensure we grab refs before reparenting if they rely on paths, 
+	# but onready vars are already resolved.
+	left_panel.reparent(self)
+	left_panel.set_anchors_and_offsets_preset(Control.PRESET_LEFT_WIDE)
+	left_panel.set_anchor(SIDE_RIGHT, 0.0) # Un-anchor from right
+	left_panel.custom_minimum_size.x = 360
+	left_panel.size.x = 360
+	
+	# Floating "Glass" Style for Sidebar
+	var side_style = StyleBoxFlat.new()
+	side_style.bg_color = Color(0.05, 0.05, 0.08, 0.85) # Semi-transparent dark
+	side_style.border_width_right = 1
+	side_style.border_color = Color(1, 1, 1, 0.1)
+	left_panel.add_theme_stylebox_override("panel", side_style)
+
+	# C. Kill the old container
+	split_container.queue_free()
+
+	# Verify Viewport Container expansion
+	var vp_container = warehouse_container.get_parent().get_parent()
+	if vp_container is SubViewportContainer:
+		vp_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		vp_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vp_container.stretch = true 
+	
 	_connect_signals()
 	_update_button_states()
 	rng.randomize()
 	_fetch_initial_data()
+	
+	# 2. SIDEBAR RESTRUCTURE
+	_reorganize_sidebar()
+	_setup_modules_panel()
 	_setup_metric_cards()
 	_setup_charts()
 	_setup_event_feed()
 	_setup_replay_controls()
 	_setup_end_card()
 	_draw_warehouse_grid()
-	$Background.color = UiDesignSystem.COLOR_BG
+	
+	# Background (ColorRect behind everything, just in case)
+	if has_node("Background"):
+		$Background.queue_free() # We use the grid texture now
 
 	
 	# Add fallback items if dropdowns are empty
@@ -215,8 +267,6 @@ func _ready():
 	agent_inspector.close_requested.connect(_on_inspector_closed)
 	# Initialize inspector hidden
 	agent_inspector.visible = false
-	# Observer-only: STEP isn't implemented end-to-end; hide it to avoid confusion.
-	step_btn.visible = false
 	
 	# Create dynamic container for competitors if not present
 	if not warehouse_container.has_node("CompetitorContainer"):
@@ -239,6 +289,9 @@ func _ready():
 
 	# Start in non-cinematic mode but keep toggle state consistent
 	_set_cinematic_mode(bool(cinematic_toggle.button_pressed))
+	_configure_demo_from_env()
+		
+	print("[SimViewer] Ready - Enterprise UI Layout Applied")
 	_configure_demo_from_env()
 		
 	print("[SimViewer] Ready - Dropdowns populated")
@@ -272,105 +325,282 @@ func _draw_warehouse_grid():
 	grid.name = "WarehouseGrid"
 	warehouse_container.add_child(grid)
 	
-	# Background tint (deep technical blue)
-	var bg_tint = ColorRect.new()
-	bg_tint.color = Color(0.05, 0.08, 0.15, 0.3)
-	bg_tint.size = Vector2(800, 600)
-	grid.add_child(bg_tint)
-	
-	# Minor grid lines (every 25px, faint)
-	for x in range(0, 801, 25):
-		var line = Line2D.new()
-		line.points = [Vector2(x, 0), Vector2(x, 600)]
-		line.default_color = Color(0.2, 0.3, 0.4, 0.1) # Very faint blue
-		line.width = 1
-		grid.add_child(line)
-	for y in range(0, 601, 25):
-		var line = Line2D.new()
-		line.points = [Vector2(0, y), Vector2(800, y)]
-		line.default_color = Color(0.2, 0.3, 0.4, 0.1)
-		line.width = 1
-		grid.add_child(line)
+	# Background Texture (Market Grid) - Tiled across infinite space effectively
+	var bg_tex = TextureRect.new()
+	bg_tex.texture = TEXTURE_GRID
+	bg_tex.stretch_mode = TextureRect.STRETCH_TILE
+	bg_tex.modulate = Color(0.6, 0.6, 0.6, 1.0) 
+	# Make it huge to cover any resolution
+	bg_tex.size = Vector2(4000, 4000)
+	bg_tex.position = Vector2(-1000, -1000)
+	grid.add_child(bg_tex)
 
-	# Major grid lines (every 100px, brighter)
-	for x in range(0, 801, 100):
-		var line = Line2D.new()
-		line.points = [Vector2(x, 0), Vector2(x, 600)]
-		line.default_color = Color(0.3, 0.5, 0.7, 0.2)
-		line.width = 1
-		grid.add_child(line)
-	for y in range(0, 601, 100):
-		var line = Line2D.new()
-		line.points = [Vector2(0, y), Vector2(800, y)]
-		line.default_color = Color(0.3, 0.5, 0.7, 0.2)
-		line.width = 1
-		grid.add_child(line)
-	
-	# Warehouse Zones - Technical Look
+	# Warehouse Zones - ENTERPRISE Scale
+	# Moved UP (y=50) and TALLER (650px) to fill screen
 	var zone_configs = [
-		{"name": "RECEIVING", "col": Color(0.2, 0.6, 1.0), "pos": Vector2(20, 160)},
-		{"name": "STORAGE",   "col": Color(0.2, 0.8, 0.4), "pos": Vector2(215, 160)},
-		{"name": "PACKING",   "col": Color(0.9, 0.6, 0.2), "pos": Vector2(410, 160)},
-		{"name": "SHIPPING",  "col": Color(1.0, 0.3, 0.3), "pos": Vector2(605, 160)}
+		{"name": "RECEIVING", "col": Color(0.2, 0.6, 1.0), "pos": Vector2(50, 50)},
+		{"name": "STORAGE",   "col": Color(0.2, 0.8, 0.4), "pos": Vector2(350, 50)},
+		{"name": "PACKING",   "col": Color(0.9, 0.6, 0.2), "pos": Vector2(650, 50)},
+		{"name": "SHIPPING",  "col": Color(1.0, 0.3, 0.3), "pos": Vector2(950, 50)}
 	]
+	
+	# Draw Connection Arrows (Flow) BEFORE zones so they are under
+	var arrow_points = [
+		[Vector2(300, 375), Vector2(350, 375)], # Rec -> Sto
+		[Vector2(600, 375), Vector2(650, 375)], # Sto -> Pac
+		[Vector2(900, 375), Vector2(950, 375)]  # Pac -> Ship
+	]
+	
+	for pair in arrow_points:
+		var line = Line2D.new()
+		line.points = PackedVector2Array(pair)
+		line.width = 40
+		line.default_color = Color(1, 1, 1, 0.05)
+		line.texture_mode = Line2D.LINE_TEXTURE_TILE
+		# Could add a chevron texture here if we had one, for now solid "path"
+		grid.add_child(line)
+		
+		# Manual Chevron
+		var chev = Polygon2D.new()
+		var end = pair[1]
+		chev.polygon = PackedVector2Array([
+			end + Vector2(-10, -20),
+			end + Vector2(10, 0),
+			end + Vector2(-10, 20)
+		])
+		chev.color = Color(1, 1, 1, 0.1)
+		grid.add_child(chev)
 	
 	for z in zone_configs:
 		var zone_name = str(z.get("name", ""))
 		var zone_col = z.get("col", Color.WHITE)
 		var zone_pos = z.get("pos", Vector2.ZERO)
+		var zone_size = Vector2(250, 650) # TALLER
 
-		var zone_box = ReferenceRect.new() # Hollow rect with border
-		zone_box.border_color = zone_col
-		zone_box.border_width = 1.5
-		zone_box.editor_only = false # Ensure visible in game
-		zone_box.size = Vector2(180, 280)
-		zone_box.position = zone_pos
-		grid.add_child(zone_box)
+		# Solid Zone floor
+		var zone_panel = Panel.new()
+		var style = StyleBoxFlat.new()
+		style.bg_color = zone_col
+		style.bg_color.a = 0.1 # Low opacity fill
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_color = zone_col
+		style.border_color.a = 0.4
+		style.corner_radius_top_left = 8
+		style.corner_radius_top_right = 8
+		style.corner_radius_bottom_left = 8
+		style.corner_radius_bottom_right = 8
+		zone_panel.add_theme_stylebox_override("panel", style)
+		zone_panel.size = zone_size
+		zone_panel.position = zone_pos
+		grid.add_child(zone_panel)
 		
-		# Glow effect (color rect with low alpha)
-		var glow = ColorRect.new()
-		var gc = zone_col
-		gc.a = 0.05
-		glow.color = gc
-		glow.size = zone_box.size
-		glow.position = zone_pos
-		grid.add_child(glow)
-
+		# Save rect for random placement
 		if zone_name != "":
-			zone_rects[zone_name] = Rect2(zone_pos, zone_box.size)
-			zone_glows[zone_name] = glow
+			zone_rects[zone_name] = Rect2(zone_pos, zone_size)
+			#zone_glows[zone_name] = glow # Panel handles glow via style if needed
 			zone_base_colors[zone_name] = zone_col
 		
+		# Zone Label (Inside top)
 		var label = Label.new()
 		label.text = zone_name
-		label.position = Vector2(zone_pos.x, zone_pos.y - 25)
-		label.size = Vector2(180, 25)
+		label.position = zone_pos + Vector2(0, 10)
+		label.size = Vector2(zone_size.x, 30)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_color_override("font_color", zone_col)
-		label.add_theme_font_size_override("font_size", 12)
+		label.add_theme_font_size_override("font_size", 14)
 		grid.add_child(label)
 
+func _reorganize_sidebar():
+	# 1. Clear existing VBox to rebuild hierarchy
+	for child in left_vbox.get_children():
+		left_vbox.remove_child(child)
+	
+	# Theme Constants
+	left_vbox.add_theme_constant_override("separation", 24) # More breathing room
+	
+	# --- SECTION 1: MAIN CONTROLS ---
+	var control_panel = PanelContainer.new()
+	var control_style = StyleBoxFlat.new()
+	control_style.bg_color = Color(0.1, 0.12, 0.15, 0.0) # Transparent now
+	control_panel.add_theme_stylebox_override("panel", control_style)
+	
+	var btn_vbox = VBoxContainer.new()
+	btn_vbox.add_theme_constant_override("separation", 12)
+	control_panel.add_child(btn_vbox)
+	
+	# Title / Brand (More prominent)
+	var brand_box = VBoxContainer.new()
+	brand_box.add_theme_constant_override("separation", 0)
+	var brand = Label.new()
+	brand.text = "FBA BENCH"
+	brand.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	brand.add_theme_font_size_override("font_size", 18)
+	brand.add_theme_color_override("font_color", Color("#94a3b8"))
+	brand_box.add_child(brand)
+	
+	var sub_brand = Label.new()
+	sub_brand.text = "ENTERPRISE EDITION"
+	sub_brand.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub_brand.add_theme_font_size_override("font_size", 10)
+	sub_brand.add_theme_color_override("font_color", Color("#30b7ff")) # Cyan highlight
+	brand_box.add_child(sub_brand)
+	btn_vbox.add_child(brand_box)
+	
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size.y = 10
+	btn_vbox.add_child(spacer)
+
+	# Big START Button
+	start_btn.custom_minimum_size = Vector2(0, 56)
+	start_btn.text = "INITIALIZE SYSTEM"
+	start_btn.icon = null 
+	start_btn.add_theme_font_size_override("font_size", 15)
+	var start_style = StyleBoxFlat.new()
+	start_style.bg_color = Color("#0ea5e9") # Sky blue
+	start_style.corner_radius_top_left = 6
+	start_style.corner_radius_top_right = 6
+	start_style.corner_radius_bottom_left = 6
+	start_style.corner_radius_bottom_right = 6
+	start_btn.add_theme_stylebox_override("normal", start_style)
+	start_btn.add_theme_stylebox_override("hover", start_style.duplicate()) 
+	btn_vbox.add_child(start_btn)
+	
+	# Stop Button (Smaller)
+	stop_btn.text = "ABORT SIMULATION"
+	stop_btn.flat = true
+	stop_btn.add_theme_color_override("font_color", Color("#ef4444"))
+	stop_btn.add_theme_color_override("font_hover_color", Color("#f87171"))
+	btn_vbox.add_child(stop_btn)
+
+	# Speed Slider MOVED to Command Deck
+	# We just ensure it's not here.
+
+	left_vbox.add_child(control_panel)
+
+	# --- SECTION 2: KEY METRICS (Data Plates) ---
+	var kpi_header = Label.new()
+	kpi_header.text = "LIVE TELEMETRY"
+	kpi_header.add_theme_font_size_override("font_size", 10)
+	kpi_header.add_theme_color_override("font_color", Color("#475569"))
+	left_vbox.add_child(kpi_header)
+	
+	var kpi_grid = GridContainer.new()
+	kpi_grid.columns = 1 # Stacked for importance? Or 2x2. Let's do 1 column for IMPACT.
+	kpi_grid.add_theme_constant_override("v_separation", 16)
+	
+	# Helper to make KPI cards (Data Plates)
+	var make_kpi = func(ref_label: Label, title: String, color: Color):
+		var p = PanelContainer.new()
+		var s = StyleBoxFlat.new()
+		s.bg_color = Color(0.08, 0.1, 0.12, 0.8)
+		s.border_width_left = 4 # Thick left bar
+		s.border_color = color
+		s.content_margin_left = 16
+		s.content_margin_right = 16
+		s.content_margin_top = 12
+		s.content_margin_bottom = 12
+		p.add_theme_stylebox_override("panel", s)
+		
+		var v = VBoxContainer.new()
+		var t = Label.new()
+		t.text = title.to_upper()
+		t.add_theme_font_size_override("font_size", 9)
+		t.add_theme_color_override("font_color", Color("#64748b"))
+		v.add_child(t)
+		
+		ref_label.text = "---"
+		ref_label.add_theme_font_size_override("font_size", 24) # BIG
+		ref_label.add_theme_color_override("font_color", Color.WHITE)
+		v.add_child(ref_label)
+		p.add_child(v)
+		return p
+	
+	kpi_grid.add_child(make_kpi.call(revenue_label, "Revenue", Color("#22c55e")))
+	kpi_grid.add_child(make_kpi.call(inventory_label, "Inventory Value", Color("#eab308")))
+	# Reuse Orders label for Profit
+	orders_label.name = "ProfitLabel" 
+	kpi_grid.add_child(make_kpi.call(orders_label, "Net Profit", Color("#3b82f6")))
+	
+	left_vbox.add_child(kpi_grid)
+	
+	# --- SECTION 3: CONFIGURATION ---
+	var config_header = Label.new()
+	config_header.text = "SYSTEM CONFIGURATION"
+	config_header.add_theme_font_size_override("font_size", 10)
+	config_header.add_theme_color_override("font_color", Color("#475569"))
+	left_vbox.add_child(config_header)
+	
+	var config_vbox = VBoxContainer.new()
+	
+	# Agent Model
+	var l1 = Label.new(); l1.text = "Intelligent Agent Model"; l1.add_theme_color_override("font_color", Color("#64748b")); l1.add_theme_font_size_override("font_size", 11)
+	config_vbox.add_child(l1)
+	ensure_parent(agent_dropdown, config_vbox)
+	
+	# Scenario
+	var l2 = Label.new(); l2.text = "Operational Scenario"; l2.add_theme_color_override("font_color", Color("#64748b")); l2.add_theme_font_size_override("font_size", 11)
+	config_vbox.add_child(l2)
+	ensure_parent(scenario_dropdown, config_vbox)
+	
+	left_vbox.add_child(config_vbox)
+
+	# Hide debug inputs
+	seed_input.visible = false
+	max_ticks_input.visible = false
+	cinematic_toggle.visible = false # Always on implicitly or controlled via key
+	
+	# --- SECTION 4: MODULES ---
+	var mod_header = Label.new()
+	mod_header.text = "ACTIVE MODULES"
+	mod_header.add_theme_font_size_override("font_size", 11)
+	mod_header.add_theme_color_override("font_color", Color("#475569"))
+	left_vbox.add_child(mod_header)
+
+	var mod_grid = GridContainer.new()
+	mod_grid.columns = 4
+	mod_grid.add_theme_constant_override("h_separation", 8)
+	left_vbox.add_child(mod_grid)
+
+	var modules = [
+		{"icon": ICON_LEDGER, "name": "Ledger", "color": Color("#ffd700")},
+		{"icon": ICON_RED_TEAM, "name": "Red Team", "color": Color("#ff0055")},
+		{"icon": ICON_MEMORY, "name": "Memory", "color": Color("#aa00ff")},
+		{"icon": ICON_CONSUMER, "name": "Consumer", "color": Color("#00ffaa")}
+	]
+
+	for m in modules:
+		var btn = Button.new()
+		btn.custom_minimum_size = Vector2(48, 48)
+		btn.icon = m.icon
+		btn.expand_icon = true
+		btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		btn.tooltip_text = m.name
+		btn.flat = true
+		
+		var bg = ColorRect.new()
+		bg.show_behind_parent = true
+		bg.color = m.color
+		bg.color.a = 0.1
+		bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(bg)
+		
+		mod_grid.add_child(btn)
+
+func ensure_parent(node: Control, new_parent: Control):
+	if node.get_parent():
+		node.get_parent().remove_child(node)
+	new_parent.add_child(node)
+
+func _setup_modules_panel():
+	pass # Deprecated, merged into reorganize
+
 func _setup_metric_cards():
-	var header = Label.new()
-	header.text = "STORY METRICS"
-	header.theme_type_variation = &"ObserverSection"
-	left_vbox.add_child(header)
-
-	var row = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	left_vbox.add_child(row)
-
-	revenue_card = METRIC_CARD_SCENE.instantiate()
-	units_card = METRIC_CARD_SCENE.instantiate()
-	risk_card = METRIC_CARD_SCENE.instantiate()
-
-	row.add_child(revenue_card)
-	row.add_child(units_card)
-	row.add_child(risk_card)
-
-	revenue_card.configure("Revenue", "$0.00", "No change")
-	units_card.configure("Units", "0", "No sales")
-	risk_card.configure("Inventory", "Stable", "No alerts")
+	pass # Metrics moved to _reorganize_sidebar
 
 func _setup_charts():
 	var chart_script = load("res://scenes/simulation/PerformanceChart.gd")
@@ -398,15 +628,49 @@ func _setup_event_feed():
 	event_feed = story_feed_panel.get_node("Margin/VBox/Feed") as RichTextLabel
 
 func _setup_replay_controls():
+	# COMMAND DECK (Bottom Bar)
+	var deck_height = 80
+	var command_deck = PanelContainer.new()
+	command_deck.name = "CommandDeck"
+	command_deck.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	command_deck.offset_top = -deck_height
+	command_deck.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	
+	var deck_style = StyleBoxFlat.new()
+	deck_style.bg_color = Color(0.05, 0.05, 0.08, 1.0) # Solid dark
+	deck_style.border_width_top = 2
+	deck_style.border_color = Color("#0ea5e9") # Cyan highlight
+	command_deck.add_theme_stylebox_override("panel", deck_style)
+	
+	overlay_ui.add_child(command_deck)
+	
+	var deck_hbox = HBoxContainer.new()
+	deck_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	deck_hbox.add_theme_constant_override("separation", 32)
+	command_deck.add_child(deck_hbox)
+
+	# 1. Access Replay Controls
 	replay_controls = REPLAY_CONTROLS_SCENE.instantiate()
-	replay_controls.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	replay_controls.anchor_left = 0.5
-	replay_controls.anchor_right = 0.5
-	replay_controls.offset_left = -430.0
-	replay_controls.offset_right = 430.0
-	replay_controls.offset_top = -74.0
-	replay_controls.offset_bottom = -10.0
-	overlay_ui.add_child(replay_controls)
+	# Reset anchors so it fits in HBox
+	replay_controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	replay_controls.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	deck_hbox.add_child(replay_controls)
+	
+	# 2. Integrate Speed Slider
+	# It needs a label and proper container
+	var speed_box = VBoxContainer.new()
+	speed_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	speed_box.custom_minimum_size.x = 200
+	var sp_lbl = Label.new()
+	sp_lbl.text = "TIME DILATION"
+	sp_lbl.add_theme_font_size_override("font_size", 10)
+	sp_lbl.add_theme_color_override("font_color", Color("#64748b"))
+	sp_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	speed_box.add_child(sp_lbl)
+	
+	ensure_parent(speed_slider, speed_box)
+	speed_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	deck_hbox.add_child(speed_box)
 
 	replay_controls.live_requested.connect(_on_replay_live_requested)
 	replay_controls.play_toggled.connect(_on_replay_play_toggled)
@@ -703,19 +967,37 @@ func _reset_run_state():
 
 func _populate_scenarios(data: Variant):
 	scenario_dropdown.clear()
+	# Sanitization logic
+	var map_name = func(n):
+		if n == "tier1_basic": return "Standard Operations (Tier 1)"
+		if n == "tier2_advanced": return "Advanced Logistics (Tier 2)"
+		return n.capitalize()
+
 	if data is Dictionary and data.has("scenarios"):
 		for scenario in data["scenarios"]:
-			scenario_dropdown.add_item(scenario.get("id", "unknown"))
+			var sid = scenario.get("id", "unknown")
+			scenario_dropdown.add_item(map_name.call(sid))
+			scenario_dropdown.set_item_metadata(scenario_dropdown.item_count - 1, sid)
 	elif data is Array:
 		for scenario in data:
 			if scenario is Dictionary:
-				scenario_dropdown.add_item(scenario.get("id", "unknown"))
+				var sid = scenario.get("id", "unknown")
+				scenario_dropdown.add_item(map_name.call(sid))
+				scenario_dropdown.set_item_metadata(scenario_dropdown.item_count - 1, sid)
 
 func _populate_models(data: Variant):
 	agent_dropdown.clear()
+	# Sanitization Logic
+	var map_name = func(n):
+		if n == "gpt-4o": return "Strategic AI (Omni)"
+		if n.begins_with("claude"): return "Analytical AI (Opus)"
+		return n
+
 	if data is Dictionary and data.has("models"):
 		for model in data["models"]:
-			agent_dropdown.add_item(model.get("id", "unknown"))
+			var mid = model.get("id", "unknown")
+			agent_dropdown.add_item(map_name.call(mid))
+			agent_dropdown.set_item_metadata(agent_dropdown.item_count - 1, mid)
 
 func _update_button_states():
 	start_btn.disabled = is_running
@@ -733,9 +1015,16 @@ func _on_start_pressed():
 	if end_card:
 		end_card.visible = false
 	
+	# Get real IDs from metadata if available, else text
+	var s_item = scenario_dropdown.selected
+	var sc_id = scenario_dropdown.get_item_metadata(s_item) if s_item >= 0 else scenario_dropdown.get_item_text(s_item)
+	
+	var a_item = agent_dropdown.selected
+	var ag_id = agent_dropdown.get_item_metadata(a_item) if a_item >= 0 else agent_dropdown.get_item_text(a_item)
+	
 	var config = {
-		"scenario": scenario_dropdown.get_item_text(scenario_dropdown.selected),
-		"agent": agent_dropdown.get_item_text(agent_dropdown.selected),
+		"scenario": sc_id,
+		"agent": ag_id,
 		"seed": int(seed_input.value),
 		"max_ticks": int(max_ticks_input.value),
 		"speed": speed_slider.value
@@ -796,10 +1085,23 @@ func _render_tick_data(data: Dictionary, include_activity: bool, replay_index: i
 		delta_profit = float(replay_delta.get("profit", 0.0))
 		delta_units = int(replay_delta.get("units", 0))
 	
-	tick_label.text = "Tick: %d" % tick
-	revenue_label.text = "Revenue: $%.2f" % revenue_total
-	inventory_label.text = "Inventory: %d units" % inventory_total
-	orders_label.text = "Orders: %d pending" % metrics.get("pending_orders", 0)
+	# Timecode Format for Ticks
+	var ticks_per_hour = 60 # assumption
+	var total_seconds = tick * 60 # 1 tick = 1 minute sim time maybe? Or just use raw ticks
+	# Making it look cool: T-HH:MM:SS (assuming 1 tick = 1 minute)
+	var hrs = floor(tick / 60.0)
+	var mins = tick % 60
+	tick_label.text = "T-%02d:%02d:00" % [hrs, mins]
+	
+	revenue_label.text = "$%.2f" % revenue_total
+	inventory_label.text = "$%.2f" % float(metrics.get("inventory_value", 0.0)) # Use value if available, else count?
+	# Fallback if inventory_value missing
+	if inventory_label.text == "$0.00" and inventory_total > 0:
+		inventory_label.text = "%d units" % inventory_total
+		
+	# Repurposed Orders -> Profit
+	orders_label.text = "$%.2f" % profit_total
+	orders_label.add_theme_color_override("font_color", Color("#ef4444") if profit_total < 0 else Color("#3b82f6"))
 
 	if cinematic_hud_metrics:
 		cinematic_hud_metrics.text = "T:%d  Rev:$%.2f  P:$%.2f  Inv:%d" % [
@@ -1386,6 +1688,15 @@ func _cinematic_focus(pos: Vector2, zoom: float, duration: float = 0.6) -> void:
 	tween.tween_property(camera, "zoom", Vector2(target_zoom, target_zoom), duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	camera.set_meta("cin_tween", tween)
 
+func _compute_run_highlights() -> Dictionary:
+	var out = {
+		"best_rev_tick": best_rev_tick,
+		"best_rev_delta": best_rev_delta,
+		"best_units_tick": best_units_tick,
+		"best_units_delta": best_units_delta
+	}
+	return out
+
 func _on_simulation_finished(results: Dictionary) -> void:
 	# Backend run completed; show end card summary.
 	is_running = false
@@ -1424,116 +1735,43 @@ func _on_simulation_finished(results: Dictionary) -> void:
 		"[color=gray]Tip: Press C for cinematic mode or use replay controls to scrub timeline.[/color]"
 	)
 
-	end_card.visible = true
-
-	# Demo mode: auto-quit after showing end card (and optionally write a sentinel file).
-	if demo_autostart and demo_autoquit:
-		var hold = max(0.1, float(demo_end_hold_s))
-		get_tree().create_timer(hold).timeout.connect(func():
-			if demo_done_file != "":
-				var f = FileAccess.open(demo_done_file, FileAccess.WRITE)
-				if f != null:
-					f.store_string("done\n")
-					f.close()
-			get_tree().quit()
-		)
-
-func _compute_run_highlights() -> Dictionary:
-	# Prefer incremental tracking (covers full runs even when tick_history is capped).
-	if best_rev_tick != -1 or best_units_tick != -1:
-		return {
-			"best_rev_tick": best_rev_tick,
-			"best_rev_delta": best_rev_delta,
-			"best_units_tick": best_units_tick,
-			"best_units_delta": best_units_delta,
-		}
-
-	var best_rev_tick = -1
-	var best_rev_delta = 0.0
-	var best_units_tick = -1
-	var best_units_delta = 0
-
-	var prev_rev = 0.0
-	var prev_units = 0
-
-	for t in SimulationState.tick_history:
-		if not (t is Dictionary):
-			continue
-		var tick = int(t.get("tick", 0))
-		var m = t.get("metrics", {})
-		var rev = float(m.get("total_revenue", 0.0))
-		var units = int(m.get("units_sold", 0))
-		var d_rev = rev - prev_rev
-		var d_units = units - prev_units
-		if d_rev > best_rev_delta:
-			best_rev_delta = d_rev
-			best_rev_tick = tick
-		if d_units > best_units_delta:
-			best_units_delta = d_units
-			best_units_tick = tick
-		prev_rev = rev
-		prev_units = units
-
-	return {
-		"best_rev_tick": best_rev_tick,
-		"best_rev_delta": best_rev_delta,
-		"best_units_tick": best_units_tick,
-		"best_units_delta": best_units_delta,
-	}
 func _update_competitors(competitors: Array):
 	var comp_container = warehouse_container.get_node("CompetitorContainer")
 	var current_asins = {}
-	
-	# Layout constants
 	var start_x = 50
 	var start_y = 50
 	var spacing_x = 120
-	
 	var idx = 0
 	for comp_data in competitors:
 		var asin = comp_data.get("asin", "")
 		if asin == "": continue
-		
 		current_asins[asin] = true
 		var comp_node = comp_container.get_node_or_null(asin)
-		
-		# Determine visual state
 		var inventory = int(comp_data.get("inventory", 0))
 		var is_oos = bool(comp_data.get("is_out_of_stock", false))
 		var price = comp_data.get("price", "?.??")
-		
 		if not comp_node:
 			comp_node = _create_competitor_visual(asin)
 			comp_node.name = asin
 			comp_container.add_child(comp_node)
-			# Initial placement
 			comp_node.position = Vector2(start_x + (idx * spacing_x), start_y)
-		
-		# Update Label
 		var lbl = comp_node.get_node("Label")
 		lbl.text = "%s\n$%s" % [asin, price]
-		
-		# Update Inventory Bar / OOS Status
 		var inv_bar = comp_node.get_node("InventoryBar")
 		var inv_fill = inv_bar.get_node("Fill")
 		var status_lbl = comp_node.get_node("StatusLabel")
-		
 		if is_oos:
-			comp_node.modulate = Color.DIM_GRAY # Fade out OOS competitors
+			comp_node.modulate = Color.DIM_GRAY
 			status_lbl.text = "SOLD OUT"
-			status_lbl.modulate = Color(1.0, 0.2, 0.2) # Red text
+			status_lbl.modulate = Color(1.0, 0.2, 0.2)
 			inv_fill.scale.x = 0
 		else:
 			comp_node.modulate = Color.WHITE
 			status_lbl.text = "Inv: %d" % inventory
 			status_lbl.modulate = Color.WHITE
-			# Heuristic: Max inventory 5000 for bar scale
 			var pct = clamp(float(inventory) / 5000.0, 0.0, 1.0)
 			inv_fill.scale.x = pct
-			
 		idx += 1
-	
-	# Cleanup removed competitors
 	for child in comp_container.get_children():
 		if not current_asins.has(child.name):
 			child.queue_free()
@@ -1541,101 +1779,79 @@ func _update_competitors(competitors: Array):
 func _create_competitor_visual(asin: String) -> Node2D:
 	var visual = Node2D.new()
 	
-	# Shape: Inverted Red Triangle (Enemy)
-	var poly = Polygon2D.new()
-	poly.polygon = PackedVector2Array([
-		Vector2(-15, -15), 
-		Vector2(15, -15), 
-		Vector2(0, 15)
-	])
-	poly.color = Color(0.9, 0.3, 0.3) # Hostile Red
-	visual.add_child(poly)
-	
-	# ASIN Label
+	# FX: Shadow Blob
+	var shadow = Sprite2D.new()
+	shadow.texture = SPRITE_SHADOW
+	shadow.scale = Vector2(0.3, 0.3)
+	shadow.modulate = Color(0, 0, 0, 0.6)
+	shadow.position = Vector2(0, 5) # Slight offset
+	visual.add_child(shadow)
+
+	# Main Sprite
+	var sprite = Sprite2D.new()
+	sprite.texture = SPRITE_COMPETITOR
+	sprite.scale = Vector2(0.22, 0.22) # Adjust for ~256px source
+	sprite.rotation_degrees = -90 # Face down/left aggressive
+	visual.add_child(sprite)
 	var label = Label.new()
 	label.name = "Label"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 10)
-	label.position = Vector2(-40, -45)
+	label.position = Vector2(-40, -55)
 	label.custom_minimum_size = Vector2(80, 0)
 	visual.add_child(label)
-	
-	# Status Label (Inventory Count or SOLD OUT)
 	var status = Label.new()
 	status.name = "StatusLabel"
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status.add_theme_font_size_override("font_size", 12)
 	status.add_theme_color_override("font_color", Color.WHITE)
-	status.position = Vector2(-40, 20)
+	status.position = Vector2(-40, 25)
 	status.custom_minimum_size = Vector2(80, 0)
 	visual.add_child(status)
-	
-	# Inventory Bar Background
 	var bar_bg = ColorRect.new()
 	bar_bg.name = "InventoryBar"
 	bar_bg.color = Color(0.2, 0.2, 0.2)
 	bar_bg.size = Vector2(60, 6)
-	bar_bg.position = Vector2(-30, 38)
+	bar_bg.position = Vector2(-30, 42)
 	visual.add_child(bar_bg)
-	
-	# Inventory Bar Fill
 	var bar_fill = ColorRect.new()
 	bar_fill.name = "Fill"
 	bar_fill.color = Color.GREEN
 	bar_fill.size = Vector2(60, 6)
 	bar_bg.add_child(bar_fill)
-	
 	return visual
 
 func _update_agents(agents: Array):
 	var current_agent_ids = {}
-	
 	for agent_data in agents:
-		# Get agent ID, ensuring it's a string
 		var raw_id = agent_data.get("id", "")
-		if str(raw_id) == "":
-			continue
-			
+		if str(raw_id) == "": continue
 		var agent_id = str(raw_id)
 		current_agent_ids[agent_id] = true
-		
 		var target_pos = Vector2(agent_data.get("x", 0), agent_data.get("y", 0))
 		var agent_node = agent_container.get_node_or_null(agent_id)
-		
 		if agent_node:
-			# Agent exists: Smoothly interpolate to new position
-			# First, kill any active tween on this agent to prevent conflicts
 			if agent_node.has_meta("movement_tween"):
 				var old_tween = agent_node.get_meta("movement_tween")
-				if old_tween and old_tween.is_valid():
-					old_tween.kill()
-			
+				if old_tween and old_tween.is_valid(): old_tween.kill()
 			var tween = create_tween()
 			tween.tween_property(agent_node, "position", target_pos, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 			agent_node.set_meta("movement_tween", tween)
-			
-			# Update visual data (in case role/color changed, though unlikely)
-			# If you want to update other properties dynamically, do it here.
-			
 		else:
-			# New agent: Create and place immediately
 			var new_agent = _create_agent_visual(agent_data)
 			new_agent.name = agent_id
 			agent_container.add_child(new_agent)
-			# Ensure it starts at the correct position
 			new_agent.position = target_pos
-
-	# Cleanup: Remove agents that are no longer in the simulation
+		
+		# Active Zone Highlighting (Narrative)
+		for z_name in zone_rects:
+			if zone_rects[z_name].has_point(target_pos):
+				_flash_zone(z_name, 0.08) # Subtle pulse when occupied
 	for child in agent_container.get_children():
-		if not current_agent_ids.has(child.name):
-			# Use queue_free to safely remove
-			child.queue_free()
+		if not current_agent_ids.has(child.name): child.queue_free()
 
 func _update_heatmap(heatmap_data: Array):
-	if heatmap_data.is_empty():
-		return
-		
-	# Simple heatmap implementation: clear and redraw
+	if heatmap_data.is_empty(): return
 	heatmap_overlay.queue_redraw()
 	heatmap_overlay.set_meta("data", heatmap_data)
 	if not heatmap_overlay.is_connected("draw", _on_heatmap_draw):
@@ -1648,95 +1864,64 @@ func _on_heatmap_draw():
 		var y = point.get("y", 0)
 		var value = point.get("value", 0.0)
 		var size = point.get("size", 20.0)
-		
-		# Map value to color (0.0=translucent, 1.0=bright orange)
 		var color = Color(1.0, 0.5, 0.0, value * 0.5)
 		heatmap_overlay.draw_rect(Rect2(Vector2(x - size/2, y - size/2), Vector2(size, size)), color)
 
 func _create_agent_visual(agent_data: Dictionary) -> Node2D:
 	var visual = Node2D.new()
 	
-	# High-tech Agent Visual
-	var radius = 14.0
-	
-	# Determine color based on role
-	var role = agent_data.get("role", "").to_lower()
-	var base_color = Color.CYAN
-	if "strategic" in role: base_color = Color("#38bdf8") # Sky blue
-	elif "analyst" in role: base_color = Color("#a3e635") # Lime
-	elif "logistics" in role: base_color = Color("#fb923c") # Orange
-	else: base_color = Color("#818cf8") # Indigo
-	
-	# 1. Pulsing Outer Ring (Animation handled by tween/shader usually, simple implementation here)
-	var outer_ring = Line2D.new()
-	var ring_points = []
-	for i in range(33):
-		var angle = i * TAU / 32.0
-		ring_points.append(Vector2(cos(angle), sin(angle)) * (radius + 4))
-	outer_ring.points = PackedVector2Array(ring_points)
-	outer_ring.default_color = base_color
-	outer_ring.default_color.a = 0.4
-	outer_ring.width = 1.5
-	visual.add_child(outer_ring)
-	
-	# 2. Main Body Hexagon (Tech look) using Circle logic for simplicity but sharper
-	var body = Polygon2D.new()
-	var body_points = []
-	for i in range(6): # Hexagon
-		var angle = i * TAU / 6.0
-		body_points.append(Vector2(cos(angle), sin(angle)) * radius)
-	body.polygon = PackedVector2Array(body_points)
-	body.color = base_color
-	body.color.a = 0.2
-	visual.add_child(body)
-	
-	# 3. Inner Core (Solid)
-	var core = Polygon2D.new()
-	var core_points = []
-	for i in range(6):
-		var angle = i * TAU / 6.0
-		core_points.append(Vector2(cos(angle), sin(angle)) * (radius * 0.4))
-	core.polygon = PackedVector2Array(core_points)
-	core.color = base_color
-	visual.add_child(core)
+	# FX: Shadow
+	var shadow = Sprite2D.new()
+	shadow.texture = SPRITE_SHADOW
+	shadow.scale = Vector2(0.35, 0.35)
+	shadow.modulate = Color(0, 0, 0, 0.5)
+	shadow.position = Vector2(0, 8)
+	visual.add_child(shadow)
 
-	# 4. Animated "Scan" Line (Rotator)
-	var scanner = Line2D.new()
-	scanner.points = PackedVector2Array([Vector2.ZERO, Vector2(radius + 2, 0)])
-	scanner.default_color = Color.WHITE
-	scanner.default_color.a = 0.6
-	scanner.width = 1.0
+	# FX: Scanner Beam (Vision Cone)
+	var scanner = Sprite2D.new()
+	scanner.texture = SPRITE_SCANNER
+	scanner.offset = Vector2(100, 0) # Pivot at center, extend out
+	scanner.scale = Vector2(0.8, 0.8)
+	scanner.modulate = Color(0.4, 0.8, 1.0, 0.3)
 	visual.add_child(scanner)
 	
-	# Rotate the scanner forever
-	var tween = visual.create_tween().set_loops()
-	tween.tween_property(scanner, "rotation", TAU, 2.0).from(0.0)
+	# Animate Scanner Rotation
+	var scan_tween = visual.create_tween().set_loops()
+	scan_tween.tween_property(scanner, "rotation", TAU, 4.0).from(0.0)
 
-	# 5. ID Label (Floating)
+	# Main Sprite
+	var sprite = Sprite2D.new()
+	sprite.texture = SPRITE_AGENT
+	sprite.scale = Vector2(0.20, 0.20) # Adjust for ~256px source
+	visual.add_child(sprite)
+	var radius = 22.0
+	# Make sprite color match role slightly
+	var role = agent_data.get("role", "").to_lower()
+	var base_color = Color.WHITE
+	if "strategic" in role: base_color = Color("#e0f2fe")
+	elif "analyst" in role: base_color = Color("#ecfccb")
+	elif "logistics" in role: base_color = Color("#ffedd5")
+	sprite.self_modulate = base_color
 	var label = Label.new()
 	label.text = agent_data.get("id", "?")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 10)
 	label.add_theme_color_override("font_color", Color.WHITE)
-	# Add background for readability
 	var lbl_style = StyleBoxFlat.new()
 	lbl_style.bg_color = Color(0,0,0,0.5)
 	lbl_style.corner_radius_top_left = 3
 	lbl_style.corner_radius_top_right = 3
 	label.add_theme_stylebox_override("normal", lbl_style)
-	
 	label.position = Vector2(-50, radius + 6)
 	label.custom_minimum_size = Vector2(100, 0)
 	visual.add_child(label)
-	
-	# Click area
 	var btn = Button.new()
 	btn.flat = true
 	btn.custom_minimum_size = Vector2(radius * 3, radius * 3)
 	btn.position = Vector2(-radius * 1.5, -radius * 1.5)
 	btn.pressed.connect(func(): _on_agent_clicked(agent_data))
 	visual.add_child(btn)
-	
 	visual.position = Vector2(agent_data.get("x", 0), agent_data.get("y", 0))
 	return visual
 

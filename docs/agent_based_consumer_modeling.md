@@ -5,7 +5,7 @@
 
 ## Overview
 
-FBA-Bench Enterprise features an advanced Agent-Based Consumer (ABC) model. This replaces simplistic demand curves (e.g., "if price drops 10%, sales rise 5%") with **individual shopper agents** who make decisions based on heterogeneous utility functions.
+FBA-Bench features an advanced Agent-Based Consumer (ABC) model. This replaces simplistic demand curves (e.g., "if price drops 10%, sales rise 5%") with **individual shopper agents** who make decisions based on heterogeneous utility functions.
 
 Why this matters:
 *   **Realistic Noise:** Demand isn't smooth; one bad review can tank a product even if the price is low.
