@@ -1,0 +1,45 @@
+Traceback (most recent call last):
+  File "E:\code.projects\fba\FBA-Bench-Enterprise\src\scripts\export_results.py", line 12, in <module>
+    from fba_bench_api.core.database_async import AsyncSessionLocal
+  File "E:\code.projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\core\database_async.py", line 22, in <module>
+    from fba_bench_api.models.base import Base
+  File "E:\code.projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\models\__init__.py", line 10, in <module>
+    from .experiment_run import ExperimentRunORM, ExperimentParticipantORM
+  File "E:\code.projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\models\experiment_run.py", line 10, in <module>
+    class ExperimentRunORM(TimestampMixin, Base):
+    ...<64 lines>...
+            }
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\decl_api.py", line 846, in __init_subclass__
+    _as_declarative(cls._sa_registry, cls, cls.__dict__)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\decl_base.py", line 245, in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\decl_base.py", line 326, in setup_mapping
+    return _ClassScanMapperConfig(
+        registry, cls_, dict_, table, mapper_kw
+    )
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\decl_base.py", line 577, in __init__
+    self._setup_table(table)
+    ~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\orm\decl_base.py", line 1762, in _setup_table
+    table_cls(
+    ~~~~~~~~~^
+        tablename,
+        ^^^^^^^^^^
+    ...<3 lines>...
+        **table_kw,
+        ^^^^^^^^^^^
+    ),
+    ^
+  File "<string>", line 2, in __new__
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\util\deprecations.py", line 281, in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\schema.py", line 429, in __new__
+    return cls._new(*args, **kw)
+           ~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\admin\AppData\Roaming\Python\Python313\site-packages\sqlalchemy\sql\schema.py", line 461, in _new
+    raise exc.InvalidRequestError(
+    ...<5 lines>...
+    )
+sqlalchemy.exc.InvalidRequestError: Table 'experiment_runs' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.

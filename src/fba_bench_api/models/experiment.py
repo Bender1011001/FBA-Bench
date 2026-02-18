@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from sqlalchemy import Enum as SAEnum, ForeignKey, Index, String
@@ -66,5 +67,6 @@ class ExperimentORM(TimestampMixin, Base):
             "params": self.params or {},
             "status": self.status,
             "created_at": self.created_at,
+            "updated_at": self.updated_at,
             "updated_at": self.updated_at,
         }

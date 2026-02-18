@@ -255,6 +255,7 @@ UNPROTECTED_PATHS = {
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
+        print(f"DEBUG AUTH: Path={path}, Unprotected={path in UNPROTECTED_PATHS}, Enabled={AUTH_ENABLED}, Bypass={AUTH_TEST_BYPASS}")
         # Allow health and docs unauthenticated; protect the rest
         if path in UNPROTECTED_PATHS or path.startswith(
             "/ws"

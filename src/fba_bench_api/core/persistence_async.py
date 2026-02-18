@@ -20,10 +20,15 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fba_bench_api.core.database_async import create_db_tables_async
-from fba_bench_api.models.agent import AgentORM
+from fba_bench_api.models import (
+    AgentORM,
+    ExperimentORM,
+    ExperimentStatusEnum,
+    ExperimentRunORM,
+    ExperimentParticipantORM,
+    SimulationORM,
+)
 from fba_bench_api.models.base import utcnow
-from fba_bench_api.models.experiment import ExperimentORM, ExperimentStatusEnum
-from fba_bench_api.models.simulation import SimulationORM
 
 
 class AsyncAgentRepository:
@@ -194,6 +199,9 @@ class AsyncExperimentRunRepository:
             params=json.dumps(data.get("params") or {}),
             status=data.get("status", "pending"),
             started_at=data.get("started_at"),
+            completed_at=data.get("completed_at"),
+            metrics=json.dumps(data.get("metrics") or {}) if data.get("metrics") else None,
+            results=json.dumps(data.get("results") or {}) if data.get("results") else None,
         )
         self.db.add(obj)
         

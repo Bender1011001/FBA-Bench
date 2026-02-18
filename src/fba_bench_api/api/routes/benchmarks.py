@@ -25,6 +25,8 @@ from ...core.models import (
     HealthResponse,
     RunMetrics,
 )
+from fba_bench_api.core.database_async import AsyncSessionLocal
+from fba_bench_api.core.persistence_async import AsyncPersistenceManager
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/benchmarks", tags=["benchmarks"])
@@ -493,6 +495,7 @@ async def list_benchmarks():
 
     This endpoint returns a list of all benchmarks, both active and completed.
     """
+    print("DEBUG: Entering list_benchmarks handler")
     try:
         benchmarks = await benchmark_service.list_benchmarks()
         return benchmarks

@@ -1,0 +1,56 @@
+* Host localhost:8000 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:8000...
+*   Trying 127.0.0.1:8000...
+* Connected to localhost (127.0.0.1) port 8000
+* using HTTP/1.x
+> GET /api/v1/benchmarks HTTP/1.1
+
+> Host: localhost:8000
+
+> User-Agent: curl/8.12.1
+
+> Accept: */*
+
+> 
+
+* Request completely sent off
+< HTTP/1.1 405 Method Not Allowed
+
+< date: Wed, 18 Feb 2026 04:19:07 GMT
+
+< server: uvicorn
+
+< content-length: 177
+
+< content-type: application/json
+
+< x-request-id: cfd96977-b667-4206-8d73-1d8e1f744b93
+
+< access-control-allow-origin: *
+
+< access-control-allow-methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+
+< access-control-allow-headers: Authorization, Content-Type, Accept
+
+< x-content-type-options: nosniff
+
+< x-frame-options: DENY
+
+< referrer-policy: no-referrer
+
+< cross-origin-resource-policy: same-site
+
+< content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self';
+
+< 
+
+{ [177 bytes data]
+
+100   177  100   177    0     0    840      0 --:--:-- --:--:-- --:--:--   842
+* Connection #0 to host localhost left intact
+{"type":"http_error","title":"Method Not Allowed","status":405,"detail":"Method Not Allowed","instance":"/api/v1/benchmarks","request_id":"cfd96977-b667-4206-8d73-1d8e1f744b93"}

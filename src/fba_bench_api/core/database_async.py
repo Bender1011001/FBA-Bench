@@ -34,7 +34,11 @@ def _resolve_async_url() -> str:
     Otherwise, return as-is (user must ensure correct async dialect).
     """
     settings = get_settings()
-    raw = settings.preferred_db_url or "sqlite:///./fba_bench.db"
+    import os
+    print(f"DEBUG: CWD: {os.getcwd()}")
+    # FORCE ABSOLUTE PATH for debugging
+    raw = "sqlite:///e:/code.projects/fba/FBA-Bench-Enterprise/src/fba_bench.db"
+    print(f"DEBUG: Using DB URL: {raw}")
     if raw.startswith("sqlite:///"):
         return f"sqlite+aiosqlite:///{raw.split('sqlite:///', 1)[1]}"
     if raw.startswith("postgresql://"):
@@ -87,6 +91,7 @@ async def create_db_tables_async() -> None:
         "fba_bench_api.models.agent",
         "fba_bench_api.models.contact_message",
         "fba_bench_api.models.experiment",
+        "fba_bench_api.models.experiment_run",
         "fba_bench_api.models.simulation",
     ):
         try:
