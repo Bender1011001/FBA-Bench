@@ -246,6 +246,9 @@ UNPROTECTED_PATHS = {
     "/api/v1/public/leaderboard/embed",
     "/api/v1/public/stats",
     "/api/v1/contact",
+    "/api/v1/benchmarks",
+    "/api/v1/benchmarks/log",
+    "/api/v1/benchmarks/{run_id}/results",
 }
 
 
@@ -505,7 +508,7 @@ def create_app() -> FastAPI:
     # Instrument FastAPI and SQLAlchemy
     FastAPIInstrumentor.instrument_app(app)
     if SQLAlchemyInstrumentor is not None:
-        SQLAlchemyInstrumentor().instrument(engine=async_engine)
+        SQLAlchemyInstrumentor().instrument(engine=async_engine.sync_engine)
     else:
         logger.warning(
             "SQLAlchemy OTEL instrumentation not available. Install opentelemetry-instrumentation-sqlalchemy."

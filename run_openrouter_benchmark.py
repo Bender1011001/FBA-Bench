@@ -28,10 +28,37 @@ Usage:
 import argparse
 import asyncio
 import json
+
 import logging
 import os
+import requests
 import sys
+import time
 from datetime import datetime
+from uuid import uuid4
+
+# API Configuration
+API_BASE_URL = "http://localhost:8000/api/v1"
+LOG_ENDPOINT = f"{API_BASE_URL}/benchmarks/log"
+
+def log_result_to_api(run_id, agent_id, scenario_id, metrics, params):
+    """Log benchmark result to the API."""
+    try:
+        payload = {
+            "run_id": run_id,
+            "agent_id": agent_id,
+            "scenario_id": scenario_id,
+            "metrics": metrics,
+            "params": params
+        }
+        response = requests.post(LOG_ENDPOINT, json=payload)
+        if response.status_code == 201:
+            print(f"Successfully logged metrics for run {run_id}")
+        else:
+            print(f"Failed to log metrics: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"Error logging to API: {e}")
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -365,6 +392,30 @@ class OpenRouterBenchmarkRunner:
             try:
                 model_result = await self.test_model(model_name)
                 self.results.append(model_result)
+                
+                # Log to API
+                try:
+                    summary = model_result["summary"]
+                    metrics = {
+                        "success_rate": summary["success_rate"],
+                        "avg_response_time": summary["average_response_time"],
+                        "total_tokens": summary["total_tokens"],
+                        "successful_responses": summary["successful_responses"],
+                        "total_prompts": summary["total_prompts"]
+                    }
+                    
+                    # Log successful runs
+                    if summary["successful_responses"] > 0:
+                        log_result_to_api(
+                            run_id=str(uuid4()),
+                            agent_id=model_name,
+                            scenario_id="openrouter_benchmark",
+                            metrics=metrics,
+                            params={"prompts": len(TEST_PROMPTS), "model": model_name}
+                        )
+                except Exception as log_err:
+                    logger.error(f"Failed to log result to API: {log_err}")
+                
             except Exception as e:
                 logger.error(f"Critical error testing {model_name}: {e}")
                 # Add failed model result
@@ -454,7 +505,12 @@ async def main() -> int:
     parser.add_argument(
         "--model",
         type=str,
-        help="Test specific model by slug",
+        help="Test specific model by slug (legacy, use --models for multiple)",
+    )
+    parser.add_argument(
+        "--models",
+        type=str,
+        help="Comma-separated list of model slugs to test",
     )
     parser.add_argument(
         "--top",
@@ -510,7 +566,10 @@ async def main() -> int:
 
     try:
         # Determine models to test
-        if args.model:
+        if args.models:
+            models_to_test = [m.strip() for m in args.models.split(",")]
+            logger.info(f"Testing multiple models: {models_to_test}")
+        elif args.model:
             models_to_test = [args.model]
             logger.info(f"Testing single model: {args.model}")
         elif args.top:

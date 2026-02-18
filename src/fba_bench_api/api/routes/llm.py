@@ -138,6 +138,12 @@ async def list_models():
                 "is_free": False,
             },
             {
+                "id": "minimax/minimax-m2.5",
+                "name": "Minimax 2.5 (Benchmark Winner)",
+                "provider": "openrouter",
+                "is_free": False,
+            },
+            {
                 "id": "google/gemini-2.0-flash-001",
                 "name": "Gemini 2.0 Flash",
                 "provider": "openrouter",

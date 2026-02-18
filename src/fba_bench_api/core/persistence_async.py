@@ -180,6 +180,84 @@ class AsyncSimulationRepository:
         return obj.to_dict_with_topic()
 
 
+class AsyncExperimentRunRepository:
+    def __init__(self, db: AsyncSession) -> None:
+        self.db = db
+
+    async def create(self, data: dict) -> dict:
+        import json
+        await create_db_tables_async()
+        obj = ExperimentRunORM(
+            id=data["id"],
+            experiment_id=data["experiment_id"],
+            scenario_id=data["scenario_id"],
+            params=json.dumps(data.get("params") or {}),
+            status=data.get("status", "pending"),
+            started_at=data.get("started_at"),
+        )
+        self.db.add(obj)
+        
+        # Add participants if provided
+        participants = data.get("participants", [])
+        for p in participants:
+            p_obj = ExperimentParticipantORM(
+                id=p["id"],
+                run_id=obj.id,
+                agent_id=p["agent_id"],
+                role=p["role"],
+                config_override=json.dumps(p.get("config_override") or {}),
+            )
+            self.db.add(p_obj)
+            
+        await self.db.flush()
+        return obj.to_dict()
+
+    async def get(self, run_id: str) -> Optional[dict]:
+        obj = await self.db.get(ExperimentRunORM, run_id)
+        if not obj:
+            return None
+        return obj.to_dict()
+
+    async def update(self, run_id: str, data: dict) -> Optional[dict]:
+        import json
+        obj = await self.db.get(ExperimentRunORM, run_id)
+        if not obj:
+            return None
+        
+        if "status" in data:
+            obj.status = data["status"]
+        if "current_tick" in data:
+            obj.current_tick = data["current_tick"]
+        if "total_ticks" in data:
+            obj.total_ticks = data["total_ticks"]
+        if "progress_percent" in data:
+            obj.progress_percent = data["progress_percent"]
+        if "completed_at" in data:
+            obj.completed_at = data["completed_at"]
+        if "metrics" in data:
+            obj.metrics = json.dumps(data["metrics"])
+        if "results" in data:
+            obj.results = json.dumps(data["results"])
+        if "error_message" in data:
+            obj.error_message = data["error_message"]
+            
+        obj.updated_at = utcnow()
+        await self.db.flush()
+        return obj.to_dict()
+
+    async def list_by_experiment(self, experiment_id: str) -> list[dict]:
+        from sqlalchemy import select
+        stmt = select(ExperimentRunORM).where(ExperimentRunORM.experiment_id == experiment_id)
+        result = await self.db.execute(stmt)
+        return [r.to_dict() for r in result.scalars().all()]
+
+    async def list_all(self, limit: int = 100) -> list[dict]:
+        from sqlalchemy import select
+        stmt = select(ExperimentRunORM).order_by(ExperimentRunORM.created_at.desc()).limit(limit)
+        result = await self.db.execute(stmt)
+        return [r.to_dict() for r in result.scalars().all()]
+
+
 class AsyncPersistenceManager:
     """
     Provides typed async repositories bound to an AsyncSession.
@@ -196,3 +274,6 @@ class AsyncPersistenceManager:
 
     def simulations(self) -> AsyncSimulationRepository:
         return AsyncSimulationRepository(self.db)
+
+    def experiment_runs(self) -> AsyncExperimentRunRepository:
+        return AsyncExperimentRunRepository(self.db)

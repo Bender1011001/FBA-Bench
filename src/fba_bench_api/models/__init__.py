@@ -7,6 +7,7 @@ Exports ORM models for database operations and Pydantic schemas for API validati
 from .agent import AgentORM, FrameworkEnum
 from .base import Base, JSONEncoded, TimestampMixin, utcnow
 from .experiment import ExperimentORM, ExperimentStatusEnum
+from .experiment_run import ExperimentRunORM, ExperimentParticipantORM
 from .simulation import SimulationORM, SimulationStatusEnum, websocket_topic
 from .contact_message import ContactMessageORM
 from .user import User
@@ -53,6 +54,8 @@ __all__ = [
     "utcnow",
     "ExperimentORM",
     "ExperimentStatusEnum",
+    "ExperimentRunORM",
+    "ExperimentParticipantORM",
     "SimulationORM",
     "SimulationStatusEnum",
     "websocket_topic",

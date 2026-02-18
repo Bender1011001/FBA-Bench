@@ -1767,9 +1767,19 @@ func _on_simulation_finished(results: Dictionary) -> void:
 		"[b]Highlights[/b]\n" +
 		"- Best revenue tick: T%03d  +$%.2f\n" % [int(hi.get("best_rev_tick", -1)), float(hi.get("best_rev_delta", 0.0))] +
 		"- Best units tick: T%03d  +%d units\n" % [int(hi.get("best_units_tick", -1)), int(hi.get("best_units_delta", 0))] +
-		"- Outcome: %s\n\n" % outcome_line +
-		"[color=gray]Tip: Press C for cinematic mode or use replay controls to scrub timeline.[/color]"
 	)
+	
+	# Demo Automation: Auto-quit after delay
+	if demo_autoquit:
+		if demo_done_file != "":
+			var f = FileAccess.open(demo_done_file, FileAccess.WRITE)
+			if f:
+				f.store_string("done")
+				f.close()
+		
+		get_tree().create_timer(max(0.1, demo_end_hold_s)).timeout.connect(func():
+			get_tree().quit()
+		)
 
 func _update_competitors(competitors: Array):
 	var comp_container = warehouse_container.get_node("CompetitorContainer")

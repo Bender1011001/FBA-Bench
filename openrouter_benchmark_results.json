@@ -1,0 +1,104 @@
+{
+  "benchmark_info": {
+    "timestamp": "2026-02-17T20:09:38.900118",
+    "total_duration": 1.1529838999849744,
+    "models_tested": 1,
+    "openrouter_endpoint": "https://openrouter.ai/api/v1"
+  },
+  "model_results": [
+    {
+      "model": "deepseek/deepseek-chat-v3.1:free",
+      "timestamp": "2026-02-17T20:09:37.747281",
+      "prompts": [
+        {
+          "prompt_name": "business_reasoning",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "problem_solving",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "creative_strategy",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "scenario_global_economic_downturn",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "scenario_major_shipping_route_blockage",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "scenario_aggressive_competitor_undercut",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "quality_score": 0.0
+        },
+        {
+          "prompt_name": "scenario_negative_social_media_campaign",
+          "success": false,
+          "response_time": 0.0,
+          "token_count": 0,
+          "response_content": null,
+          "error": "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "quality_score": 0.0
+        }
+      ],
+      "summary": {
+        "total_prompts": 7,
+        "successful_responses": 0,
+        "average_response_time": 0.0,
+        "total_tokens": 0,
+        "errors": [
+          "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}",
+          "OpenAI-compatible API returned an HTTP error: 404 - {\"error\":{\"message\":\"No endpoints found for deepseek/deepseek-chat-v3.1:free.\",\"code\":404},\"user_id\":\"user_2m2bh147xN68PVJMagv9cmL2N2D\"}"
+        ],
+        "success_rate": 0.0
+      }
+    }
+  ],
+  "summary": {
+    "total_models_tested": 1,
+    "working_models": 0,
+    "total_api_calls": 7,
+    "successful_calls": 0,
+    "overall_success_rate": 0.0,
+    "best_performing_model": null,
+    "model_rankings": []
+  }
+}

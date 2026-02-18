@@ -26,6 +26,8 @@ from typing import Optional
 from agent_runners.agent_manager import AgentManager
 from dependency_injector import containers, providers
 from fba_bench_core.simulation_orchestrator import SimulationOrchestrator
+from fba_bench_api.core.database_async import AsyncSessionLocal
+from fba_bench_api.core.persistence_async import AsyncPersistenceManager
 
 # Core services
 from fba_events.bus import InMemoryEventBus as EventBus  # singleton
@@ -101,4 +103,11 @@ class AppContainer(containers.DeclarativeContainer):
         # Defaults for baseline bot dir and OpenRouter key (env may override elsewhere)
         bot_config_dir="baseline_bots/configs",
         openrouter_api_key=os.getenv("OPENROUTER_API_KEY"),
+    )
+
+    # Database & Persistence
+    db_session = providers.Resource(AsyncSessionLocal)
+    persistence = providers.Factory(
+        AsyncPersistenceManager,
+        db=db_session,
     )

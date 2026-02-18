@@ -194,6 +194,14 @@ def _get_model_avatar(agent_id: str) -> str:
         return "⚡"
     elif "llama" in agent_lower:
         return "🦙"
+    elif "minimax" in agent_lower:
+        return "🐉"
+    elif "aurora" in agent_lower:
+        return "✨"
+    elif "stepfun" in agent_lower:
+        return "🚀"
+    elif "qwen" in agent_lower:
+        return "💮"
     elif "baseline" in agent_lower:
         return "🤖"
     else:
@@ -236,6 +244,14 @@ def _extract_model_name(agent_id: str) -> str:
     elif "deepseek" in agent_lower:
         v = "v3.2" if "v3.2" in agent_lower else "v3"
         return f"DeepSeek-{v}"
+    elif "minimax" in agent_lower:
+        return "Minimax 2.5"
+    elif "aurora" in agent_lower:
+        return "Aurora Alpha"
+    elif "stepfun" in agent_lower:
+        return "Stepfun 3.5"
+    elif "qwen" in agent_lower:
+        return "Qwen 3.5"
     elif "baseline" in agent_lower:
         return "Baseline Bot"
     else:

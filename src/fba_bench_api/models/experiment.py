@@ -48,6 +48,7 @@ class ExperimentORM(TimestampMixin, Base):
 
     # Relationships
     agent = relationship("AgentORM", backref="experiments", lazy="joined")
+    runs = relationship("ExperimentRunORM", back_populates="experiment", cascade="all, delete-orphan")
 
     # Indexes for frequent queries
     __table_args__ = (
