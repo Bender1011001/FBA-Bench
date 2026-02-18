@@ -110,7 +110,6 @@ htmlcov/
 artifacts/
 results/
 public_results/openrouter_tier_runs/
-docs/api/*.json
 
 # Database files (development/testing only)
 *.db
@@ -135,8 +134,6 @@ node_modules/
 
 # Generated heartbeat for the live leaderboard badge (written during runs)
 docs/api/live.json
-docs/api/leaderboard.json
-docs/api/top10.json
 docs/api/sim_theater_live.json
 
 # Corrupt learning data
