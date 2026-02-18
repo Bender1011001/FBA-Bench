@@ -315,10 +315,37 @@ func _process(delta: float) -> void:
 		_render_replay_frame(replay_cursor)
 	_update_replay_controls_state()
 
+# --- VISUALS & ANIMATION ---
+var zone_arrows: Array[Line2D] = []
+var zone_panels: Dictionary = {} # Map name -> Panel
+var flow_phase: float = 0.0
+
+func _process(delta: float):
+	# 1. Animate Flow Arrows
+	flow_phase += delta * 2.0 # Speed
+	for arrow in zone_arrows:
+		arrow.width = 4.0 + sin(flow_phase) * 1.5
+		arrow.default_color = Color(0.2, 0.8, 1.0, 0.4 + sin(flow_phase * 3.0) * 0.2)
+
+	# 2. Smooth Zone Focus Decay (Active Focus State)
+	for z_name in zone_panels:
+		var panel = zone_panels[z_name]
+		var style = panel.get_theme_stylebox("panel") as StyleBoxFlat
+		if style:
+			# Target opacity is low (0.1), flash sets it high (0.6)
+			var current_a = style.bg_color.a
+			var target_a = 0.1
+			if current_a > target_a:
+				style.bg_color.a = lerp(current_a, target_a, delta * 3.0)
+				style.border_color.a = lerp(style.border_color.a, 0.4, delta * 3.0)
+
 func _draw_warehouse_grid():
+	set_process(true) # Enable animation loop
 	zone_rects.clear()
 	zone_glows.clear()
 	zone_base_colors.clear()
+	zone_arrows.clear()
+	zone_panels.clear()
 
 	# Draw a "Cyberpunk Blueprint" grid
 	var grid = Node2D.new()
@@ -332,7 +359,7 @@ func _draw_warehouse_grid():
 	bg_tex.modulate = Color(0.6, 0.6, 0.6, 1.0) 
 	# Make it huge to cover any resolution
 	bg_tex.size = Vector2(4000, 4000)
-	bg_tex.position = Vector2(-1000, -1000)
+	bg_tex.position = Vector2(-2000, -2000) # Centered better
 	grid.add_child(bg_tex)
 
 	# Warehouse Zones - ENTERPRISE Scale
@@ -354,21 +381,22 @@ func _draw_warehouse_grid():
 	for pair in arrow_points:
 		var line = Line2D.new()
 		line.points = PackedVector2Array(pair)
-		line.width = 40
-		line.default_color = Color(1, 1, 1, 0.05)
-		line.texture_mode = Line2D.LINE_TEXTURE_TILE
-		# Could add a chevron texture here if we had one, for now solid "path"
+		line.width = 6.0 # Thicker base
+		line.default_color = Color(0.2, 0.8, 1.0, 0.5)
+		line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		line.end_cap_mode = Line2D.LINE_CAP_ROUND
 		grid.add_child(line)
+		zone_arrows.append(line) # Track for animation
 		
-		# Manual Chevron
+		# Chevron Tip
 		var chev = Polygon2D.new()
 		var end = pair[1]
 		chev.polygon = PackedVector2Array([
-			end + Vector2(-10, -20),
-			end + Vector2(10, 0),
-			end + Vector2(-10, 20)
+			end + Vector2(-15, -10),
+			end + Vector2(0, 0),
+			end + Vector2(-15, 10)
 		])
-		chev.color = Color(1, 1, 1, 0.1)
+		chev.color = Color(0.2, 0.8, 1.0, 0.8) # Bright tip
 		grid.add_child(chev)
 	
 	for z in zone_configs:
@@ -381,7 +409,7 @@ func _draw_warehouse_grid():
 		var zone_panel = Panel.new()
 		var style = StyleBoxFlat.new()
 		style.bg_color = zone_col
-		style.bg_color.a = 0.1 # Low opacity fill
+		style.bg_color.a = 0.1 # Low opacity fill (Base)
 		style.border_width_left = 2
 		style.border_width_top = 2
 		style.border_width_right = 2
@@ -400,8 +428,8 @@ func _draw_warehouse_grid():
 		# Save rect for random placement
 		if zone_name != "":
 			zone_rects[zone_name] = Rect2(zone_pos, zone_size)
-			#zone_glows[zone_name] = glow # Panel handles glow via style if needed
 			zone_base_colors[zone_name] = zone_col
+			zone_panels[zone_name] = zone_panel # Save for animation
 		
 		# Zone Label (Inside top)
 		var label = Label.new()
@@ -496,24 +524,24 @@ func _reorganize_sidebar():
 	var make_kpi = func(ref_label: Label, title: String, color: Color):
 		var p = PanelContainer.new()
 		var s = StyleBoxFlat.new()
-		s.bg_color = Color(0.08, 0.1, 0.12, 0.8)
+		s.bg_color = Color(0.05, 0.08, 0.1, 0.4) # Reduced opacity (was 0.8)
 		s.border_width_left = 4 # Thick left bar
 		s.border_color = color
 		s.content_margin_left = 16
 		s.content_margin_right = 16
-		s.content_margin_top = 12
-		s.content_margin_bottom = 12
+		s.content_margin_top = 8
+		s.content_margin_bottom = 8
 		p.add_theme_stylebox_override("panel", s)
 		
 		var v = VBoxContainer.new()
 		var t = Label.new()
 		t.text = title.to_upper()
-		t.add_theme_font_size_override("font_size", 9)
+		t.add_theme_font_size_override("font_size", 10)
 		t.add_theme_color_override("font_color", Color("#64748b"))
 		v.add_child(t)
 		
 		ref_label.text = "---"
-		ref_label.add_theme_font_size_override("font_size", 24) # BIG
+		ref_label.add_theme_font_size_override("font_size", 48) # MAXIMIZED (was 24)
 		ref_label.add_theme_color_override("font_color", Color.WHITE)
 		v.add_child(ref_label)
 		p.add_child(v)
@@ -581,12 +609,18 @@ func _reorganize_sidebar():
 		btn.tooltip_text = m.name
 		btn.flat = true
 		
-		var bg = ColorRect.new()
+		# Active Tab Contrast: Clearer border
+		var bg = Panel.new()
 		bg.show_behind_parent = true
-		bg.color = m.color
-		bg.color.a = 0.1
-		bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		var bs = StyleBoxFlat.new()
+		bs.bg_color = m.color
+		bs.bg_color.a = 0.1
+		bs.border_width_bottom = 2
+		bs.border_color = m.color
+		bs.border_color.a = 0.5
+		bg.add_theme_stylebox_override("panel", bs)
 		btn.add_child(bg)
 		
 		mod_grid.add_child(btn)
@@ -637,7 +671,7 @@ func _setup_replay_controls():
 	command_deck.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	
 	var deck_style = StyleBoxFlat.new()
-	deck_style.bg_color = Color(0.05, 0.05, 0.08, 1.0) # Solid dark
+	deck_style.bg_color = Color(0.05, 0.05, 0.08, 0.85) # Reduced opacity (was 1.0)
 	deck_style.border_width_top = 2
 	deck_style.border_color = Color("#0ea5e9") # Cyan highlight
 	command_deck.add_theme_stylebox_override("panel", deck_style)
@@ -1655,21 +1689,23 @@ func _spawn_callout(text: String, pos: Vector2, col: Color) -> void:
 	fade.tween_property(lbl, "modulate:a", 0.0, 0.8)
 	fade.tween_callback(func(): lbl.queue_free())
 
-func _flash_zone(zone: String, intensity: float = 0.18) -> void:
-	if not zone_glows.has(zone) or not zone_base_colors.has(zone):
-		return
-	var glow = zone_glows.get(zone)
-	var base = zone_base_colors.get(zone, Color.WHITE)
-	if glow == null:
-		return
+func _flash_zone(zone: String, intensity: float = 0.6) -> void:
+	# 1. New Active Focus (Physical Panel)
+	if zone_panels.has(zone):
+		var panel = zone_panels[zone]
+		var style = panel.get_theme_stylebox("panel") as StyleBoxFlat
+		if style:
+			# Boost opacity substantially (Active Focus)
+			style.bg_color.a = 0.6 * intensity # Focus Brightness
+			style.border_color.a = 1.0 * intensity
 
-	var bright = base
-	bright.a = intensity
-	var dim = base
-	dim.a = 0.05
-
-	glow.color = bright
-	create_tween().tween_property(glow, "color", dim, 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# 2. Old Glow (Optional/Legacy support)
+	if zone_glows.has(zone):
+		var glow = zone_glows[zone]
+		if glow is Control:
+			var tw = create_tween()
+			tw.tween_property(glow, "modulate:a", 0.5 * intensity, 0.1)
+			tw.tween_property(glow, "modulate:a", 0.0, 0.3)
 
 func _cinematic_focus(pos: Vector2, zoom: float, duration: float = 0.6) -> void:
 	if camera == null:
