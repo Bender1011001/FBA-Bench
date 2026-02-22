@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 from collections import deque
 
 from fba_bench_core.domain.market.customer import CustomerPool

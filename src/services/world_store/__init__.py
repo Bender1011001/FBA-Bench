@@ -8,7 +8,7 @@ and conflict resolution. All canonical market state is managed here.
 import logging
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events.bus import EventBus
 from fba_events.inventory import InventoryUpdate

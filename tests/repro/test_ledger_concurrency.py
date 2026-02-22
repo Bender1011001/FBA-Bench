@@ -6,7 +6,7 @@ import os
 
 sys.path.append(os.getcwd())  # Add project root for 'src' imports
 sys.path.append(os.path.abspath("src"))  # Add src for direct imports
-from money import Money
+from fba_bench_core.money import Money
 from services.ledger.core import LedgerCore, AccountType
 
 import pytest

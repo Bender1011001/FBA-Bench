@@ -6,7 +6,7 @@ from decimal import ROUND_HALF_UP, ROUND_UP, Decimal
 from enum import Enum
 from typing import Dict, List
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_bench_core.models.product import Product
 

@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Tuple
 
-from money import Money
+from fba_bench_core.money import Money
 
 from agents.skill_modules.base_skill import SkillAction
 

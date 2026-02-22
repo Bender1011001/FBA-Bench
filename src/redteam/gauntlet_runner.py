@@ -14,9 +14,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
-from events import AdversarialResponse
+from fba_events.adversarial import AdversarialResponse
 
 from .adversarial_event_injector import AdversarialEventInjector
 from .exploit_registry import ExploitDefinition, ExploitRegistry

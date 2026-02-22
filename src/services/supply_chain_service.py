@@ -28,7 +28,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_bench_core.event_bus import EventBus, get_event_bus
 from services.world_store import WorldStore

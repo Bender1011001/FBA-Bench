@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Union
 
-from money import Money  # Assuming Money class is available
+from fba_bench_core.money import Money  # Assuming Money class is available
 
 from benchmarking.agents.base import BaseAgent
 from benchmarking.core.results import AgentRunResult

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from money import Money
+from fba_bench_core.money import Money
 
 from .base import BaseEvent
 

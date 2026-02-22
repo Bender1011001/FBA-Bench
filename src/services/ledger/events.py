@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Dict, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events.bus import EventBus
 from fba_events.sales import SaleOccurred

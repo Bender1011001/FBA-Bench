@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 # Placeholder imports for types that might be needed for SimulationState or for type hints
 # In a full simulation, these would come from models/, services/, etc.
 from models.product import Product  # For products in SimulationState
-from money import Money
+from fba_bench_core.money import Money
 
 from constraints.agent_gateway import AgentGateway
 from fba_bench_api.core.redis_client import get_redis

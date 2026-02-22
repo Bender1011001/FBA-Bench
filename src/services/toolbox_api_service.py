@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 from services.toolbox_schemas import (
     LaunchProductRequest,
     LaunchProductResponse,

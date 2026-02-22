@@ -2,7 +2,7 @@
 Resource management for skill coordination.
 """
 
-from money import Money
+from fba_bench_core.money import Money
 
 from .models import ResourceAllocation
 

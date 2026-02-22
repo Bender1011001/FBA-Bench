@@ -5,7 +5,7 @@ Utility functions for skill coordination.
 from datetime import datetime
 from typing import Any, Dict, List, Tuple
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events.base import BaseEvent
 

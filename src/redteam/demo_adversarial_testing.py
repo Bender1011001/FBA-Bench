@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_bench_core.event_bus import EventBus
 from fba_events.adversarial import AdversarialResponse

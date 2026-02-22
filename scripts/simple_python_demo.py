@@ -24,7 +24,7 @@ import sys
 import uuid
 from datetime import datetime
 
-from money import Money
+from fba_bench_core.money import Money
 
 from events import ProductPriceUpdated, SetPriceCommand
 

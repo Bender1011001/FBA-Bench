@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # Defaults and common validators

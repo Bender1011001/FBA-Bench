@@ -5,7 +5,7 @@ import logging
 import uuid
 from typing import Any, Dict, List
 
-from money import Money
+from fba_bench_core.money import Money
 
 from .models import (
     Account,

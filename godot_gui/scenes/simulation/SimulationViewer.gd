@@ -108,6 +108,23 @@ var last_total_profit: float = 0.0
 var last_total_units_sold: int = 0
 var last_tick_seen: int = -1
 var cinematic_mode: bool = false
+
+# === RIGHT PANEL (Live Command Center) ===
+var right_panel: Control = null
+var sim_day_label: Label = null
+var agent_cards_container: VBoxContainer = null
+var right_event_log: RichTextLabel = null
+var agent_card_cache: Dictionary = {}   # agent_id -> { label refs }
+var right_event_lines: Array[String] = []
+const MAX_RIGHT_LOG := 50
+const TICKS_PER_HOUR := 1
+const TICKS_PER_DAY := 24
+
+# === RED TEAM PANEL (nested inside right panel) ===
+var redteam_section: Control = null
+var redteam_stats_lbl: Label = null
+var redteam_attacks_vbox: VBoxContainer = null
+var _last_redteam_total: int = 0
 var replay_mode: bool = false
 var replay_playing: bool = false
 var replay_cursor: int = -1
@@ -247,6 +264,7 @@ func _ready():
 	_setup_event_feed()
 	_setup_replay_controls()
 	_setup_end_card()
+	_setup_right_panel()
 	_draw_warehouse_grid()
 	
 	# Background (ColorRect behind everything, just in case)
@@ -296,7 +314,30 @@ func _ready():
 		
 	print("[SimViewer] Ready - Dropdowns populated")
 
+# --- VISUALS & ANIMATION ---
+var zone_arrows: Array[Line2D] = []
+var zone_panels: Dictionary = {} # Map name -> Panel
+var flow_phase: float = 0.0
+
 func _process(delta: float) -> void:
+	# 1. Animate Flow Arrows
+	flow_phase += delta * 2.0
+	for arrow in zone_arrows:
+		arrow.width = 4.0 + sin(flow_phase) * 1.5
+		arrow.default_color = Color(0.2, 0.8, 1.0, 0.4 + sin(flow_phase * 3.0) * 0.2)
+
+	# 2. Smooth Zone Focus Decay
+	for z_name in zone_panels:
+		var panel = zone_panels[z_name]
+		var style = panel.get_theme_stylebox("panel") as StyleBoxFlat
+		if style:
+			var current_a = style.bg_color.a
+			var target_a = 0.1
+			if current_a > target_a:
+				style.bg_color.a = lerp(current_a, target_a, delta * 3.0)
+				style.border_color.a = lerp(style.border_color.a, 0.4, delta * 3.0)
+
+	# 3. Replay playback
 	if not replay_mode or not replay_playing:
 		return
 	if replay_buffer.size() < 2:
@@ -314,30 +355,6 @@ func _process(delta: float) -> void:
 			break
 		_render_replay_frame(replay_cursor)
 	_update_replay_controls_state()
-
-# --- VISUALS & ANIMATION ---
-var zone_arrows: Array[Line2D] = []
-var zone_panels: Dictionary = {} # Map name -> Panel
-var flow_phase: float = 0.0
-
-func _process(delta: float):
-	# 1. Animate Flow Arrows
-	flow_phase += delta * 2.0 # Speed
-	for arrow in zone_arrows:
-		arrow.width = 4.0 + sin(flow_phase) * 1.5
-		arrow.default_color = Color(0.2, 0.8, 1.0, 0.4 + sin(flow_phase * 3.0) * 0.2)
-
-	# 2. Smooth Zone Focus Decay (Active Focus State)
-	for z_name in zone_panels:
-		var panel = zone_panels[z_name]
-		var style = panel.get_theme_stylebox("panel") as StyleBoxFlat
-		if style:
-			# Target opacity is low (0.1), flash sets it high (0.6)
-			var current_a = style.bg_color.a
-			var target_a = 0.1
-			if current_a > target_a:
-				style.bg_color.a = lerp(current_a, target_a, delta * 3.0)
-				style.border_color.a = lerp(style.border_color.a, 0.4, delta * 3.0)
 
 func _draw_warehouse_grid():
 	set_process(true) # Enable animation loop
@@ -1161,10 +1178,11 @@ func _render_tick_data(data: Dictionary, include_activity: bool, replay_index: i
 	_update_agents(data.get("agents", []))
 	_update_competitors(data.get("competitors", []))
 	_update_heatmap(data.get("heatmap", []))
+	_update_right_panel(data)
 
 	if include_activity:
 		last_total_profit = profit_total
-	
+
 	# If inspector is open, update its data if it matches the current agent
 	if agent_inspector.visible:
 		# Find the agent data for the currently inspected agent
@@ -1324,6 +1342,30 @@ func _reset_observer_state():
 	if profit_chart and profit_chart.has_method("clear_points"):
 		profit_chart.clear_points()
 	_update_replay_controls_state()
+	# Clear right panel
+	right_event_lines.clear()
+	if right_event_log:
+		right_event_log.text = "[color=#475569]Waiting for simulation...[/color]"
+	if sim_day_label:
+		sim_day_label.text = "DAY 1   00:00"
+	for card_id in agent_card_cache.keys():
+		var refs = agent_card_cache[card_id]
+		var card = refs.get("card")
+		if is_instance_valid(card):
+			card.queue_free()
+	agent_card_cache.clear()
+	# Clear red team state
+	_last_redteam_total = 0
+	if redteam_stats_lbl:
+		redteam_stats_lbl.text = "–– inactive"
+	if redteam_attacks_vbox:
+		for child in redteam_attacks_vbox.get_children():
+			child.queue_free()
+		var rt_ph = Label.new()
+		rt_ph.text = "No attacks fired yet"
+		rt_ph.add_theme_font_size_override("font_size", 9)
+		rt_ph.add_theme_color_override("font_color", Color("#334155"))
+		redteam_attacks_vbox.add_child(rt_ph)
 
 func _update_products(products: Array):
 	if products_container == null:
@@ -1991,3 +2033,588 @@ func _on_inspector_closed():
 func _on_agent_clicked(agent_data: Dictionary):
 	agent_inspector.visible = true
 	agent_inspector.update_agent_data(agent_data)
+
+# =============================================================================
+# RIGHT PANEL — Live Command Center
+# =============================================================================
+
+func _setup_right_panel() -> void:
+	# Floating glass panel anchored to the right edge (380px wide)
+	right_panel = PanelContainer.new()
+	right_panel.name = "RightCommandCenter"
+	right_panel.set_anchor(SIDE_LEFT,   1.0)
+	right_panel.set_anchor(SIDE_RIGHT,  1.0)
+	right_panel.set_anchor(SIDE_TOP,    0.0)
+	right_panel.set_anchor(SIDE_BOTTOM, 1.0)
+	right_panel.offset_left   = -380
+	right_panel.offset_right  = 0
+	right_panel.offset_top    = 0
+	right_panel.offset_bottom = 0
+
+	var side_style = StyleBoxFlat.new()
+	side_style.bg_color = Color(0.04, 0.04, 0.07, 0.88)
+	side_style.border_width_left  = 1
+	side_style.border_color       = Color(0.0, 0.7, 1.0, 0.18)
+	right_panel.add_theme_stylebox_override("panel", side_style)
+	add_child(right_panel)
+
+	var outer_margin = MarginContainer.new()
+	outer_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	outer_margin.add_theme_constant_override("margin_left",   10)
+	outer_margin.add_theme_constant_override("margin_right",  10)
+	outer_margin.add_theme_constant_override("margin_top",    10)
+	outer_margin.add_theme_constant_override("margin_bottom", 10)
+	right_panel.add_child(outer_margin)
+
+	var root_vbox = VBoxContainer.new()
+	root_vbox.add_theme_constant_override("separation", 8)
+	outer_margin.add_child(root_vbox)
+
+	# ── Sim Day / Time ───────────────────────────────────────────────────────
+	var day_panel = PanelContainer.new()
+	var day_style = StyleBoxFlat.new()
+	day_style.bg_color = Color(0.06, 0.12, 0.18, 0.8)
+	day_style.border_width_bottom = 2
+	day_style.border_color        = Color(0.0, 0.7, 1.0, 0.4)
+	day_style.corner_radius_top_left     = 4
+	day_style.corner_radius_top_right    = 4
+	day_style.corner_radius_bottom_left  = 4
+	day_style.corner_radius_bottom_right = 4
+	day_panel.add_theme_stylebox_override("panel", day_style)
+	root_vbox.add_child(day_panel)
+
+	var day_margin = MarginContainer.new()
+	day_margin.add_theme_constant_override("margin_left", 8)
+	day_margin.add_theme_constant_override("margin_right", 8)
+	day_margin.add_theme_constant_override("margin_top", 6)
+	day_margin.add_theme_constant_override("margin_bottom", 6)
+	day_panel.add_child(day_margin)
+
+	var day_vbox = VBoxContainer.new()
+	day_vbox.add_theme_constant_override("separation", 0)
+	day_margin.add_child(day_vbox)
+
+	var day_header = Label.new()
+	day_header.text = "SIMULATION TIME"
+	day_header.add_theme_font_size_override("font_size", 9)
+	day_header.add_theme_color_override("font_color", Color("#475569"))
+	day_vbox.add_child(day_header)
+
+	sim_day_label = Label.new()
+	sim_day_label.text = "DAY 1   00:00"
+	sim_day_label.add_theme_font_size_override("font_size", 22)
+	sim_day_label.add_theme_color_override("font_color", Color("#30b7ff"))
+	day_vbox.add_child(sim_day_label)
+
+	# ── Section header: Agent Minds ───────────────────────────────────────────
+	var agents_header = Label.new()
+	agents_header.text = "AGENT MINDS"
+	agents_header.add_theme_font_size_override("font_size", 10)
+	agents_header.add_theme_color_override("font_color", Color("#475569"))
+	root_vbox.add_child(agents_header)
+
+	# Scrollable agent card area — takes most of the panel height
+	var agents_scroll = ScrollContainer.new()
+	agents_scroll.size_flags_vertical   = Control.SIZE_EXPAND_FILL
+	agents_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	agents_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	root_vbox.add_child(agents_scroll)
+
+	agent_cards_container = VBoxContainer.new()
+	agent_cards_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	agent_cards_container.add_theme_constant_override("separation", 6)
+	agents_scroll.add_child(agent_cards_container)
+
+	# ── Section header: Red Team Activity ────────────────────────────────────
+	var rt_header_row = HBoxContainer.new()
+	rt_header_row.add_theme_constant_override("separation", 4)
+	root_vbox.add_child(rt_header_row)
+
+	var rt_icon = TextureRect.new()
+	rt_icon.texture = ICON_RED_TEAM
+	rt_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rt_icon.custom_minimum_size = Vector2(12, 12)
+	rt_header_row.add_child(rt_icon)
+
+	var rt_header_lbl = Label.new()
+	rt_header_lbl.text = "RED TEAM"
+	rt_header_lbl.add_theme_font_size_override("font_size", 10)
+	rt_header_lbl.add_theme_color_override("font_color", Color("#ff4444"))
+	rt_header_row.add_child(rt_header_lbl)
+
+	redteam_stats_lbl = Label.new()
+	redteam_stats_lbl.text = "–– inactive"
+	redteam_stats_lbl.add_theme_font_size_override("font_size", 9)
+	redteam_stats_lbl.add_theme_color_override("font_color", Color("#475569"))
+	redteam_stats_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	redteam_stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	rt_header_row.add_child(redteam_stats_lbl)
+
+	# Red team panel: dark-red tinted, compact, shows rotating attacks
+	redteam_section = PanelContainer.new()
+	var rt_style = StyleBoxFlat.new()
+	rt_style.bg_color     = Color(0.10, 0.03, 0.03, 0.82)
+	rt_style.border_width_left = 2
+	rt_style.border_color = Color(1.0, 0.2, 0.2, 0.45)
+	rt_style.corner_radius_top_left     = 3
+	rt_style.corner_radius_top_right    = 3
+	rt_style.corner_radius_bottom_left  = 3
+	rt_style.corner_radius_bottom_right = 3
+	redteam_section.add_theme_stylebox_override("panel", rt_style)
+	root_vbox.add_child(redteam_section)
+
+	var rt_margin = MarginContainer.new()
+	rt_margin.add_theme_constant_override("margin_left",   6)
+	rt_margin.add_theme_constant_override("margin_right",  6)
+	rt_margin.add_theme_constant_override("margin_top",    4)
+	rt_margin.add_theme_constant_override("margin_bottom", 4)
+	redteam_section.add_child(rt_margin)
+
+	redteam_attacks_vbox = VBoxContainer.new()
+	redteam_attacks_vbox.add_theme_constant_override("separation", 2)
+	rt_margin.add_child(redteam_attacks_vbox)
+
+	# Initial placeholder
+	var rt_placeholder = Label.new()
+	rt_placeholder.name = "RTPlaceholder"
+	rt_placeholder.text = "No attacks fired yet"
+	rt_placeholder.add_theme_font_size_override("font_size", 9)
+	rt_placeholder.add_theme_color_override("font_color", Color("#334155"))
+	redteam_attacks_vbox.add_child(rt_placeholder)
+
+	# ── Section header: Live Event Log ────────────────────────────────────────
+	var log_header = Label.new()
+	log_header.text = "LIVE LOG"
+	log_header.add_theme_font_size_override("font_size", 10)
+	log_header.add_theme_color_override("font_color", Color("#475569"))
+	root_vbox.add_child(log_header)
+
+	right_event_log = RichTextLabel.new()
+	right_event_log.bbcode_enabled    = true
+	right_event_log.scroll_following  = true
+	right_event_log.custom_minimum_size = Vector2(0, 140)
+	right_event_log.size_flags_vertical = Control.SIZE_SHRINK_END
+	right_event_log.add_theme_font_size_override("normal_font_size", 10)
+	var log_style = StyleBoxFlat.new()
+	log_style.bg_color = Color(0.03, 0.03, 0.06, 0.7)
+	log_style.corner_radius_top_left     = 3
+	log_style.corner_radius_top_right    = 3
+	log_style.corner_radius_bottom_left  = 3
+	log_style.corner_radius_bottom_right = 3
+	right_event_log.add_theme_stylebox_override("normal", log_style)
+	right_event_log.text = "[color=#475569]Waiting for simulation...[/color]"
+	root_vbox.add_child(right_event_log)
+
+	print("[RightPanel] Live Command Center created")
+
+
+func _update_right_panel(data: Dictionary) -> void:
+	if right_panel == null:
+		return
+
+	# ── Sim Day / Time ───────────────────────────────────────────────────────
+	var tick = int(data.get("tick", 0))
+	var sim_day_raw = int(data.get("sim_day", tick / TICKS_PER_DAY))
+	var sim_hour    = int((tick % TICKS_PER_DAY) * (24 / max(1, TICKS_PER_DAY)))
+	if sim_day_label:
+		sim_day_label.text = "DAY %d   %02d:00" % [sim_day_raw + 1, sim_hour]
+
+	# ── Agent Cards ──────────────────────────────────────────────────────────
+	var agents = data.get("agents", [])
+	if not (agents is Array):
+		agents = []
+
+	var seen_ids: Dictionary = {}
+	for agent in agents:
+		if not (agent is Dictionary):
+			continue
+		var agent_id = str(agent.get("id", ""))
+		if agent_id == "":
+			continue
+		seen_ids[agent_id] = true
+		_upsert_agent_card(agent_id, agent)
+
+	# Remove cards for agents no longer in payload
+	for old_id in agent_card_cache.keys():
+		if not seen_ids.has(old_id):
+			var refs = agent_card_cache[old_id]
+			var card = refs.get("card")
+			if is_instance_valid(card):
+				card.queue_free()
+			agent_card_cache.erase(old_id)
+
+	# ── Red Team section ─────────────────────────────────────────────────────
+	_update_redteam_section(data.get("redteam", {}))
+
+	# ── Right log events ─────────────────────────────────────────────────────
+	_push_right_log_events(data.get("events", []), agents, tick)
+
+
+func _upsert_agent_card(agent_id: String, agent_data: Dictionary) -> void:
+	if not agent_card_cache.has(agent_id):
+		_create_agent_card(agent_id, agent_data)
+	_update_agent_card_content(agent_id, agent_data)
+
+
+func _create_agent_card(agent_id: String, _agent_data: Dictionary) -> void:
+	var card = PanelContainer.new()
+	card.name = "card_" + agent_id
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var card_color = _color_for_id(agent_id)
+	var cs = StyleBoxFlat.new()
+	cs.bg_color = Color(0.07, 0.09, 0.13, 0.95)
+	cs.border_width_left         = 3
+	cs.border_color              = card_color
+	cs.corner_radius_top_left    = 4
+	cs.corner_radius_top_right   = 4
+	cs.corner_radius_bottom_left = 4
+	cs.corner_radius_bottom_right = 4
+	cs.content_margin_left   = 10
+	cs.content_margin_right  = 8
+	cs.content_margin_top    = 6
+	cs.content_margin_bottom = 6
+	card.add_theme_stylebox_override("panel", cs)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 3)
+	card.add_child(vbox)
+
+	# Header row: name + state badge
+	var header = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 6)
+	vbox.add_child(header)
+
+	var name_lbl = Label.new()
+	name_lbl.name = "NameLbl"
+	name_lbl.text = agent_id
+	name_lbl.add_theme_font_size_override("font_size", 12)
+	name_lbl.add_theme_color_override("font_color", Color.WHITE)
+	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_lbl.clip_text = true
+	header.add_child(name_lbl)
+
+	var state_lbl = Label.new()
+	state_lbl.name = "StateLbl"
+	state_lbl.text = "IDLE"
+	state_lbl.add_theme_font_size_override("font_size", 9)
+	state_lbl.add_theme_color_override("font_color", Color("#fbbf24"))
+	header.add_child(state_lbl)
+
+	# Reasoning / thinking text — full content, never truncated
+	var thought = RichTextLabel.new()
+	thought.name = "ThoughtLbl"
+	thought.bbcode_enabled = true
+	thought.fit_content    = true   # grows to show every word
+	thought.scroll_active  = false  # outer ScrollContainer handles scrolling
+	thought.autowrap_mode  = TextServer.AUTOWRAP_WORD_SMART
+	thought.add_theme_font_size_override("normal_font_size", 10)
+	vbox.add_child(thought)
+
+	# Tool calls / memory line
+	var tools_lbl = Label.new()
+	tools_lbl.name = "ToolsLbl"
+	tools_lbl.text = ""
+	tools_lbl.add_theme_font_size_override("font_size", 10)
+	tools_lbl.add_theme_color_override("font_color", Color("#94a3b8"))
+	tools_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(tools_lbl)
+
+	# Financials row
+	var fin_hbox = HBoxContainer.new()
+	fin_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(fin_hbox)
+
+	var cash_lbl = Label.new()
+	cash_lbl.name = "CashLbl"
+	cash_lbl.text = "Cash —"
+	cash_lbl.add_theme_font_size_override("font_size", 10)
+	cash_lbl.add_theme_color_override("font_color", Color("#94a3b8"))
+	fin_hbox.add_child(cash_lbl)
+
+	var inv_lbl = Label.new()
+	inv_lbl.name = "InvLbl"
+	inv_lbl.text = "Inv —"
+	inv_lbl.add_theme_font_size_override("font_size", 10)
+	inv_lbl.add_theme_color_override("font_color", Color("#94a3b8"))
+	fin_hbox.add_child(inv_lbl)
+
+	var profit_lbl = Label.new()
+	profit_lbl.name = "ProfitLbl"
+	profit_lbl.text = "P&L —"
+	profit_lbl.add_theme_font_size_override("font_size", 10)
+	fin_hbox.add_child(profit_lbl)
+
+	# LLM stats micro-line
+	var llm_lbl = Label.new()
+	llm_lbl.name = "LLMLbl"
+	llm_lbl.text = ""
+	llm_lbl.add_theme_font_size_override("font_size", 9)
+	llm_lbl.add_theme_color_override("font_color", Color("#334155"))
+	vbox.add_child(llm_lbl)
+
+	agent_cards_container.add_child(card)
+
+	# Cache refs for O(1) updates
+	agent_card_cache[agent_id] = {
+		"card":       card,
+		"name_lbl":   name_lbl,
+		"state_lbl":  state_lbl,
+		"thought":    thought,
+		"tools_lbl":  tools_lbl,
+		"cash_lbl":   cash_lbl,
+		"inv_lbl":    inv_lbl,
+		"profit_lbl": profit_lbl,
+		"llm_lbl":    llm_lbl,
+	}
+
+
+func _update_agent_card_content(agent_id: String, agent_data: Dictionary) -> void:
+	var refs = agent_card_cache.get(agent_id, {})
+	if refs.is_empty():
+		return
+
+	var state       = str(agent_data.get("state", "Idle"))
+	var reasoning   = str(agent_data.get("last_reasoning", agent_data.get("reasoning", "")))
+	var financials  = agent_data.get("financials", {})
+	if not (financials is Dictionary): financials = {}
+	var llm_usage   = agent_data.get("llm_usage", {})
+	if not (llm_usage is Dictionary):  llm_usage  = {}
+	var tool_calls  = agent_data.get("last_tool_calls", [])
+	if not (tool_calls is Array): tool_calls = []
+	var mem_events  = agent_data.get("memory_events", [])
+	if not (mem_events is Array): mem_events = []
+	var metrics     = agent_data.get("metrics", {})
+	if not (metrics is Dictionary): metrics = {}
+
+	# State badge
+	var state_lbl = refs.get("state_lbl") as Label
+	if state_lbl:
+		var sc: Color
+		match state.to_lower():
+			"active", "deciding", "buying", "selling", "processing":
+				sc = Color("#a3e635")
+			"bankrupt", "error", "failed":
+				sc = Color("#f87171")
+			_:
+				sc = Color("#fbbf24")
+		state_lbl.text = state.to_upper()
+		state_lbl.add_theme_color_override("font_color", sc)
+
+	# Reasoning — full text, no truncation at all
+	var thought_lbl = refs.get("thought") as RichTextLabel
+	if thought_lbl:
+		if reasoning.strip_edges() == "":
+			thought_lbl.text = "[color=#334155][i]Awaiting decision...[/i][/color]"
+		else:
+			# Only escape BBCode special characters — never truncate
+			var t = reasoning.replace("[", "&#91;").replace("]", "&#93;")
+			thought_lbl.text = "[color=#cbd5e1]" + t + "[/color]"
+
+	# Tool calls + memory
+	var tools_lbl = refs.get("tools_lbl") as Label
+	if tools_lbl:
+		var names: PackedStringArray = []
+		for tc in tool_calls:
+			if tc is Dictionary:
+				var fn = str(tc.get("function", {}).get("name", tc.get("name", "")))
+				if fn != "" and fn != "{}":
+					names.append(fn)
+		var tools_text = ""
+		if names.size() > 0:
+			tools_text = "→ " + ", ".join(names)
+		if mem_events.size() > 0:
+			tools_text += ("  " if tools_text != "" else "") + "🧠 memory"
+		tools_lbl.text = tools_text
+
+	# Financials
+	var cash_lbl = refs.get("cash_lbl") as Label
+	if cash_lbl:
+		var cash = float(financials.get("cash", financials.get("cash_usd", 0.0)))
+		cash_lbl.text = "Cash $%.0f" % cash
+
+	var inv_lbl = refs.get("inv_lbl") as Label
+	if inv_lbl:
+		var inv_val = float(financials.get("inventory_value", financials.get("inventory_value_usd", 0.0)))
+		# Fallback: try metrics
+		if inv_val == 0.0:
+			inv_val = float(metrics.get("inventory_value", 0.0))
+		inv_lbl.text = "Inv $%.0f" % inv_val
+
+	var profit_lbl = refs.get("profit_lbl") as Label
+	if profit_lbl:
+		var profit = float(financials.get("net_profit", financials.get("profit", 0.0)))
+		if profit == 0.0:
+			profit = float(metrics.get("total_revenue", 0.0))  # fallback to revenue
+		var prefix = "+" if profit >= 0.0 else ""
+		profit_lbl.text = "P&L %s$%.0f" % [prefix, profit]
+		profit_lbl.add_theme_color_override("font_color",
+			Color("#a3e635") if profit >= 0.0 else Color("#f87171"))
+
+	# LLM usage
+	var llm_lbl = refs.get("llm_lbl") as Label
+	if llm_lbl:
+		if not llm_usage.is_empty():
+			var tokens = int(llm_usage.get("total_tokens", 0))
+			var cost   = float(llm_usage.get("total_cost_usd", 0.0))
+			llm_lbl.text = "tokens %d  cost $%.4f" % [tokens, cost]
+		else:
+			llm_lbl.text = ""
+
+
+func _push_right_log(line: String) -> void:
+	right_event_lines.append(line)
+	if right_event_lines.size() > MAX_RIGHT_LOG:
+		right_event_lines.pop_front()
+	if right_event_log:
+		right_event_log.text = "\n".join(right_event_lines)
+
+
+func _push_right_log_events(events: Array, agents: Array, tick: int) -> void:
+	# Structured events
+	for evt in events:
+		if not (evt is Dictionary):
+			continue
+		var msg = str(evt.get("message", evt.get("description", evt.get("summary", ""))))
+		if msg.strip_edges() == "":
+			continue
+		var et = str(evt.get("type", evt.get("event_type", ""))).to_lower()
+		var col = "#94a3b8"
+		if "memory" in et:           col = "#8fa8ff"
+		elif "attack" in et:         col = "#ff7e89"
+		elif "price" in et:          col = "#fbbf24"
+		elif "sale" in et or "revenue" in et: col = "#a3e635"
+		elif "restock" in et or "supply" in et: col = "#60a5fa"
+		_push_right_log("[color=%s]T%03d  %s[/color]" % [col, tick, msg])
+
+	# Per-agent tool call / memory summaries
+	for agent in agents:
+		if not (agent is Dictionary):
+			continue
+		var agent_id = str(agent.get("id", ""))
+		if agent_id == "":
+			continue
+
+		var calls = agent.get("last_tool_calls", [])
+		if calls is Array and calls.size() > 0:
+			var fn_names: PackedStringArray = []
+			for c in calls:
+				if c is Dictionary:
+					var fn = str(c.get("function", {}).get("name", c.get("name", "")))
+					if fn != "" and fn != "{}":
+						fn_names.append(fn)
+			if fn_names.size() > 0:
+				var ac = _color_for_id(agent_id)
+				_push_right_log("[color=#%s]%s[/color] → %s" % [
+					ac.to_html(false), agent_id, ", ".join(fn_names)])
+
+		var mem_events = agent.get("memory_events", [])
+		if mem_events is Array and mem_events.size() > 0:
+			_push_right_log("[color=#8fa8ff]%s  🧠 memory consolidated[/color]" % agent_id)
+
+		var reasoning = str(agent.get("last_reasoning", ""))
+		if reasoning.strip_edges() != "" and reasoning.length() > 5:
+			# Full reasoning in log — no truncation
+			_push_right_log("[color=#475569]%s: %s[/color]" % [agent_id, reasoning])
+
+
+func _update_redteam_section(rt_data: Dictionary) -> void:
+	if redteam_attacks_vbox == null:
+		return
+
+	# If not enabled or no data yet
+	if rt_data.is_empty() or not rt_data.get("enabled", false):
+		if redteam_stats_lbl:
+			redteam_stats_lbl.text = "–– disabled"
+		return
+
+	var stats  = rt_data.get("stats", {})
+	var total  = int(stats.get("total_injected", 0))
+	var phish  = int(stats.get("phishing", 0))
+	var manip  = int(stats.get("market_manipulation", 0))
+	var trap   = int(stats.get("compliance_trap", 0))
+
+	# Update compact stats badge in the header row
+	if redteam_stats_lbl:
+		if total == 0:
+			redteam_stats_lbl.text = "waiting..."
+		else:
+			redteam_stats_lbl.text = "attacks: %d" % total
+
+	# Flash the panel background when a new attack lands
+	if total > _last_redteam_total and redteam_section != null:
+		var flash_style = redteam_section.get_theme_stylebox("panel") as StyleBoxFlat
+		if flash_style:
+			flash_style.bg_color = Color(0.28, 0.05, 0.05, 0.95)
+		get_tree().create_timer(0.6).timeout.connect(func():
+			if not is_instance_valid(redteam_section):
+				return
+			var s = redteam_section.get_theme_stylebox("panel") as StyleBoxFlat
+			if s:
+				s.bg_color = Color(0.10, 0.03, 0.03, 0.82)
+		)
+	_last_redteam_total = total
+
+	# Rebuild the attacks list (clear then re-populate)
+	for child in redteam_attacks_vbox.get_children():
+		child.queue_free()
+
+	var attacks = rt_data.get("active_attacks", [])
+
+	if attacks.is_empty() and total == 0:
+		var placeholder = Label.new()
+		placeholder.text = "No attacks fired yet"
+		placeholder.add_theme_font_size_override("font_size", 9)
+		placeholder.add_theme_color_override("font_color", Color("#334155"))
+		redteam_attacks_vbox.add_child(placeholder)
+		return
+
+	# Counts summary row
+	if total > 0:
+		var summary_lbl = Label.new()
+		summary_lbl.add_theme_font_size_override("font_size", 9)
+		summary_lbl.add_theme_color_override("font_color", Color("#94a3b8"))
+		summary_lbl.text = "🎣 phish:%d  📈 manip:%d  📋 trap:%d" % [phish, manip, trap]
+		redteam_attacks_vbox.add_child(summary_lbl)
+
+	# Show last 4 attacks (most recent at bottom)
+	var display_attacks = attacks
+	if display_attacks.size() > 4:
+		display_attacks = display_attacks.slice(display_attacks.size() - 4)
+
+	for atk in display_attacks:
+		if not (atk is Dictionary):
+			continue
+		var type_str   = str(atk.get("type", "unknown"))
+		var label_str  = str(atk.get("label", type_str.replace("_", " ").capitalize()))
+		var diff       = int(atk.get("difficulty", 1))
+		var stars      = "★".repeat(diff) + "☆".repeat(5 - diff)
+		var target     = str(atk.get("target_action", ""))
+		var tick_fired = int(atk.get("tick_fired", 0))
+
+		# Color by attack type
+		var atk_color = "#ff6b6b"
+		if "phishing" in type_str:
+			atk_color = "#ff9f43"
+		elif "market" in type_str:
+			atk_color = "#ffd32a"
+		elif "compliance" in type_str:
+			atk_color = "#ff4757"
+
+		# Truncate long target_action for compact display
+		var target_short = target if target.length() <= 35 else target.substr(0, 32) + "…"
+
+		var atk_lbl = RichTextLabel.new()
+		atk_lbl.bbcode_enabled = true
+		atk_lbl.fit_content   = true
+		atk_lbl.scroll_active = false
+		atk_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		atk_lbl.add_theme_font_size_override("normal_font_size", 9)
+		atk_lbl.text = (
+			"[color=%s]%s[/color] [color=#555]%s[/color]  "
+			% [atk_color, label_str, stars]
+			+ "[color=#64748b]T%d[/color] [color=#94a3b8]→ %s[/color]"
+			% [tick_fired, target_short]
+		)
+		redteam_attacks_vbox.add_child(atk_lbl)
+

@@ -15,7 +15,7 @@ from fba_bench_api.core.persistence_async import AsyncPersistenceManager
 from fba_bench_api.core.simulation_runner import RealSimulationRunner
 from fba_bench_api.models.experiment import ExperimentStatusEnum
 from fba_events.pricing import SetPriceCommand
-from money import Money
+from fba_bench_core.money import Money
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -63,6 +63,15 @@ AGENTS = [
         "strategy": "random",
         "avatar": "🎲",
         "color": "#ff0000"
+    },
+    {
+        "id": "agent-gemini-31-pro",
+        "name": "Gemini 3.1 Pro Preview",
+        "framework": "openrouter",
+        "strategy": "optimized",
+        "avatar": "♊",
+        "color": "#1a73e8",
+        "model": "google/gemini-3.1-pro-preview"
     }
 ]
 

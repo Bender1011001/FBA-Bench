@@ -18,7 +18,7 @@ import logging
 from math import floor
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 # WorldStore global accessor (read-only usage for catalog)
 from services.world_store import get_world_store

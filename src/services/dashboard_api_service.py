@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_bench_core.event_bus import EventBus
 from fba_events.competitor import CompetitorPricesUpdated

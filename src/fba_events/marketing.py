@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from money import Money  # External dependency for precise financial calculations
+from fba_bench_core.money import Money  # External dependency for precise financial calculations
 
 from .base import BaseEvent
 

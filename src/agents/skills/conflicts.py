@@ -7,7 +7,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from money import Money
+from fba_bench_core.money import Money
 
 from ..skill_modules.base_skill import SkillAction
 from .models import CoordinationStrategy, CoordinatorTuning, ResourceAllocation

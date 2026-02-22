@@ -12,7 +12,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_bench_core.event_bus import EventBus
 from fba_events.base import BaseEvent

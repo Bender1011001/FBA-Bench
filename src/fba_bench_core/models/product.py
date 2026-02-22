@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
 # Import canonical Money (re-exported shim ensures single implementation)
-from money import Money
+from fba_bench_core.money import Money
 from pydantic import (
     BaseModel,
     ConfigDict,

@@ -203,6 +203,7 @@ class AsyncExperimentRunRepository:
             metrics=json.dumps(data.get("metrics") or {}) if data.get("metrics") else None,
             results=json.dumps(data.get("results") or {}) if data.get("results") else None,
         )
+        print(f"DEBUG: Creating run {obj.id} in DB.")
         self.db.add(obj)
         
         # Add participants if provided

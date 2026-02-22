@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events import BaseEvent
 from fba_events.competitor import CompetitorPricesUpdated

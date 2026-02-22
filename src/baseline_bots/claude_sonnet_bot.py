@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from models.product import Product
-from money import Money
+from fba_bench_core.money import Money
 
 from constraints.agent_gateway import AgentGateway
 from fba_bench_api.core.redis_client import get_redis

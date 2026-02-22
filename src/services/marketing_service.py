@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 from services.world_store import WorldStore
 
 from fba_bench_core.event_bus import EventBus, get_event_bus

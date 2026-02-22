@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from money import Money
+from fba_bench_core.money import Money
 
 from ..skill_modules.base_skill import BaseSkill
 

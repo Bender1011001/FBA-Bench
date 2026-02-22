@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 
 class AccountType(Enum):

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from services.toolbox_api_service import ToolboxAPIService
 from services.toolbox_schemas import (

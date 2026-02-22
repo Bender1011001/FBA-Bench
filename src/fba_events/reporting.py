@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-from money import Money  # External dependency for precise financial calculations
+from fba_bench_core.money import Money  # External dependency for precise financial calculations
 
 from .base import BaseEvent
 

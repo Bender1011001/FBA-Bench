@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import List, Optional
 
 from models.product import Product
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events import BaseEvent
 from fba_events.pricing import SetPriceCommand

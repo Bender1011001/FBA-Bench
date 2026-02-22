@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 
 import psutil
-from money import Money
+from fba_bench_core.money import Money
 from redteam.adversarial_event_injector import AdversarialEventInjector
 from redteam.exploit_registry import ExploitDefinition, ExploitRegistry
 from redteam.resistance_scorer import AdversaryResistanceScorer

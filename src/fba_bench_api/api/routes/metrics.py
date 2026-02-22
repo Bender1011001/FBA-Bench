@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter
-from money import Money  # For consistent Money->string defaults
+from fba_bench_core.money import Money  # For consistent Money->string defaults
 
 # Import pattern consistent with realtime router to avoid circulars
 from fba_bench_api.core.state import dashboard_service

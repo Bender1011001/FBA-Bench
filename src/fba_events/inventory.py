@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from .base import BaseEvent
 

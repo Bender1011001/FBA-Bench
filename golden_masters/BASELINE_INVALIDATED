@@ -1,0 +1,5 @@
+{
+  "invalidated_at": "2026-02-21T21:20:55.083382Z",
+  "reason": "PromptTemplates updated with CRITICAL WARNING adversarial market context. All prior golden master scores are outdated.",
+  "new_baseline_leaderboard": "E:\\code.projects\\fba\\FBA-Bench-Enterprise\\results\\competition\\run_20260221-122118\\leaderboard.json"
+}

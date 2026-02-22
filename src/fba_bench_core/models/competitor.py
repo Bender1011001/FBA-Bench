@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 
 class Competitor:

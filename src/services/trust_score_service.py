@@ -70,32 +70,7 @@ class TrustScoreService:
         )
         return final_score
 
-    def get_current_trust_score(self) -> Optional[float]:
-        """
-        DEPRECATED/UNSUPPORTED: This stateless service does not maintain a current score.
 
-        Callers must use calculate_trust_score(violations_count, buyer_feedback_scores, total_days)
-        and provide the required inputs. This method will always warn and raise to prevent misuse.
-        """
-        import warnings
-
-        warnings.warn(
-            "TrustScoreService.get_current_trust_score() is deprecated and unsupported. "
-            "Use calculate_trust_score(violations_count, buyer_feedback_scores, total_days) instead.",
-            category=DeprecationWarning,
-            stacklevel=2,
-        )
-        logger.error(
-            "TrustScoreService.get_current_trust_score() called on a stateless calculator. "
-            "Use calculate_trust_score with explicit inputs."
-        )
-        # This method is intentionally deprecated and unsupported for stateless TrustScoreService.
-        # Emit the deprecation warning (already done above) and raise NotImplementedError so tests
-        # and callers do not silently rely on an impl that doesn't exist.
-        raise NotImplementedError(
-            "TrustScoreService.get_current_trust_score() is deprecated and not implemented. "
-            "Use calculate_trust_score(violations_count, buyer_feedback_scores, total_days) instead."
-        )
 
     async def start(
         self, event_bus=None

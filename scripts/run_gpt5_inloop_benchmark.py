@@ -49,7 +49,7 @@ from pathlib import Path
 from typing import Any, Dict, Tuple
 
 # Money helpers (used by prompt adapter expectations)
-from money import Money
+from fba_bench_core.money import Money
 from services.cost_tracking_service import CostTrackingService
 
 # Budget enforcement

@@ -9,7 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List
 
-from money import Money
+from fba_bench_core.money import Money
 
 from agents.skill_modules.base_skill import SkillAction
 

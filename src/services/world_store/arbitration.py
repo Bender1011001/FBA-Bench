@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 from uuid import uuid4
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events.bus import EventBus
 from fba_events.pricing import ProductPriceUpdated, SetPriceCommand

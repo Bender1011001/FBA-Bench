@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import pytest
-from money import Money
+from fba_bench_core.money import Money
 
 from agent_runners.agent_manager import AgentManager
 from agent_runners.base_runner import AgentRunner

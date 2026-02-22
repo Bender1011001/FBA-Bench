@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from money import Money  # Assuming Money class is used for financial values
+from fba_bench_core.money import Money  # Assuming Money class is used for financial values
 
 from fba_events import BaseEvent  # Corrected import path
 from fba_events.bus import EventBus  # Corrected import path
@@ -1232,53 +1232,6 @@ class MemoryConsistencyChecker:
 
         return False
 
-
-class MemoryValidator:  # Expose MemoryConsistencyChecker as MemoryValidator for backwards-compat
-    """
-    Provides comprehensive validation and consistency checking for agent memory systems.
-    This class is now an alias for MemoryConsistencyChecker for backward compatibility.
-    """
-
-    def __new__(cls, *args, **kwargs):
-        logger.warning(
-            "MemoryValidator is deprecated as a wrapper and directly instantiates MemoryConsistencyChecker. "
-            "Please update imports to use `MemoryConsistencyChecker` directly."
-        )
-        return MemoryConsistencyChecker(*args, **kwargs)
-
-    # Original MemoryValidator methods (for cases where direct attribute access is expected)
-    def __init__(
-        self,
-        memory_manager: DualMemoryManager,
-        config: Optional[MemoryConfig] = None,
-        agent_id: str = "agent",
-    ):
-        # This __init__ is for type hinting compatibility but will not actually be called
-        # if __new__ returns an instance of MemoryConsistencyChecker
-        pass
-
-    async def validate_all_memory(self) -> bool:
-        # This method would interact with the underlying _checker from MemoryConsistencyChecker
-        # This implementation provides a functional workaround for backwards compatibility.
-        checker = MemoryConsistencyChecker(
-            agent_id="backward_compat_agent", config=MemoryConfig()
-        )  # Placeholder config if not passed
-        # This will need actual memory events to validate. Fetching from DualMemoryManager if available.
-        facts = (
-            await self.memory_manager.get_all_memories()
-            if hasattr(self.memory_manager, "get_all_memories")
-            else []
-        )
-        result = await checker.validate_memory_retrieval(
-            facts, proposed_action={"type": "noop", "parameters": {}}
-        )
-        return bool(result.validation_passed)
-
-    def get_statistics(self) -> Dict[str, Any]:
-        checker = MemoryConsistencyChecker(
-            agent_id="backward_compat_agent", config=MemoryConfig()
-        )
-        return checker.get_validation_statistics()
 
 
 class MemoryIntegrationGateway:

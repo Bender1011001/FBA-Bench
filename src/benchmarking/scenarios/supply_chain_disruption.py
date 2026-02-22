@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 from pydantic import Field, PositiveInt, confloat
 
 from benchmarking.agents.base import BaseAgent

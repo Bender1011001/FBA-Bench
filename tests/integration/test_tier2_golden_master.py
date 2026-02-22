@@ -49,14 +49,23 @@ async def test_create_fba_bench_v1_0_baseline():
     # IntegrationTestSuite.create_test_simulation is good but we need to inject the specific events
     # defined in the YAML.
 
-    from integration_tests.test_scientific_reproducibility import (
+    import sys
+    import os
+    from pathlib import Path
+    
+    # Add the tests directory path so test_scientific_reproducibility can be found
+    tests_integration_dir = Path(__file__).parent
+    if str(tests_integration_dir) not in sys.path:
+        sys.path.insert(0, str(tests_integration_dir))
+        
+    from test_scientific_reproducibility import (
         TestScientificReproducibility,
     )
 
     suite = TestScientificReproducibility()
     suite.setup_method()  # Minimal setup
 
-    # Create env
+    # Create env using the correct class method
     env = await suite.create_test_simulation(tier="T2", seed=seed)
     orchestrator = env["orchestrator"]
     event_bus = env["event_bus"]

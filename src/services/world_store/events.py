@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events import WorldStateSnapshotEvent
 from fba_events.bus import EventBus

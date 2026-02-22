@@ -152,7 +152,7 @@ class PlaceOrderCommand(Protocol):
 
 # Import Money type for more specific type hints
 try:
-    from money import Money
+    from fba_bench_core.money import Money
 except ImportError:
     # Fallback definition if money package is not available
     @dataclass

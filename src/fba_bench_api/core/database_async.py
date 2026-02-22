@@ -120,12 +120,13 @@ async def get_async_db_session() -> AsyncGenerator[AsyncSession, None]:
         # Don't block request if init races; subsequent operations may still succeed
         pass
 
-    session: AsyncSession = AsyncSessionLocal()
-    try:
-        yield session
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise
-    finally:
-        await session.close()
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+            print("DEBUG: Committing session...")
+            await session.commit()
+            print("DEBUG: Committed session.")
+        except Exception as e:
+            print(f"DEBUG: Rolling back session due to error: {e}")
+            await session.rollback()
+            raise

@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, Optional, Type
 
-from money import Money  # Assuming Money class is correctly implemented
+from fba_bench_core.money import Money  # Assuming Money class is correctly implemented
 from redteam.resistance_scorer import AdversaryResistanceScorer, ARSBreakdown
 
 # Corrected all imports to be explicit and from their canonical locations

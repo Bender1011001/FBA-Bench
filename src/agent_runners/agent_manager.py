@@ -15,7 +15,7 @@ from fba_bench.core.types import (
     TickEvent,
     ToolCall,
 )
-from money import Money
+from fba_bench_core.money import Money
 
 from agents.multi_domain_controller import MultiDomainController
 from agents.skill_coordinator import SkillCoordinator

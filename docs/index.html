@@ -1,28 +1,59 @@
 <!doctype html>
 <html lang="en">
   <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FX9FJ1VEFW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-FX9FJ1VEFW');
+</script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>FBA-Bench | Live Leaderboard</title>
 
-    <meta name="description" content="Live benchmark leaderboard for AI business agents under recession conditions." />
-    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <meta
+      name="description"
+      content="Live benchmark leaderboard for AI business agents under recession conditions."
+    />
+    <meta
+      name="robots"
+      content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"
+    />
     <meta name="theme-color" content="#0a0a0a" />
     <link rel="canonical" href="https://fbabench.com/" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <meta property="og:site_name" content="FBA-Bench" />
     <meta property="og:title" content="FBA-Bench | Live Leaderboard" />
-    <meta property="og:description" content="Live benchmark leaderboard for AI business agents under recession conditions." />
+    <meta
+      property="og:description"
+      content="Live benchmark leaderboard for AI business agents under recession conditions."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://fbabench.com/" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="FBA-Bench | Live Leaderboard" />
-    <meta name="twitter:description" content="Live benchmark leaderboard for AI business agents under recession conditions." />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"FBA-Bench","url":"https://fbabench.com/"}</script>
+    <meta
+      name="twitter:description"
+      content="Live benchmark leaderboard for AI business agents under recession conditions."
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "FBA-Bench",
+        "url": "https://fbabench.com/"
+      }
+    </script>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="bg-grid" aria-hidden="true"></div>
@@ -37,7 +68,9 @@
       </div>
 
       <div class="right">
-        <div id="liveBadge" class="badge badge-live hidden">LIVE BENCHMARK RUNNING</div>
+        <div id="liveBadge" class="badge badge-live hidden">
+          LIVE BENCHMARK RUNNING
+        </div>
         <div class="meta">
           <div class="meta-k">Last updated</div>
           <div id="lastUpdated" class="meta-v">Loading...</div>
@@ -55,12 +88,27 @@
         <div class="chips">
           <a class="chip" href="?mode=agentic">agentic</a>
           <a class="chip" href="?mode=prompt">prompt</a>
-          <a class="chip" href="api/leaderboard.json" target="_blank" rel="noreferrer">leaderboard.json</a>
-          <a class="chip" href="api/live.json" target="_blank" rel="noreferrer">live.json</a>
+          <a
+            class="chip"
+            href="api/leaderboard.json"
+            target="_blank"
+            rel="noreferrer"
+            >leaderboard.json</a
+          >
+          <a class="chip" href="api/live.json" target="_blank" rel="noreferrer"
+            >live.json</a
+          >
+          <a class="chip" href="results.html">results</a>
           <a class="chip" href="docs/">docs</a>
           <a class="chip" href="docs/#sponsorship.md">sponsor</a>
           <a class="chip" href="contact.html">message me</a>
-          <a class="chip" href="https://github.com/Bender1011001/FBA-Bench" target="_blank" rel="noreferrer">github</a>
+          <a
+            class="chip"
+            href="https://github.com/Bender1011001/FBA-Bench"
+            target="_blank"
+            rel="noreferrer"
+            >github</a
+          >
         </div>
       </section>
 
@@ -68,33 +116,112 @@
         <div class="support-content">
           <h2>Support the Research</h2>
           <p>
-            The benchmark is expensive to run (tokens + infra). If you want the leaderboard updated more often or want a
-            specific model evaluated, consider sponsoring compute credits or a run.
+            The benchmark is expensive to run (tokens + infra). If you want the
+            leaderboard updated more often or want a specific model evaluated,
+            consider sponsoring compute credits or a run.
           </p>
           <div class="crypto-grid">
             <div class="crypto-card">
               <div class="crypto-label">Monero (XMR)</div>
-              <code class="crypto-addr">83YhKW5PzCSdkeT6fQ6g5kZ7159AoXDqjCS835rcdPkuh4AEd52t79vDR9kff7A6tT46uzAzYZku8dcarqvJH1v5SQ6emDv</code>
+              <code class="crypto-addr"
+                >83YhKW5PzCSdkeT6fQ6g5kZ7159AoXDqjCS835rcdPkuh4AEd52t79vDR9kff7A6tT46uzAzYZku8dcarqvJH1v5SQ6emDv</code
+              >
             </div>
             <div class="crypto-card">
               <div class="crypto-label">Bitcoin (BTC)</div>
-              <code class="crypto-addr">bc1qg607xtepk96tgn94lewgfe68gn0r3m4x6nz7n5</code>
+              <code class="crypto-addr"
+                >bc1qg607xtepk96tgn94lewgfe68gn0r3m4x6nz7n5</code
+              >
             </div>
             <div class="crypto-card">
               <div class="crypto-label">Ethereum (ETH / ERC-20)</div>
-              <code class="crypto-addr">0x8db7b843417D4744b8d81395aCDe817cE0f4A32B</code>
+              <code class="crypto-addr"
+                >0x8db7b843417D4744b8d81395aCDe817cE0f4A32B</code
+              >
             </div>
             <div class="crypto-card">
               <div class="crypto-label">Litecoin (LTC)</div>
-              <code class="crypto-addr">ltc1q63j9d7l73t6k5e6etwyxfgd4kghf6ssj6cuv5e</code>
+              <code class="crypto-addr"
+                >ltc1q63j9d7l73t6k5e6etwyxfgd4kghf6ssj6cuv5e</code
+              >
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pricing" id="pricing">
+        <div class="pricing-header">
+          <h2>Pricing & Services</h2>
+          <p>
+            Continuous integration testing and private audits for enterprise
+            agents.
+          </p>
+        </div>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <h3>SaaS Starter</h3>
+            <div class="price">
+              <span>$</span>300<span class="period">/mo</span>
+            </div>
+            <ul class="features">
+              <li>10 Automated Runs per month</li>
+              <li>Tier-2 Prompt Battery</li>
+              <li>Basic Metric Reporting</li>
+              <li>Email Support</li>
+            </ul>
+            <a
+              href="https://buy.stripe.com/5kQ6oG1VK3u6e5T06iasg02"
+              class="btn btn-primary"
+              target="_blank"
+              rel="noreferrer"
+              >Subscribe Now</a
+            >
+          </div>
+          <div class="pricing-card featured">
+            <div class="featured-badge">Most Popular</div>
+            <h3>SaaS Enterprise</h3>
+            <div class="price">
+              <span>$</span>1,000<span class="period">/mo</span>
+            </div>
+            <ul class="features">
+              <li>Unlimited Automated Runs</li>
+              <li>Full Agentic Simulation API</li>
+              <li>Red Team Gauntlet Access</li>
+              <li>Webhook Integrations</li>
+              <li>Priority Support</li>
+            </ul>
+            <a
+              href="https://buy.stripe.com/bJe9AS2ZO5Cee5TbP0asg03"
+              class="btn btn-primary"
+              target="_blank"
+              rel="noreferrer"
+              >Subscribe Now</a
+            >
+          </div>
+          <div class="pricing-card">
+            <h3>Private Audit</h3>
+            <div class="price">
+              <span>$</span>10,000<span class="period">/run</span>
+            </div>
+            <ul class="features">
+              <li>Full 365-Tick Economic Simulation</li>
+              <li>20-page Integrity Report</li>
+              <li>Godot Replay & Log files</li>
+              <li>Ledger Subsystem Verification</li>
+            </ul>
+            <a
+              href="https://buy.stripe.com/cNi8wO2ZOaWy2nb9GSasg01"
+              class="btn btn-outline"
+              target="_blank"
+              rel="noreferrer"
+              >Request Audit</a
+            >
           </div>
         </div>
       </section>
 
       <section class="cards">
         <div class="card">
-
           <div class="card-k">Run</div>
           <div id="runId" class="card-v">--</div>
         </div>
@@ -119,7 +246,9 @@
       <section class="panel">
         <div class="panel-h">
           <div class="panel-title">Global Leaderboard</div>
-          <div id="panelNote" class="panel-note">Class of 2026 models, Tier-2 prompts.</div>
+          <div id="panelNote" class="panel-note">
+            Class of 2026 models, Tier-2 prompts.
+          </div>
         </div>
 
         <div class="table-wrap">
@@ -137,7 +266,9 @@
               </tr>
             </thead>
             <tbody id="rows">
-              <tr><td colspan="8" class="muted">Loading...</td></tr>
+              <tr>
+                <td colspan="8" class="muted">Loading...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -152,7 +283,10 @@
           <a href="contact.html">Message me</a>
         </div>
         <div>FBA-Bench. Built for the era of agentic AI.</div>
-        <div class="muted">If the leaderboard looks stale, the publisher is not running or results are not deployed.</div>
+        <div class="muted">
+          If the leaderboard looks stale, the publisher is not running or
+          results are not deployed.
+        </div>
       </footer>
     </main>
 
@@ -187,7 +321,11 @@
         if (typeof x !== "number") return "--";
         const sign = x >= 0 ? "+" : "-";
         const abs = Math.abs(x);
-        return sign + "$" + abs.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        return (
+          sign +
+          "$" +
+          abs.toLocaleString(undefined, { maximumFractionDigits: 2 })
+        );
       }
 
       function profitClass(x) {
@@ -208,16 +346,25 @@
 
         if (mode === "prompt") {
           if (heroTitle) heroTitle.textContent = "Tier-2 Prompt Battery (Fast)";
-          if (heroHook) heroHook.textContent = "Scoring structured decision quality and format reliability. No tools. No memory. No scaffolding.";
-          if (panelNote) panelNote.textContent = "Tier-2 prompt suite (cheap + reproducible).";
+          if (heroHook)
+            heroHook.textContent =
+              "Scoring structured decision quality and format reliability. No tools. No memory. No scaffolding.";
+          if (panelNote)
+            panelNote.textContent =
+              "Tier-2 prompt suite (cheap + reproducible).";
           if (colK1) colK1.textContent = "Quality";
           if (colK2) colK2.textContent = "Success";
           if (colK3) colK3.textContent = "Avg RT";
           if (colK4) colK4.textContent = "Errors";
         } else {
-          if (heroTitle) heroTitle.textContent = "The Bankruptcy Test (Agentic)";
-          if (heroHook) heroHook.textContent = "Long-horizon e-commerce sim under shocks: can the model stay solvent across months of decisions?";
-          if (panelNote) panelNote.textContent = "Tick-based simulation, scored by profit and survival under compounding consequences.";
+          if (heroTitle)
+            heroTitle.textContent = "The Bankruptcy Test (Agentic)";
+          if (heroHook)
+            heroHook.textContent =
+              "Long-horizon e-commerce sim under shocks: can the model stay solvent across months of decisions?";
+          if (panelNote)
+            panelNote.textContent =
+              "Tick-based simulation, scored by profit and survival under compounding consequences.";
           if (colK1) colK1.textContent = "Net Profit";
           if (colK2) colK2.textContent = "ROI";
           if (colK3) colK3.textContent = "Calls";
@@ -226,15 +373,22 @@
       }
 
       function render(lb, live) {
-        const rankings = (lb && lb.rankings) ? lb.rankings : [];
-        const mode = (lb && typeof lb.metric_mode === "string") ? lb.metric_mode : "agentic";
+        const rankings = lb && lb.rankings ? lb.rankings : [];
+        const mode =
+          lb && typeof lb.metric_mode === "string" ? lb.metric_mode : "agentic";
 
         applyModeUI(mode);
 
-        document.getElementById("lastUpdated").textContent = (lb && lb.generated_at) ? lb.generated_at : "Unknown";
-        document.getElementById("runId").textContent = (lb && lb.active_run && lb.active_run.run_id) ? lb.active_run.run_id : "--";
-        document.getElementById("tier").textContent = (lb && lb.active_run && lb.active_run.tier) ? lb.active_run.tier : "--";
-        document.getElementById("totalTokens").textContent = (lb && lb.summary) ? fmtNum(lb.summary.total_tokens) : "--";
+        document.getElementById("lastUpdated").textContent =
+          lb && lb.generated_at ? lb.generated_at : "Unknown";
+        document.getElementById("runId").textContent =
+          lb && lb.active_run && lb.active_run.run_id
+            ? lb.active_run.run_id
+            : "--";
+        document.getElementById("tier").textContent =
+          lb && lb.active_run && lb.active_run.tier ? lb.active_run.tier : "--";
+        document.getElementById("totalTokens").textContent =
+          lb && lb.summary ? fmtNum(lb.summary.total_tokens) : "--";
 
         // Metric cards (switch labels by benchmark mode).
         const k1 = document.getElementById("metricK1");
@@ -245,21 +399,25 @@
         if (mode === "prompt") {
           k1.textContent = "Avg quality";
           k2.textContent = "Avg success";
-          v1.textContent = (lb && lb.summary && typeof lb.summary.avg_quality_score === "number")
-            ? fmtNum(lb.summary.avg_quality_score)
-            : "--";
-          v2.textContent = (lb && lb.summary && typeof lb.summary.avg_success_rate === "number")
-            ? fmtPctFraction(lb.summary.avg_success_rate)
-            : "--";
+          v1.textContent =
+            lb && lb.summary && typeof lb.summary.avg_quality_score === "number"
+              ? fmtNum(lb.summary.avg_quality_score)
+              : "--";
+          v2.textContent =
+            lb && lb.summary && typeof lb.summary.avg_success_rate === "number"
+              ? fmtPctFraction(lb.summary.avg_success_rate)
+              : "--";
         } else {
           k1.textContent = "Avg profit";
           k2.textContent = "Avg ROI";
-          v1.textContent = (lb && lb.summary && typeof lb.summary.avg_total_profit === "number")
-            ? fmtMoney(lb.summary.avg_total_profit)
-            : "--";
-          v2.textContent = (lb && lb.summary && typeof lb.summary.avg_roi_pct === "number")
-            ? fmtPct(lb.summary.avg_roi_pct)
-            : "--";
+          v1.textContent =
+            lb && lb.summary && typeof lb.summary.avg_total_profit === "number"
+              ? fmtMoney(lb.summary.avg_total_profit)
+              : "--";
+          v2.textContent =
+            lb && lb.summary && typeof lb.summary.avg_roi_pct === "number"
+              ? fmtPct(lb.summary.avg_roi_pct)
+              : "--";
         }
 
         const active = !!(live && live.active);
@@ -269,28 +427,47 @@
 
         const statusLine = document.getElementById("statusLine");
         if (live && typeof live.status === "string") {
-          statusLine.textContent = "Current Status: " + live.status + " (" + (live.completed || 0) + "/" + (live.total || 0) + ")";
+          statusLine.textContent =
+            "Current Status: " +
+            live.status +
+            " (" +
+            (live.completed || 0) +
+            "/" +
+            (live.total || 0) +
+            ")";
         } else {
           statusLine.textContent = "Status: awaiting data.";
         }
 
         const rows = document.getElementById("rows");
         if (!rankings.length) {
-          rows.innerHTML = '<tr><td colspan="8" class="muted">No data yet.</td></tr>';
+          rows.innerHTML =
+            '<tr><td colspan="8" class="muted">No data yet.</td></tr>';
           return;
         }
 
-        rows.innerHTML = rankings.map(r => {
-          if (mode === "prompt") {
-            const q = (typeof r.quality_score === "number") ? r.quality_score : 0;
-            const sr = (typeof r.success_rate === "number") ? r.success_rate : 0;
-            const rt = (typeof r.avg_response_time === "number") ? r.avg_response_time : null;
-            const ec = (typeof r.error_count === "number") ? r.error_count : ((r.success === false) ? 1 : 0);
-            return `
+        rows.innerHTML = rankings
+          .map((r) => {
+            if (mode === "prompt") {
+              const q =
+                typeof r.quality_score === "number" ? r.quality_score : 0;
+              const sr =
+                typeof r.success_rate === "number" ? r.success_rate : 0;
+              const rt =
+                typeof r.avg_response_time === "number"
+                  ? r.avg_response_time
+                  : null;
+              const ec =
+                typeof r.error_count === "number"
+                  ? r.error_count
+                  : r.success === false
+                    ? 1
+                    : 0;
+              return `
               <tr>
                 <td><span class="rank">${r.rank}</span></td>
-                <td class="mono">${(r.model_slug || r.model_name || "unknown")}</td>
-                <td>${(r.provider || "unknown")}</td>
+                <td class="mono">${r.model_slug || r.model_name || "unknown"}</td>
+                <td>${r.provider || "unknown"}</td>
                 <td><span class="pill ${profitClass(q - 0.85)}">${fmtNum(q)}</span></td>
                 <td><span class="pill ${sr >= 1.0 ? "q-good" : sr >= 0.8 ? "q-warn" : "q-bad"}">${fmtPctFraction(sr)}</span></td>
                 <td class="mono">${fmtSec(rt)}</td>
@@ -298,18 +475,23 @@
                 <td class="mono">${fmtNum(r.total_tokens)}</td>
               </tr>
             `;
-          }
+            }
 
-          const p = (typeof r.total_profit === "number") ? r.total_profit : null;
-          const roi = (typeof r.roi_pct === "number") ? r.roi_pct : null;
-          const calls = (typeof r.llm_calls === "number") ? r.llm_calls : null;
-          const avgCall = (typeof r.avg_call_seconds === "number") ? r.avg_call_seconds : null;
-          const tokens = (typeof r.total_tokens === "number") ? r.total_tokens : null;
-          return `
+            const p =
+              typeof r.total_profit === "number" ? r.total_profit : null;
+            const roi = typeof r.roi_pct === "number" ? r.roi_pct : null;
+            const calls = typeof r.llm_calls === "number" ? r.llm_calls : null;
+            const avgCall =
+              typeof r.avg_call_seconds === "number"
+                ? r.avg_call_seconds
+                : null;
+            const tokens =
+              typeof r.total_tokens === "number" ? r.total_tokens : null;
+            return `
             <tr>
               <td><span class="rank">${r.rank}</span></td>
-              <td class="mono">${(r.model_slug || r.model_name || "unknown")}</td>
-              <td>${(r.provider || "unknown")}</td>
+              <td class="mono">${r.model_slug || r.model_name || "unknown"}</td>
+              <td>${r.provider || "unknown"}</td>
               <td><span class="pill ${profitClass(p)}">${fmtMoney(p)}</span></td>
               <td><span class="pill ${profitClass(roi)}">${roi === null ? "--" : fmtPct(roi)}</span></td>
               <td class="mono">${calls === null ? "--" : fmtNum(calls)}</td>
@@ -317,7 +499,8 @@
               <td class="mono">${fmtNum(tokens)}</td>
             </tr>
           `;
-        }).join("");
+          })
+          .join("");
       }
 
       function leaderboardPath() {
@@ -338,7 +521,8 @@
           render(lb, live);
         } catch (e) {
           const rows = document.getElementById("rows");
-          rows.innerHTML = '<tr><td colspan="8" class="muted">Failed to load leaderboard.json</td></tr>';
+          rows.innerHTML =
+            '<tr><td colspan="8" class="muted">Failed to load leaderboard.json</td></tr>';
         }
       }
 

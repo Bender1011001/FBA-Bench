@@ -5,10 +5,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from models.product import Product
-from money import Money
+from fba_bench_core.money import Money
 
 from constraints.agent_gateway import AgentGateway
-from events import SetPriceCommand
+from fba_events.pricing import SetPriceCommand
 from llm_interface.contract import BaseLLMClient
 from llm_interface.prompt_adapter import PromptAdapter
 from llm_interface.response_parser import LLMResponseParser

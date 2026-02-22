@@ -5,7 +5,7 @@ properly enforced and that violations are caught and reported.
 """
 
 import pytest
-from money import Money
+from fba_bench_core.money import Money
 
 from services.ledger import (
     Account,
@@ -29,7 +29,7 @@ class TestLedgerIntegrity:
         # Use sync initialization for tests
         import asyncio
 
-        asyncio.get_event_loop().run_until_complete(core.initialize_chart_of_accounts())
+        asyncio.run(core.initialize_chart_of_accounts())
         return core
 
     @pytest.fixture
@@ -70,7 +70,7 @@ class TestLedgerIntegrity:
             )
         )
 
-        asyncio.get_event_loop().run_until_complete(ledger_core.post_transaction(tx))
+        asyncio.run(ledger_core.post_transaction(tx))
 
         assert ledger_core.verify_integrity() is True
 
@@ -79,7 +79,7 @@ class TestLedgerIntegrity:
         import asyncio
 
         # First inject some capital to have non-zero balances
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             ledger_core.inject_equity(Money.from_dollars("5000"))
         )
 
@@ -106,7 +106,7 @@ class TestLedgerIntegrity:
         import asyncio
 
         # Inject capital first
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             ledger_core.inject_equity(Money.from_dollars("1000"))
         )
 
@@ -134,7 +134,7 @@ class TestLedgerIntegrity:
             )
         )
 
-        asyncio.get_event_loop().run_until_complete(ledger_core.post_transaction(tx))
+        asyncio.run(ledger_core.post_transaction(tx))
 
         # Should still pass - revenue is included in equity calculation
         assert ledger_core.verify_integrity() is True
@@ -149,7 +149,7 @@ class TestLedgerIntegrity:
         import asyncio
 
         # Inject capital
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             ledger_core.inject_equity(Money.from_dollars("5000"))
         )
 

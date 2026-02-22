@@ -5,7 +5,7 @@ import statistics
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events.bus import EventBus  # typed event bus
 from fba_events.competitor import CompetitorPricesUpdated, CompetitorState

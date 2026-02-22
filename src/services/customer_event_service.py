@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_bench_core.models.product import Product
 

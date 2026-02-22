@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from money import Money
+from fba_bench_core.money import Money
 
 from .models import ProductState
 

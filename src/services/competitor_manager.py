@@ -3,15 +3,14 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from money import Money  # Use canonical Money implementation
+from fba_bench_core.money import Money  # Use canonical Money implementation
 
 from fba_bench_core.models.competitor import Competitor
 
 # Import get_event_bus for instantiation and EventBus for type hinting
 from fba_events.competitor import CompetitorPricesUpdated, CompetitorState
 from fba_events.time_events import TickEvent
-from personas import CompetitorPersona  # New import
-
+CompetitorPersona = Any  # Fallback for deprecated personas
 # Import deterministic RNG for reproducible simulations
 try:
     from reproducibility.deterministic_rng import DeterministicRNG
@@ -327,7 +326,7 @@ class CompetitorManager:
             # Ensure fba_events.competitor references the same Money class as the runtime 'money' module.
             # This avoids class identity mismatches when tests import Money before/after event modules.
             try:
-                from money import Money as _MoneyRT  # type: ignore
+                from fba_bench_core.money import Money as _MoneyRT  # type: ignore
 
                 import fba_events.competitor as _comp_mod  # type: ignore
 
@@ -385,7 +384,7 @@ class CompetitorManager:
                         )
 
                 # Normalize to runtime Money class to satisfy both CompetitorState and tests
-                from money import Money as _Money  # type: ignore
+                from fba_bench_core.money import Money as _Money  # type: ignore
 
                 try:
                     import fba_events.competitor as _comp_mod  # type: ignore
@@ -458,7 +457,7 @@ class CompetitorManager:
         # Local import to ensure we use the active Money implementation
         from decimal import Decimal
 
-        from money import Money as _Money  # type: ignore
+        from fba_bench_core.money import Money as _Money  # type: ignore
 
         # Try TickEvent metadata first
         try:

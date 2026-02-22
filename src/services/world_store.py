@@ -14,7 +14,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol
 
-from money import Money
+from fba_bench_core.money import Money
 
 from fba_events.bus import InMemoryEventBus as EventBus
 from fba_events.inventory import InventoryUpdate, WorldStateSnapshotEvent
