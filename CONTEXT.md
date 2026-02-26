@@ -35,12 +35,15 @@
 |-------|-------|-----|
 | Mypy failures on `src/` | Cyclic imports in event bus | Refactored `fba_events` into separate package. |
 | Slow CI runs | Too many integration tests | Added `@pytest.mark.integration` and skip by default. |
+| Repo bloat (~610 MB) | Committed `.exe`, `.mp4`, stray test/log/debug files at root | Purged all junk; updated `.gitignore` with `*.exe`, `*.mp4`, `*debug*.log`, `/test_*.py`, etc. |
 
 ## Anti-Patterns (DO NOT)
 
 - **NO Mocks/Simulated Logic:** Never use placeholders. Every function must be fully implemented.
 - **NO Relative Imports:** Always use absolute imports from `src`.
 - **NO Committed Secrets:** Use `.env` and `pydantic-settings`.
+- **NO Binaries/Logs in Git:** Never commit `.exe`, `.log`, `.mp4`, or large binaries. Use `.gitignore`.
+- **NO Stray Test Files at Root:** All tests go in `tests/` or `integration_tests/`.
 
 ## Build / Verify
 
