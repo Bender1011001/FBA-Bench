@@ -38,7 +38,7 @@ class BenchmarkService:
     def __init__(self):
         self.active_benchmarks: Dict[str, Dict[str, Any]] = {}
         self.completed_benchmarks: Dict[str, Dict[str, Any]] = {}
-        self.run_queue = asyncio.Queue()
+        self.run_queue = asyncio.Queue()  # type: ignore[var-annotated]
         self.completed_runs: Dict[str, RunMetrics] = {}
         self.run_lock = asyncio.Lock()
         self.worker_task = None
@@ -56,7 +56,7 @@ class BenchmarkService:
                 run_id = run_data["run_id"]
                 agent_id = run_data["agent_id"]
                 scenario_id = run_data["scenario_id"]
-                params = run_data.get("params", {})
+                params = run_data.get("params", {})  # noqa: F841
 
                 # Use a fresh DB session for the worker
                 async with AsyncSessionLocal() as session:
@@ -463,7 +463,7 @@ async def get_benchmark_status(run_id: str):
     except Exception as e:
         logger.error(f"Failed to get status for run {run_id}: {e!s}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,  # type: ignore[attr-defined]
             detail=f"Failed to get benchmark status: {e!s}",
         )
 

@@ -41,7 +41,7 @@ async def export_results():
                 if isinstance(metrics, str):
                     try:
                         metrics = json.loads(metrics)
-                    except:
+                    except Exception:
                         pass
                 
                 export_data.append({

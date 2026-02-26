@@ -22,10 +22,10 @@ Output:
 - {"issues": [issue...], "summary": {...}}
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional  # noqa: E402
 
-from .registry import register_validator
-from .types import Issue, ValidationOutput, normalize_output
+from .registry import register_validator  # noqa: E402
+from .types import Issue, ValidationOutput, normalize_output  # noqa: E402
 
 REQUIRED_BASE_FIELDS = {
     "scenario_key": str,

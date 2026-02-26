@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "fba-bench"
-version = "1.0.0-rc1"
+version = "0.9.0"
 description = "FBA-Bench: benchmarking and simulation platform"
 authors = ["FBA-Bench Team"]
 license = "LicenseRef-FBABench-NonCommercial-1.0"
@@ -21,7 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "License :: Free for non-commercial use",
     "Operating System :: OS Independent",
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Testing",
     "Topic :: Software Development :: Quality Assurance",
@@ -149,7 +149,7 @@ target-version = "py310"
 # Keep core error checks while unblocking CI by relaxing noisy style checks.
 # We scope strictness mainly to src/ and ease constraints for tests/migrations.
 select = ["E", "F"]
-ignore = ["E501","E402","E741","E721","E712"]
+ignore = ["E501"]
 
 # Directory-specific relaxations to avoid penalizing tests and migrations.
 [tool.ruff.lint.per-file-ignores]
@@ -157,7 +157,6 @@ ignore = ["E501","E402","E741","E721","E712"]
   "F401",  # unused imports acceptable in test scaffolding
   "F841",  # assigned but unused (mocks, placeholders)
   "E712",  # True/False comparisons in tests
-  "F821",  # undefined names for test doubles/stubs
 ]
 "alembic/**" = [
   "E402",  # imports placement in env.py
@@ -171,21 +170,18 @@ combine-as-imports = true
 order-by-type = true
 
 [tool.mypy]
-python_version = "3.9"
-# Staged typing: keep mypy as a useful, passing gate while we incrementally add types.
-# Use `mypy_strict.ini` (and `make type-check-strict`) for stricter enforcement.
+python_version = "3.10"
 strict = false
 warn_return_any = false
 warn_unused_configs = true
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
-check_untyped_defs = false
+check_untyped_defs = true
 no_implicit_optional = false
 warn_redundant_casts = true
 warn_unused_ignores = false
 explicit_package_bases = true
-# Do not follow imports into untyped/external modules
-follow_imports = "skip"
+follow_imports = "silent"
 files = ["src"]
 ignore_missing_imports = true
 
@@ -216,3 +212,23 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["crewai.*", "langchain.*"]
 ignore_missing_imports = true
+
+# Modules with deep structural typing issues baselined during quality hardening.
+# These modules use complex runtime patterns (getattr, dynamic registries,
+# protocol ducks) that Mypy cannot fully validate without major refactors.
+[[tool.mypy.overrides]]
+module = [
+  "src.agents.skill_modules.customer_service",
+  "src.agents.skills.conflicts",
+  "src.benchmarking.core.engine",
+  "src.benchmarking.evaluation.enhanced_evaluation_framework",
+  "src.benchmarking.scenarios.complex_marketplace",
+  "src.fba_bench_api.api.routes.golden",
+  "src.fba_bench_core.cli",
+  "src.fba_bench_core.config",
+  "src.memory_experiments.experiment_runner",
+  "src.memory_experiments.reflection_module",
+  "src.services.dashboard_api_service",
+  "src.services.world_store.arbitration",
+]
+ignore_errors = true

@@ -9,9 +9,9 @@ This module defines:
 - Helper utilities for safe type parsing and normalization
 """
 
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Any, Dict, List, Optional, Protocol, Union  # noqa: E402
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator  # noqa: E402
 
 
 class Issue(BaseModel):

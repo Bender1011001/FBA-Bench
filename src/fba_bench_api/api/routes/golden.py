@@ -14,7 +14,7 @@ from fastapi import APIRouter, HTTPException
 try:
     import yaml  # type: ignore
 except Exception:  # pragma: no cover
-    yaml = None  # Fallback if yaml isn't available; we can proceed without it
+    yaml = None  # Fallback if yaml isn't available; we can proceed without it  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/golden", tags=["GoldenRun"])

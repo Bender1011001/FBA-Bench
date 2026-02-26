@@ -29,7 +29,7 @@ class SkillSubscription:
     skill: Any
     event_types: List[str]
     priority: float
-    config: Dict[str, Any] = None
+    config: Dict[str, Any] = None  # type: ignore[assignment]
 
 
 class SkillCoordinator:

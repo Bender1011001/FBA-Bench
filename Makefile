@@ -10,7 +10,7 @@ else
 NULLDEV := /dev/null
 endif
 POETRY := $(shell python -m poetry --version >$(NULLDEV) 2>&1 && echo python -m poetry || echo poetry)
-COV_FAIL_UNDER ?= 15
+COV_FAIL_UNDER ?= 40
 
 
 # -----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ be-test:
 # Quality gates (mirror CI)
 # -----------------------------------------------------------------------------
 lint:
-	$(POETRY) run ruff check --ignore E501,E402,F811,F401,F841,F821,E722,E741,E721,E712 src tests
+	$(POETRY) run ruff check src tests
 
 format-check:
 	$(POETRY) run black --check src tests
@@ -35,8 +35,7 @@ format-fix:
 	$(POETRY) run black src tests
 
 type-check:
-	@echo "Running mypy (non-blocking). Use 'make type-check-strict' to enforce."
-	-$(POETRY) run mypy --namespace-packages src tests
+	$(POETRY) run mypy --namespace-packages src
 
 type-check-strict:
 	$(POETRY) run mypy --config-file mypy_strict.ini
@@ -112,6 +111,7 @@ ci-local:
 	$(MAKE) test-unit
 	$(MAKE) test-contracts
 	$(MAKE) verify-golden
+	$(MAKE) verify-coverage
 	$(MAKE) build-docs
 
 # -----------------------------------------------------------------------------

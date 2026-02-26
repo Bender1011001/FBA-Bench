@@ -1036,7 +1036,7 @@ class MarketingManagerSkill(BaseSkill):
         self, event: SaleOccurred
     ) -> List[SkillAction]:
         """Analyze if sale was influenced by active campaigns."""
-        actions = []
+        actions = []  # type: ignore[var-annotated]
 
         # Check if any active campaigns target this ASIN
         relevant_campaigns = [

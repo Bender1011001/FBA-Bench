@@ -131,7 +131,7 @@ class ObservabilityAlertSystem:
         """
         triggered_alerts = []
         for metric, current_value in current_metrics.items():
-            threshold = thresholds.get(metric)
+            threshold = thresholds.get(metric)  # type: ignore[union-attr]
             if threshold is not None and current_value > threshold:
                 alert_event = AlertEvent(
                     rule_name="performance_alert",

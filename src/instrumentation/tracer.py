@@ -124,7 +124,7 @@ class Tracer:
 
 # Production-safe tracing adapter compatible with OpenTelemetry-like usage.
 # Provides setup_tracing(service_name) -> object with start_as_current_span(...)
-from contextlib import contextmanager
+from contextlib import contextmanager  # noqa: E402
 
 
 class _TracerAdapter:

@@ -151,7 +151,7 @@ class AdWhaleBot(BaseCompetitor):
     
     def decide(self, tick: int) -> List[GameEvent]:
         """Submit aggressive bids for all keywords."""
-        events = []
+        events = []  # type: ignore[var-annotated]
         
         # Reset daily budget at day boundary (assume 1 day = 24 ticks)
         current_day = tick // 24

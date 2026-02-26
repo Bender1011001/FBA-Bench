@@ -345,7 +345,7 @@ async def get_leaderboard(
         # Convert to response models
         leaderboard_entries = []
         for rank, exp in enumerate(leaderboard_data, 1):
-            entry = LeaderboardEntry(
+            entry = LeaderboardEntry(  # type: ignore[call-arg]
                 rank=rank,
                 experiment_id=exp["id"],
                 name=exp["name"],

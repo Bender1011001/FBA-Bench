@@ -23,7 +23,7 @@ class FrameworkDependency:
     import_name: str
     install_package: str
     version_check: Optional[str] = None
-    optional_extras: List[str] = None
+    optional_extras: List[str] = None  # type: ignore[assignment]
 
     def __post_init__(self):
         if self.optional_extras is None:
@@ -224,7 +224,7 @@ class DependencyManager:
 
             # Run pip install
             cmd = [sys.executable, "-m", "pip", "install"] + packages
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)  # noqa: F841
 
             # Clear cache to force re-check
             self._availability_cache.pop(framework, None)
@@ -314,7 +314,7 @@ class DependencyManager:
         """Validate CrewAI specific requirements."""
         issues = []
         try:
-            from crewai import Agent, Crew, Task  # type: ignore[import-not-found]
+            from crewai import Agent, Crew, Task  # type: ignore[import-not-found]  # noqa: F401
 
             # Try to create a minimal crew to test functionality
         except ImportError as e:
@@ -327,8 +327,8 @@ class DependencyManager:
         """Validate LangChain specific requirements."""
         issues = []
         try:
-            from langchain.agents import AgentExecutor
-            from langchain.tools import BaseTool
+            from langchain.agents import AgentExecutor  # noqa: F401
+            from langchain.tools import BaseTool  # noqa: F401
 
             # Basic LangChain components should be available
         except ImportError as e:

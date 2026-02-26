@@ -33,7 +33,7 @@ class SupplyChainDisruptionConfig(ScenarioConfig):
     initial_inventory: PositiveInt = Field(
         1000, description="Initial inventory level for the product."
     )
-    disruption_magnitude: confloat(ge=0.0, le=1.0) = Field(
+    disruption_magnitude: confloat(ge=0.0, le=1.0) = Field(  # type: ignore[valid-type]
         0.5,
         description="Magnitude of the disruption (0.0 to 1.0, e.g., 0.5 means 50% supply reduction).",
     )
@@ -72,7 +72,7 @@ class SupplyChainDisruptionScenario(BaseScenario):
         self.current_inventory: int = self.initial_inventory
         self.total_revenue_lost: float = 0.0
         self.original_supply_per_tick: int = (
-            self.demand_per_tick * 1.2
+            self.demand_per_tick * 1.2  # type: ignore[assignment]
         )  # Assume some buffer in normal supply
         self.current_supply_per_tick: int = self.original_supply_per_tick
 

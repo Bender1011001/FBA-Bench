@@ -458,7 +458,7 @@ class TemplateAgentPlugin(AgentPlugin):
         """Update internal market knowledge with new observation."""
         # Extract market data
         current_prices = observation.get("current_prices", {})
-        market_data = observation.get("market_data", {})
+        market_data = observation.get("market_data", {})  # noqa: F841
 
         # Update price trends
         for product_id, price in current_prices.items():
@@ -532,7 +532,7 @@ class TemplateAgentPlugin(AgentPlugin):
                 if comp.get("strategy") == "aggressive"
             )
             if aggressive_competitors > len(competitor_data) * 0.5:
-                analysis["risk_factors"].append("high_competition")
+                analysis["risk_factors"].append("high_competition")  # type: ignore[attr-defined]
 
         return analysis
 
@@ -730,7 +730,7 @@ class TemplateAgentPlugin(AgentPlugin):
 
         # Validate position limits
         if action_type == "buy":
-            product_id = parameters.get("product_id")
+            product_id = parameters.get("product_id")  # noqa: F841
             quantity = parameters.get("quantity", 1)
             price = parameters.get("price", 0)
 

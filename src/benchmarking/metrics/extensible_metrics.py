@@ -491,10 +491,10 @@ class MetricRegistry:
         """Initialize the registry."""
         self._metrics: Dict[str, BaseMetric] = {}
         self._metric_types: Dict[str, Type[BaseMetric]] = {
-            "numeric": NumericMetric,
-            "boolean": BooleanMetric,
-            "string": StringMetric,
-            "list": ListMetric,
+            "numeric": NumericMetric,  # type: ignore[type-abstract]
+            "boolean": BooleanMetric,  # type: ignore[type-abstract]
+            "string": StringMetric,  # type: ignore[type-abstract]
+            "list": ListMetric,  # type: ignore[type-abstract]
             "custom": CustomMetric,
         }
 
@@ -619,7 +619,7 @@ class MetricSuite:
                     metadata={"error": str(result)},
                 )
             else:
-                results[metric.name] = result
+                results[metric.name] = result  # type: ignore[assignment]
 
         return results
 
@@ -654,7 +654,7 @@ class MetricSuite:
                     message=f"Validation error: {validation_result!s}",
                 )
             else:
-                validation_results[metric_name] = validation_result
+                validation_results[metric_name] = validation_result  # type: ignore[assignment]
 
         return validation_results
 
@@ -694,7 +694,7 @@ class MetricSuite:
 
         for metric_name in self.metrics:
             if metric_name in results and metric_name in validation_results:
-                summary["metrics"][metric_name] = {
+                summary["metrics"][metric_name] = {  # type: ignore[index]
                     "value": results[metric_name].value,
                     "is_valid": validation_results[metric_name].is_valid,
                     "validation_score": validation_results[
@@ -852,7 +852,7 @@ class ValidationEngine:
                     message=f"Rule error: {result!s}",
                 )
             else:
-                results[rule.name] = result
+                results[rule.name] = result  # type: ignore[assignment]
 
         return results
 

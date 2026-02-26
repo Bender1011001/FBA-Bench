@@ -75,12 +75,12 @@ class Competitor:
         else:
             # ---- Explicit keyword-based initialization (integration tests) ----
             asin = kwargs.get("asin") or kwargs.get("id") or ""
-            self.asin: str = str(asin)
+            self.asin: str = str(asin)  # type: ignore[no-redef]
             # Maintain `id` as an alias for asin if not provided
-            self.id: str = str(kwargs.get("id", self.asin))
+            self.id: str = str(kwargs.get("id", self.asin))  # type: ignore[no-redef]
 
             # Optional human-readable name for completeness
-            self.name: str = str(kwargs.get("name", ""))
+            self.name: str = str(kwargs.get("name", ""))  # type: ignore[no-redef]
 
             # Price handling with safe coercion to Money
             price = kwargs.get("price", Money.zero())
@@ -89,33 +89,33 @@ class Competitor:
                     price = Money.from_dollars(price)
                 except (TypeError, ValueError):
                     price = Money.zero()
-            self.price: Money = price
+            self.price: Money = price  # type: ignore[no-redef]
 
             # Core quantitative attributes
             try:
-                self.sales_velocity: float = float(kwargs.get("sales_velocity", 0.0))
+                self.sales_velocity: float = float(kwargs.get("sales_velocity", 0.0))  # type: ignore[no-redef]
             except (TypeError, ValueError):
                 self.sales_velocity = 0.0
 
             try:
-                self.bsr: int = int(kwargs.get("bsr", 100000))
+                self.bsr: int = int(kwargs.get("bsr", 100000))  # type: ignore[no-redef]
             except (TypeError, ValueError):
                 self.bsr = 100000
 
-            self.strategy: str = str(kwargs.get("strategy", "adaptive"))
+            self.strategy: str = str(kwargs.get("strategy", "adaptive"))  # type: ignore[no-redef]
             try:
-                self.trust_score: float = float(kwargs.get("trust_score", 0.8))
+                self.trust_score: float = float(kwargs.get("trust_score", 0.8))  # type: ignore[no-redef]
             except (TypeError, ValueError):
                 self.trust_score = 0.8
 
             # Legacy-centric attributes preserved with benign defaults
-            self.market_share: float = 0.0
-            self.strengths: List[str] = []
-            self.weaknesses: List[str] = []
-            self.products: List[str] = []
-            self.pricing_strategy: str = self.strategy or ""
-            self.market_position: str = ""
-            self.recent_activities: List[str] = []
+            self.market_share: float = 0.0  # type: ignore[no-redef]
+            self.strengths: List[str] = []  # type: ignore[no-redef]
+            self.weaknesses: List[str] = []  # type: ignore[no-redef]
+            self.products: List[str] = []  # type: ignore[no-redef]
+            self.pricing_strategy: str = self.strategy or ""  # type: ignore[no-redef]
+            self.market_position: str = ""  # type: ignore[no-redef]
+            self.recent_activities: List[str] = []  # type: ignore[no-redef]
 
             # Pass-through any optional fields used by flows (e.g., persona)
             if "persona" in kwargs:

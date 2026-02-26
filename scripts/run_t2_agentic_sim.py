@@ -471,7 +471,7 @@ class ModelAgent:
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Run an agentic Tier-2 simulation for a single model.")
     ap.add_argument("--model", required=True, help="OpenRouter model slug (e.g., openai/gpt-5.2).")
-    ap.add_argument("--settings", default="simulation_settings.yaml", help="Settings YAML path.")
+    ap.add_argument("--settings", default="config/simulation_settings.yaml", help="Settings YAML path.")
     ap.add_argument("--days", type=int, default=180, help="Simulated days (one LLM decision per day).")
     ap.add_argument("--seed", type=int, default=42, help="RNG seed.")
     ap.add_argument("--output", required=True, help="Output JSON path for raw run details.")

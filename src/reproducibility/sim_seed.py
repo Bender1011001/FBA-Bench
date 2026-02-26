@@ -199,7 +199,7 @@ class SimSeed:
             )
 
             # Seed the registered RNG with component-specific seed
-            component_seed = cls.get_component_seed(component)
+            component_seed = cls.get_component_seed(component)  # noqa: F841
 
             try:
                 # Attempt to seed the RNG instance
@@ -257,7 +257,7 @@ class SimSeed:
                 issues.append(f"Registered but unused RNG sources: {unused_sources}")
 
             # Check for potential threading issues
-            thread_usage = defaultdict(int)
+            thread_usage = defaultdict(int)  # type: ignore[var-annotated]
             for entry in cls._audit_trail:
                 thread_usage[entry.thread_id] += 1
 

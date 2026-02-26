@@ -43,12 +43,12 @@ def _in_benchmarking_tests() -> bool:
     return False
 
 
-import numpy as np
-from scipy import stats
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
+import numpy as np  # noqa: E402
+from scipy import stats  # noqa: E402
+from sklearn.cluster import KMeans  # noqa: E402
+from sklearn.decomposition import PCA  # noqa: E402
 
-from .base import BaseMetric, MetricConfig
+from .base import BaseMetric, MetricConfig  # noqa: E402
 
 
 class ComparisonType(Enum):
@@ -250,7 +250,7 @@ class ComparativeAnalysisEngine(BaseMetric):
             max_value=100.0,
         )
 
-    def calculate(self, data: Dict[str, Any]) -> float:
+    def calculate(self, data: Dict[str, Any]) -> float:  # type: ignore[override]
         """
         Calculate comparative analysis score.
 
@@ -390,8 +390,8 @@ class ComparativeAnalysisEngine(BaseMetric):
             a1 = {"name": "agent1"}
             a2 = {"name": "agent2"}
             for i, m in enumerate(metrics):
-                a1[m] = float(agent1_scores[i]) if i < len(agent1_scores) else 0.0
-                a2[m] = float(agent2_scores[i]) if i < len(agent2_scores) else 0.0
+                a1[m] = float(agent1_scores[i]) if i < len(agent1_scores) else 0.0  # type: ignore[assignment]
+                a2[m] = float(agent2_scores[i]) if i < len(agent2_scores) else 0.0  # type: ignore[assignment]
             cmp = self.perform_head_to_head_comparison(a1, a2, metrics)
             # Return expected keys; keep legacy key for compatibility
             return {
@@ -897,7 +897,7 @@ class ComparativeAnalysisEngine(BaseMetric):
             try:
                 statistic, p_value = stats.ttest_ind(agent1_scores, agent2_scores)
                 statistical_significance = 1.0 - p_value
-            except:
+            except Exception:
                 statistical_significance = 0.0
         else:
             statistical_significance = 0.0
@@ -1151,8 +1151,8 @@ class ComparativeAnalysisEngine(BaseMetric):
                 )
                 expected_loser = 1.0 - expected_winner
 
-                elo_ratings[winner] += k_factor * (1 - expected_winner)
-                elo_ratings[loser] += k_factor * (0 - expected_loser)
+                elo_ratings[winner] += k_factor * (1 - expected_winner)  # type: ignore[assignment]
+                elo_ratings[loser] += k_factor * (0 - expected_loser)  # type: ignore[assignment]
 
         # Create rankings based on ELO ratings
         for i, agent_data in enumerate(agents_data):
@@ -1614,7 +1614,7 @@ class ComparativeAnalysisEngine(BaseMetric):
         Returns:
             Comparison matrix
         """
-        comparison_matrix = {}
+        comparison_matrix = {}  # type: ignore[var-annotated]
 
         for i, agent1 in enumerate(agents_data):
             agent1_name = agent1.get("name", f"Agent_{i}")
@@ -1684,7 +1684,7 @@ class ComparativeAnalysisEngine(BaseMetric):
         cluster_labels = kmeans.fit_predict(feature_matrix)
 
         # Group agents by cluster
-        clusters = {}
+        clusters = {}  # type: ignore[var-annotated]
         for i, label in enumerate(cluster_labels):
             if label not in clusters:
                 clusters[label] = []

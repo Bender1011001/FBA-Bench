@@ -1,11 +1,11 @@
-from __future__ import annotations
-
 """
 Base Agent Runner - Abstract base class for all agent runners.
 
 This module defines the interface and common functionality for all agent runners,
 regardless of the underlying framework (DIY, CrewAI, LangChain, etc.).
 """
+
+from __future__ import annotations
 
 import abc
 import asyncio
@@ -103,7 +103,7 @@ try:
     from agents.skill_modules.base_skill import SkillOutcome  # type: ignore
 except (ImportError, AttributeError, TypeError):
 
-    class SkillOutcome(Protocol):
+    class SkillOutcome(Protocol):  # type: ignore[no-redef]
         """Protocol fallback for learning outcomes to avoid hard dependency."""
 
         success: bool

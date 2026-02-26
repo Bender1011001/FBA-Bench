@@ -23,10 +23,10 @@ Context:
 Output schema: {"issues": [...], "summary": {...}}
 """
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set  # noqa: E402
 
-from .registry import register_validator
-from .types import Issue, ValidationOutput, normalize_output
+from .registry import register_validator  # noqa: E402
+from .types import Issue, ValidationOutput, normalize_output  # noqa: E402
 
 
 def reproducibility_metadata_validate(

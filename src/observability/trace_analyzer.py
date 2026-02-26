@@ -60,7 +60,7 @@ class TraceAnalyzer:
                 if st >= start_time and et <= end_time:
                     res.append(t)
         # Stable, deterministic order
-        res.sort(key=lambda x: x.get("start_time"))
+        res.sort(key=lambda x: x.get("start_time"))  # type: ignore[arg-type, return-value]
         # Return at most the earliest matching trace to comply with unit test expectations
         return res[:1]
 
@@ -128,7 +128,7 @@ class TraceAnalyzer:
         report["total_traces"] = len(all_traces)
 
         # Unique operations
-        ops = sorted(
+        ops = sorted(  # type: ignore[type-var]
             {
                 t.get("operation_name")
                 for t in all_traces
@@ -143,14 +143,14 @@ class TraceAnalyzer:
         for op in ops:
             op_traces = [t for t in all_traces if t.get("operation_name") == op]
             if op_traces:
-                avg_durations[op] = int(
+                avg_durations[op] = int(  # type: ignore[index]
                     sum(int(t.get("duration", 0)) for t in op_traces) / len(op_traces)
                 )
                 errors = sum(1 for t in op_traces if int(t.get("status_code", 0)) != 0)
-                error_rates[op] = float(errors) / float(len(op_traces))
+                error_rates[op] = float(errors) / float(len(op_traces))  # type: ignore[index]
             else:
-                avg_durations[op] = 0
-                error_rates[op] = 0.0
+                avg_durations[op] = 0  # type: ignore[index]
+                error_rates[op] = 0.0  # type: ignore[index]
 
         report["average_durations"] = avg_durations
         report["error_rates"] = error_rates

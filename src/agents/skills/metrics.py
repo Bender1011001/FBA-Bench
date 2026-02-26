@@ -22,7 +22,7 @@ class MetricsTracker:
         coordination_history: List[Dict[str, Any]],
         conflict_log: List[Dict[str, Any]],
         resource_allocation: ResourceAllocation,
-        skill_subscriptions: Dict[str, "SkillSubscription"],  # Forward ref
+        skill_subscriptions: Dict[str, Any],  # Forward ref  # type: ignore[name-defined]
     ):
         """
         Initialize the MetricsTracker.

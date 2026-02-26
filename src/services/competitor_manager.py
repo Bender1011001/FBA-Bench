@@ -17,7 +17,6 @@ try:
 
     _HAS_DETERMINISTIC_RNG = True
 except ImportError:
-    import random
 
     _HAS_DETERMINISTIC_RNG = False
 

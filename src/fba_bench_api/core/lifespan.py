@@ -5,6 +5,7 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fba_bench_core.simulation_orchestrator import SimulationOrchestrator
 from services.cost_tracking_service import CostTrackingService  # Added
 from services.dashboard_api_service import DashboardAPIService
 from services.supply_chain_service import SupplyChainService

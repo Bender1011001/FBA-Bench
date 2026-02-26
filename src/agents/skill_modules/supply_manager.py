@@ -253,7 +253,7 @@ class SupplyManagerSkill(BaseSkill):
 
     async def _handle_tick_event(self, event: TickEvent) -> List[SkillAction]:
         """Handle periodic tick events for regular inventory monitoring."""
-        actions = []
+        actions = []  # type: ignore[var-annotated]
 
         # Only check every few ticks to avoid excessive processing
         if event.tick_number % 5 != 0:

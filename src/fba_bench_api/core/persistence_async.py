@@ -13,14 +13,14 @@ These mirror the sync repositories in fba_bench_api/core/persistence.py but use
 awaitable DB operations for full non-blocking I/O.
 """
 
-from typing import Optional
+from typing import Optional  # noqa: E402
 
-from sqlalchemy import select
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select  # noqa: E402
+from sqlalchemy.exc import OperationalError  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
 
-from fba_bench_api.core.database_async import create_db_tables_async
-from fba_bench_api.models import (
+from fba_bench_api.core.database_async import create_db_tables_async  # noqa: E402
+from fba_bench_api.models import (  # noqa: E402
     AgentORM,
     ExperimentORM,
     ExperimentStatusEnum,
@@ -28,7 +28,7 @@ from fba_bench_api.models import (
     ExperimentParticipantORM,
     SimulationORM,
 )
-from fba_bench_api.models.base import utcnow
+from fba_bench_api.models.base import utcnow  # noqa: E402
 
 
 class AsyncAgentRepository:

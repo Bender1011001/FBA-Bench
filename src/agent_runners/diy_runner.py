@@ -1,11 +1,11 @@
-from __future__ import annotations
-
 """
 DIY (Do It Yourself) Agent Runner for FBA-Bench.
 
 This module implements the AgentRunner interface for custom-built agents,
 enabling them to participate in the benchmarking system.
 """
+
+from __future__ import annotations
 
 import logging
 from datetime import datetime
@@ -352,7 +352,7 @@ class DIYRunner(AgentRunner):
         self.llm_config = None
         self.agent_config = None
         self.pricing_strategy: Optional[PricingStrategy] = None
-        self.decision_history = []
+        self.decision_history = []  # type: ignore[var-annotated]
         self.agent_id = agent_id  # Store agent_id
 
     def _do_initialize(self) -> None:
@@ -406,13 +406,13 @@ class DIYRunner(AgentRunner):
 
     def _create_pricing_strategy(self) -> None:
         """Create the pricing strategy based on configuration."""
-        strategy_type = self.agent_config.parameters.get(
+        strategy_type = self.agent_config.parameters.get(  # type: ignore[attr-defined]
             "pricing_strategy", "competitive"
         )
 
         if strategy_type == "competitive":
-            margin_target = self.agent_config.parameters.get("margin_target", 0.3)
-            competitor_sensitivity = self.agent_config.parameters.get(
+            margin_target = self.agent_config.parameters.get("margin_target", 0.3)  # type: ignore[attr-defined]
+            competitor_sensitivity = self.agent_config.parameters.get(  # type: ignore[attr-defined]
                 "competitor_sensitivity", 0.5
             )
             self.pricing_strategy = CompetitivePricingStrategy(
@@ -421,8 +421,8 @@ class DIYRunner(AgentRunner):
                 competitor_sensitivity=competitor_sensitivity,
             )
         elif strategy_type == "dynamic":
-            base_margin = self.agent_config.parameters.get("base_margin", 0.25)
-            elasticity_factor = self.agent_config.parameters.get(
+            base_margin = self.agent_config.parameters.get("base_margin", 0.25)  # type: ignore[attr-defined]
+            elasticity_factor = self.agent_config.parameters.get(  # type: ignore[attr-defined]
                 "elasticity_factor", 0.3
             )
             self.pricing_strategy = DynamicPricingStrategy(
@@ -463,7 +463,7 @@ class DIYRunner(AgentRunner):
                 asin = product.get("asin", "unknown")
 
                 # Calculate price using the pricing strategy
-                new_price = self.pricing_strategy.calculate_price(
+                new_price = self.pricing_strategy.calculate_price(  # type: ignore[union-attr]
                     product, market_conditions
                 )
 
@@ -508,12 +508,12 @@ class DIYRunner(AgentRunner):
                     "decision_type": "pricing",
                     "products_count": len(products),
                     "average_confidence": (
-                        sum(d["confidence"] for d in pricing_decisions.values())
+                        sum(d["confidence"] for d in pricing_decisions.values())  # type: ignore[misc]
                         / len(pricing_decisions)
                         if pricing_decisions
                         else 0
                     ),
-                    "strategy_type": self.agent_config.parameters.get(
+                    "strategy_type": self.agent_config.parameters.get(  # type: ignore[attr-defined]
                         "pricing_strategy", "competitive"
                     ),
                 }
@@ -562,7 +562,7 @@ class DIYRunner(AgentRunner):
         mp_adv = get_model_params().advanced_agent
         asin = product.get("asin", "unknown")
         cost = product.get("cost", 0)
-        current_price = product.get(
+        current_price = product.get(  # noqa: F841
             "current_price", cost * mp_adv.reasoning_default_current_price_multiplier
         )
         sales_rank = product.get(

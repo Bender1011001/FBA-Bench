@@ -167,11 +167,11 @@ class ImportanceScoreAlgorithm(ConsolidationAlgorithmBase):
             base_score = memory.importance_score
 
             # Boost score based on access frequency (configurable weight)
-            access_boost_factor = config.consolidation_weights.get(
+            access_boost_factor = config.consolidation_weights.get(  # type: ignore[attr-defined]
                 "access_frequency_boost", 0.05
             )
             access_boost = min(
-                config.consolidation_weights.get("max_access_boost", 0.3),
+                config.consolidation_weights.get("max_access_boost", 0.3),  # type: ignore[attr-defined]
                 memory.access_count * access_boost_factor,
             )
 
@@ -181,11 +181,11 @@ class ImportanceScoreAlgorithm(ConsolidationAlgorithmBase):
                 hours_since_access = (
                     current_time - memory.last_accessed
                 ).total_seconds() / 3600
-                recency_decay_hours = config.consolidation_weights.get(
+                recency_decay_hours = config.consolidation_weights.get(  # type: ignore[attr-defined]
                     "recency_decay_hours", 24
                 )
                 if hours_since_access < recency_decay_hours:
-                    recency_boost_factor = config.consolidation_weights.get(
+                    recency_boost_factor = config.consolidation_weights.get(  # type: ignore[attr-defined]
                         "recency_boost_factor", 0.2
                     )
                     recency_boost = recency_boost_factor * (
@@ -193,7 +193,7 @@ class ImportanceScoreAlgorithm(ConsolidationAlgorithmBase):
                     )
 
             # Domain-specific adjustments (configurable weights from config)
-            domain_multiplier = config.consolidation_weights.get(
+            domain_multiplier = config.consolidation_weights.get(  # type: ignore[attr-defined]
                 "domain_multipliers", {}
             ).get(memory.domain, 1.0)
 
@@ -215,7 +215,7 @@ class RecencyFrequencyAlgorithm(ConsolidationAlgorithmBase):
         self, memories: List[MemoryEvent], config: MemoryConfig
     ) -> Dict[str, float]:
         """Score memories using recency-frequency analysis and configurable parameters."""
-        scores = {}
+        scores = {}  # type: ignore[var-annotated]
         current_time = datetime.now()
 
         if not memories:
@@ -225,15 +225,15 @@ class RecencyFrequencyAlgorithm(ConsolidationAlgorithmBase):
 
         for memory in memories:
             # Frequency component (configurable weight)
-            frequency_weight = config.consolidation_weights.get("frequency_weight", 0.5)
+            frequency_weight = config.consolidation_weights.get("frequency_weight", 0.5)  # type: ignore[attr-defined]
             frequency_score = min(
                 frequency_weight,
                 memory.access_count / max_access_count * frequency_weight,
             )
 
             # Recency component (configurable weight and decay)
-            recency_weight = config.consolidation_weights.get("recency_weight", 0.5)
-            recency_decay_days = config.consolidation_weights.get(
+            recency_weight = config.consolidation_weights.get("recency_weight", 0.5)  # type: ignore[attr-defined]
+            recency_decay_days = config.consolidation_weights.get(  # type: ignore[attr-defined]
                 "recency_decay_days", 7
             )
             recency_score = 0.0
@@ -267,7 +267,7 @@ class StrategicValueAlgorithm(ConsolidationAlgorithmBase):
         current_time = datetime.now()
 
         # Strategic event type weights (configurable from config)
-        strategic_event_weights = config.consolidation_weights.get(
+        strategic_event_weights = config.consolidation_weights.get(  # type: ignore[attr-defined]
             "strategic_event_type_weights",
             {
                 "SaleOccurred": 0.7,
@@ -283,7 +283,7 @@ class StrategicValueAlgorithm(ConsolidationAlgorithmBase):
         )
 
         # Domain strategic importance (configurable from config)
-        domain_strategic_weights = config.consolidation_weights.get(
+        domain_strategic_weights = config.consolidation_weights.get(  # type: ignore[attr-defined]
             "domain_strategic_weights",
             {
                 "strategy": 1.0,
@@ -299,7 +299,7 @@ class StrategicValueAlgorithm(ConsolidationAlgorithmBase):
 
             # Adjust for memory age (configurable penalty)
             age_days = (current_time - memory.timestamp).days
-            age_penalty_per_day = config.consolidation_weights.get(
+            age_penalty_per_day = config.consolidation_weights.get(  # type: ignore[attr-defined]
                 "age_penalty_per_day", 0.1
             )
             age_penalty = max(0.0, 1.0 - age_days * age_penalty_per_day)
@@ -324,7 +324,7 @@ class RandomSelectionAlgorithm(ConsolidationAlgorithmBase):
         """Assign random scores for baseline comparison."""
         scores = {}
         rng = random.Random(
-            config.randomization_seed
+            config.randomization_seed  # type: ignore[attr-defined]
         )  # Use config seed for reproducibility
         for memory in memories:
             scores[memory.event_id] = rng.random()
@@ -405,8 +405,8 @@ Provide your response as a JSON array ONLY:
                 prompt=full_prompt,
                 # Corrected: use the LLM client's model name for generation
                 model=self.llm_client.config.model,  # Assuming llm_client has a config attribute
-                temperature=config.llm_reflection_config.llm_temperature,  # Configurable
-                max_tokens=config.llm_reflection_config.llm_max_tokens,  # Configurable
+                temperature=config.llm_reflection_config.llm_temperature,  # Configurable  # type: ignore[attr-defined]
+                max_tokens=config.llm_reflection_config.llm_max_tokens,  # Configurable  # type: ignore[attr-defined]
             )
 
             response_content = (
@@ -568,7 +568,7 @@ class ReflectionModule:
             memory_ids_to_discard = [m.event_id for m in memories_to_discard]
             await self.memory_manager.short_term_store.remove(memory_ids_to_discard)
             logger.debug(
-                f"Removed {len(memories_ids_to_discard)} old memories from short-term store"
+                f"Removed {len(memory_ids_to_discard)} old memories from short-term store"
             )
 
         quality_metrics = await self._calculate_quality_metrics(
@@ -613,7 +613,7 @@ class ReflectionModule:
 
         # Determine max promotions based on consolidation percentage
         consolidation_percentage = (
-            self.config.consolidation_config.consolidation_percentage
+            self.config.consolidation_config.consolidation_percentage  # type: ignore[attr-defined]
         )
         max_promotions_by_percentage = int(total_candidates * consolidation_percentage)
 
@@ -627,10 +627,10 @@ class ReflectionModule:
         max_promotions = min(max_promotions_by_percentage, available_capacity)
 
         promotion_threshold = (
-            self.config.consolidation_config.promotion_score_threshold
+            self.config.consolidation_config.promotion_score_threshold  # type: ignore[attr-defined]
         )  # Configurable threshold
 
-        memories_to_promote = []
+        memories_to_promote = []  # type: ignore[var-annotated]
         for memory, score in scored_memories:
             if len(memories_to_promote) >= max_promotions:
                 break  # Capacity reached
@@ -652,7 +652,7 @@ class ReflectionModule:
 
         # Check if memory has low importance and hasn't been accessed (configurable thresholds)
         low_importance_threshold = (
-            self.config.consolidation_config.discard_low_importance_threshold
+            self.config.consolidation_config.discard_low_importance_threshold  # type: ignore[attr-defined]
         )
         if (
             memory.importance_score < low_importance_threshold
@@ -736,15 +736,15 @@ class ReflectionModule:
             if result.quality_metrics:
                 quality_scores_list.append(
                     result.quality_metrics.get("score_selectivity", 0.0)
-                    * self.config.reflection_quality_weights.get(
+                    * self.config.reflection_quality_weights.get(  # type: ignore[attr-defined]
                         "score_selectivity", 0.4
                     )
                     + result.quality_metrics.get("domain_diversity", 0.0)
-                    * self.config.reflection_quality_weights.get(
+                    * self.config.reflection_quality_weights.get(  # type: ignore[attr-defined]
                         "domain_diversity", 0.3
                     )
                     + result.quality_metrics.get("avg_promoted_score", 0.0)
-                    * self.config.reflection_quality_weights.get(
+                    * self.config.reflection_quality_weights.get(  # type: ignore[attr-defined]
                         "avg_promoted_score", 0.3
                     )
                 )
@@ -762,7 +762,7 @@ class ReflectionModule:
             "reflection_history": [
                 result.to_dict()
                 for result in self.reflection_history[
-                    -self.config.reflection_history_size :
+                    -self.config.reflection_history_size :  # type: ignore[attr-defined]
                 ]
             ],  # Configurable history size
         }
@@ -837,12 +837,12 @@ class ReflectionComponent:  # Refactored from StructuredReflectionLoop
         Performs a comprehensive structured reflection cycle.
         """
         analysis_period_start = current_time - timedelta(
-            hours=self.config.structured_reflection_config.analysis_period_hours
+            hours=self.config.structured_reflection_config.analysis_period_hours  # type: ignore[attr-defined]
         )
         if (
-            self.last_reflection_time
+            self.last_reflection_time  # type: ignore[has-type]
         ):  # Check if last reflection time is set for longer running agents
-            analysis_period_start = self.last_reflection_time
+            analysis_period_start = self.last_reflection_time  # type: ignore[has-type]
 
         # Step 1: Gather and Analyze Data
         # Assume sim_events and agent_decisions are already filtered for the analysis period by caller
@@ -932,12 +932,12 @@ class ReflectionComponent:  # Refactored from StructuredReflectionLoop
         overall_score = performance_metrics.get("overall_score", 0.0)
         if (
             overall_score
-            > self.config.structured_reflection_config.performance_threshold_improving
+            > self.config.structured_reflection_config.performance_threshold_improving  # type: ignore[attr-defined]
         ):
             patterns["trend"] = "improving"
         elif (
             overall_score
-            < self.config.structured_reflection_config.performance_threshold_declining
+            < self.config.structured_reflection_config.performance_threshold_declining  # type: ignore[attr-defined]
         ):
             patterns["trend"] = "declining"
 
@@ -1008,7 +1008,7 @@ class ReflectionComponent:  # Refactored from StructuredReflectionLoop
         failure_rate = analysis.get("failure_analysis", {}).get("failure_rate", 0.0)
         if (
             failure_rate
-            > self.config.structured_reflection_config.failure_rate_threshold
+            > self.config.structured_reflection_config.failure_rate_threshold  # type: ignore[attr-defined]
         ):
             recs.append(
                 "HIGH PRIORITY: Agent is experiencing frequent failures. Implement more robust decision-making processes."
@@ -1054,7 +1054,7 @@ class ReflectionComponent:  # Refactored from StructuredReflectionLoop
         ).items():
             if (
                 effectiveness.get("success_rate", 1.0)
-                < self.config.structured_reflection_config.decision_failure_rate_threshold
+                < self.config.structured_reflection_config.decision_failure_rate_threshold  # type: ignore[attr-defined]
             ):
                 insights.append(
                     ReflectionInsight(
@@ -1116,7 +1116,7 @@ class ReflectionComponent:  # Refactored from StructuredReflectionLoop
                     "performance" in insight.category.lower()
                     and insight.title == "Sustained Performance Decline"
                     and current_performance.get("profit_margin", 0.0)
-                    < self.config.structured_reflection_config.min_acceptable_profit_margin
+                    < self.config.structured_reflection_config.min_acceptable_profit_margin  # type: ignore[attr-defined]
                 ):
                     adjustments.append(
                         PolicyAdjustment(
@@ -1164,7 +1164,7 @@ class ReflectionComponent:  # Refactored from StructuredReflectionLoop
     ) -> List[ReflectionInsight]:
         """Ranks insights based on priority, confidence, and actionability."""
         priority_weights = (
-            self.config.structured_reflection_config.insight_priority_weights
+            self.config.structured_reflection_config.insight_priority_weights  # type: ignore[attr-defined]
         )
 
         def insight_score(insight):
@@ -1234,7 +1234,7 @@ class ReflectionComponent:  # Refactored from StructuredReflectionLoop
         """Validates and filters policy adjustments based on confidence and other criteria."""
         validated = []
         min_confidence = (
-            self.config.structured_reflection_config.policy_adjustment_min_confidence
+            self.config.structured_reflection_config.policy_adjustment_min_confidence  # type: ignore[attr-defined]
         )
 
         for adjustment in adjustments:

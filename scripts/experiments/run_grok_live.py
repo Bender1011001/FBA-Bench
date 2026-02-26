@@ -28,7 +28,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Load settings from YAML
-SETTINGS_FILE = Path(__file__).parent / "simulation_settings.yaml"
+SETTINGS_FILE = Path(__file__).parent / "config/simulation_settings.yaml"
 
 def load_settings() -> Dict:
     """Load settings from YAML file."""

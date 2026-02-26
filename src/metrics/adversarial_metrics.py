@@ -78,7 +78,7 @@ class AdversarialMetrics:
         self.category_performance: Dict[str, Dict[str, float]] = defaultdict(dict)
 
         # Category-specific tracking initialized dynamically or from config
-        self.category_stats = defaultdict(
+        self.category_stats = defaultdict(  # type: ignore[var-annotated]
             lambda: {"attempts": 0, "successes": 0, "detections": 0}
         )
 

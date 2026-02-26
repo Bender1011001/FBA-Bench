@@ -115,7 +115,7 @@ def configure_logging(settings=None, *, force: bool = False) -> None:
     already_configured = (
         _configured_flag_local
         or os.environ.get(_CONFIGURED_FLAG_ENV) == "1"
-        or bool(logging.getLogger().handlers)
+        or bool(logging.getLogger().handlers)  # type: ignore[attr-defined]
     )
     if already_configured and not force:
         return
@@ -134,7 +134,7 @@ def configure_logging(settings=None, *, force: bool = False) -> None:
 
     handler.addFilter(trace_filter)
 
-    root = logging.getLogger()
+    root = logging.getLogger()  # type: ignore[attr-defined]
     # Clear existing handlers to avoid duplicate logs if force=True
     if root.handlers:
         for h in list(root.handlers):
@@ -153,22 +153,22 @@ def configure_logging(settings=None, *, force: bool = False) -> None:
         "asyncio",
     ]
     for name in noisy_libs:
-        lg = logging.getLogger(name)
-        lg.setLevel(max(lvl, logging.INFO))
+        lg = logging.getLogger(name)  # type: ignore[attr-defined]
+        lg.setLevel(max(lvl, logging.INFO))  # type: ignore[attr-defined]
 
     # Mark configured
     _configured_flag_local = True
     os.environ[_CONFIGURED_FLAG_ENV] = "1"
 
 
-def get_logger(name: Optional[str] = None) -> logging.Logger:
+def get_logger(name: Optional[str] = None) -> logging.Logger:  # type: ignore[name-defined]
     """
     Convenience accessor mirroring logging.getLogger, ensuring base configuration exists.
     """
-    if not (_configured_flag_local or logging.getLogger().handlers):
+    if not (_configured_flag_local or logging.getLogger().handlers):  # type: ignore[attr-defined]
         try:
             configure_logging()
         except (ImportError, AttributeError, ValueError, RuntimeError):
             # Never fail logger retrieval due to configuration issues
             pass
-    return logging.getLogger(name)
+    return logging.getLogger(name)  # type: ignore[attr-defined]

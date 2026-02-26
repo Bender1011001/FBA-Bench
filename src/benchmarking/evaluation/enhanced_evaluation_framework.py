@@ -326,7 +326,7 @@ class EnhancedEvaluationFramework:
                     agent_id, scenario_result.scenario_name
                 )
             else:
-                results[agent_id] = evaluation
+                results[agent_id] = evaluation  # type: ignore[assignment]
 
         return results
 
@@ -491,7 +491,7 @@ class EnhancedEvaluationFramework:
 
         # Collect metric values
         metric_values = []
-        metric_details = {}
+        metric_details = {}  # type: ignore[var-annotated]
 
         for agent_result in agent_results:
             for metric in agent_result.metrics:
@@ -770,7 +770,7 @@ class EnhancedEvaluationFramework:
             return {}
 
         # Create performance data for comparison
-        agent_performance = {
+        agent_performance = {  # noqa: F841
             dim_score.dimension.value: dim_score.score for dim_score in dimension_scores
         }
 
@@ -838,9 +838,9 @@ class EnhancedEvaluationFramework:
 
             trend_analysis[dimension.value] = {
                 "direction": trend_direction,
-                "strength": trend_strength,
-                "slope": slope,
-                "historical_scores": historical_scores[-10:],  # Last 10 scores
+                "strength": trend_strength,  # type: ignore[dict-item]
+                "slope": slope,  # type: ignore[dict-item]
+                "historical_scores": historical_scores[-10:],  # Last 10 scores  # type: ignore[dict-item]
             }
 
         return trend_analysis
@@ -938,11 +938,11 @@ class EnhancedEvaluationFramework:
                 comparison_result = "significantly_worse"
 
             comparison[dimension.value] = {
-                "agent_score": dim_score.score,
-                "baseline_score": baseline_score,
-                "relative_performance": relative_performance,
+                "agent_score": dim_score.score,  # type: ignore[dict-item]
+                "baseline_score": baseline_score,  # type: ignore[dict-item]
+                "relative_performance": relative_performance,  # type: ignore[dict-item]
                 "comparison_result": comparison_result,
-                "improvement_needed": max(0, baseline_score - dim_score.score),
+                "improvement_needed": max(0, baseline_score - dim_score.score),  # type: ignore[dict-item]
             }
 
         return comparison
@@ -1231,7 +1231,7 @@ class EnhancedEvaluationFramework:
         # Perform clustering
         if len(performance_matrix) > 1:
             clustering = DBSCAN(eps=0.3, min_samples=1).fit(performance_matrix)
-            clusters = {}
+            clusters = {}  # type: ignore[var-annotated]
             for i, agent_id in enumerate(agent_ids):
                 cluster_id = clustering.labels_[i]
                 if cluster_id not in clusters:

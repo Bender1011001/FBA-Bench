@@ -19,8 +19,8 @@ warnings.warn(
 )
 
 
-from .manager import ConfigurationManager, ConfigurationProfile, config_manager
-from .pydantic_config import (  # Builders and managers; Enums  # Builders and managers; Enums  # Builders and managers; Enums  # Builders and managers; Enums
+from .manager import ConfigurationManager, ConfigurationProfile, config_manager  # noqa: E402
+from .pydantic_config import (  # Builders and managers; Enums  # Builders and managers; Enums  # Builders and managers; Enums  # Builders and managers; Enums  # noqa: E402
     AgentCapability,  # Builders and managers; Enums
     AgentConfig as PydanticAgentConfig,
     BaseConfig as PydanticBaseConfig,  # Configuration models

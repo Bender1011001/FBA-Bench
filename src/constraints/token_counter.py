@@ -465,7 +465,7 @@ class TokenCounter:
 
         # Choose ratio by exact match, then substring hint, else default
         model_key = (model or "").lower()
-        ratio = ratios.get(model)
+        ratio = ratios.get(model)  # type: ignore[arg-type]
         if ratio is None:
             ratio = next(
                 (v for k, v in ratios.items() if k != "default" and k in model_key),

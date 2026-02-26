@@ -93,7 +93,7 @@ class TransformTextSkill(Skill):
             if func is None:
                 raise SkillExecutionError(f"Unknown operation: {op_name}")
             try:
-                result = func(result)
+                result = func(result)  # type: ignore[operator]
             except Exception as e:
                 raise SkillExecutionError(f"Operation '{op_name}' failed: {e}") from e
 

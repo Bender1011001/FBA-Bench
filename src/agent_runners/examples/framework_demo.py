@@ -54,7 +54,7 @@ async def demo_framework_abstraction():
     print("\n🔧 Creating DIY Agent...")
     try:
         diy_config = DIYConfig.advanced_agent("diy_agent_1", "B0EXAMPLE01")
-        diy_runner = await agent_manager.register_agent(
+        diy_runner = await agent_manager.register_agent(  # noqa: F841
             "diy_agent_1", "diy", diy_config.to_dict()
         )
         agents_created.append("diy_agent_1")
@@ -67,7 +67,7 @@ async def demo_framework_abstraction():
         print("\n👥 Creating CrewAI Agent...")
         try:
             crewai_config = CrewAIConfig.standard_crew("crewai_agent_1", "fake_api_key")
-            crewai_runner = await agent_manager.register_agent(
+            crewai_runner = await agent_manager.register_agent(  # noqa: F841
                 "crewai_agent_1", "crewai", crewai_config.to_dict()
             )
             agents_created.append("crewai_agent_1")
@@ -84,7 +84,7 @@ async def demo_framework_abstraction():
             langchain_config = LangChainConfig.reasoning_agent(
                 "langchain_agent_1", "fake_api_key"
             )
-            langchain_runner = await agent_manager.register_agent(
+            langchain_runner = await agent_manager.register_agent(  # noqa: F841
                 "langchain_agent_1", "langchain", langchain_config.to_dict()
             )
             agents_created.append("langchain_agent_1")

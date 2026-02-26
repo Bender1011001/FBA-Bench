@@ -3,7 +3,6 @@ Centralized dependency wiring for FastAPI.
 Provides singletons of ConnectionManager, ExperimentManager, and SimulationManager.
 """
 
-import os
 from typing import Any, Dict, Optional, List
 
 from fastapi import Depends, HTTPException, status
@@ -109,7 +108,7 @@ async def get_tenant_context(
     except HTTPException:
         # Re-raise HTTPExceptions (like the one for missing claims)
         raise
-    except Exception as e:
+    except Exception:
         # Catch-all for other errors to ensure we don't leak internal details but still fail safe
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

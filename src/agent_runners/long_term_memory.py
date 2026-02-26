@@ -4,7 +4,7 @@ import json
 import re
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 def _clamp01(x: Any, default: float = 0.5) -> float:

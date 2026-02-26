@@ -56,8 +56,8 @@ class PriceOptimizationScenario(BaseScenario):
         )  # Example: sensitive to price changes
 
         self.current_tick: int = 0
-        self.current_price: Money = self.initial_product_price
-        self.total_revenue: Money = Money.zero()
+        self.current_price: Money = self.initial_product_price  # type: ignore[no-redef]
+        self.total_revenue: Money = Money.zero()  # type: ignore[no-redef]
         self.total_units_sold: int = 0
 
     async def setup(self, *args, **kwargs) -> None:
@@ -173,7 +173,7 @@ class PriceOptimizationScenario(BaseScenario):
             )
             if latest_state:
                 self.current_price = latest_state.price
-                new_inventory = world_store.get_product_inventory_quantity(
+                new_inventory = world_store.get_product_inventory_quantity(  # type: ignore[union-attr]
                     self.product_asin
                 )
                 sold = max(0, prev_inventory - new_inventory)

@@ -20,7 +20,7 @@ class ValidatorConfig:
     name: str
     description: str
     enabled: bool = True
-    parameters: Dict[str, Any] = None
+    parameters: Dict[str, Any] = None  # type: ignore[assignment]
 
     def __post_init__(self):
         if self.parameters is None:

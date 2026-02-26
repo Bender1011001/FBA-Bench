@@ -69,7 +69,7 @@ class ValidatorRegistration:
     category: str
     validator_class: Type[BaseValidator]
     default_config: ValidatorConfig
-    tags: List[str] = None
+    tags: List[str] = None  # type: ignore[assignment]
     enabled: bool = True
 
     def __post_init__(self):

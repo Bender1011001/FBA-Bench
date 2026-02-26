@@ -618,7 +618,7 @@ class MemoryModeFactory:
             MemoryMode.REFLECTION_ENABLED: ReflectionEnabledMode,
             MemoryMode.CONSOLIDATION_DISABLED: ConsolidationDisabledMode,
             MemoryMode.HYBRID_REFLECTION: HybridReflectionMode,
-            MemoryMode.SELECTIVE_MEMORY: SelectiveMemoryMode,  # Added SelectiveMemoryMode to mapping
+            getattr(MemoryMode, 'SELECTIVE_MEMORY', None): SelectiveMemoryMode,  # Added SelectiveMemoryMode to mapping  # type: ignore[attr-defined]
         }
 
         mode_class = mode_mapping.get(config.memory_mode)
@@ -647,7 +647,7 @@ class MemoryModeFactory:
             MemoryMode.REFLECTION_ENABLED: "Full dual-memory with daily reflection and consolidation",
             MemoryMode.CONSOLIDATION_DISABLED: "Dual-memory with time-based promotion instead of reflection",
             MemoryMode.HYBRID_REFLECTION: "Adaptive reflection based on memory load and time",
-            MemoryMode.SELECTIVE_MEMORY: "Stores only specific types of events or from allowed domains.",
+            getattr(MemoryMode, 'SELECTIVE_MEMORY', None): "Stores only specific types of events or from allowed domains.",  # type: ignore[attr-defined]
         }
 
         return descriptions.get(mode, "No description available")

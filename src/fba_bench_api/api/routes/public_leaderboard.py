@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -246,7 +246,7 @@ def _transform_to_public_format(data: Dict[str, Any]) -> LeaderboardResponse:
         total_tokens = summary.get("total_tokens", 0)
         total_runs = summary.get("total_prompts", 1)
 
-        performance = ModelPerformance(
+        performance = ModelPerformance(  # type: ignore[call-arg]
             rank=idx + 1,
             modelName=model_name.split("/")[-1] if "/" in model_name else model_name,
             provider=_extract_provider(model_name),
@@ -436,7 +436,7 @@ async def render_widget(
 
     rows_html = ""
     for r in rankings:
-        badge_class = r.badge
+        badge_class = r.badge  # noqa: F841
         rows_html += f"""
         <tr>
             <td><span class="rank rank-{r.rank}">{r.rank}</span></td>

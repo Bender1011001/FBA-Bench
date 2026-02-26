@@ -14,9 +14,9 @@ Design goals:
 - bounded memory sizes for stable prompt injection
 """
 
-import hashlib
-from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, Sequence
+import hashlib  # noqa: E402
+from dataclasses import asdict, dataclass  # noqa: E402
+from typing import Any, Dict, List, Optional, Sequence  # noqa: E402
 
 
 def _clamp_01(value: float) -> float:

@@ -189,7 +189,7 @@ class PurchaseOccurred(BaseEvent):
     asin: str = ""
     quantity: int = 0
     unit_cost: float = 0.0
-    timestamp: Optional[datetime] = field(default=None)
+    timestamp: Optional[datetime] = field(default=None)  # type: ignore[assignment]
 
     def __post_init__(self):
         super().__post_init__()

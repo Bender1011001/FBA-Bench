@@ -39,7 +39,7 @@ class SimulationConfigCreate(BaseModel):
 
 
 class SimulationConfigUpdate(SimulationConfigCreate):
-    name: Optional[str] = None
+    name: Optional[str] = None  # type: ignore[assignment]
 
 
 class SimulationConfigResponse(BaseModel):
@@ -80,10 +80,10 @@ class SimulationStatusResponse(BaseModel):
     message: Optional[str] = None
 
 
-from sqlalchemy import Enum as SAEnum, ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Enum as SAEnum, ForeignKey, String  # noqa: E402
+from sqlalchemy.orm import Mapped, mapped_column, relationship  # noqa: E402
 
-from .base import Base, JSONEncoded, TimestampMixin
+from .base import Base, JSONEncoded, TimestampMixin  # noqa: E402
 
 
 def websocket_topic(sim_id: str) -> str:

@@ -755,7 +755,7 @@ class FeeCalculationService:
         for fee_type, totals in fee_totals.items():
             if totals["count"] > 0:
                 totals["average_amount"] = Money(
-                    totals["total_amount"].cents // totals["count"]
+                    totals["total_amount"].cents // totals["count"]  # type: ignore[union-attr]
                 )
 
         return fee_totals

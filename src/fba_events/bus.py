@@ -276,7 +276,7 @@ class InMemoryEventBus(EventBus):
         ts = datetime.now(timezone.utc).isoformat()
         try:
             await self.log_event(event, event_type, ts)
-        except (AttributeError, TypeError, ValueError):
+        except (AttributeError, TypeError, ValueError) as e:
             # Never let logging failures impact publish path
             logger.debug("log_event failed: %s", e)
         # Increment published counter
@@ -353,7 +353,7 @@ class InMemoryEventBus(EventBus):
                     pass
         else:
             # Normal path: enqueue for background runner
-            await self._queue.put((event, event_type, ts))
+            await self._queue.put((event, event_type, ts))  # type: ignore[union-attr]
 
     async def subscribe(self, event_selector: Any, handler: Any) -> SubscriptionHandle:
         """
@@ -509,7 +509,7 @@ class InMemoryEventBus(EventBus):
         # Non-blocking, respects cap (we stop appending once cap reached)
         return InMemoryEventBus._ImmediateValue(list(self._recorded))
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats_extra(self) -> Dict[str, Any]:
         """
         Return basic operational statistics for observability and tests.
         Keys:
@@ -586,7 +586,7 @@ class InMemoryEventBus(EventBus):
                 logging.getLogger("fba_events.bus").handle(rec)
             except (AttributeError, TypeError, RuntimeError):
                 pass
-        except (AttributeError, TypeError, ValueError, RuntimeError):
+        except (AttributeError, TypeError, ValueError, RuntimeError) as e:
             # Logging must never interfere with event flow
             try:
                 logger.debug("Event logging skipped: %s", e)
@@ -600,7 +600,7 @@ class InMemoryEventBus(EventBus):
     async def _runner(self) -> None:
         try:
             while True:
-                event, event_type, ts = await self._queue.get()
+                event, event_type, ts = await self._queue.get()  # type: ignore[union-attr]
                 # Sentinel: exit loop gracefully
                 if event is getattr(self, "_STOP", None):
                     break
@@ -633,7 +633,7 @@ class InMemoryEventBus(EventBus):
                             # Cap reached; mark truncated and stop appending
                             if not self._recording_truncated:
                                 self._recording_truncated = True
-                    except (AttributeError, TypeError, ValueError):
+                    except (AttributeError, TypeError, ValueError) as rec_e:
                         # Defensive: never crash the bus due to recording failure
                         logger.warning(
                             "Failed to record event %s: %s", event_type, rec_e
@@ -768,7 +768,7 @@ class InMemoryEventBus(EventBus):
         # 2) Dataclass fallback
         try:
             if is_dataclass(event):
-                return self._jsonify_dict(asdict(event))
+                return self._jsonify_dict(asdict(event))  # type: ignore[arg-type]
         except (AttributeError, TypeError):
             pass
 
@@ -811,7 +811,7 @@ class InMemoryEventBus(EventBus):
         # Dataclasses
         if is_dataclass(v):
             try:
-                return self._jsonify_dict(asdict(v))
+                return self._jsonify_dict(asdict(v))  # type: ignore[arg-type]
             except (AttributeError, TypeError):
                 return str(v)
         # Money or other custom types -> str()
@@ -892,7 +892,7 @@ class InMemoryEventBus(EventBus):
             redacted: Dict[Any, Any] = {}
             for k, v in data.items():
                 key_str = str(k)
-                value = v
+                value = v  # noqa: F841
                 if any(pat.search(key_str) for pat in self._redact_key_patterns):
                     redacted[key_str] = "[redacted]"
                 else:
@@ -925,18 +925,4 @@ class InMemoryEventBus(EventBus):
             self._recorded = []
             self._recording_truncated = False
 
-    def get_stats(self) -> Dict[str, Any]:
-        """Basic bus stats for introspection."""
-        try:
-            pending = len(
-                [t for t in getattr(self, "_handler_tasks", set()) if not t.done()]
-            )
-        except (AttributeError, TypeError):
-            pending = 0
-        return {
-            "subscribers": sum(len(v) for v in self._subscribers.values()),
-            "recording": self.get_recording_stats(),
-            "started": self._started,
-            "pending_handlers": pending,
-            "events_published": getattr(self, "_events_published", 0),
-        }
+

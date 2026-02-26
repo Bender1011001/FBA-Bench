@@ -258,7 +258,7 @@ class AgentAdapter:
 
                 # Execute decision
                 tool_calls = await asyncio.wait_for(
-                    self.agent_runner.decide(simulation_state),
+                    self.agent_runner.decide(simulation_state),  # type: ignore[union-attr]
                     timeout=self.config.timeout,
                 )
 
@@ -456,7 +456,7 @@ class AgentAdapter:
         }
 
         if not self._initialized:
-            health["issues"].append("Agent adapter not initialized")
+            health["issues"].append("Agent adapter not initialized")  # type: ignore[attr-defined]
             return health
 
         try:
@@ -466,7 +466,7 @@ class AgentAdapter:
                 health["agent_health"] = agent_health
                 health["healthy"] = agent_health.get("status") == "healthy"
             else:
-                health["issues"].append("Agent runner not available")
+                health["issues"].append("Agent runner not available")  # type: ignore[attr-defined]
 
             # Collect metrics
             health["metrics"] = self.get_metrics()
@@ -479,13 +479,13 @@ class AgentAdapter:
 
                 if recent_failures > 5:
                     health["healthy"] = False
-                    health["issues"].append(
+                    health["issues"].append(  # type: ignore[attr-defined]
                         f"High failure rate: {recent_failures}/10 recent executions failed"
                     )
 
         except Exception as e:
             health["healthy"] = False
-            health["issues"].append(f"Health check failed: {e!s}")
+            health["issues"].append(f"Health check failed: {e!s}")  # type: ignore[attr-defined]
 
         return health
 

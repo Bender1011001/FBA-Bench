@@ -177,7 +177,7 @@ class MetricSuite:
         Subscribes the MetricSuite to relevant events on the EventBus.
         """
         for event_type_enum in FBAEventTypes:
-            self.event_bus.subscribe(event_type_enum.value, self._dispatch_event)
+            self.event_bus.subscribe(event_type_enum.value, self._dispatch_event)  # type: ignore[union-attr]
 
         logger.info("MetricSuite subscribed to all relevant FBA events.")
 
@@ -190,7 +190,7 @@ class MetricSuite:
 
         # Support both .event_type (BaseEvent) and .type (legacy/dict-shim)
         etype = getattr(event, "event_type", getattr(event, "type", None))
-        handler = self._event_handlers.get(etype)
+        handler = self._event_handlers.get(etype)  # type: ignore[arg-type]
         if handler:
             handler(event)
         else:

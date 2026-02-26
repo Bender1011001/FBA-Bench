@@ -529,7 +529,7 @@ class DeterministicLLMClient(BaseLLMClient):
         response_time = (time.time() - start_time) * 1000  # Convert to milliseconds
 
         # If response came from cache, we need to extract the original temperature from cache metadata
-        if cache_hit and "_fba_metadata" in final_response:
+        if cache_hit and "_fba_metadata" in final_response:  # type: ignore[operator]
             # Assuming cached response already contains metadata from when it was recorded
             # We rely on the metadata stored in the cache entry itself for the temperature
             # However, since we are adding new metadata here, we should ensure the temperature
@@ -562,7 +562,7 @@ class DeterministicLLMClient(BaseLLMClient):
         )
 
         # Add metadata to response without modifying original
-        enhanced_response = dict(final_response)
+        enhanced_response = dict(final_response)  # type: ignore[arg-type]
         enhanced_response["_fba_metadata"] = response_metadata.to_dict()
 
         logger.debug(

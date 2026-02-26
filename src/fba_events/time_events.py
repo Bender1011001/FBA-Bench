@@ -78,6 +78,6 @@ class TickEvent(BaseEvent):
             "event_id": self.event_id,
             "timestamp": self.timestamp.isoformat(),
             "tick_number": self.tick_number,
-            "simulation_time": self.simulation_time.isoformat(),
+            "simulation_time": self.simulation_time.isoformat(),  # type: ignore[union-attr]
             "metadata": self.metadata.copy(),  # Return a copy to prevent external modification
         }

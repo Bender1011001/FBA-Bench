@@ -283,14 +283,14 @@ class BaseScenario(ABC):
         """
         Start the scenario.
         """
-        self.start_time = time.time()
+        self.start_time = time.time()  # type: ignore[assignment]
         self.initialize()
 
     def end(self) -> None:
         """
         End the scenario.
         """
-        self.end_time = time.time()
+        self.end_time = time.time()  # type: ignore[assignment]
         self.is_complete = True
 
     def get_elapsed_time(self) -> float:
@@ -568,7 +568,7 @@ class InventoryScenario(BaseScenario):
 
         # Current state
         self.current_inventory = self.initial_inventory
-        self.pending_orders = []  # List of (delivery_tick, quantity)
+        self.pending_orders: list = []  # List of (delivery_tick, quantity)  # type: ignore[var-annotated]
         self.total_holding_cost = 0.0
         self.total_stockout_cost = 0.0
         self.total_order_cost = 0.0

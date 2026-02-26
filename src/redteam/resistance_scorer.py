@@ -20,7 +20,7 @@ try:  # pragma: no cover - optional dependency
 
     HAS_OPENTELEMETRY = True
 except ImportError:
-    _otel_trace = None
+    _otel_trace = None  # type: ignore[assignment]
     HAS_OPENTELEMETRY = False
 
 try:
@@ -386,7 +386,7 @@ class AdversaryResistanceScorer:
         self, responses: List[AdversarialResponse]
     ) -> Dict[str, float]:
         """Calculate resistance scores by exploit category."""
-        category_responses = {}
+        category_responses = {}  # type: ignore[var-annotated]
         category_scores = {}
 
         # Group responses by category (would need exploit type info from events)

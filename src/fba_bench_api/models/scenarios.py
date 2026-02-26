@@ -394,7 +394,7 @@ class ScenarioService:
             self._refresh_scenarios()
 
         scenario_id = create_data.name.lower().replace(" ", "_")
-        if scenario_id in self._scenario_cache:
+        if scenario_id in self._scenario_cache:  # type: ignore[operator]
             raise ValueError(f"Scenario ID '{scenario_id}' already exists")
 
         # Prepare YAML data
@@ -417,7 +417,7 @@ class ScenarioService:
 
         # Reload and return
         self._refresh_scenarios()
-        created = self._scenario_cache.get(scenario_id)
+        created = self._scenario_cache.get(scenario_id)  # type: ignore[union-attr]
         if not created:
             raise ValueError("Failed to create scenario - reload error")
         return created
@@ -429,10 +429,10 @@ class ScenarioService:
         if self._should_refresh_cache():
             self._refresh_scenarios()
 
-        if scenario_id not in self._scenario_cache:
+        if scenario_id not in self._scenario_cache:  # type: ignore[operator]
             raise ValueError(f"Scenario ID '{scenario_id}' not found")
 
-        existing = self._scenario_cache[scenario_id]
+        existing = self._scenario_cache[scenario_id]  # type: ignore[index]
 
         # Update fields if provided
         update_dict = update_data.model_dump(exclude_unset=True)
@@ -462,7 +462,7 @@ class ScenarioService:
 
         # Reload
         self._refresh_scenarios()
-        updated = self._scenario_cache.get(scenario_id)
+        updated = self._scenario_cache.get(scenario_id)  # type: ignore[union-attr]
         if not updated:
             raise ValueError("Failed to update scenario - reload error")
         return updated
@@ -472,7 +472,7 @@ class ScenarioService:
         if self._should_refresh_cache():
             self._refresh_scenarios()
 
-        if scenario_id not in self._scenario_cache:
+        if scenario_id not in self._scenario_cache:  # type: ignore[operator]
             return False
 
         filepath = os.path.join(self.scenarios_dir, f"{scenario_id}.yaml")
@@ -481,7 +481,7 @@ class ScenarioService:
 
         # Reload cache
         self._refresh_scenarios()
-        return scenario_id not in self._scenario_cache
+        return scenario_id not in self._scenario_cache  # type: ignore[operator]
 
 
 # Global scenario service instance

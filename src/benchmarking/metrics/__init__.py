@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 # Export helpers for function-style metrics
-from .registry import (
+from .registry import (  # noqa: E402
     get_metric,
     list_metrics,
     metrics_registry,  # legacy class-based registry

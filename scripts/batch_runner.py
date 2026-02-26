@@ -70,7 +70,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="Optional per-day cap for a single model response in agentic_sim. 0 disables this cap.",
     )
     p.add_argument("--run-id", default=None, help="Run id; defaults to run-YYYYMMDD-HHMMSS.")
-    p.add_argument("--settings", default="simulation_settings.yaml", help="YAML settings file (for benchmark defaults).")
+    p.add_argument("--settings", default="config/simulation_settings.yaml", help="YAML settings file (for benchmark defaults).")
     p.add_argument(
         "--results-root",
         default="results/openrouter_tier_runs",
@@ -405,7 +405,7 @@ async def run_one_model(
             "--model",
             model_slug,
             "--settings",
-            "simulation_settings.yaml",
+            "config/simulation_settings.yaml",
             "--days",
             str(days),
             "--seed",

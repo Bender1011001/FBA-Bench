@@ -210,7 +210,7 @@ class MarketingCampaignScenario(BaseScenario):
             and callable(event_bus.get_recorded_events)
         ):
             recorded = event_bus.get_recorded_events()
-            for e in recorded:
+            for e in recorded:  # type: ignore[misc]
                 if (
                     e.get("event_type") == "SaleOccurred"
                     and e.get("data", {}).get("asin") == product_asin

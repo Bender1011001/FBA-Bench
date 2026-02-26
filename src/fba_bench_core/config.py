@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 try:
     import yaml  # type: ignore
 except ImportError:  # pragma: no cover
-    yaml = None  # YAML overlay becomes a no-op if PyYAML is missing
+    yaml = None  # YAML overlay becomes a no-op if PyYAML is missing  # type: ignore[assignment]
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict

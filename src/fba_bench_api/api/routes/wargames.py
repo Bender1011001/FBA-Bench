@@ -111,7 +111,7 @@ async def _run_real_simulation(
         from fba_bench.core.money import Money
 
         # Try to load the agent
-        from agents import agent_registry
+        from agents import agent_registry  # type: ignore[attr-defined]
         from agents.base import BaseAgent
 
     except ImportError as e:
@@ -214,14 +214,14 @@ async def _run_real_simulation(
         for adv_event in enabled_events:
             # Apply event effects based on severity and tier
             event_probability = (
-                (adv_event.severity / 100) * 0.1 * tier["event_prob_mult"]
+                (adv_event.severity / 100) * 0.1 * tier["event_prob_mult"]  # type: ignore[operator]
             )
 
             if adv_event.id == "supply_shock":
                 # Trigger supply chain disruption
                 supply_chain.inject_disruption(
                     probability=event_probability,
-                    severity=adv_event.severity * tier["impact_mult"],
+                    severity=adv_event.severity * tier["impact_mult"],  # type: ignore[operator]
                 )
             elif adv_event.id == "price_war":
                 # Competitors become aggressive
@@ -232,7 +232,7 @@ async def _run_real_simulation(
             elif adv_event.id == "demand_shock":
                 # Modify demand elasticity temporarily
                 market_sim._demand_elasticity = (
-                    1.5 + (adv_event.severity / 100) * tier["impact_mult"]
+                    1.5 + (adv_event.severity / 100) * tier["impact_mult"]  # type: ignore[operator]
                 )
 
         # Let agent make decisions (if available)
@@ -394,7 +394,7 @@ async def list_available_agents() -> List[Dict[str, Any]]:
     agents = []
 
     try:
-        from agents import agent_registry
+        from agents import agent_registry  # type: ignore[attr-defined]
 
         for agent_id in agent_registry._agents:
             agents.append(

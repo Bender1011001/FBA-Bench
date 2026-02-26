@@ -203,7 +203,7 @@ class MarketingMetrics:
 
             roas = revenue / spend if spend > 0 else 0.0
             # Normalize ROAS: min(roas / target_roas, 1.0) * 100
-            roas_score = min(roas / self.config.target_roas, 1.0) * 100
+            roas_score = min(roas / self.config.target_roas, 1.0) * 100  # type: ignore[attr-defined]
 
             # ACoS Score: 100 - ACoS% (clamped at 0)
             acos_val = (spend / revenue * 100) if revenue > 0 else 100.0

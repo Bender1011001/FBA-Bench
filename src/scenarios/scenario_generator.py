@@ -80,9 +80,9 @@ class ScenarioGenerator:
         base = mapping.get(cfg.template, mapping[ScenarioTemplate.BASIC])
         return {
             "expected_duration": cfg.expected_duration or base["duration"],
-            "market_volatility": max(cfg.market_volatility, base["volatility"]),
-            "competition_level": max(cfg.competition_level, base["competition"]),
-            "num_events": max(cfg.num_events, base["events"]),
+            "market_volatility": max(cfg.market_volatility, base["volatility"]),  # type: ignore[call-overload]
+            "competition_level": max(cfg.competition_level, base["competition"]),  # type: ignore[call-overload]
+            "num_events": max(cfg.num_events, base["events"]),  # type: ignore[call-overload]
             "supply_chain_complexity": cfg.supply_chain_complexity
             or base["supply_complexity"],
         }

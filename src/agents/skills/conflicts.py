@@ -27,7 +27,7 @@ class ConflictResolver:
         coordinator_tuning: CoordinatorTuning,
         config: Dict[str, Any],
         conflict_log: List[Dict[str, Any]],
-        skill_metrics: Dict[str, "SkillPerformanceMetrics"],  # Forward ref
+        skill_metrics: Dict[str, "SkillPerformanceMetrics"],  # Forward ref  # type: ignore[name-defined]
         resource_allocation: ResourceAllocation,
     ):
         """
@@ -87,7 +87,7 @@ class ConflictResolver:
         )
 
         # Check for conflicts and resolve
-        coordinated_actions = []
+        coordinated_actions = []  # type: ignore[var-annotated]
         resource_usage = {"budget": Money(cents=0), "tokens": 0}
 
         for action in sorted_actions:
@@ -139,7 +139,7 @@ class ConflictResolver:
         # Sort by efficiency and select within resource constraints
         efficient_actions.sort(key=lambda x: x[1], reverse=True)
 
-        coordinated_actions = []
+        coordinated_actions = []  # type: ignore[var-annotated]
         resource_usage = {"budget": Money(cents=0), "tokens": 0}
 
         for action, efficiency in efficient_actions:
@@ -191,7 +191,7 @@ class ConflictResolver:
         for action in actions:
             skill_actions[action.skill_source].append(action)
 
-        coordinated_actions = []
+        coordinated_actions = []  # type: ignore[var-annotated]
         skill_list = list(skill_actions.keys())
         skill_index = 0
 

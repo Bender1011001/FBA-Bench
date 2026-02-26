@@ -121,7 +121,7 @@ class AdvancedCognitiveMetrics(BaseMetric):
             max_value=100.0,
         )
 
-    def calculate(self, data: Dict[str, Any]) -> float:
+    def calculate(self, data: Dict[str, Any]) -> float:  # type: ignore[override]
         """
         Calculate advanced cognitive performance score.
 

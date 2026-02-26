@@ -1,4 +1,5 @@
 import asyncio
+import subprocess
 import json
 from typing import Dict, Any
 
@@ -15,7 +16,7 @@ try:
     from fba_bench_core.event_bus import EventBus as CoreBus
 except ImportError:
     # Mock EventBus if not available in core
-    class CoreBus:
+    class CoreBus:  # type: ignore[no-redef]
         def __init__(self):
             self.subscribers = []
 
@@ -41,7 +42,7 @@ try:
     from fba_bench_api.models.simulation import SimulationORM as SimulationState
 except ImportError:
 
-    class SimulationState:
+    class SimulationState:  # type: ignore[no-redef]
         pass
 
 

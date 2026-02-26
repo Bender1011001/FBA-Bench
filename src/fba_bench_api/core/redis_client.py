@@ -49,7 +49,7 @@ class RedisClient:
         if not isinstance(message, str):
             message = json.dumps(message)
 
-        await self._redis.publish(channel, message)
+        await self._redis.publish(channel, message)  # type: ignore[union-attr]
 
     async def lpush(self, key: str, value: Any):
         """Pushes a value to the head of a list."""
@@ -59,7 +59,7 @@ class RedisClient:
         if not isinstance(value, str):
             value = json.dumps(value)
 
-        await self._redis.lpush(key, value)
+        await self._redis.lpush(key, value)  # type: ignore[misc, union-attr]
 
     def __getattr__(self, name: str):
         """Delegate unknown attributes to the underlying Redis client."""

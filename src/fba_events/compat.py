@@ -20,7 +20,7 @@ Exports:
 - CompetitorState
 """
 
-import warnings
+import warnings  # noqa: E402
 
 warnings.warn(
     "fba_events.compat is deprecated; import from fba_events.* instead",

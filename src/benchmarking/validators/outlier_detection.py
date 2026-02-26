@@ -16,10 +16,10 @@ Output:
 - {"issues":[...], "summary":{"median":..., "mad":..., "k":..., "outliers":[indices...]}}
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple  # noqa: E402
 
-from .registry import register_validator
-from .types import Issue, ValidationOutput, normalize_output
+from .registry import register_validator  # noqa: E402
+from .types import Issue, ValidationOutput, normalize_output  # noqa: E402
 
 
 def _median(values: List[float]) -> float:
@@ -143,7 +143,7 @@ def outlier_detection_validate(
         # Provide robust fallback heuristics to detect clear slow-run outliers for tiny medians:
         # - Primary: if a value is > max(10x median, 50ms), flag it.
         # - Secondary: if overall spread is large (>=100ms) OR max/min ratio >= 5, flag only the max.
-        outliers: List[int] = []
+        outliers: List[int] = []  # type: ignore[no-redef]
         if vals:
             # Small-sample robust thresholds:
             # - thresh1 = med * ratio_k (multiplicative)

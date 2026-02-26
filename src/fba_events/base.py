@@ -61,8 +61,8 @@ class BaseEvent(ABC):
         raise NotImplementedError("Subclasses must implement to_summary_dict")
 
 
-import asyncio
-from typing import Callable, List
+import asyncio  # noqa: E402
+from typing import Awaitable, Callable, List  # noqa: E402
 
 
 class EventBus:
@@ -78,10 +78,10 @@ class EventBus:
     """
 
     def __init__(self):
-        self.subscribers: Dict[str, List[Callable[[BaseEvent], Awaitable[None]]]] = {}
+        self.subscribers: Dict[str, List[Callable[[BaseEvent], Awaitable[None]]]] = {}  # noqa: F821  # type: ignore[name-defined]
 
     def subscribe(
-        self, event_type: str, callback: Callable[[BaseEvent], Awaitable[None]]
+        self, event_type: str, callback: Callable[[BaseEvent], Awaitable[None]]  # noqa: F821  # type: ignore[name-defined]
     ) -> None:
         """
         Subscribe a callback to receive events of a specific type.
@@ -95,7 +95,7 @@ class EventBus:
         self.subscribers[event_type].append(callback)
 
     def unsubscribe(
-        self, event_type: str, callback: Callable[[BaseEvent], Awaitable[None]]
+        self, event_type: str, callback: Callable[[BaseEvent], Awaitable[None]]  # noqa: F821  # type: ignore[name-defined]
     ) -> None:
         """
         Unsubscribe a callback from receiving events of a specific type.

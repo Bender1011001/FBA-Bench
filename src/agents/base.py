@@ -16,7 +16,7 @@ class BaseAgent(ABC):
     def __init__(self, agent_id: str, event_bus: EventBus):
         self.agent_id = agent_id
         self.event_bus = event_bus
-        self.config = {}  # Agent-specific configuration
+        self.config: dict = {}  # Agent-specific configuration  # type: ignore[var-annotated]
 
     @abstractmethod
     async def decide(self, state: Any) -> List[Any]:

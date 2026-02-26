@@ -83,7 +83,7 @@ class BudgetEnforcer:
           BudgetEnforcer(ConstraintConfig, event_bus=None, metrics_tracker=None)
         """
         # Backward compatibility: detect legacy ConstraintConfig-like objects
-        legacy_cfg = {}
+        legacy_cfg = {}  # type: ignore[var-annotated]
         if config is not None and not isinstance(config, dict):
             # Duck-typing expected fields from legacy ConstraintConfig
             for key in [
@@ -417,7 +417,7 @@ class BudgetEnforcer:
     # Internal helpers - limits evaluation
     # ---------------------------
     def _get_tool_limit(self, tool_name: str, key: str) -> Optional[int]:
-        tool_cfg: Dict[str, Any] = (self.config.get("tool_limits") or {}).get(
+        tool_cfg: Dict[str, Any] = (self.config.get("tool_limits") or {}).get(  # type: ignore[union-attr]
             tool_name, {}
         ) or {}
         value = tool_cfg.get(key)
@@ -463,7 +463,7 @@ class BudgetEnforcer:
         # compat: accept either a float fraction (e.g., 0.8) or an integer percentage (e.g., 80).
         #         Provide a safe default of 80% for legacy configs lacking this key.
         try:
-            pct_raw = self.config.get(
+            pct_raw = self.config.get(  # type: ignore[union-attr]
                 "warning_threshold_pct", 80
             )  # compat: default 80%
         except Exception:
@@ -515,7 +515,7 @@ class BudgetEnforcer:
                 ("tick", "cost_cents"): "total_cost_cents_per_tick",
                 ("run", "cost_cents"): "total_cost_cents_per_run",
             }[(window, metric_key)]
-            limit_val = int(self.config["limits"][cfg_key])
+            limit_val = int(self.config["limits"][cfg_key])  # type: ignore[index]
             budget_type = cfg_key
 
         return int(usage_val), limit_val, budget_type
@@ -553,14 +553,14 @@ class BudgetEnforcer:
                 reason = f"Usage reached {usage} of {limit} for {budget_type}"
                 await self._publish(
                     self._build_event(
-                        BudgetWarning, agent_id, budget_type, usage, int(limit), reason
+                        BudgetWarning, agent_id, budget_type, usage, int(limit), reason  # type: ignore[arg-type]
                     )
                 )
 
     def _build_exceeded_response(
         self, agent_id: str, budget_type: str, usage: int, limit: int
     ) -> Dict[str, Any]:
-        severity = "soft" if self.config["allow_soft_overage"] else "hard_fail"
+        severity = "soft" if self.config["allow_soft_overage"] else "hard_fail"  # type: ignore[index]
         reason = f"Exceeded {budget_type}: usage {usage} > limit {limit}"
         event = self._build_event(
             BudgetExceeded,
@@ -612,7 +612,7 @@ class BudgetEnforcer:
         usage = int(self.usage[agent_id][window][field])
         # compat: guard against missing overall limit keys in legacy/non-updated configs
         try:
-            limits = dict(self.config["limits"])
+            limits = dict(self.config["limits"])  # type: ignore[index]
         except Exception:
             limits = {}
 
@@ -680,7 +680,7 @@ class BudgetEnforcer:
             track_token_efficiency=False,
         )
         # Initialize using legacy path so self.config is legacy object with attributes
-        return cls(legacy_cfg, event_bus=event_bus, metrics_tracker=metrics_tracker)
+        return cls(legacy_cfg, event_bus=event_bus, metrics_tracker=metrics_tracker)  # type: ignore[arg-type]
 
     # ---------------------------
     # Backward-compatibility methods (legacy API used by existing modules/tests)

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 SimulationRunner - Minimal simulation loop utilities used by tests.
 
@@ -18,6 +16,8 @@ Private utilities required by tests:
 - _format_key_parameters(params: Dict[str, Any]) -> str
 - _setup_competitor_manager(params: Dict[str, Any]) -> object
 """
+
+from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Optional, Tuple

@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import uuid
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
@@ -39,7 +38,6 @@ from .base_runner import (
 
 # Refactored: Moved AgentRegistration, BackCompatRegistration, and AgentRegistry to .agent_registry
 from .agent_registry import (
-    AgentRegistration,
     AgentRegistry,
     BackCompatRegistration,
 )
@@ -89,7 +87,7 @@ class AgentManager:
     ) -> None:
         # Lazy import to avoid import-time cycles
         if event_bus is None:
-            from event_bus import get_event_bus as _get_event_bus
+            from fba_bench_core.event_bus import get_event_bus as _get_event_bus
 
             resolved_bus = _get_event_bus()
         else:
@@ -507,7 +505,7 @@ class AgentManager:
                     from benchmarking.agents.unified_agent import UnifiedAgentRunner
 
                     unified_runner = UnifiedAgentRunner(unified_agent)
-                    runner = UnifiedAgentRunnerWrapper(unified_runner, agent_id)
+                    runner = UnifiedAgentRunnerWrapper(unified_runner, agent_id)  # type: ignore[abstract]
                     self.unified_agent_runners[agent_id] = unified_runner
                     logger.info(
                         f"Unified agent {agent_id} ({framework}) registered successfully."
@@ -545,7 +543,7 @@ class AgentManager:
             is_llm_only = True
 
         # Update back-compat mirror
-        self.agents[agent_id] = BackCompatRegistration(
+        self.agents[agent_id] = BackCompatRegistration(  # type: ignore[assignment]
             agent_id=agent_id,
             runner=runner,
             active=True,
@@ -1164,7 +1162,7 @@ class AgentManager:
         event_type = getattr(event, "__class__", type(event)).__name__
         ts_obj = getattr(event, "timestamp", None)
         try:
-            ts = ts_obj.isoformat() if hasattr(ts_obj, "isoformat") else None
+            ts = ts_obj.isoformat() if hasattr(ts_obj, "isoformat") else None  # type: ignore[union-attr]
         except Exception:
             ts = None
         if not ts:
@@ -1496,7 +1494,7 @@ class AgentManager:
         if agent_reg.runner:
             _status_attr = getattr(agent_reg.runner, "status", None)
             if hasattr(_status_attr, "value"):
-                _runner_status_value = _status_attr.value
+                _runner_status_value = _status_attr.value  # type: ignore[union-attr]
             elif isinstance(_status_attr, (str, int)):
                 _runner_status_value = _status_attr
             elif _status_attr is None:
@@ -1514,7 +1512,7 @@ class AgentManager:
             "last_update_utc": datetime.now(timezone.utc).isoformat()
             + "Z",  # Best effort last update
             "runner_type": (
-                getattr(agent_reg.runner, "__class__", None).__name__
+                getattr(agent_reg.runner, "__class__", None).__name__  # type: ignore[union-attr]
                 if agent_reg.runner
                 else None
             ),
@@ -1586,7 +1584,7 @@ class UnifiedAgentRunnerWrapper(AgentRunner):
                 f"Failed to get decision from unified agent {self.agent_id}: {e}"
             )
 
-    async def cleanup(self) -> None:
+    async def cleanup(self) -> None:  # type: ignore[override]
         """Cleanup the unified agent runner."""
         try:
             await self.unified_runner.cleanup()

@@ -58,10 +58,10 @@ class ECommerceScenario(ScenarioTemplate):
             )
 
         # E-commerce specific state
-        self.products = []
-        self.customers = []
-        self.orders = []
-        self.competitors = []
+        self.products = []  # type: ignore[var-annotated]
+        self.customers = []  # type: ignore[var-annotated]
+        self.orders = []  # type: ignore[var-annotated]
+        self.competitors = []  # type: ignore[var-annotated]
 
         # Market conditions
         self.market_demand = 1.0
@@ -236,7 +236,7 @@ class ECommerceScenario(ScenarioTemplate):
 
         return competitors
 
-    async def update_tick(self, tick: int, state: SimulationState) -> None:
+    async def update_tick(self, tick: int, state: SimulationState) -> None:  # type: ignore[override]
         """
         Update the e-commerce scenario for a specific tick.
 
@@ -514,10 +514,10 @@ class HealthcareScenario(ScenarioTemplate):
             )
 
         # Healthcare specific state
-        self.patients = []
-        self.medical_conditions = []
-        self.treatments = []
-        self.medical_staff = []
+        self.patients = []  # type: ignore[var-annotated]
+        self.medical_conditions = []  # type: ignore[var-annotated]
+        self.treatments = []  # type: ignore[var-annotated]
+        self.medical_staff = []  # type: ignore[var-annotated]
 
         # Healthcare metrics
         self.diagnostic_accuracy = 0.0
@@ -782,7 +782,7 @@ class HealthcareScenario(ScenarioTemplate):
 
         return staff
 
-    async def update_tick(self, tick: int, state: SimulationState) -> None:
+    async def update_tick(self, tick: int, state: SimulationState) -> None:  # type: ignore[override]
         """
         Update the healthcare scenario for a specific tick.
 
@@ -1046,9 +1046,9 @@ class FinancialScenario(ScenarioTemplate):
         super().__init__(config)
 
         # Financial specific state
-        self.market_data = []
-        self.portfolios = {}
-        self.instruments = []
+        self.market_data = []  # type: ignore[var-annotated]
+        self.portfolios = {}  # type: ignore[var-annotated]
+        self.instruments = []  # type: ignore[var-annotated]
         self.market_conditions = {
             "volatility": 0.2,
             "trend": "stable",
@@ -1160,7 +1160,7 @@ class FinancialScenario(ScenarioTemplate):
 
         return market_data
 
-    async def update_tick(self, tick: int, state: SimulationState) -> None:
+    async def update_tick(self, tick: int, state: SimulationState) -> None:  # type: ignore[override]
         """
         Update the financial scenario for a specific tick.
 
@@ -1183,9 +1183,9 @@ class FinancialScenario(ScenarioTemplate):
     def _update_market_conditions(self, tick: int) -> None:
         """Update market conditions."""
         # Gradual changes in volatility
-        self.market_conditions["volatility"] += random.uniform(-0.02, 0.02)
+        self.market_conditions["volatility"] += random.uniform(-0.02, 0.02)  # type: ignore[operator]
         self.market_conditions["volatility"] = max(
-            0.1, min(0.5, self.market_conditions["volatility"])
+            0.1, min(0.5, self.market_conditions["volatility"])  # type: ignore[call-overload]
         )
 
         # Trend changes
@@ -1194,9 +1194,9 @@ class FinancialScenario(ScenarioTemplate):
             self.market_conditions["trend"] = random.choice(trends)
 
         # Liquidity changes
-        self.market_conditions["liquidity"] += random.uniform(-0.05, 0.05)
+        self.market_conditions["liquidity"] += random.uniform(-0.05, 0.05)  # type: ignore[operator]
         self.market_conditions["liquidity"] = max(
-            0.3, min(1.0, self.market_conditions["liquidity"])
+            0.3, min(1.0, self.market_conditions["liquidity"])  # type: ignore[call-overload]
         )
 
     def _update_instrument_prices(self, tick: int) -> None:
@@ -1367,10 +1367,10 @@ class LegalScenario(ScenarioTemplate):
         super().__init__(config)
 
         # Legal specific state
-        self.documents = []
-        self.cases = []
-        self.legal_issues = []
-        self.regulations = []
+        self.documents = []  # type: ignore[var-annotated]
+        self.cases = []  # type: ignore[var-annotated]
+        self.legal_issues = []  # type: ignore[var-annotated]
+        self.regulations = []  # type: ignore[var-annotated]
 
         # Legal metrics
         self.document_accuracy = 0.0
@@ -1570,7 +1570,7 @@ class LegalScenario(ScenarioTemplate):
 
         return cases
 
-    async def update_tick(self, tick: int, state: SimulationState) -> None:
+    async def update_tick(self, tick: int, state: SimulationState) -> None:  # type: ignore[override]
         """
         Update the legal scenario for a specific tick.
 
@@ -1737,10 +1737,10 @@ class ScientificScenario(ScenarioTemplate):
         super().__init__(config)
 
         # Scientific specific state
-        self.datasets = []
-        self.hypotheses = []
-        self.experiments = []
-        self.publications = []
+        self.datasets = []  # type: ignore[var-annotated]
+        self.hypotheses = []  # type: ignore[var-annotated]
+        self.experiments = []  # type: ignore[var-annotated]
+        self.publications = []  # type: ignore[var-annotated]
 
         # Research metrics
         self.hypothesis_accuracy = 0.0
@@ -1838,7 +1838,7 @@ class ScientificScenario(ScenarioTemplate):
 
         return hypotheses
 
-    async def update_tick(self, tick: int, state: SimulationState) -> None:
+    async def update_tick(self, tick: int, state: SimulationState) -> None:  # type: ignore[override]
         """
         Update the scientific scenario for a specific tick.
 

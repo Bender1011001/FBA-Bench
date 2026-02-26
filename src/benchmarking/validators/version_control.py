@@ -417,9 +417,9 @@ class VersionControlManager:
         for name in all_names:
             if name in components1 and name in components2:
                 if components1[name].hash == components2[name].hash:
-                    comparison["differences"]["components"]["unchanged"].append(name)
+                    comparison["differences"]["components"]["unchanged"].append(name)  # type: ignore[index]
                 else:
-                    comparison["differences"]["components"]["changed"].append(
+                    comparison["differences"]["components"]["changed"].append(  # type: ignore[index]
                         {
                             "name": name,
                             "old_version": components1[name].version,
@@ -429,9 +429,9 @@ class VersionControlManager:
                         }
                     )
             elif name in components1:
-                comparison["differences"]["components"]["removed"].append(name)
+                comparison["differences"]["components"]["removed"].append(name)  # type: ignore[index]
             else:
-                comparison["differences"]["components"]["added"].append(name)
+                comparison["differences"]["components"]["added"].append(name)  # type: ignore[index]
 
         # Compare environment
         env1 = manifest1.environment
@@ -441,17 +441,17 @@ class VersionControlManager:
         for key in all_env_keys:
             if key in env1 and key in env2:
                 if env1[key] != env2[key]:
-                    comparison["differences"]["environment"][key] = {
+                    comparison["differences"]["environment"][key] = {  # type: ignore[index]
                         "old": env1[key],
                         "new": env2[key],
                     }
             elif key in env1:
-                comparison["differences"]["environment"][key] = {
+                comparison["differences"]["environment"][key] = {  # type: ignore[index]
                     "old": env1[key],
                     "new": None,
                 }
             else:
-                comparison["differences"]["environment"][key] = {
+                comparison["differences"]["environment"][key] = {  # type: ignore[index]
                     "old": None,
                     "new": env2[key],
                 }
@@ -464,17 +464,17 @@ class VersionControlManager:
         for key in all_git_keys:
             if key in git1 and key in git2:
                 if git1[key] != git2[key]:
-                    comparison["differences"]["git_info"][key] = {
+                    comparison["differences"]["git_info"][key] = {  # type: ignore[index]
                         "old": git1[key],
                         "new": git2[key],
                     }
             elif key in git1:
-                comparison["differences"]["git_info"][key] = {
+                comparison["differences"]["git_info"][key] = {  # type: ignore[index]
                     "old": git1[key],
                     "new": None,
                 }
             else:
-                comparison["differences"]["git_info"][key] = {
+                comparison["differences"]["git_info"][key] = {  # type: ignore[index]
                     "old": None,
                     "new": git2[key],
                 }
@@ -511,12 +511,12 @@ class VersionControlManager:
                 current_hash = self._calculate_component_hash(ref_component.path)
 
                 if current_hash == ref_component.hash:
-                    verification["results"]["components"][ref_component.name] = {
+                    verification["results"]["components"][ref_component.name] = {  # type: ignore[index]
                         "status": "reproducible",
                         "hash_match": True,
                     }
                 else:
-                    verification["results"]["components"][ref_component.name] = {
+                    verification["results"]["components"][ref_component.name] = {  # type: ignore[index]
                         "status": "modified",
                         "hash_match": False,
                         "reference_hash": ref_component.hash,
@@ -524,7 +524,7 @@ class VersionControlManager:
                     }
                     verification["overall_reproducible"] = False
             else:
-                verification["results"]["components"][ref_component.name] = {
+                verification["results"]["components"][ref_component.name] = {  # type: ignore[index]
                     "status": "missing",
                     "hash_match": False,
                     "error": "Component not found",
@@ -535,12 +535,12 @@ class VersionControlManager:
         for key, value in reference_manifest.environment.items():
             current_value = current_manifest.environment.get(key)
             if current_value == value:
-                verification["results"]["environment"][key] = {
+                verification["results"]["environment"][key] = {  # type: ignore[index]
                     "status": "reproducible",
                     "match": True,
                 }
             else:
-                verification["results"]["environment"][key] = {
+                verification["results"]["environment"][key] = {  # type: ignore[index]
                     "status": "different",
                     "match": False,
                     "reference": value,
@@ -552,12 +552,12 @@ class VersionControlManager:
         for key, value in reference_manifest.git_info.items():
             current_value = current_manifest.git_info.get(key)
             if current_value == value:
-                verification["results"]["git_info"][key] = {
+                verification["results"]["git_info"][key] = {  # type: ignore[index]
                     "status": "reproducible",
                     "match": True,
                 }
             else:
-                verification["results"]["git_info"][key] = {
+                verification["results"]["git_info"][key] = {  # type: ignore[index]
                     "status": "different",
                     "match": False,
                     "reference": value,

@@ -88,7 +88,7 @@ class MemoryMetrics:
             memory_enforcer = _StubEnforcer()  # type: ignore[assignment]
 
         self.memory_enforcer = memory_enforcer  # type: ignore[assignment]
-        self.memory_manager = memory_enforcer.memory_manager  # type: ignore[attr-defined]
+        self.memory_manager = memory_enforcer.memory_manager  # type: ignore[union-attr]
         self.reflection_module = getattr(memory_enforcer, "reflection_module", None)
 
         # Metric history for trend analysis
@@ -191,7 +191,7 @@ class MemoryMetrics:
     async def calculate_memory_efficiency(self) -> MemoryMetricResult:
         """Calculate memory efficiency as useful retrievals per memory stored."""
 
-        total_retrievals = self.memory_enforcer.total_memory_retrievals
+        total_retrievals = self.memory_enforcer.total_memory_retrievals  # type: ignore[union-attr]
         total_memories = (
             await self.memory_manager.short_term_store.size()
             + await self.memory_manager.long_term_store.size()
@@ -214,7 +214,7 @@ class MemoryMetrics:
         """Calculate precision of memory retrieval based on access patterns."""
 
         # Get recent injection history
-        recent_injections = self.memory_enforcer.memory_injection_history[-10:]
+        recent_injections = self.memory_enforcer.memory_injection_history[-10:]  # type: ignore[union-attr]
 
         if not recent_injections:
             return MemoryMetricResult(
@@ -378,7 +378,7 @@ class MemoryMetrics:
             )
 
         # Count memories per domain
-        domain_counts = {}
+        domain_counts = {}  # type: ignore[var-annotated]
         for memory in all_memories:
             domain = memory.domain
             domain_counts[domain] = domain_counts.get(domain, 0) + 1
@@ -505,7 +505,7 @@ class MemoryMetrics:
     async def calculate_memory_performance_correlation(self) -> MemoryMetricResult:
         """Calculate correlation between memory usage and performance."""
 
-        injection_history = self.memory_enforcer.memory_injection_history
+        injection_history = self.memory_enforcer.memory_injection_history  # type: ignore[union-attr]
 
         if len(injection_history) < 5:
             return MemoryMetricResult(
@@ -627,7 +627,7 @@ class MemoryMetrics:
         """Calculate the cost of forgetting (performance impact of memory limitations)."""
 
         # Estimate forgetting cost based on failed memory retrievals and truncations
-        injection_history = self.memory_enforcer.memory_injection_history
+        injection_history = self.memory_enforcer.memory_injection_history  # type: ignore[union-attr]
 
         if not injection_history:
             return MemoryMetricResult(

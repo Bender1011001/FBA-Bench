@@ -8,7 +8,7 @@ enforcing memory limits and injecting memory context into agent prompts.
 import logging
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from constraints.token_counter import TokenCounter
 from fba_events.bus import EventBus  # Corrected import path

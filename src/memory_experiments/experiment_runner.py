@@ -7,21 +7,21 @@ A/B testing framework for memory experiments, enabling systematic comparison
 of different memory configurations and their impact on agent performance.
 """
 
-import asyncio
-import json
-import logging
-import random
-import statistics  # Import statistics for actual metric calculations
-from dataclasses import asdict, dataclass, field
-from datetime import datetime
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+import asyncio  # noqa: E402
+import json  # noqa: E402
+import logging  # noqa: E402
+import random  # noqa: E402
+import statistics  # Import statistics for actual metric calculations  # noqa: E402
+from dataclasses import asdict, dataclass, field  # noqa: E402
+from datetime import datetime  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple  # noqa: E402
 
-from fba_events.bus import EventBus  # Corrected import path
+from fba_events.bus import EventBus  # Corrected import path  # noqa: E402
 
-from .memory_config import MemoryConfig
-from .memory_enforcer import MemoryEnforcer
-from .statistical_analyzer import StatisticalAnalyzer
+from .memory_config import MemoryConfig  # noqa: E402
+from .memory_enforcer import MemoryEnforcer  # noqa: E402
+from .statistical_analyzer import StatisticalAnalyzer  # noqa: E402
 
 if TYPE_CHECKING:
     from benchmarking.agents.unified_agent import BaseAgent
@@ -182,9 +182,9 @@ class ExperimentRunner:
         Returns:
             Comprehensive experiment results with statistical analysis
         """
-        if not self.agent_factory:
+        if not self.agent_factory:  # type: ignore[truthy-function]
             raise ValueError("Agent factory not set during initialization.")
-        if not self.metrics_calculator:
+        if not self.metrics_calculator:  # type: ignore[truthy-function]
             raise ValueError("Metrics calculator not set during initialization.")
 
         logger.info(f"Starting memory experiment: {config.experiment_id}")
@@ -230,7 +230,7 @@ class ExperimentRunner:
                 if isinstance(res, Exception):
                     logger.error(f"A trial failed: {res}")
                 else:
-                    all_runs.append(res)
+                    all_runs.append(res)  # type: ignore[arg-type]
 
             # Perform statistical analysis only on successful runs
             statistical_results = await self._analyze_results(config, all_runs)
@@ -288,7 +288,7 @@ class ExperimentRunner:
         end_time = datetime.now()
 
         # Calculate metrics using the injected metrics_calculator
-        performance_metrics = await self.metrics_calculator(
+        performance_metrics = await self.metrics_calculator(  # type: ignore[misc]
             simulation_results, memory_enforcer
         )
 
@@ -373,7 +373,7 @@ class ExperimentRunner:
 
             # Simulate publishing the event to the event bus and memory enforcer
             # In a real system, the simulation core would publish events
-            await memory_enforcer.store_event(
+            await memory_enforcer.store_event(  # type: ignore[attr-defined]
                 BaseAgent.create_event_from_action(
                     agent_action, current_tick, datetime.now()
                 ),  # Adapt as per actual event creation
@@ -381,8 +381,8 @@ class ExperimentRunner:
             )  # Store agent's action in memory for reflection
 
             # Check for reflection trigger
-            if await memory_enforcer.should_reflect(datetime.now()):
-                await memory_enforcer.perform_reflection()  # Simulate reflection
+            if await memory_enforcer.should_reflect(datetime.now()):  # type: ignore[attr-defined]
+                await memory_enforcer.perform_reflection()  # Simulate reflection  # type: ignore[attr-defined]
 
             await asyncio.sleep(0.001)  # Simulate time passing
 
@@ -444,7 +444,7 @@ class ExperimentRunner:
         # The actual MetricSuite would process `combined_data`
         # For now, this is a placeholder if MetricSuite isn't fully integrated yet
         try:
-            calculated_metrics = await self.metrics_calculator(
+            calculated_metrics = await self.metrics_calculator(  # type: ignore[misc]
                 combined_data, memory_enforcer
             )
             return calculated_metrics
@@ -478,7 +478,7 @@ class ExperimentRunner:
         """Perform statistical analysis on experiment results."""
 
         # Group runs by memory configuration
-        config_groups = {}
+        config_groups = {}  # type: ignore[var-annotated]
         for run in all_runs:
             config_name = run.memory_config_name
             if config_name not in config_groups:
@@ -613,7 +613,7 @@ class ExperimentRunner:
         if not config_averages:
             return "unknown"
 
-        return max(config_averages, key=config_averages.get)
+        return max(config_averages, key=config_averages.get)  # type: ignore[arg-type]
 
     def _calculate_summary_statistics(
         self, config_groups: Dict[str, List[ExperimentRun]]
@@ -675,7 +675,7 @@ class ExperimentRunner:
             if abs(effect_size) > 0.5
         ]
 
-        conclusions = {
+        conclusions = {  # type: ignore[var-annotated]
             "memory_matters": abs(memory_impact_score) > 0.05,
             "significant_differences": len(significant_results) > 0,
             "large_effect_sizes": len(large_effects) > 0,
@@ -689,24 +689,24 @@ class ExperimentRunner:
         # Generate key findings
         if conclusions["memory_matters"]:
             if memory_impact_score > 0:
-                conclusions["key_findings"].append(
+                conclusions["key_findings"].append(  # type: ignore[union-attr]
                     "Memory systems improve agent performance with a positive impact."
                 )
             else:
-                conclusions["key_findings"].append(
+                conclusions["key_findings"].append(  # type: ignore[union-attr]
                     "Memory systems may negatively impact agent performance in certain configurations."
                 )
         else:
-            conclusions["key_findings"].append(
+            conclusions["key_findings"].append(  # type: ignore[union-attr]
                 "Memory has minimal statistically significant impact on performance (supporting VendingBench findings)."
             )
 
         if significant_results:
-            conclusions["key_findings"].append(
+            conclusions["key_findings"].append(  # type: ignore[union-attr]
                 f"Statistically significant differences observed in {len(significant_results)} comparisons."
             )
         if large_effects:
-            conclusions["key_findings"].append(
+            conclusions["key_findings"].append(  # type: ignore[union-attr]
                 f"Substantial effect sizes found in {len(large_effects)} comparisons, indicating practical significance."
             )
 

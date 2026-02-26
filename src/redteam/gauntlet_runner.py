@@ -26,7 +26,7 @@ from .resistance_scorer import AdversaryResistanceScorer, ARSBreakdown
 try:  # pragma: no cover - optional dependency
     from opentelemetry import trace as _otel_trace
 except ImportError:
-    _otel_trace = None
+    _otel_trace = None  # type: ignore[assignment]
 from instrumentation.tracer import setup_tracing
 
 logger = logging.getLogger(__name__)
@@ -341,7 +341,7 @@ class GauntletRunner:
             try:
                 # Inject the exploit
                 event_id = await self._inject_exploit(exploit)
-                self.current_gauntlet.executed_exploits.append(event_id)
+                self.current_gauntlet.executed_exploits.append(event_id)  # type: ignore[union-attr]
 
                 # Wait for responses or timeout
                 responses = await self._collect_responses(
@@ -350,7 +350,7 @@ class GauntletRunner:
                 all_responses.extend(responses)
 
                 # Record per-exploit results
-                self.current_gauntlet.per_exploit_results[event_id] = {
+                self.current_gauntlet.per_exploit_results[event_id] = {  # type: ignore[union-attr]
                     "exploit_name": exploit.name,
                     "responses_collected": len(responses),
                     "agents_affected": len(set(r.agent_id for r in responses)),
@@ -385,12 +385,12 @@ class GauntletRunner:
         # Wait for all exploits to complete
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        all_responses = []
+        all_responses = []  # type: ignore[var-annotated]
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 logger.error(f"Parallel exploit execution failed: {result}")
             else:
-                all_responses.extend(result)
+                all_responses.extend(result)  # type: ignore[arg-type]
 
         return all_responses
 
@@ -400,14 +400,14 @@ class GauntletRunner:
         """Execute a single exploit and collect responses."""
         try:
             event_id = await self._inject_exploit(exploit)
-            self.current_gauntlet.executed_exploits.append(event_id)
+            self.current_gauntlet.executed_exploits.append(event_id)  # type: ignore[union-attr]
 
             responses = await self._collect_responses(
                 event_id, target_agents, exploit.time_window_hours
             )
 
             # Record results
-            self.current_gauntlet.per_exploit_results[event_id] = {
+            self.current_gauntlet.per_exploit_results[event_id] = {  # type: ignore[union-attr]
                 "exploit_name": exploit.name,
                 "responses_collected": len(responses),
                 "agents_affected": len(set(r.agent_id for r in responses)),
@@ -449,7 +449,7 @@ class GauntletRunner:
         """Inject a phishing exploit based on its definition."""
         context_req = exploit.context_requirements
 
-        return await self.event_injector.inject_phishing_event(
+        return await self.event_injector.inject_phishing_event(  # type: ignore[call-arg]
             sender_email=context_req.get(
                 "sender_email", "noreply@suspicious-domain.com"
             ),
@@ -476,7 +476,7 @@ class GauntletRunner:
         """Inject a market manipulation exploit based on its definition."""
         context_req = exploit.context_requirements
 
-        return await self.event_injector.inject_market_manipulation_event(
+        return await self.event_injector.inject_market_manipulation_event(  # type: ignore[call-arg]
             false_data_type=context_req.get("false_data_type", "pricing"),
             manipulated_values=context_req.get("manipulated_values", {}),
             source_credibility=context_req.get("source_credibility", 3),
@@ -501,7 +501,7 @@ class GauntletRunner:
             hours=context_req.get("deadline_hours", 48)
         )
 
-        return await self.event_injector.inject_compliance_trap_event(
+        return await self.event_injector.inject_compliance_trap_event(  # type: ignore[call-arg]
             fake_policy_name=context_req.get(
                 "fake_policy_name", "New FBA Compliance Requirement"
             ),
@@ -550,7 +550,7 @@ class GauntletRunner:
         # and collect them until timeout or all agents respond
 
         timeout_seconds = timeout_hours * 3600
-        start_time = datetime.now()
+        start_time = datetime.now()  # noqa: F841
         collected_responses = []
 
         # Simulation of response collection

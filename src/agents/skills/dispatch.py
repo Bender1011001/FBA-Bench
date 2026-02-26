@@ -13,6 +13,7 @@ from ..skill_modules.base_skill import BaseSkill, SkillAction
 from .metrics import MetricsTracker
 from .models import ResourceAllocation, SkillSubscription
 from .utils import get_urgency_multiplier
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,10 @@ class DispatchManager:
     """
 
     def __init__(
-        self,
-        event_bus: "EventBus",  # Forward ref for EventBus
-        config: Dict,
-        coordinator_tuning: "CoordinatorTuning",  # Forward ref
+        self,  # type: ignore[name-defined]
+        event_bus: Any,  # Forward ref for EventBus  # type: ignore[name-defined]
+        config: Dict,  # type: ignore[name-defined]
+        coordinator_tuning: Any,  # Forward ref  # type: ignore[name-defined]
         skill_subscriptions: Dict[str, SkillSubscription],
         event_skill_mapping: Dict[str, List[str]],
         resource_allocation: ResourceAllocation,

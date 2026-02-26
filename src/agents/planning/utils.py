@@ -99,11 +99,11 @@ def assess_strategic_performance(
 
         # Categorize progress
         if progress >= 0.8:
-            assessment["objectives_ahead"] += 1
+            assessment["objectives_ahead"] += 1  # type: ignore[operator]
         elif progress >= 0.5:
-            assessment["objectives_on_track"] += 1
+            assessment["objectives_on_track"] += 1  # type: ignore[operator]
         else:
-            assessment["objectives_behind"] += 1
+            assessment["objectives_behind"] += 1  # type: ignore[operator]
 
     if progress_scores:
         assessment["average_progress"] = sum(progress_scores) / len(progress_scores)
@@ -217,14 +217,14 @@ async def determine_objective_modifications(
     progress = objective.progress_indicators.get("overall_progress", 0.0)
     if progress < 0.3:
         modifications["priority"] = PlanPriority.HIGH
-        modifications["reason"] = "Behind schedule - increasing priority"
+        modifications["reason"] = "Behind schedule - increasing priority"  # type: ignore[assignment]
 
     # Check for event impacts
     for impact in event_impacts:
         if objective.objective_id in impact.get("affected_objectives", []):
             if impact["impact_level"] == "high":
-                modifications["status"] = PlanStatus.ON_HOLD
-                modifications["reason"] = f"High impact event: {impact['event_type']}"
+                modifications["status"] = PlanStatus.ON_HOLD  # type: ignore[assignment]
+                modifications["reason"] = f"High impact event: {impact['event_type']}"  # type: ignore[assignment]
                 break
 
     return modifications
@@ -348,7 +348,7 @@ def archive_completed_objectives(
     def _is_terminal(status: Any) -> bool:
         # Normalize to string label
         try:
-            s = status.value  # Enum-like
+            s = getattr(status, 'value', str(status))  # Enum-like
         except AttributeError:
             s = str(status)
         s = str(s).lower()
@@ -415,8 +415,8 @@ async def apply_constraints_to_prioritization(
     max_concurrent_actions: int,
 ) -> List[TacticalAction]:
     """Apply resource and dependency constraints to prioritized actions."""
-    prioritized_actions = []
-    used_resources = {}
+    prioritized_actions = []  # type: ignore[var-annotated]
+    used_resources = {}  # type: ignore[var-annotated]
 
     max_concurrent = constraints.get("max_concurrent_actions", max_concurrent_actions)
 
@@ -546,7 +546,7 @@ try:  # pragma: no cover
             ):
                 status = getattr(action, "status", None)
                 try:
-                    s = status.value  # Enum-like
+                    s = getattr(status, 'value', str(status))  # Enum-like  # type: ignore[union-attr]
                 except AttributeError:
                     s = str(status)
                 s = str(s).lower()
@@ -564,7 +564,7 @@ try:  # pragma: no cover
                 except KeyError:
                     pass
 
-        _SimpleNamespace._cleanup_old_actions = _ns_cleanup_old_actions
+        _SimpleNamespace._cleanup_old_actions = _ns_cleanup_old_actions  # type: ignore[attr-defined]
 except (ImportError, AttributeError, TypeError, RuntimeError):
     # If anything goes wrong, do not impact normal planner functionality.
     pass

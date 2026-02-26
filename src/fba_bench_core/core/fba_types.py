@@ -22,9 +22,9 @@ Usage:
   from fba_bench.core.types import SimulationState, ToolCall, AgentObservation, TickEvent, SetPriceCommand
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from dataclasses import dataclass, field  # noqa: E402
+from datetime import datetime  # noqa: E402
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable  # noqa: E402
 
 # Prefer importing concrete classes from their home modules at runtime.
 # If those modules are unavailable in a specific environment, fall back to
@@ -156,7 +156,7 @@ try:
 except ImportError:
     # Fallback definition if money package is not available
     @dataclass
-    class Money:
+    class Money:  # type: ignore[no-redef]
         """Simple fallback Money class if the money package is not available."""
 
         amount: float

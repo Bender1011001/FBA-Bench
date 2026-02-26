@@ -39,7 +39,7 @@ def _in_benchmarking_tests() -> bool:
     return False
 
 
-from .base import BaseMetric, MetricConfig
+from .base import BaseMetric, MetricConfig  # noqa: E402
 
 
 @dataclass
@@ -154,7 +154,7 @@ class CrossDomainMetrics(BaseMetric):
             max_value=100.0,
         )
 
-    def calculate(self, data: Dict[str, Any]) -> float:
+    def calculate(self, data: Dict[str, Any]) -> float:  # type: ignore[override]
         """
         Calculate cross-domain evaluation score.
 
@@ -572,7 +572,7 @@ class CrossDomainMetrics(BaseMetric):
         performance_scores = []
         for performance in domain_performances:
             if isinstance(performance, dict):
-                performance = DomainPerformance(
+                performance = DomainPerformance(  # type: ignore[assignment]
                     domain_name=performance.get("domain_name", ""),
                     accuracy=performance.get("accuracy", 0.0),
                     efficiency=performance.get("efficiency", 0.0),
@@ -584,7 +584,7 @@ class CrossDomainMetrics(BaseMetric):
                 )
 
             # Calculate overall performance score
-            overall_score = (performance.accuracy + performance.efficiency) / 2.0
+            overall_score = (performance.accuracy + performance.efficiency) / 2.0  # type: ignore[attr-defined]
             performance_scores.append(overall_score)
 
         if len(performance_scores) < 2:
@@ -603,7 +603,7 @@ class CrossDomainMetrics(BaseMetric):
         if not consistency_metrics:
             return 0.0
 
-        behavioral_patterns = consistency_metrics.get("behavioral_patterns", {})
+        behavioral_patterns = consistency_metrics.get("behavioral_patterns", {})  # noqa: F841
         pattern_consistency = consistency_metrics.get("pattern_consistency", 0.0)
 
         # Higher pattern consistency is better
@@ -618,7 +618,7 @@ class CrossDomainMetrics(BaseMetric):
         if not consistency_metrics:
             return 0.0
 
-        strategy_patterns = consistency_metrics.get("strategy_patterns", {})
+        strategy_patterns = consistency_metrics.get("strategy_patterns", {})  # noqa: F841
         strategy_consistency = consistency_metrics.get("strategy_consistency", 0.0)
 
         # Higher strategy consistency is better
@@ -633,7 +633,7 @@ class CrossDomainMetrics(BaseMetric):
         if not consistency_metrics:
             return 0.0
 
-        quality_metrics = consistency_metrics.get("quality_metrics", {})
+        quality_metrics = consistency_metrics.get("quality_metrics", {})  # noqa: F841
         quality_consistency = consistency_metrics.get("quality_consistency", 0.0)
 
         # Higher quality consistency is better
@@ -656,7 +656,7 @@ class CrossDomainMetrics(BaseMetric):
         domain_features = data.get("domain_features", {})
         domains = list(domain_features.keys())
 
-        similarity_matrix = {}
+        similarity_matrix = {}  # type: ignore[var-annotated]
 
         for domain1 in domains:
             similarity_matrix[domain1] = {}
@@ -817,7 +817,7 @@ class CrossDomainMetrics(BaseMetric):
         transfer_data = data.get("transfer_data", {})
         domains = list(transfer_data.keys())
 
-        transfer_matrix = {}
+        transfer_matrix = {}  # type: ignore[var-annotated]
 
         for source in domains:
             transfer_matrix[source] = {}

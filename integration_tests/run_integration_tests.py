@@ -98,7 +98,7 @@ class IntegrationTestRunner:
                 from fba_events.bus import get_event_bus
                 from financial_audit import FinancialAuditService
                 from metrics.metric_suite import MetricSuite
-                from simulation_orchestrator import SimulationConfig, SimulationOrchestrator
+                from fba_bench_core.simulation_orchestrator import SimulationConfig, SimulationOrchestrator
 
                 # Use env overrides if present (set earlier via CLI flags)
                 max_ticks = int(os.getenv("SIM_MAX_TICKS", "200"))
@@ -247,7 +247,7 @@ class IntegrationTestRunner:
                 from fba_events.bus import get_event_bus
                 from financial_audit import FinancialAuditService
                 from metrics.metric_suite import MetricSuite
-                from simulation_orchestrator import SimulationConfig, SimulationOrchestrator
+                from fba_bench_core.simulation_orchestrator import SimulationConfig, SimulationOrchestrator
 
                 # Env overrides
                 max_ticks = int(os.getenv("SIM_MAX_TICKS", "365"))

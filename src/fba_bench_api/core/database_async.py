@@ -8,19 +8,19 @@ Async SQLAlchemy session/engine for non-blocking DB I/O.
 - create_db_tables_async() helper to initialize schema at startup if needed
 """
 
-import importlib
-from collections.abc import AsyncGenerator
+import importlib  # noqa: E402
+from collections.abc import AsyncGenerator  # noqa: E402
 
-from sqlalchemy.ext.asyncio import (
+from sqlalchemy.ext.asyncio import (  # noqa: E402
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import StaticPool  # noqa: E402
 
-from fba_bench_api.models.base import Base
-from fba_bench_core.config import get_settings
+from fba_bench_api.models.base import Base  # noqa: E402
+from fba_bench_core.config import get_settings  # noqa: E402
 
 # Internal flag to ensure schema initialization occurs at least once
 _schema_initialized: bool = False
@@ -33,7 +33,7 @@ def _resolve_async_url() -> str:
     - postgresql://... -> postgresql+asyncpg://...
     Otherwise, return as-is (user must ensure correct async dialect).
     """
-    settings = get_settings()
+    settings = get_settings()  # noqa: F841
     import os
     print(f"DEBUG: CWD: {os.getcwd()}")
     # FORCE ABSOLUTE PATH for debugging

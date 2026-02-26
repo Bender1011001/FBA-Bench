@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from sqlalchemy import Column, Enum as SAEnum, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Enum as SAEnum, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, JSONEncoded, TimestampMixin
+from .base import Base, TimestampMixin
 
 
 class ExperimentRunORM(TimestampMixin, Base):

@@ -1,12 +1,8 @@
 """
 Production-Ready Service Implementation for FBA-Bench.
 
-NOTE: This file is named 'mock_service.py' for historical reasons only.
-It provides REAL implementations of external services for production use,
+Provides real implementations of external services for production use,
 including proper authentication, rate limiting, caching, and error handling.
-
-The 'MockService' alias at the end of this file points to ProductionService
-for backward compatibility.
 """
 
 import base64
@@ -22,7 +18,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import requests
+import requests  # type: ignore[import-untyped]
 
 from benchmarking.registry.global_variables import global_variables
 
@@ -145,7 +141,7 @@ class RateLimiter:
         """
         self.max_requests = max_requests
         self.time_window = time_window
-        self.requests = []
+        self.requests = []  # type: ignore[var-annotated]
         self.lock = threading.Lock()
 
     def is_allowed(self) -> bool:

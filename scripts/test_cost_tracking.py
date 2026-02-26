@@ -5,7 +5,7 @@ from services.cost_tracking_service import CostTrackingService
 
 from fba_events.bus import InMemoryEventBus as EventBus
 from llm_interface.generic_openai_client import GenericOpenAIClient
-from simulation_orchestrator import SimulationConfig, SimulationOrchestrator
+from fba_bench_core.simulation_orchestrator import SimulationConfig, SimulationOrchestrator
 
 
 async def test_cost_tracking():

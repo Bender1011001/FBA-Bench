@@ -23,18 +23,14 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import sqlite3
-from contextlib import asynccontextmanager, contextmanager
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, AsyncIterator, Dict, Iterator, List, Optional, Union
-from uuid import UUID, uuid4
+from typing import Any, Dict, List, Optional, Union
+from uuid import uuid4
 
 from fba_bench_core.core.events import (
-    AnyGameEvent,
     GameEvent,
     deserialize_event,
 )

@@ -28,7 +28,7 @@ class TrustMetrics:
         trust_score_service: Optional[AbstractTrustScoreService] = None,
         config: Optional[TrustMetricsConfig] = None,
     ):
-        if trust_score_service is not None and not isinstance(
+        if trust_score_service is not None and not isinstance(  # type: ignore[misc]
             trust_score_service, AbstractTrustScoreService
         ):
             raise TypeError(
@@ -89,7 +89,7 @@ class TrustMetrics:
         holistic_trust_score = 0.0
         if hasattr(self.trust_score_service, "calculate_trust_score"):
             try:
-                holistic_trust_score = self.trust_score_service.calculate_trust_score(
+                holistic_trust_score = self.trust_score_service.calculate_trust_score(  # type: ignore[union-attr]
                     violations_count=self.violations_count,
                     buyer_feedback_scores=self.buyer_feedback_scores,
                     total_days=self.total_days,

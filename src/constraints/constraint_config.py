@@ -185,14 +185,14 @@ class ConstraintConfig:
                 token_cost_input = None
 
         return cls(
-            max_tokens_per_action=budget_constraints.get("max_tokens_per_action"),
-            max_total_tokens=budget_constraints.get("max_total_tokens"),
-            token_cost_per_1k=budget_constraints.get("token_cost_per_1k"),
-            violation_penalty_weight=budget_constraints.get("violation_penalty_weight"),
-            grace_period_percentage=budget_constraints.get("grace_period_percentage"),
-            hard_fail_on_violation=enforcement.get("hard_fail_on_violation"),
-            inject_budget_status=enforcement.get("inject_budget_status"),
-            track_token_efficiency=enforcement.get("track_token_efficiency"),
+            max_tokens_per_action=budget_constraints.get("max_tokens_per_action"),  # type: ignore[arg-type]
+            max_total_tokens=budget_constraints.get("max_total_tokens"),  # type: ignore[arg-type]
+            token_cost_per_1k=budget_constraints.get("token_cost_per_1k"),  # type: ignore[arg-type]
+            violation_penalty_weight=budget_constraints.get("violation_penalty_weight"),  # type: ignore[arg-type]
+            grace_period_percentage=budget_constraints.get("grace_period_percentage"),  # type: ignore[arg-type]
+            hard_fail_on_violation=enforcement.get("hard_fail_on_violation"),  # type: ignore[arg-type]
+            inject_budget_status=enforcement.get("inject_budget_status"),  # type: ignore[arg-type]
+            track_token_efficiency=enforcement.get("track_token_efficiency"),  # type: ignore[arg-type]
             token_cost_per_1k_input=token_cost_input,
         )
 

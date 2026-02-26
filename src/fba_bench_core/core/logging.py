@@ -55,7 +55,7 @@ class RequestIdFilter(logging.Filter):
 
 
 class UTCFormatter(logging.Formatter):
-    converter = time.gmtime
+    converter = time.gmtime  # type: ignore[assignment]
 
 
 def _build_text_formatter(include_tracebacks: bool) -> logging.Formatter:

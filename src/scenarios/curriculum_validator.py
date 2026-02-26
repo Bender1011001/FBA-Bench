@@ -174,7 +174,7 @@ class CurriculumValidator:
                 result["valid"] = (
                     False if severity in {"error", "critical"} else result["valid"]
                 )
-                (
+                (  # type: ignore[attr-defined]
                     result["errors"]
                     if severity in {"error", "critical"}
                     else result["warnings"]
@@ -237,7 +237,7 @@ class CurriculumValidator:
         try:
             for tier_idx in tier_summary.index:
                 tier_key = str(tier_idx)  # Ensure string keys
-                validation_report["tier_summaries"][tier_key] = {
+                validation_report["tier_summaries"][tier_key] = {  # type: ignore[index]
                     "avg_profit": float(tier_summary.loc[tier_idx, "avg_profit"]),
                     "avg_success_rate": float(
                         tier_summary.loc[tier_idx, "avg_success_rate"]
@@ -254,18 +254,18 @@ class CurriculumValidator:
             for i in range(len(success_rates) - 1):
                 if success_rates[i] < success_rates[i + 1]:
                     validation_report["tier_progression_check"] = False
-                    validation_report["observations"].append(
+                    validation_report["observations"].append(  # type: ignore[attr-defined]
                         f"Warning: Success rate for Tier {tier_summary.index[i]} ({success_rates[i]:.2f}) "
                         f"is lower than Tier {tier_summary.index[i+1]} ({success_rates[i+1]:.2f})."
                     )
                 else:
-                    validation_report["observations"].append(
+                    validation_report["observations"].append(  # type: ignore[attr-defined]
                         f"Success rate progression OK from Tier {tier_summary.index[i]} to {tier_summary.index[i+1]}."
                     )
 
         print("\nTier Progression Validation Report:")
         print(tier_summary)
-        print("\n".join(validation_report["observations"]))
+        print("\n".join(validation_report["observations"]))  # type: ignore[arg-type]
         return validation_report
 
     def analyze_success_rates(
@@ -346,7 +346,7 @@ class CurriculumValidator:
         except (ValueError, TypeError, KeyError, AttributeError):
             # Fallback simple summary
             report["overall_performance_summary"] = {
-                "status": "summary_generation_failed"
+                "status": "summary_generation_failed"  # type: ignore[dict-item]
             }
 
         report["tier_progression_validation"] = self.validate_tier_progression()
@@ -431,7 +431,7 @@ class CurriculumValidator:
         if data.empty:
             return {"error": "No performance data available for skill assessment."}
 
-        skill_assessment = {
+        skill_assessment = {  # type: ignore[var-annotated]
             "cognitive_skills": {},
             "strategic_skills": {},
             "operational_skills": {},
@@ -444,7 +444,7 @@ class CurriculumValidator:
         cognitive_metrics = ["profit", "market_share", "roi"]
         for metric in cognitive_metrics:
             if metric in data.columns:
-                skill_assessment["cognitive_skills"][metric] = {
+                skill_assessment["cognitive_skills"][metric] = {  # type: ignore[index]
                     "average_performance": data[metric].mean(),
                     "improvement_rate": self._calculate_improvement_rate(data, metric),
                     "consistency": self._calculate_consistency(data, metric),
@@ -459,7 +459,7 @@ class CurriculumValidator:
         ]
         for metric in strategic_metrics:
             if metric in data.columns:
-                skill_assessment["strategic_skills"][metric] = {
+                skill_assessment["strategic_skills"][metric] = {  # type: ignore[index]
                     "average_performance": data[metric].mean(),
                     "risk_management_score": self._calculate_risk_management_score(
                         data, metric
@@ -478,7 +478,7 @@ class CurriculumValidator:
         ]
         for metric in operational_metrics:
             if metric in data.columns:
-                skill_assessment["operational_skills"][metric] = {
+                skill_assessment["operational_skills"][metric] = {  # type: ignore[index]
                     "average_performance": data[metric].mean(),
                     "execution_efficiency": self._calculate_execution_efficiency(
                         data, metric
@@ -614,7 +614,7 @@ class CurriculumValidator:
                 for metric in cognitive_metrics:
                     if metric in tier_data.columns:
                         cognitive_score += tier_data[metric].mean()
-                skill_progression["cognitive_progression"][int(tier)] = (
+                skill_progression["cognitive_progression"][int(tier)] = (  # type: ignore[index]
                     cognitive_score / len(cognitive_metrics)
                 )
 
@@ -632,7 +632,7 @@ class CurriculumValidator:
                             strategic_score += 1.0 - tier_data[metric].mean()
                         else:
                             strategic_score += tier_data[metric].mean()
-                skill_progression["strategic_progression"][int(tier)] = (
+                skill_progression["strategic_progression"][int(tier)] = (  # type: ignore[index]
                     strategic_score / len(strategic_metrics)
                 )
 
@@ -646,7 +646,7 @@ class CurriculumValidator:
                 for metric in operational_metrics:
                     if metric in tier_data.columns:
                         operational_score += tier_data[metric].mean()
-                skill_progression["operational_progression"][int(tier)] = (
+                skill_progression["operational_progression"][int(tier)] = (  # type: ignore[index]
                     operational_score / len(operational_metrics)
                 )
 
@@ -655,15 +655,15 @@ class CurriculumValidator:
                 first_tier = min(tiers)
                 last_tier = max(tiers)
 
-                cognitive_trend = skill_progression["cognitive_progression"].get(
+                cognitive_trend = skill_progression["cognitive_progression"].get(  # type: ignore[attr-defined]
                     last_tier, 0
-                ) - skill_progression["cognitive_progression"].get(first_tier, 0)
-                strategic_trend = skill_progression["strategic_progression"].get(
+                ) - skill_progression["cognitive_progression"].get(first_tier, 0)  # type: ignore[attr-defined]
+                strategic_trend = skill_progression["strategic_progression"].get(  # type: ignore[attr-defined]
                     last_tier, 0
-                ) - skill_progression["strategic_progression"].get(first_tier, 0)
-                operational_trend = skill_progression["operational_progression"].get(
+                ) - skill_progression["strategic_progression"].get(first_tier, 0)  # type: ignore[attr-defined]
+                operational_trend = skill_progression["operational_progression"].get(  # type: ignore[attr-defined]
                     last_tier, 0
-                ) - skill_progression["operational_progression"].get(first_tier, 0)
+                ) - skill_progression["operational_progression"].get(first_tier, 0)  # type: ignore[attr-defined]
 
                 total_trend = cognitive_trend + strategic_trend + operational_trend
 

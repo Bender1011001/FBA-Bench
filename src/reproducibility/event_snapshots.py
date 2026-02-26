@@ -35,7 +35,7 @@ class SnapshotMetadata:
     llm_cache_status: Dict[str, Any]
     determinism_validation: Dict[str, Any]
     snapshot_version: str = "2.0"
-    reproducibility_features_enabled: Dict[str, bool] = None
+    reproducibility_features_enabled: Dict[str, bool] = None  # type: ignore[assignment]
 
 
 # Ensure the parent directory for artifacts exists
@@ -322,7 +322,7 @@ class EventSnapshot:
             enhanced_data["llm_interactions"] = [
                 asdict(interaction) for interaction in cls._llm_interactions
             ]
-            enhanced_data["snapshot_metadata"]["llm_interaction_count"] = len(
+            enhanced_data["snapshot_metadata"]["llm_interaction_count"] = len(  # type: ignore[index]
                 cls._llm_interactions
             )
 
@@ -449,7 +449,7 @@ class EventSnapshot:
 
             if not events_match:
                 validation_result["is_reproducible"] = False
-                validation_result["issues"].append("Event streams do not match")
+                validation_result["issues"].append("Event streams do not match")  # type: ignore[attr-defined]
 
             # Compare LLM interactions if available
             llm1 = snapshot1.get("llm_interactions", [])
@@ -461,7 +461,7 @@ class EventSnapshot:
 
                 if not llm_match:
                     validation_result["is_reproducible"] = False
-                    validation_result["issues"].append("LLM interactions do not match")
+                    validation_result["issues"].append("LLM interactions do not match")  # type: ignore[attr-defined]
 
             # Compare reproducibility metadata
             meta1 = snapshot1.get("reproducibility_metadata", {})
@@ -472,7 +472,7 @@ class EventSnapshot:
                 key_fields = ["simulation_mode", "master_seed"]
                 for field in key_fields:
                     if meta1.get(field) != meta2.get(field):
-                        validation_result["warnings"].append(
+                        validation_result["warnings"].append(  # type: ignore[attr-defined]
                             f"Reproducibility metadata differs: {field}"
                         )
 

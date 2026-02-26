@@ -33,7 +33,7 @@ class DemandForecastingScenarioConfig(ScenarioConfig):
     historical_data_points: PositiveInt = Field(
         10, description="Number of historical data points to provide to the agent."
     )
-    demand_variability: confloat(ge=0.0, le=1.0) = Field(
+    demand_variability: confloat(ge=0.0, le=1.0) = Field(  # type: ignore[valid-type]
         0.1,
         description="Factor for random variation in demand generation (0.0 to 1.0).",
     )  # Added for more realistic demand generation

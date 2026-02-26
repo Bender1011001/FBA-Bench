@@ -53,7 +53,7 @@ class RegistryEntry:
 class AgentRegistryEntry(RegistryEntry):
     """Registry entry for agents."""
 
-    agent_class: Type[Any] = None
+    agent_class: Type[Any] = None  # type: ignore[assignment]
     config_schema: Dict[str, Any] = field(default_factory=dict)
     capabilities: List[str] = field(default_factory=list)
     framework: str = "unknown"
@@ -68,7 +68,7 @@ class AgentRegistryEntry(RegistryEntry):
 class ScenarioRegistryEntry(RegistryEntry):
     """Registry entry for scenarios."""
 
-    scenario_class: Type[Any] = None
+    scenario_class: Type[Any] = None  # type: ignore[assignment]
     config_schema: Dict[str, Any] = field(default_factory=dict)
     duration_ticks: int = 100
     dependencies: List[str] = field(default_factory=list)
@@ -83,7 +83,7 @@ class ScenarioRegistryEntry(RegistryEntry):
 class MetricRegistryEntry(RegistryEntry):
     """Registry entry for metrics."""
 
-    metric_class: Type[Any] = None
+    metric_class: Type[Any] = None  # type: ignore[assignment]
     config_schema: Dict[str, Any] = field(default_factory=dict)
     category: str = "general"
     tags: List[str] = field(default_factory=list)
@@ -98,7 +98,7 @@ class MetricRegistryEntry(RegistryEntry):
 class ServiceRegistryEntry(RegistryEntry):
     """Registry entry for services."""
 
-    service_class: Type[Any] = None
+    service_class: Type[Any] = None  # type: ignore[assignment]
     config_schema: Dict[str, Any] = field(default_factory=dict)
     singleton: bool = True
     dependencies: List[str] = field(default_factory=list)
@@ -113,7 +113,7 @@ class ServiceRegistryEntry(RegistryEntry):
 class ToolRegistryEntry(RegistryEntry):
     """Registry entry for tools."""
 
-    tool_class: Type[Any] = None
+    tool_class: Type[Any] = None  # type: ignore[assignment]
     config_schema: Dict[str, Any] = field(default_factory=dict)
     input_schema: Dict[str, Any] = field(default_factory=dict)
     output_schema: Dict[str, Any] = field(default_factory=dict)
@@ -128,7 +128,7 @@ class ToolRegistryEntry(RegistryEntry):
 class RunnerRegistryEntry(RegistryEntry):
     """Registry entry for runners."""
 
-    runner_class: Type[Any] = None
+    runner_class: Type[Any] = None  # type: ignore[assignment]
     config_schema: Dict[str, Any] = field(default_factory=dict)
     framework: str = "unknown"
 
@@ -513,15 +513,15 @@ class GlobalRegistry:
                 entry_data.update(
                     {
                         "framework": entry.framework,
-                        "capabilities": entry.capabilities,
+                        "capabilities": entry.capabilities,  # type: ignore[dict-item]
                         "config_schema": entry.config_schema,
                     }
                 )
             elif isinstance(entry, ScenarioRegistryEntry):
                 entry_data.update(
                     {
-                        "duration_ticks": entry.duration_ticks,
-                        "dependencies": entry.dependencies,
+                        "duration_ticks": entry.duration_ticks,  # type: ignore[dict-item]
+                        "dependencies": entry.dependencies,  # type: ignore[dict-item]
                         "config_schema": entry.config_schema,
                     }
                 )
@@ -529,7 +529,7 @@ class GlobalRegistry:
                 entry_data.update(
                     {
                         "category": entry.category,
-                        "tags": entry.tags,
+                        "tags": entry.tags,  # type: ignore[dict-item]
                         "config_schema": entry.config_schema,
                     }
                 )
@@ -537,7 +537,7 @@ class GlobalRegistry:
                 entry_data.update(
                     {
                         "singleton": entry.singleton,
-                        "dependencies": entry.dependencies,
+                        "dependencies": entry.dependencies,  # type: ignore[dict-item]
                         "config_schema": entry.config_schema,
                     }
                 )
@@ -585,7 +585,7 @@ class GlobalRegistry:
                     config_schema=entry_data.get("config_schema", {}),
                 )
             elif entry_type == RegistryType.SCENARIO:
-                entry = ScenarioRegistryEntry(
+                entry = ScenarioRegistryEntry(  # type: ignore[assignment]
                     name=entry_data["name"],
                     description=entry_data.get("description", ""),
                     version=entry_data.get("version", "1.0.0"),
@@ -596,7 +596,7 @@ class GlobalRegistry:
                     config_schema=entry_data.get("config_schema", {}),
                 )
             elif entry_type == RegistryType.METRIC:
-                entry = MetricRegistryEntry(
+                entry = MetricRegistryEntry(  # type: ignore[assignment]
                     name=entry_data["name"],
                     description=entry_data.get("description", ""),
                     version=entry_data.get("version", "1.0.0"),
@@ -607,7 +607,7 @@ class GlobalRegistry:
                     config_schema=entry_data.get("config_schema", {}),
                 )
             elif entry_type == RegistryType.SERVICE:
-                entry = ServiceRegistryEntry(
+                entry = ServiceRegistryEntry(  # type: ignore[assignment]
                     name=entry_data["name"],
                     description=entry_data.get("description", ""),
                     version=entry_data.get("version", "1.0.0"),
@@ -618,7 +618,7 @@ class GlobalRegistry:
                     config_schema=entry_data.get("config_schema", {}),
                 )
             elif entry_type == RegistryType.TOOL:
-                entry = ToolRegistryEntry(
+                entry = ToolRegistryEntry(  # type: ignore[assignment]
                     name=entry_data["name"],
                     description=entry_data.get("description", ""),
                     version=entry_data.get("version", "1.0.0"),
@@ -629,7 +629,7 @@ class GlobalRegistry:
                     config_schema=entry_data.get("config_schema", {}),
                 )
             elif entry_type == RegistryType.RUNNER:
-                entry = RunnerRegistryEntry(
+                entry = RunnerRegistryEntry(  # type: ignore[assignment]
                     name=entry_data["name"],
                     description=entry_data.get("description", ""),
                     version=entry_data.get("version", "1.0.0"),
@@ -655,7 +655,7 @@ class GlobalRegistry:
 
 
 # Lazy global instance of the registry to avoid import-time side effects
-from typing import Optional as _Optional  # local alias to avoid polluting exports
+from typing import Optional as _Optional  # local alias to avoid polluting exports  # noqa: E402
 
 _global_registry: _Optional[GlobalRegistry] = None
 

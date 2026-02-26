@@ -195,7 +195,7 @@ class CoordinationManager:
             "FinancialAnalyst": "financial_operations",
         }
 
-        domain_actions = {}
+        domain_actions = {}  # type: ignore[var-annotated]
         for action in actions:
             domain = domain_mapping.get(action.skill_source, "other")
             if domain not in domain_actions:
@@ -605,7 +605,7 @@ class CoordinationManager:
                 if outcome not in expected_impact:
                     expected_impact[outcome] = 0
                 if isinstance(value, (int, float)):
-                    expected_impact[outcome] += value
+                    expected_impact[outcome] += value  # type: ignore[assignment]
 
         decision = StrategicDecision(
             decision_id=f"{decision_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
@@ -615,7 +615,7 @@ class CoordinationManager:
             actions_approved=approved_actions,
             actions_rejected=rejected_actions,
             reasoning=f"Arbitration based on {self.controller.current_priority.value} priority and strategic alignment",
-            expected_impact=expected_impact,
+            expected_impact=expected_impact,  # type: ignore[arg-type]
         )
 
         self.controller.strategic_decisions.append(decision)

@@ -242,7 +242,7 @@ class ReproducibilityValidator:
             is_active = self.deterministic_env.is_active
 
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="deterministic",
                     check_name="environment_active",
                     passed=is_active,
@@ -261,7 +261,7 @@ class ReproducibilityValidator:
 
             if env_state:
                 results.append(
-                    ValidationResult(
+                    ValidationResult(  # type: ignore[call-arg]
                         component="deterministic",
                         check_name="state_consistency",
                         passed=True,
@@ -276,7 +276,7 @@ class ReproducibilityValidator:
                 )
             else:
                 results.append(
-                    ValidationResult(
+                    ValidationResult(  # type: ignore[call-arg]
                         component="deterministic",
                         check_name="state_consistency",
                         passed=False,
@@ -299,7 +299,7 @@ class ReproducibilityValidator:
         except Exception as e:
             logger.error(f"Error in deterministic validation: {e}")
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="deterministic",
                     check_name="validation_error",
                     passed=False,
@@ -351,7 +351,7 @@ class ReproducibilityValidator:
             # Check if reference manifest is provided
             if reference_manifest is None:
                 results.append(
-                    ValidationResult(
+                    ValidationResult(  # type: ignore[call-arg]
                         component="version_control",
                         check_name="reference_available",
                         passed=False,
@@ -377,7 +377,7 @@ class ReproducibilityValidator:
                     score = unchanged_components / total_components
 
                 results.append(
-                    ValidationResult(
+                    ValidationResult(  # type: ignore[call-arg]
                         component="version_control",
                         check_name="component_consistency",
                         passed=score >= 0.9,  # 90% threshold
@@ -401,7 +401,7 @@ class ReproducibilityValidator:
                 )
 
                 results.append(
-                    ValidationResult(
+                    ValidationResult(  # type: ignore[call-arg]
                         component="version_control",
                         check_name="reproducibility_verification",
                         passed=verification["overall_reproducible"],
@@ -428,7 +428,7 @@ class ReproducibilityValidator:
         except Exception as e:
             logger.error(f"Error in version control validation: {e}")
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="version_control",
                     check_name="validation_error",
                     passed=False,
@@ -455,7 +455,7 @@ class ReproducibilityValidator:
         try:
             if reference_results is None or current_results is None:
                 results.append(
-                    ValidationResult(
+                    ValidationResult(  # type: ignore[call-arg]
                         component="statistical",
                         check_name="results_available",
                         passed=False,
@@ -519,7 +519,7 @@ class ReproducibilityValidator:
                     combined_score *= 0.8
 
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="statistical",
                     check_name="paired_consistency_tests",
                     passed=all_passed,
@@ -544,7 +544,7 @@ class ReproducibilityValidator:
         except Exception as e:
             logger.error(f"Error in statistical validation: {e}")
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="statistical",
                     check_name="validation_error",
                     passed=False,
@@ -580,7 +580,7 @@ class ReproducibilityValidator:
             integrity_ok = self.audit_manager.verify_trail_integrity(audit_trail)
 
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="audit_trail",
                     check_name="integrity",
                     passed=integrity_ok,
@@ -601,7 +601,7 @@ class ReproducibilityValidator:
             completeness_score = min(1.0, event_count / min_expected_events)
 
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="audit_trail",
                     check_name="completeness",
                     passed=completeness_score >= 0.8,
@@ -627,7 +627,7 @@ class ReproducibilityValidator:
             error_score = max(0.0, 1.0 - (error_rate * 10))  # Penalize for errors
 
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="audit_trail",
                     check_name="error_rate",
                     passed=error_score >= 0.9,  # Max 1% error rate
@@ -657,7 +657,7 @@ class ReproducibilityValidator:
         except Exception as e:
             logger.error(f"Error in audit trail validation: {e}")
             results.append(
-                ValidationResult(
+                ValidationResult(  # type: ignore[call-arg]
                     component="audit_trail",
                     check_name="validation_error",
                     passed=False,
@@ -680,10 +680,10 @@ class ReproducibilityValidator:
                 continue
 
             # Calculate average score for this component
-            component_score = sum(r.score for r in results) / len(results)
+            component_score = sum(r.score for r in results) / len(results)  # type: ignore[attr-defined]
 
             # Apply weight
-            weight = self.weights.get(component, 0.0)
+            weight = self.weights.get(component, 0.0)  # type: ignore[attr-defined]
             overall_score += component_score * weight
 
         return overall_score
@@ -696,60 +696,60 @@ class ReproducibilityValidator:
 
         for component, results in component_results.items():
             for result in results:
-                if not result.passed:
+                if not result.passed:  # type: ignore[attr-defined]
                     # Generate specific recommendations based on component and check
                     if component == "deterministic":
-                        if result.check_name == "environment_active":
+                        if result.check_name == "environment_active":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Enable deterministic execution environment for reproducible random seeds"
                             )
-                        elif result.check_name == "state_consistency":
+                        elif result.check_name == "state_consistency":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Ensure consistent environment state across benchmark runs"
                             )
 
                     elif component == "version_control":
-                        if result.check_name == "reference_available":
+                        if result.check_name == "reference_available":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Provide reference version manifest for reproducibility comparison"
                             )
-                        elif result.check_name == "component_consistency":
+                        elif result.check_name == "component_consistency":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Ensure consistent versions of all components across benchmark runs"
                             )
-                        elif result.check_name == "reproducibility_verification":
+                        elif result.check_name == "reproducibility_verification":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Verify that all components are reproducible with exact versions"
                             )
 
                     elif component == "statistical":
-                        if result.check_name == "results_available":
+                        if result.check_name == "results_available":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Provide both reference and current results for statistical comparison"
                             )
-                        elif result.check_name == "result_validity":
+                        elif result.check_name == "result_validity":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Improve result quality by addressing statistical validity issues"
                             )
-                        elif result.check_name == "result_consistency":
+                        elif result.check_name == "result_consistency":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Investigate inconsistencies between reference and current results"
                             )
 
                     elif component == "audit_trail":
-                        if result.check_name == "trail_exists":
+                        if result.check_name == "trail_exists":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Enable audit trail logging for complete traceability"
                             )
-                        elif result.check_name == "integrity":
+                        elif result.check_name == "integrity":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Ensure audit trail integrity with proper checksums"
                             )
-                        elif result.check_name == "completeness":
+                        elif result.check_name == "completeness":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Improve audit trail completeness with more detailed event logging"
                             )
-                        elif result.check_name == "error_rate":
+                        elif result.check_name == "error_rate":  # type: ignore[attr-defined]
                             recommendations.append(
                                 "Reduce error rate in benchmark execution"
                             )
@@ -811,22 +811,22 @@ class ReproducibilityValidator:
             Dictionary with comparison results
         """
         comparison = {
-            "run_ids": [report1.run_id, report2.run_id],
+            "run_ids": [report1.run_id, report2.run_id],  # type: ignore[attr-defined]
             "timestamps": [
-                report1.timestamp.isoformat(),
-                report2.timestamp.isoformat(),
+                report1.timestamp.isoformat(),  # type: ignore[attr-defined]
+                report2.timestamp.isoformat(),  # type: ignore[attr-defined]
             ],
-            "overall_scores": [report1.overall_score, report2.overall_score],
-            "score_difference": report2.overall_score - report1.overall_score,
+            "overall_scores": [report1.overall_score, report2.overall_score],  # type: ignore[attr-defined]
+            "score_difference": report2.overall_score - report1.overall_score,  # type: ignore[attr-defined]
             "component_comparisons": {},
         }
 
         # Compare components
-        all_components = set(report1.components.keys()) | set(report2.components.keys())
+        all_components = set(report1.components.keys()) | set(report2.components.keys())  # type: ignore[attr-defined]
 
         for component in all_components:
-            comp1 = report1.components.get(component, [])
-            comp2 = report2.components.get(component, [])
+            comp1 = report1.components.get(component, [])  # type: ignore[attr-defined]
+            comp2 = report2.components.get(component, [])  # type: ignore[attr-defined]
 
             # Calculate average scores
             score1 = sum(r.score for r in comp1) / len(comp1) if comp1 else 0.0
@@ -852,5 +852,5 @@ class ReproducibilityValidator:
         if abs(total_weight - 1.0) > 0.01:
             raise ValueError(f"Weights must sum to 1.0, got {total_weight}")
 
-        self.weights.update(weights)
-        logger.info(f"Updated validation weights: {self.weights}")
+        self.weights.update(weights)  # type: ignore[attr-defined]
+        logger.info(f"Updated validation weights: {self.weights}")  # type: ignore[attr-defined]

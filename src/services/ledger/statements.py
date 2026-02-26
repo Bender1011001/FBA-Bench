@@ -38,13 +38,13 @@ class StatementsGenerator:
         balances = self.ledger_core.get_all_account_balances()
 
         # Prepare balance sheet data
-        balance_sheet_data = {"assets": {}, "liabilities": {}, "equity": {}}
+        balance_sheet_data = {"assets": {}, "liabilities": {}, "equity": {}}  # type: ignore[var-annotated]
 
         total_assets = Money.zero()
         total_liabilities = Money.zero()
         total_equity = Money.zero()
 
-        for account_id, balance in balances.items():
+        for account_id, balance in balances.items():  # type: ignore[attr-defined]
             account = self.ledger_core.accounts[account_id]
 
             if account.account_type == AccountType.ASSET:
@@ -114,12 +114,12 @@ class StatementsGenerator:
         balances = self.ledger_core.get_all_account_balances()
 
         # Prepare income statement data
-        income_statement_data = {"revenue": {}, "expenses": {}}
+        income_statement_data = {"revenue": {}, "expenses": {}}  # type: ignore[var-annotated]
 
         total_revenue = Money.zero()
         total_expenses = Money.zero()
 
-        for account_id, balance in balances.items():
+        for account_id, balance in balances.items():  # type: ignore[attr-defined]
             account = self.ledger_core.accounts[account_id]
 
             if account.account_type == AccountType.REVENUE:

@@ -135,7 +135,7 @@ class TechnicalPerformanceMetrics(BaseMetric):
             max_value=100.0,
         )
 
-    def calculate(self, data: Dict[str, Any]) -> float:
+    def calculate(self, data: Dict[str, Any]) -> float:  # type: ignore[override]
         """
         Calculate technical performance score.
 
@@ -627,7 +627,7 @@ class TechnicalPerformanceMetrics(BaseMetric):
 
         # Balance is important - no single resource should be overutilized
         max_usage = max(resources)
-        avg_usage = statistics.mean(resources)
+        avg_usage = statistics.mean(resources)  # noqa: F841
 
         # Balance score (lower variance is better)
         if len(resources) > 1:
@@ -664,7 +664,7 @@ class TechnicalPerformanceMetrics(BaseMetric):
         """Calculate throughput score."""
         # Higher throughput is better
         # Normalize to 0-1 range based on typical expectations
-        min_acceptable_throughput = 10.0  # 10 requests per second
+        min_acceptable_throughput = 10.0  # 10 requests per second  # noqa: F841
         max_acceptable_variance = 50.0  # 50 requests variance
 
         throughput_score = min(

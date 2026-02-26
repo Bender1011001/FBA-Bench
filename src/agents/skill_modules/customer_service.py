@@ -736,7 +736,7 @@ class CustomerServiceSkill(BaseSkill):
         self, event: TickEvent
     ) -> List[SkillAction]:
         """Generate synthetic customer interactions for testing purposes."""
-        actions = []
+        actions = []  # type: ignore[var-annotated]
 
         # Simulate receiving customer messages periodically
         if event.tick_number % 10 == 0:  # Every 10 ticks
@@ -918,10 +918,10 @@ class CustomerServiceSkill(BaseSkill):
 
         # Adjust based on complexity
         if message.sentiment < -0.5:
-            estimated_time *= 1.5
+            estimated_time *= 1.5  # type: ignore[assignment]
 
         if message.priority == MessagePriority.URGENT:
-            estimated_time *= 0.5  # Faster for urgent
+            estimated_time *= 0.5  # Faster for urgent  # type: ignore[assignment]
 
         return int(estimated_time)
 

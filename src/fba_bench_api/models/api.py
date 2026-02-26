@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from datetime import timezone
 from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -125,7 +126,7 @@ class SimulationSnapshot(BaseModel):
                 )
 
         return cls(
-            status=status,
+            status=status,  # type: ignore[arg-type]
             tick=int(raw.get("current_tick", 0)),
             kpis=kpis,
             agents=agents_list,
@@ -135,10 +136,11 @@ class SimulationSnapshot(BaseModel):
 
     @classmethod
     def _default(cls, status: str = "idle") -> "SimulationSnapshot":
-        from datetime import datetime, timezone
+        from datetime import datetime
+        from datetime import timezone
 
         return cls(
-            status=status,
+            status=status,  # type: ignore[arg-type]
             tick=0,
             kpis=KpiSnapshot(revenue=0.0, profit=0.0, units_sold=0),
             agents=[],

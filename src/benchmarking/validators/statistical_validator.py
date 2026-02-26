@@ -29,7 +29,7 @@ class StatisticalSummary:
     min_value: float
     max_value: float
     sample_size: int
-    confidence_interval: Tuple[float, float] = None
+    confidence_interval: Tuple[float, float] = None  # type: ignore[assignment]
     confidence_level: float = 0.95
 
     def __post_init__(self):
@@ -128,7 +128,7 @@ class StatisticalValidator:
             confidence_level: Default confidence level for intervals
         """
         self.confidence_level = confidence_level
-        self.results_history = []
+        self.results_history = []  # type: ignore[var-annotated]
 
         logger.info(
             f"Initialized StatisticalValidator with confidence level: {confidence_level}"
@@ -720,7 +720,7 @@ class StatisticalValidator:
                 if not is_valid:
                     validation_results["overall_validity"] = False
 
-                validation_results["metrics"][metric_name] = {
+                validation_results["metrics"][metric_name] = {  # type: ignore[index]
                     "summary": summary.to_dict(),
                     "is_normal": is_normal,
                     "coefficient_of_variation": cv,

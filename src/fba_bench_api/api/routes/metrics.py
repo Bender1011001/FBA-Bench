@@ -178,7 +178,7 @@ async def get_bsr() -> Dict[str, Any]:
                 }
             )
 
-        market = {}
+        market = {}  # type: ignore[var-annotated]
         try:
             market = bsr.get_market_metrics() or {}
         except Exception:
@@ -194,7 +194,7 @@ async def get_bsr() -> Dict[str, Any]:
             resp["market_ema_conversion"] = str(market.get("market_ema_conversion"))
         if market.get("competitor_count") is not None:
             try:
-                resp["competitor_count"] = int(market.get("competitor_count"))
+                resp["competitor_count"] = int(market.get("competitor_count"))  # type: ignore[arg-type]
             except Exception:
                 pass
 

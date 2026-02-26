@@ -17,7 +17,7 @@ except Exception:
         from .base import BaseEvent
     except Exception:
 
-        class BaseEvent:  # last-resort shim
+        class AdvBaseEvent:  # last-resort shim  # type: ignore[no-redef]
             pass
 
 
@@ -26,14 +26,14 @@ class ShockInjectionEvent(BaseEvent):  # type: ignore[misc]
     shock_id: str = ""
     category: str = ""
     severity: float = 0.0
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[datetime] = None  # type: ignore[assignment]
 
 
 @dataclass(kw_only=True)
 class ShockEndEvent(BaseEvent):  # type: ignore[misc]
     shock_id: str = ""
     category: str = ""
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[datetime] = None  # type: ignore[assignment]
 
 
 @dataclass

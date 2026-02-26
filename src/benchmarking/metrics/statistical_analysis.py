@@ -42,13 +42,13 @@ def _in_benchmarking_tests() -> bool:
     return False
 
 
-import numpy as np
-from scipy import stats
-from sklearn.ensemble import IsolationForest
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np  # noqa: E402
+from scipy import stats  # noqa: E402
+from sklearn.ensemble import IsolationForest  # noqa: E402
+from sklearn.linear_model import LinearRegression  # noqa: E402
+from sklearn.metrics import mean_squared_error, r2_score  # noqa: E402
 
-from .base import BaseMetric, MetricConfig
+from .base import BaseMetric, MetricConfig  # noqa: E402
 
 
 class StatisticalTest(Enum):
@@ -205,7 +205,7 @@ class StatisticalAnalysisFramework(BaseMetric):
             max_value=100.0,
         )
 
-    def calculate(self, data: Dict[str, Any]) -> float:
+    def calculate(self, data: Dict[str, Any]) -> float:  # type: ignore[override]
         """
         Calculate statistical analysis score.
 
@@ -292,7 +292,7 @@ class StatisticalAnalysisFramework(BaseMetric):
             model = IsolationForest(contamination=contamination, random_state=42)
             labels = model.fit_predict(x)
             scores = model.decision_function(x)
-            idx = [i for i, l in enumerate(labels) if l == -1]
+            idx = [idx_i for idx_i, lbl in enumerate(labels) if lbl == -1]
             return {
                 "anomalies": [data[i] for i in idx],
                 "anomaly_indices": idx,
@@ -757,21 +757,21 @@ class StatisticalAnalysisFramework(BaseMetric):
             Statistical test result
         """
         if test_type == StatisticalTest.T_TEST:
-            return self._perform_t_test(sample1, sample2, **kwargs)
+            return self._perform_t_test(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         elif test_type == StatisticalTest.PAIRED_T_TEST:
-            return self._perform_paired_t_test(sample1, sample2, **kwargs)
+            return self._perform_paired_t_test(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         elif test_type == StatisticalTest.MANN_WHITNEY_U:
-            return self._perform_mann_whitney_u_test(sample1, sample2, **kwargs)
+            return self._perform_mann_whitney_u_test(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         elif test_type == StatisticalTest.ANOVA:
-            return self._perform_anova_test(sample1, sample2, **kwargs)
+            return self._perform_anova_test(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         elif test_type == StatisticalTest.CHI_SQUARE:
-            return self._perform_chi_square_test(sample1, sample2, **kwargs)
+            return self._perform_chi_square_test(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         elif test_type == StatisticalTest.PEARSON_CORRELATION:
-            return self._perform_pearson_correlation(sample1, sample2, **kwargs)
+            return self._perform_pearson_correlation(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         elif test_type == StatisticalTest.SPEARMAN_CORRELATION:
-            return self._perform_spearman_correlation(sample1, sample2, **kwargs)
+            return self._perform_spearman_correlation(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         elif test_type == StatisticalTest.KOLMOGOROV_SMIRNOV:
-            return self._perform_kolmogorov_smirnov_test(sample1, sample2, **kwargs)
+            return self._perform_kolmogorov_smirnov_test(sample1, sample2, **kwargs)  # type: ignore[arg-type]
         else:
             raise ValueError(f"Unsupported test type: {test_type}")
 
@@ -1190,7 +1190,7 @@ class StatisticalAnalysisFramework(BaseMetric):
             trend_significance = 0.0
 
         # Calculate prediction interval (simplified)
-        residuals = y - predictions
+        residuals = y - predictions  # noqa: F841
         mse = mean_squared_error(y, predictions)
         std_error = math.sqrt(mse)
 
@@ -1328,7 +1328,7 @@ class StatisticalAnalysisFramework(BaseMetric):
                 feature_importance[f"feature_{i}"] = abs(coef)
 
             # Calculate confidence intervals (simplified)
-            residuals = y - all_predictions
+            residuals = y - all_predictions  # noqa: F841
             std_error = math.sqrt(mean_squared_error(y, all_predictions))
             confidence_intervals = [
                 (pred - 1.96 * std_error, pred + 1.96 * std_error)
@@ -1415,7 +1415,7 @@ class StatisticalAnalysisFramework(BaseMetric):
             Correlation matrix
         """
         variables = list(data.keys())
-        correlation_matrix = {}
+        correlation_matrix = {}  # type: ignore[var-annotated]
 
         for var1 in variables:
             correlation_matrix[var1] = {}
@@ -1427,7 +1427,7 @@ class StatisticalAnalysisFramework(BaseMetric):
                     try:
                         corr, _ = stats.pearsonr(data[var1], data[var2])
                         correlation_matrix[var1][var2] = corr
-                    except:
+                    except Exception:
                         correlation_matrix[var1][var2] = 0.0
 
         return correlation_matrix

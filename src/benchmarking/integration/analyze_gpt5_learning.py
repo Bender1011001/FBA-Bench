@@ -58,7 +58,7 @@ def _read_metrics_csv(results_dir: Path) -> Tuple[List[str], List[Dict[str, Any]
         header = reader.fieldnames or []
         for r in reader:
             rows.append(r)
-    return header, rows
+    return header, rows  # type: ignore[return-value]
 
 
 def _to_float(v: Any, default: float = 0.0) -> float:
@@ -109,7 +109,7 @@ def _success_rate(rows: List[Dict[str, Any]]) -> float:
         v = r.get("success")
         try:
             # success column is 1/0 in writer
-            success_count += 1 if int(v) == 1 else 0
+            success_count += 1 if int(v) == 1 else 0  # type: ignore[arg-type]
         except Exception:
             pass
     return success_count / len(rows)

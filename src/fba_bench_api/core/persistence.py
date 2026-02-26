@@ -197,12 +197,12 @@ class ConfigPersistenceManager:
 config_persistence_manager = ConfigPersistenceManager()
 
 # ===================== SQLAlchemy-backed persistence for API resources =====================
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session  # noqa: E402
 
-from fba_bench_api.models.agent import AgentORM
-from fba_bench_api.models.base import utcnow
-from fba_bench_api.models.experiment import ExperimentORM, ExperimentStatusEnum
-from fba_bench_api.models.simulation import SimulationORM
+from fba_bench_api.models.agent import AgentORM  # noqa: E402
+from fba_bench_api.models.base import utcnow  # noqa: E402
+from fba_bench_api.models.experiment import ExperimentORM, ExperimentStatusEnum  # noqa: E402
+from fba_bench_api.models.simulation import SimulationORM  # noqa: E402
 
 
 class AgentRepository:

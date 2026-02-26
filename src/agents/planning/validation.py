@@ -79,7 +79,7 @@ async def validate_and_schedule_actions(
     planner_params: Any,
 ) -> List[TacticalAction]:
     """Validate actions and optimize their scheduling."""
-    validated_actions = []
+    validated_actions = []  # type: ignore[var-annotated]
 
     for action in actions:
         # Validate action parameters

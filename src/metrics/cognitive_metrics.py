@@ -100,7 +100,7 @@ class CognitiveMetrics:
                         goal_data["end_tick"] - goal_data["start_tick"]
                     ) * 0.1
                 elif goal_data["status"] == "active":
-                    total_goal_attention_score += duration * 0.05
+                    total_goal_attention_score += duration * 0.05  # type: ignore[assignment]
 
         penalty_for_switches = self.context_switches * 5
 

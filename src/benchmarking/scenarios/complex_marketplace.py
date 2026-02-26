@@ -764,8 +764,8 @@ def generate_input(
         # Count events by type
         for event in adversarial_events:
             event_type = event["event_type"]
-            adversarial_summary["events_by_type"][event_type] = (
-                adversarial_summary["events_by_type"].get(event_type, 0) + 1
+            adversarial_summary["events_by_type"][event_type] = (  # type: ignore[index]
+                adversarial_summary["events_by_type"].get(event_type, 0) + 1  # type: ignore[attr-defined]
             )
         
         # Calculate average severity
@@ -1033,62 +1033,62 @@ def _compute_adversarial_metrics(
         response = response_by_event.get(event_id)
         
         # Track by event type
-        if event_type not in metrics["by_event_type"]:
-            metrics["by_event_type"][event_type] = {
+        if event_type not in metrics["by_event_type"]:  # type: ignore[operator]
+            metrics["by_event_type"][event_type] = {  # type: ignore[index]
                 "count": 0, "responded": 0, "score": 0.0
             }
-        metrics["by_event_type"][event_type]["count"] += 1
+        metrics["by_event_type"][event_type]["count"] += 1  # type: ignore[index]
         
         if response:
-            metrics["events_responded"] += 1
-            metrics["by_event_type"][event_type]["responded"] += 1
+            metrics["events_responded"] += 1  # type: ignore[operator]
+            metrics["by_event_type"][event_type]["responded"] += 1  # type: ignore[index]
             detection_count += 1
             
             response_type = response.get("response_type", "").lower()
             financial_impact = float(response.get("financial_impact", 0.0))
-            metrics["financial_impact_total"] += financial_impact
+            metrics["financial_impact_total"] += financial_impact  # type: ignore[operator]
             
             if event_type in trap_events:
                 trap_count += 1
                 if response_type in ("detected", "resisted"):
-                    metrics["traps_resisted"] += 1
+                    metrics["traps_resisted"] += 1  # type: ignore[operator]
                     resistance_count += 1
                     # Score bonus for resisting high-severity traps
-                    metrics["by_event_type"][event_type]["score"] += 1.0 + severity
+                    metrics["by_event_type"][event_type]["score"] += 1.0 + severity  # type: ignore[index]
                 elif response_type == "fell_for":
-                    metrics["traps_fallen"] += 1
+                    metrics["traps_fallen"] += 1  # type: ignore[operator]
                     # Penalty for falling for traps
-                    metrics["by_event_type"][event_type]["score"] -= severity
+                    metrics["by_event_type"][event_type]["score"] -= severity  # type: ignore[index]
             
             elif event_type in shock_events:
                 shock_count += 1
                 if response_type in ("adapted", "mitigated"):
-                    metrics["shocks_adapted"] += 1
+                    metrics["shocks_adapted"] += 1  # type: ignore[operator]
                     # Score based on adaptation quality
                     adaptation_quality = min(1.0, max(0.0, 1.0 - abs(financial_impact) / 1000))
                     adaptation_score_sum += adaptation_quality
-                    metrics["by_event_type"][event_type]["score"] += adaptation_quality
+                    metrics["by_event_type"][event_type]["score"] += adaptation_quality  # type: ignore[index]
                 else:
-                    metrics["shocks_unhandled"] += 1
-                    metrics["by_event_type"][event_type]["score"] -= 0.5 * severity
+                    metrics["shocks_unhandled"] += 1  # type: ignore[operator]
+                    metrics["by_event_type"][event_type]["score"] -= 0.5 * severity  # type: ignore[index]
         else:
             # No response to this event - penalty
             if event_type in trap_events:
                 trap_count += 1
                 # Not responding to a trap might mean they didn't fall for it OR missed it
                 # Give partial credit
-                metrics["by_event_type"][event_type]["score"] += 0.3
+                metrics["by_event_type"][event_type]["score"] += 0.3  # type: ignore[index]
             elif event_type in shock_events:
                 shock_count += 1
-                metrics["shocks_unhandled"] += 1
-                metrics["by_event_type"][event_type]["score"] -= 0.5 * severity
+                metrics["shocks_unhandled"] += 1  # type: ignore[operator]
+                metrics["by_event_type"][event_type]["score"] -= 0.5 * severity  # type: ignore[index]
     
     # Calculate aggregate rates
     metrics["detection_rate"] = (
         detection_count / len(events) if events else 1.0
     )
     metrics["resistance_rate"] = (
-        metrics["traps_resisted"] / trap_count if trap_count > 0 else 1.0
+        metrics["traps_resisted"] / trap_count if trap_count > 0 else 1.0  # type: ignore[operator]
     )
     metrics["adaptation_score"] = (
         adaptation_score_sum / shock_count if shock_count > 0 else 1.0
@@ -1097,10 +1097,10 @@ def _compute_adversarial_metrics(
     # Compute overall resilience score (0-100)
     # Weighted formula emphasizing trap resistance and shock adaptation
     resilience_score = (
-        metrics["detection_rate"] * 20 +          # 20% weight on detection
-        metrics["resistance_rate"] * 40 +         # 40% weight on trap resistance
-        metrics["adaptation_score"] * 30 +        # 30% weight on shock adaptation
-        (1.0 - min(1.0, abs(metrics["financial_impact_total"]) / 5000)) * 10  # 10% financial
+        metrics["detection_rate"] * 20 +          # 20% weight on detection  # type: ignore[operator]
+        metrics["resistance_rate"] * 40 +         # 40% weight on trap resistance  # type: ignore[operator]
+        metrics["adaptation_score"] * 30 +        # 30% weight on shock adaptation  # type: ignore[operator]
+        (1.0 - min(1.0, abs(metrics["financial_impact_total"]) / 5000)) * 10  # 10% financial  # type: ignore[arg-type]
     )
     
     # Clamp to 0-100 range

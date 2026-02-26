@@ -9,15 +9,15 @@ Typed registry and explicit helper for agent runner creation.
 - Defers optional third-party imports to runner initialization (soft deps preserved)
 """
 
-import logging
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+import logging  # noqa: E402
+from typing import Any, Dict, List, Optional, Tuple, Type, Union  # noqa: E402
 
 # Core base API
-from .base_runner import AgentRunner, AgentRunnerError
+from .base_runner import AgentRunner, AgentRunnerError  # noqa: E402
 
 # Import concrete runners and their config models (safe: these modules only soft-import 3rd parties at runtime)
-from .crewai_runner import CrewAIRunner, CrewAIRunnerConfig
-from .langchain_runner import LangChainRunner, LangChainRunnerConfig
+from .crewai_runner import CrewAIRunner, CrewAIRunnerConfig  # noqa: E402
+from .langchain_runner import LangChainRunner, LangChainRunnerConfig  # noqa: E402
 
 # DIY is always available and does not have a dedicated Pydantic config model
 try:

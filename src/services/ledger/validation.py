@@ -4,6 +4,7 @@ import logging
 from typing import Dict, List
 
 from .models import LedgerEntry, Transaction
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +14,8 @@ class LedgerValidator:
     Validates transactions and accounting rules before posting.
     """
 
-    def validate_transaction(
-        self, transaction: Transaction, accounts: Dict[str, "Account"]
+    def validate_transaction(  # type: ignore[name-defined]
+        self, transaction: Transaction, accounts: Dict[str, Any]  # noqa: F821  # type: ignore[name-defined]
     ) -> None:
         """
         Validate a transaction before posting.
@@ -49,8 +50,8 @@ class LedgerValidator:
 
         logger.debug(f"Validated transaction {transaction.transaction_id}")
 
-    def validate_account_normal_balance(
-        self, account_id: str, entry_type: str, accounts: Dict[str, "Account"]
+    def validate_account_normal_balance(  # type: ignore[name-defined]
+        self, account_id: str, entry_type: str, accounts: Dict[str, Any]  # noqa: F821  # type: ignore[name-defined]
     ) -> None:
         """
         Validate that the entry type matches the account's normal balance.

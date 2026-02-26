@@ -26,7 +26,7 @@ class OperationsMetrics:
         initial_inventory_value: float = 0.0,
         config: Optional[OperationsMetricsConfig] = None,
     ):
-        if sales_service is not None and not isinstance(
+        if sales_service is not None and not isinstance(  # type: ignore[misc]
             sales_service, AbstractSalesService
         ):
             raise TypeError(

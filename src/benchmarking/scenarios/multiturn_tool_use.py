@@ -76,8 +76,8 @@ def _gen_transform(r: random.Random) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         "offset": r.randint(-3, 3),
     }
     expected = {
-        "sum": sum(data["items"]),
-        "transformed": [i * data["multiplier"] + data["offset"] for i in data["items"]],
+        "sum": sum(data["items"]),  # type: ignore[call-overload]
+        "transformed": [i * data["multiplier"] + data["offset"] for i in data["items"]],  # type: ignore[attr-defined]
     }
     return data, expected
 

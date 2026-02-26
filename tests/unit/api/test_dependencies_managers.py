@@ -129,9 +129,9 @@ def test_connection_manager_stats_dynamic_categories():
 
 # Additional concurrency and capacity tests for ConnectionManager
 
-import json
+import json  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 
 class _FakeWebSocket:

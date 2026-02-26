@@ -124,7 +124,7 @@ class Product(BaseModel):
         # Map legacy 'weight' to 'weight_kg' (assumed already in kg in tests)
         if values.get("weight_kg") is None and "weight" in values:
             try:
-                w = float(values.get("weight"))
+                w = float(values.get("weight"))  # type: ignore[arg-type]
                 if w > 0:
                     values["weight_kg"] = w
             except (TypeError, ValueError):
@@ -151,7 +151,7 @@ class Product(BaseModel):
     # -------------------------
     # Logistics computed properties
     # -------------------------
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def volume_m3(self) -> float:
         """Compute product volume in cubic meters.
@@ -161,10 +161,10 @@ class Product(BaseModel):
         """
         if all([self.width_cm, self.height_cm, self.depth_cm]):
             # Convert cm³ to m³ (divide by 1,000,000)
-            return (self.width_cm * self.height_cm * self.depth_cm) / 1_000_000
+            return (self.width_cm * self.height_cm * self.depth_cm) / 1_000_000  # type: ignore[operator]
         return 0.0
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def dimensional_weight(self) -> float:
         """Compute dimensional weight in kg using standard logistics formula.
@@ -176,7 +176,7 @@ class Product(BaseModel):
         """
         return self.volume_m3 * 167.0
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def chargeable_weight(self) -> float:
         """Compute chargeable weight for freight billing.

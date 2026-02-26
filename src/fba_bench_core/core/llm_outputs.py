@@ -25,9 +25,9 @@ Usage example (inside a runner):
         raise AgentRunnerDecisionError("Invalid LLM output") from e
 """
 
-from typing import List, Optional
+from typing import List, Optional  # noqa: E402
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator  # noqa: E402
 
 
 class PriceDecision(BaseModel):

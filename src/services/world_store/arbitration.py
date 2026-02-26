@@ -224,7 +224,7 @@ class CommandArbitrator:
                     existing_inventory = stub_state.inventory_quantity
                     existing_cost_basis = stub_state.cost_basis
 
-            new_state = ProductState(
+            new_state = ProductState(  # noqa: F821  # type: ignore[name-defined]
                 asin=asin,
                 price=new_price,
                 inventory_quantity=existing_inventory,

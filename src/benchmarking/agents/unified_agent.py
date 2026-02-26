@@ -148,7 +148,7 @@ class BaseUnifiedAgent(abc.ABC):
     @property
     def framework_type(self) -> FrameworkType:
         """Get the framework type for this agent."""
-        return self.config.framework
+        return self.config.framework  # type: ignore[return-value]
 
     @abc.abstractmethod
     async def initialize(self) -> None:
@@ -218,7 +218,7 @@ class BaseUnifiedAgent(abc.ABC):
         """Handle an incoming message."""
         handler = self._message_handlers.get(message.message_type)
         if handler:
-            await handler(message)
+            await handler(message)  # type: ignore[misc]
         else:
             logger.warning(
                 f"No handler for message type {message.message_type} in agent {self.agent_id}"
@@ -228,7 +228,7 @@ class BaseUnifiedAgent(abc.ABC):
         """Handle an observation."""
         handler = self._observation_handlers.get(observation.observation_type)
         if handler:
-            await handler(observation)
+            await handler(observation)  # type: ignore[misc]
         else:
             logger.warning(
                 f"No handler for observation type {observation.observation_type} in agent {self.agent_id}"
@@ -923,7 +923,7 @@ class AgentFactory:
         framework = config.framework
 
         # Get the appropriate adapter
-        adapter_class = self._adapters.get(framework)
+        adapter_class = self._adapters.get(framework)  # type: ignore[call-overload]
         if not adapter_class:
             raise ValueError(f"No adapter registered for framework: {framework}")
 
@@ -951,7 +951,7 @@ class AgentFactory:
             return self._create_diy_agent(agent_id, config, adapter_class)
         else:
             # For other frameworks, create a default agent
-            return adapter_class(agent_id, config, self._create_default_agent(config))
+            return adapter_class(agent_id, config, self._create_default_agent(config))  # type: ignore[call-arg]
 
     def _create_crewai_agent(
         self,
@@ -964,7 +964,7 @@ class AgentFactory:
             from crewai import Agent
 
             # Extract CrewAI-specific configuration
-            llm_config = config.llm_config or {}
+            llm_config = config.llm_config or {}  # type: ignore[var-annotated]
             agent_params = config.parameters or {}
 
             # Create the CrewAI agent
@@ -981,7 +981,7 @@ class AgentFactory:
                 allow_delegation=False,
             )
 
-            return adapter_class(agent_id, config, crewai_agent)
+            return adapter_class(agent_id, config, crewai_agent)  # type: ignore[call-arg]
 
         except ImportError:
             logger.error("CrewAI not available. Install with: pip install crewai")
@@ -1003,14 +1003,14 @@ class AgentFactory:
             from langchain.tools import Tool
 
             # Extract LangChain-specific configuration
-            llm_config = config.llm_config or {}
+            llm_config = config.llm_config or {}  # type: ignore[var-annotated]
             agent_params = config.parameters or {}
 
             # Create the LLM
             llm = OpenAI(
-                model_name=llm_config.get("model", "gpt-3.5-turbo-instruct"),
-                temperature=llm_config.get("temperature", 0.1),
-                openai_api_key=llm_config.get("api_key"),
+                model_name=llm_config.get("model", "gpt-3.5-turbo-instruct"),  # type: ignore[union-attr]
+                temperature=llm_config.get("temperature", 0.1),  # type: ignore[union-attr]
+                openai_api_key=llm_config.get("api_key"),  # type: ignore[union-attr]
             )
 
             # Define tools for the agent
@@ -1037,7 +1037,7 @@ class AgentFactory:
                 tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=False
             )
 
-            return adapter_class(agent_id, config, langchain_agent)
+            return adapter_class(agent_id, config, langchain_agent)  # type: ignore[call-arg]
 
         except ImportError:
             logger.error("LangChain not available. Install with: pip install langchain")
@@ -1065,7 +1065,7 @@ class AgentFactory:
         """
 
         agent_params = config.parameters or {}
-        custom_config = config.custom_config or {}
+        custom_config = config.custom_config or {}  # type: ignore[attr-defined]
         services = custom_config.get("_services") or {}
 
         agent_type = agent_params.get("agent_type", "baseline").lower()
@@ -1091,7 +1091,7 @@ class AgentFactory:
                     reorder_threshold=int(reorder_threshold),
                     reorder_quantity=int(reorder_quantity),
                 )
-                return adapter_class(agent_id, config, diy_agent)
+                return adapter_class(agent_id, config, diy_agent)  # type: ignore[call-arg]
 
             if agent_type in ("llm", "baseline"):
                 # Build LLM-based baseline bots using shared dependencies
@@ -1128,13 +1128,13 @@ class AgentFactory:
                         "Unified DIY LLM agent requires world_store, budget_enforcer, trust_metrics, agent_gateway, and event_bus services."
                     )
 
-                api_key = (config.llm_config or {}).get("api_key") or (
+                api_key = (config.llm_config or {}).get("api_key") or (  # type: ignore[call-overload, union-attr]
                     services.get("openrouter_api_key") if services else None
                 )
-                model_name = (config.llm_config or {}).get("model")
-                temperature = (config.llm_config or {}).get("temperature", 0.1)
-                max_tokens = (config.llm_config or {}).get("max_tokens", 1000)
-                top_p = (config.llm_config or {}).get("top_p", 1.0)
+                model_name = (config.llm_config or {}).get("model")  # type: ignore[call-overload, union-attr]
+                temperature = (config.llm_config or {}).get("temperature", 0.1)  # type: ignore[call-overload, union-attr]
+                max_tokens = (config.llm_config or {}).get("max_tokens", 1000)  # type: ignore[call-overload, union-attr]
+                top_p = (config.llm_config or {}).get("top_p", 1.0)  # type: ignore[call-overload, union-attr]
 
                 import os
 
@@ -1198,20 +1198,20 @@ class AgentFactory:
                         model_params,
                     )
 
-                return adapter_class(agent_id, config, diy_agent)
+                return adapter_class(agent_id, config, diy_agent)  # type: ignore[call-arg]
 
             if agent_type == "advanced":
                 from agents.advanced_agent import AdvancedAgent
 
                 diy_agent = AdvancedAgent(config.dict())
-                return adapter_class(agent_id, config, diy_agent)
+                return adapter_class(agent_id, config, diy_agent)  # type: ignore[call-arg]
 
             # Default fallback
-            return adapter_class(agent_id, config, self._create_default_agent(config))
+            return adapter_class(agent_id, config, self._create_default_agent(config))  # type: ignore[call-arg]
 
         except ImportError as e:
             logger.error(f"DIY agent type '{agent_type}' not available: {e}")
-            return adapter_class(agent_id, config, self._create_default_agent(config))
+            return adapter_class(agent_id, config, self._create_default_agent(config))  # type: ignore[call-arg]
         except Exception as e:
             logger.error(f"Error creating DIY agent: {e}")
             raise

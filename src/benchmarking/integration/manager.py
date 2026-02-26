@@ -28,12 +28,12 @@ async def _maybe_await(func_or_coro, *args, **kwargs) -> Any:
         return func_or_coro
 
 
-from ..config.manager import ConfigurationManager
-from ..core.engine import BenchmarkEngine, BenchmarkResult
+from ..config.manager import ConfigurationManager  # noqa: E402
+from ..core.engine import BenchmarkEngine, BenchmarkResult  # noqa: E402
 
 # Import existing systems
 try:
-    from fba_bench.core.types import SimulationState, ToolCall
+    from fba_bench.core.types import SimulationState, ToolCall  # noqa: F401
 
     from agent_runners.base_runner import AgentRunner
     from agent_runners.registry import create_runner, supported_runners
@@ -51,7 +51,7 @@ DualMemoryManager = None  # type: ignore
 MemoryConfig = None  # type: ignore
 
 try:
-    from metrics.cognitive_metrics import CognitiveMetrics
+    from metrics.cognitive_metrics import CognitiveMetrics  # noqa: F401
     from metrics.metric_suite import MetricSuite
 
     METRICS_AVAILABLE = True
@@ -60,7 +60,7 @@ except ImportError:
     logging.warning("metrics module not available")
 
 try:
-    from infrastructure.deployment import DeploymentManager
+    from infrastructure.deployment import DeploymentManager  # noqa: F401
 
     INFRASTRUCTURE_AVAILABLE = True
 except ImportError:

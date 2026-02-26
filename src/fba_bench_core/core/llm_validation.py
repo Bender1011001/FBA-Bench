@@ -19,15 +19,15 @@ Public API:
 - CONTRACT_REGISTRY
 """
 
-import json
-import logging
-from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
+import json  # noqa: E402
+import logging  # noqa: E402
+from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast  # noqa: E402
 
-from fba_bench.core.llm_outputs import AgentResponse, FbaDecision, TaskPlan, ToolCall
-from fba_bench.core.logging import (
+from fba_bench.core.llm_outputs import AgentResponse, FbaDecision, TaskPlan, ToolCall  # noqa: E402
+from fba_bench.core.logging import (  # noqa: E402
     setup_logging,
 )  # Ensure consistent formatting/handlers
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError  # noqa: E402
 
 # Initialize logging (idempotent)
 setup_logging()

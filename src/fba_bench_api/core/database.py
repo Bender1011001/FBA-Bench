@@ -1,5 +1,3 @@
-import json
-from datetime import datetime
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,7 +9,7 @@ _settings = get_settings()
 DATABASE_URL = _settings.preferred_db_url or "sqlite:///./fba_bench.db"
 
 # Base metadata used across the backend and Alembic autogenerate
-from fba_bench_api.models.base import Base
+from fba_bench_api.models.base import Base  # noqa: E402
 
 # Create engine with SQLite-specific connect args only when needed
 if DATABASE_URL.startswith("sqlite"):

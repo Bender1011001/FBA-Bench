@@ -381,7 +381,7 @@ class GoldenMasterTester:
             return self._compare_numbers(expected, actual, tolerance, path_prefix)
 
         # Type comparison (after numeric-like check)
-        if type(expected) != type(actual):
+        if type(expected) is not type(actual):
             diff = DiffDetail(
                 path=path_prefix,
                 expected=str(type(expected)),
@@ -826,7 +826,7 @@ class GoldenMasterTester:
         total_warnings = sum(len(r.warnings) for r in comparison_results)
 
         # Common difference patterns
-        difference_patterns = defaultdict(int)
+        difference_patterns = defaultdict(int)  # type: ignore[var-annotated]
         for result in comparison_results:
             for diff in result.differences:
                 difference_patterns[diff.path] += 1
@@ -882,7 +882,7 @@ class GoldenMasterTester:
         }
 
         logger.info(
-            f"Reproducibility report generated: {report['summary']['reproducibility_rate']:.2%} success rate"
+            f"Reproducibility report generated: {report['summary']['reproducibility_rate']:.2%} success rate"  # type: ignore[index]
         )
 
         return report
@@ -944,7 +944,7 @@ class GoldenMasterTester:
 
     def list_golden_masters(self) -> List[str]:
         """List all available golden master labels."""
-        labels = []
+        labels = []  # type: ignore[var-annotated]
 
         # From memory cache
         labels.extend(self._golden_masters.keys())

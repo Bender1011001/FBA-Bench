@@ -100,10 +100,10 @@ class DeterministicEnvironment:
         """
         if self._is_active:
             logger.warning("Deterministic environment already active")
-            return self._current_state
+            return self._current_state  # type: ignore[return-value]
 
         # Store original state
-        self._original_state = self._capture_environment_state()
+        self._original_state = self._capture_environment_state()  # type: ignore[assignment]
 
         # Set random seeds
         self._set_random_seeds(additional_seeds)
@@ -112,13 +112,13 @@ class DeterministicEnvironment:
         self._set_deterministic_environment()
 
         # Capture current state
-        self._current_state = self._capture_environment_state()
+        self._current_state = self._capture_environment_state()  # type: ignore[assignment]
         self._is_active = True
 
         logger.info(
-            f"Activated deterministic environment (state hash: {self._current_state.state_hash})"
+            f"Activated deterministic environment (state hash: {self._current_state.state_hash})"  # type: ignore[attr-defined]
         )
-        return self._current_state
+        return self._current_state  # type: ignore[return-value]
 
     def deactivate(self) -> EnvironmentState:
         """
@@ -129,13 +129,13 @@ class DeterministicEnvironment:
         """
         if not self._is_active:
             logger.warning("Deterministic environment not active")
-            return None
+            return None  # type: ignore[return-value]
 
         # Capture final state
         final_state = self._capture_environment_state()
 
         # Restore original state
-        self._restore_environment_state(self._original_state)
+        self._restore_environment_state(self._original_state)  # type: ignore[arg-type]
 
         self._is_active = False
         self._current_state = None
@@ -164,7 +164,7 @@ class DeterministicEnvironment:
         """Capture the current environment state."""
         return EnvironmentState(
             random_seed=random.getstate()[0] if hasattr(random, "getstate") else 0,
-            python_hash_seed=os.environ.get("PYTHONHASHSEED", "0"),
+            python_hash_seed=os.environ.get("PYTHONHASHSEED", "0"),  # type: ignore[arg-type]
             environment_variables=dict(os.environ),
         )
 
@@ -340,8 +340,8 @@ class DeterministicEnvironment:
             "original_state": (
                 self._original_state.__dict__ if self._original_state else None
             ),
-            "python_version": os.sys.version,
-            "platform": os.sys.platform,
+            "python_version": os.sys.version,  # type: ignore[attr-defined]
+            "platform": os.sys.platform,  # type: ignore[attr-defined]
             "environment_variables": dict(os.environ),
         }
 
@@ -364,7 +364,7 @@ class DeterministicContext:
         self._base_seed = (
             base_seed if base_seed is not None else random.randint(0, 2**32 - 1)
         )
-        self._context_stack = []
+        self._context_stack = []  # type: ignore[var-annotated]
         self._environment = DeterministicEnvironment(self._base_seed)
 
     @property

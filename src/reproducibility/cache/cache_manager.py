@@ -296,9 +296,9 @@ class CacheManager:
         # Calculate hit rate
         total_requests = self.hits + self.misses
         if total_requests > 0:
-            stats["hit_rate"] = self.hits / total_requests
+            stats["hit_rate"] = self.hits / total_requests  # type: ignore[assignment]
         else:
-            stats["hit_rate"] = 0.0
+            stats["hit_rate"] = 0.0  # type: ignore[assignment]
 
         # Calculate cache size
         if self.enable_disk_cache:
@@ -309,7 +309,7 @@ class CacheManager:
                     cache_size += cache_file.stat().st_size
                     file_count += 1
                 stats["disk_size_bytes"] = cache_size
-                stats["disk_size_mb"] = cache_size / (1024 * 1024)
+                stats["disk_size_mb"] = cache_size / (1024 * 1024)  # type: ignore[assignment]
                 stats["file_count"] = file_count
             except OSError:
                 stats["disk_size_bytes"] = 0

@@ -313,7 +313,7 @@ class AdversarialTestingDemo:
         self, event_id: str, exploit: ExploitDefinition
     ) -> List[AdversarialResponse]:
         """Simulate realistic agent responses to an adversarial event."""
-        responses = []
+        responses = []  # type: ignore[var-annotated]
 
         for agent_id in self.test_agents:
             # Simulate agent-specific resistance (some agents are more resistant)
@@ -433,7 +433,7 @@ class AdversarialTestingDemo:
         overall_ars, ars_breakdown = self.resistance_scorer.calculate_ars(all_responses)
 
         # Calculate per-agent ARS
-        agent_responses = {}
+        agent_responses = {}  # type: ignore[var-annotated]
         for response in all_responses:
             if response.agent_id not in agent_responses:
                 agent_responses[response.agent_id] = []

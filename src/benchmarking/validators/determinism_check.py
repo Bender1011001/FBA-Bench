@@ -16,10 +16,10 @@ Input: ScenarioReport-like dict with runs list.
 Output schema: {"issues": [...], "summary": {...}}
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple  # noqa: E402
 
-from .registry import register_validator
-from .types import Issue, ValidationOutput, normalize_output
+from .registry import register_validator  # noqa: E402
+from .types import Issue, ValidationOutput, normalize_output  # noqa: E402
 
 
 def _get_nested(d: Dict[str, Any], path: str) -> Any:
@@ -56,7 +56,7 @@ def determinism_check_validate(
         if not isinstance(run, dict):
             continue
         key = (run.get("runner_key"), run.get("seed"))
-        groups.setdefault(key, []).append((idx, run))
+        groups.setdefault(key, []).append((idx, run))  # type: ignore[arg-type]
 
     inconsistencies = 0
     checked_pairs = 0

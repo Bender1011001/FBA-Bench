@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 from fba_bench_core.money import Money
 
@@ -160,7 +160,7 @@ class FreightEngine:
             sku = getattr(product, "sku", None) or getattr(
                 product, "asin", str(id(product))
             )
-            qty = quantities.get(sku, 0)
+            qty = quantities.get(sku, 0)  # type: ignore[arg-type]
             if qty <= 0:
                 continue
 
@@ -172,7 +172,7 @@ class FreightEngine:
                 h = getattr(product, "height_cm", None)
                 d = getattr(product, "depth_cm", None)
                 if all([w, h, d]):
-                    volume = (w * h * d) / 1_000_000
+                    volume = (w * h * d) / 1_000_000  # type: ignore[operator]
                 else:
                     volume = 0.001  # Default 1 liter if no dimensions
 
@@ -330,7 +330,7 @@ class FreightEngine:
             )
 
             total_container_cost = container.base_cost_usd * containers_needed
-            total_capacity = container.usable_volume_m3 * containers_needed
+            total_capacity = container.usable_volume_m3 * containers_needed  # noqa: F841
 
             # Cost per CBM of cargo
             cost_per_cbm = total_container_cost / max(total_volume, 0.1)

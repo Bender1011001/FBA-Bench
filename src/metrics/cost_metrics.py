@@ -100,7 +100,7 @@ class CostMetrics:
                     )
                 ),
             )
-            await self.event_bus.publish(token_event)
+            await self.event_bus.publish(token_event)  # type: ignore[union-attr]
             logger.debug(
                 f"Published TokenUsageEvent for {tokens_used} tokens from event {event.event_id}."
             )
@@ -132,7 +132,7 @@ class CostMetrics:
                     cost_amount if cost_amount else USD_ZERO
                 ),  # Store the actual Money object or zero
             )
-            await self.event_bus.publish(api_cost_event)
+            await self.event_bus.publish(api_cost_event)  # type: ignore[union-attr]
             logger.debug(f"Published ApiCostEvent for event {event.event_id}.")
         except (AttributeError, RuntimeError) as e:
             logger.error(f"Failed to publish ApiCostEvent: {e}", exc_info=True)
@@ -168,7 +168,7 @@ class CostMetrics:
                 penalty_value=penalty_amount,
                 reason=f"Applied {penalty_type.value} penalty due to event {event.event_id}",
             )
-            await self.event_bus.publish(penalty_event)
+            await self.event_bus.publish(penalty_event)  # type: ignore[union-attr]
             logger.info(
                 f"Published PenaltyEvent: {penalty_type.value} for event {event.event_id}, amount {penalty_amount:.2f}."
             )

@@ -131,7 +131,7 @@ class BusinessIntelligenceMetrics(BaseMetric):
             max_value=100.0,
         )
 
-    def calculate(self, data: Dict[str, Any]) -> float:
+    def calculate(self, data: Dict[str, Any]) -> float:  # type: ignore[override]
         """
         Calculate business intelligence performance score from accumulated event-driven data.
 
@@ -651,8 +651,8 @@ class BusinessIntelligenceMetrics(BaseMetric):
 
     def _evaluate_trend_direction(self, trend: MarketTrend) -> float:
         """Evaluate trend direction prediction accuracy."""
-        predicted_direction = trend.trend_direction
-        actual_direction = (
+        predicted_direction = trend.trend_direction  # noqa: F841
+        actual_direction = (  # noqa: F841
             trend.trend_direction
         )  # In practice, this would be compared to actual outcome
 
@@ -661,8 +661,8 @@ class BusinessIntelligenceMetrics(BaseMetric):
 
     def _evaluate_trend_strength(self, trend: MarketTrend) -> float:
         """Evaluate trend strength prediction accuracy."""
-        predicted_strength = trend.trend_strength
-        actual_strength = (
+        predicted_strength = trend.trend_strength  # noqa: F841
+        actual_strength = (  # noqa: F841
             trend.trend_strength
         )  # In practice, this would be compared to actual outcome
 

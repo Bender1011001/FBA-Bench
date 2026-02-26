@@ -204,7 +204,7 @@ class CompetitorPricesUpdated(BaseEvent):
                 else None
             ),
             "price_range": (
-                [str(p) for p in self.get_price_range()]
+                [str(p) for p in self.get_price_range()]  # type: ignore[union-attr]
                 if self.get_price_range()
                 else None
             ),

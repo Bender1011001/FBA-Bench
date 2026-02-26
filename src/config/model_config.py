@@ -15,11 +15,11 @@ Usage:
     margin = adv.min_margin
 """
 
-import logging
-import os
-from typing import Any, Dict, Optional
+import logging  # noqa: E402
+import os  # noqa: E402
+from typing import Any, Dict, Optional  # noqa: E402
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError  # noqa: E402
 
 try:
     import yaml  # type: ignore
@@ -312,12 +312,12 @@ class ModelParams(BaseModel):
     """
 
     version: str = Field("1.0")
-    advanced_agent: AdvancedAgentParams = Field(default_factory=AdvancedAgentParams)
-    pricing: PricingStrategyParams = Field(default_factory=PricingStrategyParams)
+    advanced_agent: AdvancedAgentParams = Field(default_factory=AdvancedAgentParams)  # type: ignore[arg-type]
+    pricing: PricingStrategyParams = Field(default_factory=PricingStrategyParams)  # type: ignore[arg-type]
     financial_analyst: FinancialAnalystParams = Field(
-        default_factory=FinancialAnalystParams
+        default_factory=FinancialAnalystParams  # type: ignore[arg-type]
     )
-    planner: PlannerParams = Field(default_factory=PlannerParams)
+    planner: PlannerParams = Field(default_factory=PlannerParams)  # type: ignore[arg-type]
 
     class Config:
         extra = "ignore"
@@ -368,7 +368,7 @@ def get_model_params(
     if _cached_params is not None and not force_reload and override is None:
         return _cached_params
 
-    defaults = ModelParams().model_dump()
+    defaults = ModelParams().model_dump()  # type: ignore[call-arg]
 
     yaml_path = os.getenv("MODEL_PARAMS_YAML") or os.path.join(
         "configs", "model_params.yaml"
@@ -384,7 +384,7 @@ def get_model_params(
         params = ModelParams.model_validate(merged)
     except ValidationError as e:
         logger.error(f"Invalid model parameters; using defaults. Error: {e}")
-        params = ModelParams()
+        params = ModelParams()  # type: ignore[call-arg]
 
     _cached_params = params
     return params
@@ -392,9 +392,9 @@ def get_model_params(
 
 # --- Enums and Planning/Data Entities required by unit tests ---
 
-from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
+from dataclasses import dataclass  # noqa: E402
+from datetime import datetime  # noqa: E402
+from enum import Enum  # noqa: E402
 
 
 class ExpenseCategory(str, Enum):

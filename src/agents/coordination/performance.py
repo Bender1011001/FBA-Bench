@@ -126,7 +126,7 @@ class PerformanceManager:
                 if outcome not in expected_impact:
                     expected_impact[outcome] = 0
                 if isinstance(value, (int, float)):
-                    expected_impact[outcome] += value
+                    expected_impact[outcome] += value  # type: ignore[assignment]
 
         decision = StrategicDecision(
             decision_id=f"{decision_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
@@ -136,7 +136,7 @@ class PerformanceManager:
             actions_approved=approved_actions,
             actions_rejected=rejected_actions,
             reasoning=f"Arbitration based on {self.controller.current_priority.value} priority and strategic alignment",
-            expected_impact=expected_impact,
+            expected_impact=expected_impact,  # type: ignore[arg-type]
         )
 
         self.controller.strategic_decisions.append(decision)

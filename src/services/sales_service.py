@@ -136,7 +136,7 @@ class SalesService:
                         conversion_rate=0.5,
                         fee_breakdown=fee_breakdown,
                     )
-                    await self.event_bus.publish(sale)  # type: ignore[arg-type]
+                    await self.event_bus.publish(sale)  # type: ignore[union-attr]
         except (TypeError, AttributeError, RuntimeError) as e:
             logger.error(
                 "Error handling TickEvent in SalesService: %s", e, exc_info=True

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 LangChain Agent Runner for FBA-Bench.
 
@@ -11,6 +9,8 @@ Production-ready runner with:
 - Robust logging and optional Redis pub/sub progress events
 - Compatibility with AgentRunner base (make_decision bridges to run)
 """
+
+from __future__ import annotations
 
 import asyncio
 import json
@@ -31,7 +31,7 @@ from .base_runner import (
 
 logger = logging.getLogger(__name__)
 
-from .long_term_memory import (  # isort: skip
+from .long_term_memory import (  # isort: skip  # noqa: E402
     LongTermMemoryStore,
     build_day_digest_text,
     build_reflection_prompt,
@@ -54,7 +54,7 @@ class ToolSpec(BaseModel):
 
     name: Optional[str] = None
     description: Optional[str] = None
-    schema: Optional[Dict[str, Any]] = None
+    schema: Optional[Dict[str, Any]] = None  # type: ignore[assignment]
     callable: Optional[Callable[..., Any]] = None
 
     @field_validator("callable")

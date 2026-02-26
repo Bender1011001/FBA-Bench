@@ -92,8 +92,8 @@ class StatisticalValidator:
                 # For robustness, clamp to [1e-9, 1-1e-9]
                 p = max(min(self.confidence, 1 - 1e-9), 1e-9)
                 # Beasley-Springer/Moro approximation constants
-                a = [2.50662823884, -18.61500062529, 41.39119773534, -25.44106049637]
-                b = [-8.47351093090, 23.08336743743, -21.06224101826, 3.13082909833]
+                a = [2.50662823884, -18.61500062529, 41.39119773534, -25.44106049637]  # noqa: F841
+                b = [-8.47351093090, 23.08336743743, -21.06224101826, 3.13082909833]  # noqa: F841
                 c = [
                     0.3374754822726147,
                     0.9761690190917186,
@@ -223,7 +223,7 @@ class StatisticalValidator:
             "outliers": summary.outliers,
         }
         if htest is not None:
-            summary_dict["hypothesis_test"] = htest
+            summary_dict["hypothesis_test"] = htest  # type: ignore[assignment]
 
         # Statistical validation is informational by default; never fatal
         passed = True

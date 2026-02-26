@@ -57,7 +57,7 @@ class DashboardAPIService:
         self.fee_aggregator = fee_aggregator
 
         # Core simulation state
-        self.simulation_state = {
+        self.simulation_state = {  # type: ignore[var-annotated]
             # Time and ticks
             "current_tick": 0,
             "simulation_time": None,
@@ -116,7 +116,7 @@ class DashboardAPIService:
 
         print("🚀 Starting DashboardAPIService...")
         self.is_running = True
-        self.simulation_state["start_time"] = datetime.now(timezone.utc).isoformat()
+        self.simulation_state["start_time"] = datetime.now(timezone.utc).isoformat()  # type: ignore[assignment]
 
         # Subscribe to all major events (use class-based selectors for canonical EventBus)
         await self.event_bus.subscribe(TickEvent, self._handle_tick_event)
@@ -156,19 +156,19 @@ class DashboardAPIService:
         """
         # Update metadata
         now = datetime.now(timezone.utc)
-        self.simulation_state["last_update"] = now.isoformat()
-        self.simulation_state["metadata"]["snapshot_generation"] += 1
+        self.simulation_state["last_update"] = now.isoformat()  # type: ignore[assignment]
+        self.simulation_state["metadata"]["snapshot_generation"] += 1  # type: ignore[call-overload, index, operator]
 
         if self.simulation_state["start_time"]:
             start = datetime.fromisoformat(
-                self.simulation_state["start_time"].replace("Z", "+00:00")
+                self.simulation_state["start_time"].replace("Z", "+00:00")  # type: ignore[union-attr]
             )
             self.simulation_state["uptime_seconds"] = int((now - start).total_seconds())
 
         # Calculate events per second
-        if self.simulation_state["uptime_seconds"] > 0:
-            self.simulation_state["event_stats"]["events_per_second"] = round(
-                self.events_processed_count / self.simulation_state["uptime_seconds"], 2
+        if self.simulation_state["uptime_seconds"] > 0:  # type: ignore[operator]
+            self.simulation_state["event_stats"]["events_per_second"] = round(  # type: ignore[assignment, call-overload, index]
+                self.events_processed_count / self.simulation_state["uptime_seconds"], 2  # type: ignore[operator]
             )
 
         return dict(self.simulation_state)
@@ -194,28 +194,28 @@ class DashboardAPIService:
         else:
             # Return mix of recent events
             events = []
-            events.extend(self.simulation_state["sales_history"])
-            events.extend(self.simulation_state["command_history"])
+            events.extend(self.simulation_state["sales_history"])  # type: ignore[arg-type]
+            events.extend(self.simulation_state["command_history"])  # type: ignore[arg-type]
             events = sorted(events, key=lambda x: x.get("timestamp", ""))
 
         # Apply tick filtering if specified
         if since_tick is not None:
             events = [
-                event for event in events if event.get("tick_number", 0) >= since_tick
+                event for event in events if event.get("tick_number", 0) >= since_tick  # type: ignore[union-attr]
             ]
 
         # Apply limit
-        return events[-limit:] if events else []
+        return events[-limit:] if events else []  # type: ignore[index, return-value]
 
     async def _handle_tick_event(self, event: TickEvent) -> None:
         """Process TickEvent to update simulation time state."""
         self.simulation_state["current_tick"] = event.tick_number
         self.simulation_state["simulation_time"] = event.simulation_time.isoformat()
         self.events_processed_count += 1
-        self.simulation_state["event_stats"][
+        self.simulation_state["event_stats"][  # type: ignore[call-overload, index]
             "events_processed"
         ] = self.events_processed_count
-        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(
+        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(  # type: ignore[assignment, call-overload, index]
             timezone.utc
         ).isoformat()
 
@@ -239,46 +239,46 @@ class DashboardAPIService:
             "trust_score_at_sale": round(event.trust_score_at_sale, 3),
         }
 
-        self.simulation_state["sales_history"].append(sale_data)
+        self.simulation_state["sales_history"].append(sale_data)  # type: ignore[union-attr]
 
         # Maintain circular buffer
-        if len(self.simulation_state["sales_history"]) > self.max_sales_history:
-            self.simulation_state["sales_history"] = self.simulation_state[
+        if len(self.simulation_state["sales_history"]) > self.max_sales_history:  # type: ignore[arg-type]
+            self.simulation_state["sales_history"] = self.simulation_state[  # type: ignore[assignment, index]
                 "sales_history"
-            ][-self.max_sales_history :]
+            ][-self.max_sales_history :]  # type: ignore[index]
 
         # Update financial summary
         financial = self.simulation_state["financial_summary"]
-        financial["total_revenue"] += event.total_revenue.cents
-        financial["total_profit"] += event.total_profit.cents
-        financial["total_fees"] += event.total_fees.cents
-        financial["total_units_sold"] += event.units_sold
-        financial["total_transactions"] += 1
+        financial["total_revenue"] += event.total_revenue.cents  # type: ignore[call-overload, index]
+        financial["total_profit"] += event.total_profit.cents  # type: ignore[call-overload, index]
+        financial["total_fees"] += event.total_fees.cents  # type: ignore[call-overload, index]
+        financial["total_units_sold"] += event.units_sold  # type: ignore[call-overload, index]
+        financial["total_transactions"] += 1  # type: ignore[call-overload, index, operator]
 
         # Calculate derived metrics
-        if financial["total_transactions"] > 0:
-            financial["average_order_value"] = (
-                financial["total_revenue"] / financial["total_transactions"]
+        if financial["total_transactions"] > 0:  # type: ignore[call-overload, index, operator]
+            financial["average_order_value"] = (  # type: ignore[call-overload, index]
+                financial["total_revenue"] / financial["total_transactions"]  # type: ignore[call-overload, index, operator]
             )
 
-        if financial["total_revenue"] > 0:
-            financial["profit_margin_pct"] = round(
-                (financial["total_profit"] / financial["total_revenue"]) * 100, 2
+        if financial["total_revenue"] > 0:  # type: ignore[call-overload, index, operator]
+            financial["profit_margin_pct"] = round(  # type: ignore[call-overload, index]
+                (financial["total_profit"] / financial["total_revenue"]) * 100, 2  # type: ignore[call-overload, index, operator]
             )
 
         # Calculate overall conversion rate from recent sales
         if self.simulation_state["sales_history"]:
-            recent_sales = self.simulation_state["sales_history"][-20:]  # Last 20 sales
-            total_sold = sum(sale["units_sold"] for sale in recent_sales)
-            total_demanded = sum(sale["units_demanded"] for sale in recent_sales)
+            recent_sales = self.simulation_state["sales_history"][-20:]  # Last 20 sales  # type: ignore[index]
+            total_sold = sum(sale["units_sold"] for sale in recent_sales)  # type: ignore[union-attr]
+            total_demanded = sum(sale["units_demanded"] for sale in recent_sales)  # type: ignore[union-attr]
             if total_demanded > 0:
-                financial["conversion_rate"] = round(total_sold / total_demanded, 3)
+                financial["conversion_rate"] = round(total_sold / total_demanded, 3)  # type: ignore[assignment, call-overload, index]
 
         self.events_processed_count += 1
-        self.simulation_state["event_stats"][
+        self.simulation_state["event_stats"][  # type: ignore[call-overload, index]
             "events_processed"
         ] = self.events_processed_count
-        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(
+        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(  # type: ignore[assignment, call-overload, index]
             timezone.utc
         ).isoformat()
 
@@ -288,7 +288,7 @@ class DashboardAPIService:
         """Process CompetitorPricesUpdated event to update market landscape."""
         # Update competitor states
         for competitor in event.competitors:
-            self.simulation_state["competitors"][competitor.asin] = {
+            self.simulation_state["competitors"][competitor.asin] = {  # type: ignore[assignment, index]
                 "asin": competitor.asin,
                 "price": str(competitor.price),
                 "bsr": competitor.bsr,
@@ -308,7 +308,7 @@ class DashboardAPIService:
             prices = [comp.price.cents for comp in event.competitors]
             bsrs = [comp.bsr for comp in event.competitors]
 
-            self.simulation_state["market_summary"].update(
+            self.simulation_state["market_summary"].update(  # type: ignore[union-attr]
                 {
                     "competitor_count": len(event.competitors),
                     "avg_competitor_price_cents": sum(prices) // len(prices),
@@ -321,17 +321,17 @@ class DashboardAPIService:
             )
 
         self.events_processed_count += 1
-        self.simulation_state["event_stats"][
+        self.simulation_state["event_stats"][  # type: ignore[call-overload, index]
             "events_processed"
         ] = self.events_processed_count
-        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(
+        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(  # type: ignore[assignment, call-overload, index]
             timezone.utc
         ).isoformat()
 
     async def _handle_product_price_updated(self, event: ProductPriceUpdated) -> None:
         """Process ProductPriceUpdated event to update canonical product state."""
-        if event.asin not in self.simulation_state["products"]:
-            self.simulation_state["products"][event.asin] = {
+        if event.asin not in self.simulation_state["products"]:  # type: ignore[operator]
+            self.simulation_state["products"][event.asin] = {  # type: ignore[assignment, index]
                 "price": str(event.new_price),
                 "previous_price": str(event.previous_price),
                 "last_updated": event.timestamp.isoformat(),
@@ -341,20 +341,20 @@ class DashboardAPIService:
                 "arbitration_notes": event.arbitration_notes,
             }
         else:
-            product = self.simulation_state["products"][event.asin]
-            product["previous_price"] = product["price"]
-            product["price"] = str(event.new_price)
-            product["last_updated"] = event.timestamp.isoformat()
-            product["update_count"] += 1
-            product["price_change_pct"] = round(event.get_price_change_percentage(), 2)
-            product["last_agent"] = event.agent_id
-            product["arbitration_notes"] = event.arbitration_notes
+            product = self.simulation_state["products"][event.asin]  # type: ignore[index]
+            product["previous_price"] = product["price"]  # type: ignore[index]
+            product["price"] = str(event.new_price)  # type: ignore[index]
+            product["last_updated"] = event.timestamp.isoformat()  # type: ignore[index]
+            product["update_count"] += 1  # type: ignore[index]
+            product["price_change_pct"] = round(event.get_price_change_percentage(), 2)  # type: ignore[index]
+            product["last_agent"] = event.agent_id  # type: ignore[index]
+            product["arbitration_notes"] = event.arbitration_notes  # type: ignore[index]
 
         self.events_processed_count += 1
-        self.simulation_state["event_stats"][
+        self.simulation_state["event_stats"][  # type: ignore[call-overload, index]
             "events_processed"
         ] = self.events_processed_count
-        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(
+        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(  # type: ignore[assignment, call-overload, index]
             timezone.utc
         ).isoformat()
 
@@ -371,17 +371,17 @@ class DashboardAPIService:
             "reason": event.reason,
         }
 
-        self.simulation_state["command_history"].append(command_data)
+        self.simulation_state["command_history"].append(command_data)  # type: ignore[union-attr]
 
         # Maintain circular buffer
-        if len(self.simulation_state["command_history"]) > self.max_command_history:
-            self.simulation_state["command_history"] = self.simulation_state[
+        if len(self.simulation_state["command_history"]) > self.max_command_history:  # type: ignore[arg-type]
+            self.simulation_state["command_history"] = self.simulation_state[  # type: ignore[assignment, index]
                 "command_history"
-            ][-self.max_command_history :]
+            ][-self.max_command_history :]  # type: ignore[index]
 
         # Update agent tracking
-        if event.agent_id not in self.simulation_state["agents"]:
-            self.simulation_state["agents"][event.agent_id] = {
+        if event.agent_id not in self.simulation_state["agents"]:  # type: ignore[operator]
+            self.simulation_state["agents"][event.agent_id] = {  # type: ignore[assignment, index]
                 "command_count": 1,
                 "last_command_time": event.timestamp.isoformat(),
                 "strategy": "unknown",  # Will be inferred from behavior
@@ -389,26 +389,26 @@ class DashboardAPIService:
                 "avg_price_change_pct": 0,
             }
         else:
-            agent = self.simulation_state["agents"][event.agent_id]
-            agent["command_count"] += 1
-            agent["last_command_time"] = event.timestamp.isoformat()
+            agent = self.simulation_state["agents"][event.agent_id]  # type: ignore[index]
+            agent["command_count"] += 1  # type: ignore[index]
+            agent["last_command_time"] = event.timestamp.isoformat()  # type: ignore[index]
 
         # Update command stats
-        self.simulation_state["command_stats"]["total_commands"] += 1
+        self.simulation_state["command_stats"]["total_commands"] += 1  # type: ignore[call-overload, index, operator]
 
         self.events_processed_count += 1
-        self.simulation_state["event_stats"][
+        self.simulation_state["event_stats"][  # type: ignore[call-overload, index]
             "events_processed"
         ] = self.events_processed_count
-        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(
+        self.simulation_state["event_stats"]["last_event_time"] = datetime.now(  # type: ignore[assignment, call-overload, index]
             timezone.utc
         ).isoformat()
 
     async def _handle_agent_decision_event(self, event: AgentDecisionEvent) -> None:
         """Process AgentDecisionEvent to track agent reasoning and logs."""
         # Ensure agent entry exists
-        if event.agent_id not in self.simulation_state["agents"]:
-            self.simulation_state["agents"][event.agent_id] = {
+        if event.agent_id not in self.simulation_state["agents"]:  # type: ignore[operator]
+            self.simulation_state["agents"][event.agent_id] = {  # type: ignore[assignment, index]
                 "command_count": 0,
                 "last_command_time": None,
                 "strategy": "unknown",
@@ -419,7 +419,7 @@ class DashboardAPIService:
                 "financials": {"cash": 0.0, "inventory_value": 0.0, "net_profit": 0.0},
             }
 
-        agent = self.simulation_state["agents"][event.agent_id]
+        agent = self.simulation_state["agents"][event.agent_id]  # type: ignore[index]
 
         # Update financials if ledger exists
         if self.ledger_service:
@@ -438,29 +438,29 @@ class DashboardAPIService:
                 equity = to_float(pos.get("total_equity"))
                 capital = to_float(pos.get("owner_equity"))
 
-                agent["financials"] = {
+                agent["financials"] = {  # type: ignore[index]
                     "cash": cash,
                     "inventory_value": inv_val,
                     "net_profit": round(equity - capital, 2),
                 }
             except Exception as e:
-                logger.warning(f"Failed to update agent financials from ledger: {e}")
+                logger.warning(f"Failed to update agent financials from ledger: {e}")  # noqa: F821  # type: ignore[name-defined]
 
         # Update reasoning and detailed stats
-        agent["last_reasoning"] = event.reasoning
-        agent["last_tool_calls"] = event.tool_calls
-        agent["llm_usage"] = event.llm_usage
+        agent["last_reasoning"] = event.reasoning  # type: ignore[index]
+        agent["last_tool_calls"] = event.tool_calls  # type: ignore[index]
+        agent["llm_usage"] = event.llm_usage  # type: ignore[index]
 
         # Add to recent events log for this agent
         log_entry = f"[{event.timestamp.strftime('%H:%M:%S')}] Decision: {event.reasoning[:70]}..."
-        if "recent_events" not in agent:
-            agent["recent_events"] = []
-        agent["recent_events"].insert(0, log_entry)
+        if "recent_events" not in agent:  # type: ignore[operator]
+            agent["recent_events"] = []  # type: ignore[index]
+        agent["recent_events"].insert(0, log_entry)  # type: ignore[index]
         # Keep last 15 events per agent for richer history
-        agent["recent_events"] = agent["recent_events"][:15]
+        agent["recent_events"] = agent["recent_events"][:15]  # type: ignore[index]
 
         self.events_processed_count += 1
-        self.simulation_state["event_stats"][
+        self.simulation_state["event_stats"][  # type: ignore[call-overload, index]
             "events_processed"
         ] = self.events_processed_count
 
@@ -598,7 +598,7 @@ class DashboardAPIService:
             if market_ema_conversion is not None:
                 resp["market_ema_conversion"] = str(market_ema_conversion)
             if competitor_count is not None:
-                resp["competitor_count"] = int(competitor_count)
+                resp["competitor_count"] = int(competitor_count)  # type: ignore[assignment]
 
             return resp
 

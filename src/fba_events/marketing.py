@@ -230,7 +230,7 @@ class AdSpendEvent(BaseEvent):
 class VisitEvent(BaseEvent):  # type: ignore[misc]
     campaign_id: str = ""
     visitor_id: str = ""
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[datetime] = None  # type: ignore[assignment]
 
 
 @dataclass(kw_only=True)
@@ -252,11 +252,11 @@ class AdClickEvent(BaseEvent):
     campaign_id: str = ""
     ad_id: str = ""
     visitor_id: str = ""
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[datetime] = None  # type: ignore[assignment]
 
 
 @dataclass(kw_only=True)
 class CustomerAcquisitionEvent(BaseEvent):  # type: ignore[misc]
     campaign_id: str = ""
     customer_id: str = ""
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[datetime] = None  # type: ignore[assignment]

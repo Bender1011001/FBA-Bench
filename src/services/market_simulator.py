@@ -170,7 +170,7 @@ class MarketSimulationService:
         if ref is None:
             ref = current_price
 
-        comps = self._competitors_by_asin.get(asin, [])
+        comps = self._competitors_by_asin.get(asin, [])  # type: ignore[var-annotated]
         if comps:
             # Use average competitor price across most recent snapshots for this ASIN
             # Consider last up to 10 snapshots for smoothing

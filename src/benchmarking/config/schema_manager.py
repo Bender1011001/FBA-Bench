@@ -388,7 +388,7 @@ class SchemaManager:
         }
 
         for name, schema_info in self._schema_cache.items():
-            export_data["schemas"][name] = {
+            export_data["schemas"][name] = {  # type: ignore[index]
                 "description": schema_info["description"],
                 "category": schema_info["category"],
                 "tags": schema_info["tags"],
@@ -469,7 +469,7 @@ class SchemaManager:
         for name, schema_info in self._schema_cache.items():
             if schema_info["category"] == category:
                 result[name] = self.get_schema_info(name)
-        return result
+        return result  # type: ignore[return-value]
 
     def get_schemas_by_tag(self, tag: str) -> Dict[str, Dict[str, Any]]:
         """
@@ -485,7 +485,7 @@ class SchemaManager:
         for name, schema_info in self._schema_cache.items():
             if tag in schema_info["tags"]:
                 result[name] = self.get_schema_info(name)
-        return result
+        return result  # type: ignore[return-value]
 
     def unregister_schema(self, name: str) -> bool:
         """

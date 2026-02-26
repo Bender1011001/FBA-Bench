@@ -263,7 +263,7 @@ class SimulationModeController:
         self._performance_metrics = PerformanceMetrics(mode=initial_mode)
 
         # Component registry
-        self._component_registry = ComponentRegistry()
+        self._component_registry = ComponentRegistry()  # type: ignore[var-annotated]
 
         # Thread safety
         self._lock = threading.RLock()
@@ -432,6 +432,7 @@ class SimulationModeController:
 
         with self._lock:
             base_metrics = asdict(self._performance_metrics)
+            uptime = time.time() - self._mode_start_time
 
             # Add computed metrics
             avg_overhead = self._performance_metrics.determinism_overhead_ms / max(
@@ -444,7 +445,7 @@ class SimulationModeController:
                 "overhead_percentage": (
                     (avg_overhead / max(uptime * 1000, 1)) * 100 if uptime > 0 else 0
                 ),
-                "uptime_seconds": time.time() - self._mode_start_time,
+                "uptime_seconds": uptime,
             }
 
     def _apply_mode_to_core_systems(

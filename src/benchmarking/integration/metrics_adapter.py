@@ -86,7 +86,7 @@ def _normalize_metrics(payload: Any) -> List[Dict[str, float]]:
         try:
             if "overall_score" in payload:
                 out.append(
-                    {"name": "overall", "score": float(payload["overall_score"])}
+                    {"name": "overall", "score": float(payload["overall_score"])}  # type: ignore[dict-item]
                 )
         except Exception:
             pass
@@ -100,7 +100,7 @@ def _normalize_metrics(payload: Any) -> List[Dict[str, float]]:
                         else:
                             s = v
                         if s is not None:
-                            out.append({"name": str(k), "score": float(s)})
+                            out.append({"name": str(k), "score": float(s)})  # type: ignore[dict-item]
                     except Exception:
                         continue
         except Exception:
@@ -111,7 +111,7 @@ def _normalize_metrics(payload: Any) -> List[Dict[str, float]]:
         ok: List[Dict[str, float]] = []
         for item in payload:
             try:
-                ok.append({"name": str(item["name"]), "score": float(item["score"])})
+                ok.append({"name": str(item["name"]), "score": float(item["score"])})  # type: ignore[dict-item]
             except Exception:
                 continue
         return ok
@@ -146,26 +146,26 @@ def _merge_metrics(
     return {}
 
 
-import logging
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+import logging  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from datetime import datetime  # noqa: E402
+from typing import Any, Dict, List, Optional  # noqa: E402
 
-from ..integration.manager import IntegrationManager
-from ..metrics.base import MetricResult
-from ..metrics.registry import metrics_registry
+from ..integration.manager import IntegrationManager  # noqa: E402
+from ..metrics.base import MetricResult  # noqa: E402
+from ..metrics.registry import metrics_registry  # noqa: E402
 
 # Try to import existing metrics systems
 try:
-    from metrics.adversarial_metrics import AdversarialMetrics
-    from metrics.cognitive_metrics import CognitiveMetrics
-    from metrics.cost_metrics import CostMetrics
-    from metrics.finance_metrics import FinanceMetrics
-    from metrics.marketing_metrics import MarketingMetrics
+    from metrics.adversarial_metrics import AdversarialMetrics  # noqa: F401
+    from metrics.cognitive_metrics import CognitiveMetrics  # noqa: F401
+    from metrics.cost_metrics import CostMetrics  # noqa: F401
+    from metrics.finance_metrics import FinanceMetrics  # noqa: F401
+    from metrics.marketing_metrics import MarketingMetrics  # noqa: F401
     from metrics.metric_suite import MetricSuite
-    from metrics.operations_metrics import OperationsMetrics
-    from metrics.stress_metrics import StressMetrics
-    from metrics.trust_metrics import TrustMetrics
+    from metrics.operations_metrics import OperationsMetrics  # noqa: F401
+    from metrics.stress_metrics import StressMetrics  # noqa: F401
+    from metrics.trust_metrics import TrustMetrics  # noqa: F401
 
     LEGACY_METRICS_AVAILABLE = True
 except ImportError:
@@ -645,7 +645,7 @@ class MetricsAdapter:
 
         return out
 
-    def _get_transformer(self, transformer_name: str) -> Optional[callable]:
+    def _get_transformer(self, transformer_name: str) -> Optional[callable]:  # type: ignore[valid-type]
         """
         Get a transformer function by name.
 
@@ -702,7 +702,7 @@ class MetricsAdapter:
         Returns:
             Dictionary of metric definitions
         """
-        definitions = {"legacy_metrics": {}, "new_metrics": {}}
+        definitions = {"legacy_metrics": {}, "new_metrics": {}}  # type: ignore[var-annotated]
 
         # Legacy metric definitions
         if self.config.enable_legacy_metrics and LEGACY_METRICS_AVAILABLE:
@@ -780,23 +780,23 @@ class MetricsAdapter:
 
         # Check overall health
         if not self._initialized:
-            health["issues"].append("Metrics adapter not initialized")
+            health["issues"].append("Metrics adapter not initialized")  # type: ignore[attr-defined]
             return health
 
         # Check legacy metrics health
         if self.config.enable_legacy_metrics:
             if not LEGACY_METRICS_AVAILABLE:
-                health["issues"].append("Legacy metrics module not available")
+                health["issues"].append("Legacy metrics module not available")  # type: ignore[attr-defined]
             elif self.legacy_metric_suite is None:
-                health["issues"].append("Legacy metrics suite not initialized")
+                health["issues"].append("Legacy metrics suite not initialized")  # type: ignore[attr-defined]
 
         # Check new metrics health
         if self.config.enable_new_metrics:
             if len(metrics_registry.get_all_metrics()) == 0:
-                health["issues"].append("No new metrics registered")
+                health["issues"].append("No new metrics registered")  # type: ignore[attr-defined]
 
         # Determine overall health
-        health["healthy"] = len(health["issues"]) == 0
+        health["healthy"] = len(health["issues"]) == 0  # type: ignore[arg-type]
 
         return health
 

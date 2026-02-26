@@ -40,7 +40,7 @@ class AppSettings(BaseModel):
 
 class LoggingSettings(BaseModel):
     level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"] = "INFO"
-    json: bool = False
+    json: bool = False  # type: ignore[assignment]
     destination: Literal["stdout", "stderr", "file"] = "stdout"
     filename: Optional[str] = None
     # Standard logging format; JSON formatting is enabled separately via python-json-logger if available

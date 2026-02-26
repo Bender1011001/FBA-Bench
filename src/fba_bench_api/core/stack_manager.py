@@ -274,7 +274,7 @@ def stop_stack(compose_path: Optional[str]) -> Tuple[bool, Optional[Path], str, 
         logger.warning("Docker not available: %s", err2)
         return False, compose_file, (err2 or "Docker not available"), docker_variant()
 
-    stopped, serr = stop_docker_compose(compose_file)
+    stopped, serr = stop_docker_compose(compose_file)  # type: ignore[arg-type]
     if not stopped:
         return (
             False,

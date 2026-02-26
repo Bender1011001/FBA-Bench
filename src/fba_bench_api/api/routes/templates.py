@@ -38,7 +38,7 @@ async def get_templates() -> TemplateResponse:
             stat = file_path.stat()
             size = stat.st_size
             modified_timestamp = datetime.fromtimestamp(
-                stat.st_mtime, tz=datetime.UTC
+                stat.st_mtime, tz=datetime.UTC  # type: ignore[attr-defined]
             ).isoformat()
 
             template = Template(
@@ -66,7 +66,7 @@ async def get_templates() -> TemplateResponse:
                         parsed=parsed,
                         size=stat.st_size,
                         modified=datetime.fromtimestamp(
-                            stat.st_mtime, tz=datetime.UTC
+                            stat.st_mtime, tz=datetime.UTC  # type: ignore[attr-defined]
                         ).isoformat(),
                     )
                 )

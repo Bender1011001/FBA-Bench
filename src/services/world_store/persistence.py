@@ -138,7 +138,7 @@ class JsonFileStorageBackend:
                 if file_path.is_file():
                     mtime = file_path.stat().st_mtime
                     if mtime > latest_mtime:
-                        latest_mtime = mtime
+                        latest_mtime = mtime  # type: ignore[assignment]
                         latest_id = file_path.stem  # filename without extension
             self._latest_snapshot_id = latest_id
             if latest_id:

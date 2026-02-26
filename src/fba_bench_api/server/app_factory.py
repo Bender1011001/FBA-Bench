@@ -58,14 +58,14 @@ logger = logging.getLogger("fba_bench_api")
 
 # JWT verification (RS256) middleware
 
-import jwt  # PyJWT
-from starlette.middleware.httpsredirect import (
+import jwt  # PyJWT  # noqa: E402
+from starlette.middleware.httpsredirect import (  # noqa: E402
     HTTPSRedirectMiddleware,  # type: ignore[reportMissingImports]
 )
-from starlette.requests import Request  # type: ignore[reportMissingImports]
-from starlette.responses import JSONResponse  # type: ignore[reportMissingImports]
+from starlette.requests import Request  # type: ignore[reportMissingImports]  # noqa: E402, F811
+from starlette.responses import JSONResponse  # type: ignore[reportMissingImports]  # noqa: E402
 
-from fba_bench_api.core.redis_client import get_redis
+from fba_bench_api.core.redis_client import get_redis  # noqa: E402
 
 # Rate limiting (slowapi)
 try:
@@ -79,7 +79,7 @@ try:
     get_remote_address = _slowapi_get_remote_address
 except ImportError:
     # Minimal fallback for Limiter when slowapi is not available
-    class Limiter:
+    class Limiter:  # type: ignore[no-redef]
         def __init__(self, *args, **kwargs):
             # The class initializer accepts any args/kwargs and stores nothing
             pass
@@ -116,14 +116,14 @@ except ImportError:
         return getattr(getattr(request, "client", None), "host", "127.0.0.1")
 
     # Dummy SlowAPIMiddleware and RateLimitExceeded to avoid NameError in the rest of the file
-    class SlowAPIMiddleware:
+    class SlowAPIMiddleware:  # type: ignore[no-redef]
         def __init__(self, app):
             self.app = app
 
         async def __call__(self, scope, receive, send):
             await self.app(scope, receive, send)
 
-    class RateLimitExceeded(Exception):
+    class RateLimitExceeded(Exception):  # type: ignore[no-redef]
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
@@ -370,7 +370,7 @@ def create_app() -> FastAPI:
     otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
     if otlp_endpoint:
         span_processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=otlp_endpoint))
-        trace.get_tracer_provider().add_span_processor(span_processor)
+        trace.get_tracer_provider().add_span_processor(span_processor)  # type: ignore[attr-defined]
 
     # Prometheus metrics
     REQUEST_TIME = Histogram(
@@ -381,7 +381,7 @@ def create_app() -> FastAPI:
         "Total number of HTTP requests",
         ["method", "endpoint", "status"],
     )
-    ACTIVE_CONNECTIONS = Gauge(
+    ACTIVE_CONNECTIONS = Gauge(  # noqa: F841
         "active_db_connections", "Number of active database connections"
     )
 
@@ -733,7 +733,7 @@ def create_app() -> FastAPI:
         )
 
         # Redis (optional)
-        if check_redis:
+        if "check_redis" in locals() and locals()["check_redis"]:
             # Check if Redis URL is available
             redis_url = (
                 os.getenv("REDIS_URL")
@@ -772,7 +772,7 @@ def create_app() -> FastAPI:
             status["event_bus"] = "skipped"
 
         # Database (optional)
-        if check_db:
+        if "check_db" in locals() and locals()["check_db"]:
             # Check if Database URL is available
             db_url = os.getenv("DATABASE_URL") or os.getenv("FBA_BENCH_DB_URL")
             if not db_url:
@@ -863,7 +863,7 @@ def create_app() -> FastAPI:
         }
 
         # Always check Redis if configured
-        if check_redis:
+        if "check_redis" in locals() and locals()["check_redis"]:
             try:
                 from fba_bench_api.core.redis_client import get_redis
 
@@ -877,22 +877,22 @@ def create_app() -> FastAPI:
             status["redis"] = "skipped"
 
         # Always check DB if configured
-        if check_db:
+        if "check_db" in locals() and locals()["check_db"]:
             db_url = os.getenv("DATABASE_URL") or os.getenv("FBA_BENCH_DB_URL")
             try:
                 from sqlalchemy import create_engine, text
                 from sqlalchemy.ext.asyncio import create_async_engine
 
                 # Use async engine for consistency
-                if db_url.startswith("postgresql+asyncpg"):
-                    engine = create_async_engine(db_url, echo=False)
+                if db_url.startswith("postgresql+asyncpg"):  # type: ignore[union-attr]
+                    engine = create_async_engine(db_url, echo=False)  # type: ignore[arg-type]
                     async with engine.connect() as conn:
                         await conn.execute(text("SELECT 1"))
                     await engine.dispose()
                     status["db"] = "ok"
                 else:
                     # Fallback for sync
-                    eng = create_engine(db_url, future=True)
+                    eng = create_engine(db_url, future=True)  # type: ignore[arg-type]
                     with eng.connect() as conn:
                         conn.execute(text("SELECT 1"))
                     eng.dispose()

@@ -455,5 +455,5 @@ def deserialize_event(data: Dict[str, Any]) -> GameEvent:
         The appropriate GameEvent subclass instance.
     """
     event_type = data.get("event_type")
-    event_class = EVENT_TYPE_REGISTRY.get(event_type, GameEvent)
-    return event_class.from_journal_dict(data)
+    event_class = EVENT_TYPE_REGISTRY.get(event_type, GameEvent)  # type: ignore[arg-type]
+    return event_class.from_journal_dict(data)  # type: ignore[attr-defined]

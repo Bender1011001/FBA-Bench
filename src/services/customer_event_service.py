@@ -567,7 +567,7 @@ class CustomerEventService:
             }
 
         # Count events by type
-        event_counts = {}
+        event_counts = {}  # type: ignore[var-annotated]
         for event in product_events:
             event_type = event.event_type
             event_counts[event_type] = event_counts.get(event_type, 0) + 1
@@ -641,13 +641,13 @@ class CustomerEventService:
         )
 
         # Event type distribution
-        event_type_dist = {}
+        event_type_dist = {}  # type: ignore[var-annotated]
         for event in self.events:
             event_type = event.event_type.value
             event_type_dist[event_type] = event_type_dist.get(event_type, 0) + 1
 
         # Segment distribution
-        segment_dist = {}
+        segment_dist = {}  # type: ignore[var-annotated]
         for profile in self.customer_profiles.values():
             segment = profile.segment.value
             segment_dist[segment] = segment_dist.get(segment, 0) + 1

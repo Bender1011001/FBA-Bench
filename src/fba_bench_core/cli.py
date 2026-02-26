@@ -336,7 +336,8 @@ def start_docker_compose(compose_file: Path) -> bool:
     return True
 
 
-def start_api_server():
+@staticmethod  # type: ignore[misc]
+def _deprecated__deprecated_start_api_server():
     """
     Start the FBA-Bench FastAPI server in a subprocess.
     Returns the Popen process object or None if failed.
@@ -514,7 +515,8 @@ def run_simulation_orchestrator() -> int:
     return 1
 
 
-def start_api_server():
+@staticmethod  # type: ignore[misc, no-redef]
+def _deprecated__deprecated_start_api_server():
     """
     Start the FBA-Bench FastAPI server in a subprocess.
     Returns the Popen process object or None if failed.
@@ -798,7 +800,7 @@ def handle_launch(with_server: bool, game_mode: bool = False) -> int:
 
             # Start FastAPI backend server
             LOG.info("Starting FBA-Bench API server on http://localhost:8000...")
-            api_process = start_api_server()
+            api_process = _deprecated_start_api_server()  # noqa: F821  # type: ignore[name-defined]
             if api_process:
                 LOG.info("FBA-Bench API server started successfully")
             else:

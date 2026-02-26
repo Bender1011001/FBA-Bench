@@ -328,7 +328,7 @@ class CognitiveConfig:
         logger.info("Optimizing cognitive configuration for performance")
 
         # Reduce reflection frequency
-        self.reflection.reflection_interval = min(
+        self.reflection.reflection_interval = min(  # type: ignore[assignment]
             14, self.reflection.reflection_interval * 1.5
         )
 
@@ -364,7 +364,7 @@ class CognitiveConfig:
         )
 
         # Increase analysis depth
-        self.reflection.analysis_lookback_days = min(
+        self.reflection.analysis_lookback_days = min(  # type: ignore[assignment]
             14, self.reflection.analysis_lookback_days * 1.5
         )
         self.reflection.min_decisions_for_analysis = max(

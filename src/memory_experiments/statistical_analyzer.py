@@ -432,8 +432,8 @@ class StatisticalAnalyzer:
 
             # Add percentiles
             if len(data) >= 4:
-                summary["q25"] = np.percentile(data, 25)
-                summary["q75"] = np.percentile(data, 75)
+                summary["q25"] = np.percentile(data, 25)  # type: ignore[assignment]
+                summary["q75"] = np.percentile(data, 75)  # type: ignore[assignment]
                 summary["iqr"] = summary["q75"] - summary["q25"]
 
             # Add skewness and kurtosis if scipy available

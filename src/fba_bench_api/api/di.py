@@ -14,11 +14,11 @@ Usage in route modules:
 These helpers resolve singletons/factories from app.state.container initialized in create_app().
 """
 
-from fastapi import Depends, Request
+from fastapi import Depends, Request  # noqa: E402
 
-from agent_runners.agent_manager import AgentManager
-from fba_bench_api.core.container import AppContainer
-from fba_events.bus import EventBus
+from agent_runners.agent_manager import AgentManager  # noqa: E402
+from fba_bench_api.core.container import AppContainer  # noqa: E402
+from fba_events.bus import EventBus  # noqa: E402
 
 # from simulation_orchestrator import SimulationOrchestrator
 

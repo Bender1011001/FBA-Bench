@@ -54,7 +54,7 @@ def sanitize_model(m: str) -> str:
 
 # Try imports with resilient fallbacks
 try:
-    from simulation_orchestrator import SimulationConfig, SimulationOrchestrator, TickEvent
+    from fba_bench_core.simulation_orchestrator import SimulationConfig, SimulationOrchestrator, TickEvent
 except Exception as e:
     print(f"Missing simulation_orchestrator: {e}", file=sys.stderr)
     raise
@@ -64,7 +64,7 @@ try:
 except Exception:
     # Try alternate import path
     try:
-        from event_bus import get_event_bus
+        from fba_bench_core.event_bus import get_event_bus
     except Exception as e:
         print(f"Missing event bus: {e}", file=sys.stderr)
         raise

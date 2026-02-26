@@ -14,7 +14,7 @@ from .fee_calculation_service import FeeCalculationService
 from .journal_service import JournalService
 from .market_simulator import MarketSimulationService
 from .marketing_service import MarketingService
-from .mock_service import (
+from .production_service import (
     ProductionService,
 )
 from .outcome_analysis_service import OutcomeAnalysisService

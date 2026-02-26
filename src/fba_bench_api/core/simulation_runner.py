@@ -282,7 +282,7 @@ class RealSimulationRunner:
                     last_updated=datetime.now(timezone.utc),
                     metadata=product_cfg.get("metadata", {}),
                 )
-                self._world_store.set_product_state(asin, ps)
+                self._world_store.set_product_state(asin, ps)  # type: ignore[union-attr]
                 self._inventory_baseline[asin] = int(ps.inventory_quantity)
         else:
             # Generate default products with seeded randomness
@@ -304,7 +304,7 @@ class RealSimulationRunner:
                         "category": f"Category-{i % 5}",
                     },
                 )
-                self._world_store.set_product_state(asin, ps)
+                self._world_store.set_product_state(asin, ps)  # type: ignore[union-attr]
                 self._inventory_baseline[asin] = int(ps.inventory_quantity)
 
         logger.info(f"Initialized {len(self._asins)} products in WorldStore")
@@ -326,7 +326,7 @@ class RealSimulationRunner:
         tick_rev_cents = 0
         tick_profit_cents = 0
         for asin in self._asins:
-            summary = await self._market_service.process_for_asin(asin)
+            summary = await self._market_service.process_for_asin(asin)  # type: ignore[union-attr]
             if not isinstance(summary, dict) or summary.get("skipped", False):
                 continue
 
@@ -360,7 +360,7 @@ class RealSimulationRunner:
         total_inv_value = 0
         total_inv_units = 0
         for asin in self._asins:
-            product = self._world_store.get_product_state(asin)
+            product = self._world_store.get_product_state(asin)  # type: ignore[union-attr]
             if product:
                 total_inv_units += int(product.inventory_quantity)
                 total_inv_value += product.inventory_quantity * product.cost_basis.cents
@@ -393,7 +393,7 @@ class RealSimulationRunner:
             reasoning = str(getattr(event, "reasoning", ""))
             tool_calls = list(getattr(event, "tool_calls", []))
             llm_usage = dict(getattr(event, "llm_usage", {}))
-            sim_time = getattr(event, "simulation_time", None)
+            sim_time = getattr(event, "simulation_time", None)  # noqa: F841
 
             self._live_agent_states[agent_id] = {
                 "id": agent_id,
@@ -751,7 +751,7 @@ class RealSimulationRunner:
         self._state.started_at = datetime.now(timezone.utc)
 
         # Start orchestrator (runs in background)
-        await self._orchestrator.start(self._event_bus)
+        await self._orchestrator.start(self._event_bus)  # type: ignore[union-attr]
 
         # Monitor completion
         self._runner_task = asyncio.create_task(self._monitor_completion())
@@ -762,7 +762,7 @@ class RealSimulationRunner:
         """Monitor orchestrator for completion and publish final results."""
         try:
             while self._running:
-                status = self._orchestrator.get_status()
+                status = self._orchestrator.get_status()  # type: ignore[union-attr]
 
                 if not status["is_running"]:
                     # Simulation completed naturally

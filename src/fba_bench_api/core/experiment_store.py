@@ -243,9 +243,9 @@ class ExperimentRunStore:
             if isinstance(value, datetime):
                 result[key] = value.isoformat()
             elif isinstance(value, BaseModel):
-                result[key] = value.model_dump()
+                result[key] = value.model_dump()  # type: ignore[assignment]
             elif isinstance(value, list):
-                result[key] = [
+                result[key] = [  # type: ignore[assignment]
                     (v.model_dump() if isinstance(v, BaseModel) else v) for v in value
                 ]
             else:

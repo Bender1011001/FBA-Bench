@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 agent_runners.compat - Temporary event compatibility layer.
 
@@ -12,6 +10,8 @@ Exports:
 - TickEvent
 - SetPriceCommand
 """
+
+from __future__ import annotations
 
 from typing import Any, Protocol, runtime_checkable
 

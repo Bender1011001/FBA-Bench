@@ -20,17 +20,17 @@ Usage (FastAPI):
 - Resolve factories on demand in routes/services to avoid upfront heavy init
 """
 
-import os
-from typing import Optional
+import os  # noqa: E402
+from typing import Optional  # noqa: E402
 
-from agent_runners.agent_manager import AgentManager
-from dependency_injector import containers, providers
-from fba_bench_core.simulation_orchestrator import SimulationOrchestrator
-from fba_bench_api.core.database_async import AsyncSessionLocal
-from fba_bench_api.core.persistence_async import AsyncPersistenceManager
+from agent_runners.agent_manager import AgentManager  # noqa: E402
+from dependency_injector import containers, providers  # noqa: E402
+from fba_bench_core.simulation_orchestrator import SimulationOrchestrator  # noqa: E402
+from fba_bench_api.core.database_async import AsyncSessionLocal  # noqa: E402
+from fba_bench_api.core.persistence_async import AsyncPersistenceManager  # noqa: E402
 
 # Core services
-from fba_events.bus import InMemoryEventBus as EventBus  # singleton
+from fba_events.bus import InMemoryEventBus as EventBus  # singleton  # noqa: E402
 
 
 def _build_sim_config_from_env() -> dict:
@@ -45,7 +45,7 @@ def _build_sim_config_from_env() -> dict:
     max_ticks: Optional[int]
     mt_env = os.getenv("SIM_MAX_TICKS")
     try:
-        max_ticks = int(mt_env) if mt_env not in (None, "", "none", "null") else None
+        max_ticks = int(mt_env) if mt_env not in (None, "", "none", "null") else None  # type: ignore[arg-type]
     except Exception:
         max_ticks = None
 
@@ -59,7 +59,7 @@ def _build_sim_config_from_env() -> dict:
     seed: Optional[int]
     seed_env = os.getenv("SIM_SEED")
     try:
-        seed = int(seed_env) if seed_env not in (None, "", "none", "null") else None
+        seed = int(seed_env) if seed_env not in (None, "", "none", "null") else None  # type: ignore[arg-type]
     except Exception:
         seed = None
 

@@ -10,13 +10,13 @@ This module preserves the historical import path:
 It bridges to the concrete implementations in fba_events.bus to avoid broad refactors.
 """
 
-from typing import Optional
+from typing import Optional  # noqa: E402
 
 # Public aliases to maintain backwards compatibility in code/tests
-from fba_events.base import (
+from fba_events.base import (  # noqa: E402
     BaseEvent as _BaseEvent,  # Direct import after confirming its existence and structure
 )
-from fba_events.bus import (
+from fba_events.bus import (  # noqa: E402
     EventBus as _BaseEventBus,
     InMemoryEventBus as _InMemoryEventBus,
 )

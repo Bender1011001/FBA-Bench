@@ -112,12 +112,12 @@ if __name__ == "__main__":
     # Simulate some events
     sample_events = [
         {
-            "timestamp": datetime.datetime.now().isoformat(),
+            "timestamp": datetime.datetime.now().isoformat(),  # type: ignore[attr-defined]
             "event_type": "ORDER_PLACED",
             "data": {"order_id": "1", "value": 100},
         },
         {
-            "timestamp": datetime.datetime.now().isoformat(),
+            "timestamp": datetime.datetime.now().isoformat(),  # type: ignore[attr-defined]
             "event_type": "SHIPMENT_CREATED",
             "data": {"shipment_id": "A", "order_id": "1"},
         },
@@ -137,12 +137,12 @@ if __name__ == "__main__":
             # Simulate another run (ideally identical if deterministic)
             re_run_events = [
                 {
-                    "timestamp": datetime.datetime.now().isoformat(),
+                    "timestamp": datetime.datetime.now().isoformat(),  # type: ignore[attr-defined]
                     "event_type": "ORDER_PLACED",
                     "data": {"order_id": "1", "value": 100},
                 },
                 {
-                    "timestamp": datetime.datetime.now().isoformat(),
+                    "timestamp": datetime.datetime.now().isoformat(),  # type: ignore[attr-defined]
                     "event_type": "SHIPMENT_CREATED",
                     "data": {"shipment_id": "A", "order_id": "1"},
                 },

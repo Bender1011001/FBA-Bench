@@ -279,7 +279,7 @@ class BaseScenario(abc.ABC):
         agent_id = getattr(getattr(agent, "config", None), "agent_id", None) or getattr(
             agent, "id", "agent"
         )
-        self.agent_states.setdefault(agent_id, {})
+        self.agent_states.setdefault(agent_id, {})  # type: ignore[arg-type]
 
         # Optional agent-specific setup
         setup_agent_fn = getattr(self, "setup_for_agent", None)

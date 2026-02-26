@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 import asyncio
 
 if TYPE_CHECKING:
-    from .base_runner import AgentRunner
+    pass
 
 logger = logging.getLogger(__name__)
 

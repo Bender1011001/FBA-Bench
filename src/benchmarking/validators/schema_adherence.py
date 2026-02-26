@@ -29,10 +29,10 @@ Behavior:
 Deterministic and non-fatal.
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union  # noqa: E402
 
-from .registry import register_validator
-from .types import Issue, ValidationOutput, normalize_output
+from .registry import register_validator  # noqa: E402
+from .types import Issue, ValidationOutput, normalize_output  # noqa: E402
 
 _TYPE_MAP = {
     "str": str,
@@ -69,7 +69,7 @@ def _requirements_from_contract(
         typespec: Optional[Union[type, Tuple[type, ...]]] = None
         if isinstance(spec, str):
             path = key
-            typespec = _TYPE_MAP.get(spec)
+            typespec = _TYPE_MAP.get(spec)  # type: ignore[assignment]
         elif isinstance(spec, list):
             # list of type names
             resolved = tuple(_TYPE_MAP.get(s) for s in spec if s in _TYPE_MAP)
@@ -79,7 +79,7 @@ def _requirements_from_contract(
         elif isinstance(spec, dict):
             path = spec.get("path") or key
             tname = spec.get("type")
-            typespec = _TYPE_MAP.get(tname) if isinstance(tname, str) else None
+            typespec = _TYPE_MAP.get(tname) if isinstance(tname, str) else None  # type: ignore[assignment]
         else:
             continue
         if path and typespec:

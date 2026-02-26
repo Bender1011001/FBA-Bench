@@ -61,8 +61,8 @@ try:  # pragma: no cover
             except Exception:
                 return NotImplemented
 
-        _ApproxClass.__lt__ = _approx__lt  # type: ignore[attr-defined]
-        _ApproxClass.__gt__ = _approx__gt  # type: ignore[attr-defined]
+        _ApproxClass.__lt__ = _approx__lt  # type: ignore[operator]
+        _ApproxClass.__gt__ = _approx__gt  # type: ignore[operator]
 except Exception:
     # If pytest not available or class immutable, ignore gracefully.
     pass

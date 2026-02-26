@@ -145,7 +145,7 @@ class ScenarioResult:
         aggregate_metrics = {}
 
         # Group metrics by name
-        metric_groups = {}
+        metric_groups = {}  # type: ignore[var-annotated]
         for agent_result in self.agent_results:
             for metric in agent_result.metrics:
                 if metric.name not in metric_groups:
@@ -267,9 +267,9 @@ class BenchmarkResult:
         for scenario_result in self.scenario_results:
             for agent_result in scenario_result.agent_results:
                 if agent_result.success:
-                    summary["successful_runs"] += 1
+                    summary["successful_runs"] += 1  # type: ignore[operator]
                 else:
-                    summary["failed_runs"] += 1
+                    summary["failed_runs"] += 1  # type: ignore[operator]
 
         # Calculate agent performance summary
         agent_performance = {}
@@ -285,23 +285,23 @@ class BenchmarkResult:
                         "metrics": {},
                     }
 
-                agent_performance[agent_id]["total_runs"] += 1
+                agent_performance[agent_id]["total_runs"] += 1  # type: ignore[operator]
                 if agent_result.success:
-                    agent_performance[agent_id]["successful_runs"] += 1
+                    agent_performance[agent_id]["successful_runs"] += 1  # type: ignore[operator]
                 else:
-                    agent_performance[agent_id]["failed_runs"] += 1
+                    agent_performance[agent_id]["failed_runs"] += 1  # type: ignore[operator]
 
                 # Aggregate metrics
                 for metric in agent_result.metrics:
-                    if metric.name not in agent_performance[agent_id]["metrics"]:
-                        agent_performance[agent_id]["metrics"][metric.name] = []
-                    agent_performance[agent_id]["metrics"][metric.name].append(
+                    if metric.name not in agent_performance[agent_id]["metrics"]:  # type: ignore[operator]
+                        agent_performance[agent_id]["metrics"][metric.name] = []  # type: ignore[index]
+                    agent_performance[agent_id]["metrics"][metric.name].append(  # type: ignore[index]
                         metric.value
                     )
 
         # Calculate averages for each agent
         for agent_id, performance in agent_performance.items():
-            if performance["total_runs"] > 0:
+            if performance["total_runs"] > 0:  # type: ignore[operator]
                 # Calculate average duration
                 total_duration = sum(
                     result.duration_seconds
@@ -309,13 +309,13 @@ class BenchmarkResult:
                     for result in scenario_result.get_agent_results(agent_id)
                 )
                 performance["average_duration"] = (
-                    total_duration / performance["total_runs"]
+                    total_duration / performance["total_runs"]  # type: ignore[operator]
                 )
 
                 # Calculate metric averages
-                for metric_name, values in performance["metrics"].items():
+                for metric_name, values in performance["metrics"].items():  # type: ignore[attr-defined]
                     if values:
-                        performance["metrics"][metric_name] = {
+                        performance["metrics"][metric_name] = {  # type: ignore[index]
                             "mean": statistics.mean(values),
                             "median": statistics.median(values),
                             "std_dev": (

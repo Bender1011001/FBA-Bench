@@ -120,7 +120,7 @@ class DynamicScenarioGenerator:
                 elif isinstance(value, dict):
                     data[key] = self._apply_randomization(data[key], value)
                 elif isinstance(value, list) and "choices" in value:
-                    data[key] = random.choice(value["choices"])
+                    data[key] = random.choice(value["choices"])  # type: ignore[call-overload]
                 elif isinstance(value, bool):
                     if random.random() < 0.5:  # 50% chance to flip
                         data[key] = not data[key]
@@ -141,7 +141,7 @@ class DynamicScenarioGenerator:
                     if isinstance(min_val, int) and isinstance(max_val, int):
                         randomized_params[param] = random.randint(min_val, max_val)
                     else:
-                        randomized_params[param] = random.uniform(min_val, max_val)
+                        randomized_params[param] = random.uniform(min_val, max_val)  # type: ignore[assignment]
             else:
                 randomized_params[param] = config
         return randomized_params

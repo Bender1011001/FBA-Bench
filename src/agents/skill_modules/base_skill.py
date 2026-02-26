@@ -269,7 +269,7 @@ class BaseSkill(ABC):
                         ev_mod = importlib.import_module("events")
                         candidate = getattr(ev_mod, event_type, None)
                         if inspect.isclass(candidate):
-                            resolved = candidate
+                            resolved = candidate  # type: ignore[assignment]
                     except Exception:
                         resolved = event_type  # fallback to provided value
 
@@ -296,7 +296,7 @@ class BaseSkill(ABC):
         """
         try:
             self.status = SkillStatus.PROCESSING
-            self.last_activation = datetime.now()
+            self.last_activation = datetime.now()  # type: ignore[assignment]
             self.activation_count += 1
 
             start_time = datetime.now()

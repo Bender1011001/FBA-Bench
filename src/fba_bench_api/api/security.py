@@ -1,7 +1,6 @@
 """Security utilities for password hashing and JWT token management."""
 
 import logging
-import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
@@ -24,7 +23,7 @@ except Exception:
     pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # JWT Configuration
-import os
+import os  # noqa: E402
 
 # JWT Configuration
 # CRITICAL: Fail safely if SECRET_KEY is missing in production
@@ -97,7 +96,7 @@ def get_current_user(token: str) -> Optional[Dict[str, Any]]:
     if payload is None:
         return None
 
-    email: str = payload.get("sub")
+    email: str = payload.get("sub")  # type: ignore[assignment]
     if email is None:
         return None
 

@@ -3,8 +3,8 @@ import asyncio
 import yaml
 from pathlib import Path
 from reproducibility.event_snapshots import EventSnapshot
-from simulation_orchestrator import SimulationConfig
-from event_bus import get_event_bus
+from fba_bench_core.simulation_orchestrator import SimulationConfig
+from fba_bench_core.event_bus import get_event_bus
 
 # from scenarios.scenario_engine import ScenarioEngine
 

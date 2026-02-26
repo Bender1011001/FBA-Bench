@@ -483,7 +483,7 @@ class TemplateScenarioPlugin(ScenarioPlugin):
     async def _handle_competitor_entry(self, event_data: Dict[str, Any]) -> None:
         """Handle new competitor entry events."""
         competitor_strategy = event_data.get("competitor_strategy", "standard")
-        market_share = event_data.get("market_share", 0.05)
+        market_share = event_data.get("market_share", 0.05)  # noqa: F841
 
         self.logger.info(f"New competitor entered with {competitor_strategy} strategy")
 
@@ -556,7 +556,7 @@ class TemplateScenarioPlugin(ScenarioPlugin):
 
     def _validate_custom_parameters(self, custom_params: Dict[str, Any]) -> List[str]:
         """Validate custom parameters specific to this scenario."""
-        errors = []
+        errors = []  # type: ignore[var-annotated]
 
         # Add custom validation logic here
         # Example: validate custom parameter ranges, types, etc.

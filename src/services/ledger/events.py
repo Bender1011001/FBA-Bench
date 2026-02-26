@@ -47,10 +47,10 @@ class EventsHandler:
         try:
             init_dollars: Optional[float] = None
             if self.config.get("initial_capital_dollars") is not None:
-                init_dollars = float(self.config.get("initial_capital_dollars"))
+                init_dollars = float(self.config.get("initial_capital_dollars"))  # type: ignore[arg-type]
             elif self.config.get("starting_cash_dollars") is not None:
                 # Reuse existing key used elsewhere in the project if provided
-                init_dollars = float(self.config.get("starting_cash_dollars"))
+                init_dollars = float(self.config.get("starting_cash_dollars"))  # type: ignore[arg-type]
             if init_dollars and init_dollars > 0:
                 await self.ledger_core.inject_equity(
                     Money.from_dollars(f"{init_dollars:.2f}"),

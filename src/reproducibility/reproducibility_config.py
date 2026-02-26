@@ -302,7 +302,7 @@ class ReproducibilityConfig:
         def convert_value(value):
             # Handle dataclasses strictly
             if is_dataclass(value):
-                result = asdict(value)
+                result = asdict(value)  # type: ignore[arg-type]
                 # Convert enums to their values
                 for k, v in list(result.items()):
                     if isinstance(v, Enum):
@@ -683,11 +683,11 @@ def load_config_from_env() -> ReproducibilityConfig:
 
     if os.getenv("MASTER_SEED"):
         try:
-            config.seed_management.master_seed = int(os.getenv("MASTER_SEED"))
+            config.seed_management.master_seed = int(os.getenv("MASTER_SEED"))  # type: ignore[arg-type]
         except ValueError:
             logger.warning(f"Invalid MASTER_SEED: {os.getenv('MASTER_SEED')}")
 
     if os.getenv("LLM_CACHE_FILE"):
-        config.llm_cache.cache_file = os.getenv("LLM_CACHE_FILE")
+        config.llm_cache.cache_file = os.getenv("LLM_CACHE_FILE")  # type: ignore[assignment]
 
     return config

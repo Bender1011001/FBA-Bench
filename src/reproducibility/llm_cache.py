@@ -128,7 +128,7 @@ class LLMResponseCache:
             # Fallback: use package-local cache directory
             self._cache_dir_path = Path(__file__).parent / "cache"
             self._cache_dir_path.mkdir(parents=True, exist_ok=True)
-            source_was_string = False  # fallback is a Path, not a string source
+            source_was_string = False  # fallback is a Path, not a string source  # noqa: F841
 
         # Expose the resolved Path and keep the original input value for compatibility.
         # Preserve the originally provided value (string or Path) on `_cache_dir_input` for any legacy equality checks.
@@ -690,7 +690,7 @@ class LLMResponseCache:
                         "metadata": json.loads(row["metadata"]),
                         "response_hash": row["response_hash"],
                     }
-                    export_data["entries"].append(entry)
+                    export_data["entries"].append(entry)  # type: ignore[attr-defined]
 
             # Write to file
             export_json = json.dumps(export_data, separators=(",", ":")).encode("utf-8")

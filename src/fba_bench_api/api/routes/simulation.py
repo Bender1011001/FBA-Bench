@@ -59,7 +59,7 @@ def get_pm(db: AsyncSession = Depends(get_async_db_session)) -> AsyncPersistence
 
 
 # Utilities
-import uuid as _uuid
+import uuid as _uuid  # noqa: E402
 
 
 def _uuid4() -> str:
@@ -169,11 +169,11 @@ async def stop_simulation(
     return Simulation(**updated)  # type: ignore[arg-type]
 
 
-import asyncio
-from fastapi import BackgroundTasks
+import asyncio  # noqa: E402
+from fastapi import BackgroundTasks  # noqa: E402
 
 # Import the real simulation runner
-from fba_bench_api.core.simulation_runner import (
+from fba_bench_api.core.simulation_runner import (  # noqa: E402
     RealSimulationRunner,
     register_simulation,
     unregister_simulation,

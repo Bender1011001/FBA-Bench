@@ -237,7 +237,7 @@ class ScenarioEngine:
         Evaluates agent success against scenario objectives at the end of the simulation.
         'final_state' would contain aggregated simulation data and agent outputs.
         """
-        analysis_results = {
+        analysis_results = {  # type: ignore[var-annotated]
             "scenario_name": (
                 self.current_scenario.config_data.get("scenario_name")
                 if self.current_scenario
@@ -257,7 +257,7 @@ class ScenarioEngine:
             actual_value = final_state.get(
                 obj_name
             )  # Assuming final_state contains objective metrics
-            analysis_results["metrics"][obj_name] = actual_value
+            analysis_results["metrics"][obj_name] = actual_value  # type: ignore[index]
 
             if (
                 obj_name.startswith("profit_target")
@@ -489,7 +489,7 @@ class ScenarioEngine:
         # Prefer 'profit_target_min', fall back to legacy 'profit_target'
         try:
             _profit_min_target = float(
-                success_criteria.get("profit_target_min")
+                success_criteria.get("profit_target_min")  # type: ignore[arg-type]
                 if success_criteria.get("profit_target_min") is not None
                 else (success_criteria.get("profit_target") or 0.0)
             )
@@ -575,22 +575,22 @@ class ScenarioEngine:
 
             # Report metrics to ClearML (if enabled)
             try:
-                self.tracker.log_scalar(
+                self.tracker.log_scalar(  # type: ignore[union-attr]
                     "Profit", "USD", sim_metrics["profit"], iteration=tick
                 )
-                self.tracker.log_scalar(
+                self.tracker.log_scalar(  # type: ignore[union-attr]
                     "MarketShare",
                     "ratio",
                     sim_metrics.get("market_share", 0.0),
                     iteration=tick,
                 )
-                self.tracker.log_scalar(
+                self.tracker.log_scalar(  # type: ignore[union-attr]
                     "OnTimeDeliveryRate",
                     "ratio",
                     sim_metrics.get("on_time_delivery_rate", 0.0),
                     iteration=tick,
                 )
-                self.tracker.log_scalar(
+                self.tracker.log_scalar(  # type: ignore[union-attr]
                     "CustomerSatisfaction",
                     "ratio",
                     sim_metrics.get("customer_satisfaction", 0.0),
@@ -685,12 +685,12 @@ class ScenarioEngine:
                 "success_status": results.get("success_status"),
                 "simulation_duration": results.get("simulation_duration", total_ticks),
             }
-            self.tracker.log_parameters(final_payload, name="final_summary")
+            self.tracker.log_parameters(final_payload, name="final_summary")  # type: ignore[union-attr]
         except (ImportError, RuntimeError, AttributeError):
             pass
         finally:
             try:
-                self.tracker.close()
+                self.tracker.close()  # type: ignore[union-attr]
             except (TypeError, AttributeError, RuntimeError):
                 pass
 
