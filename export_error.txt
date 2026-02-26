@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "E:\code.projects\fba\FBA-Bench-Enterprise\src\scripts\export_results.py", line 13, in <module>
-    from fba_bench_api.core.persistence_async import AsyncPersistenceManager
-  File "E:\code.projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\core\persistence_async.py", line 25, in <module>
-    from fba_bench_api.models.experiment import (
-    ...<4 lines>...
-    )
-ImportError: cannot import name 'ExperimentRunORM' from 'fba_bench_api.models.experiment' (E:\code.projects\fba\FBA-Bench-Enterprise\src\fba_bench_api\models\experiment.py)
