@@ -165,3 +165,7 @@ artifacts/*.parquet
 test_output*.txt
 verification_output.txt
 godot_output.txt
+
+# local agent scaffold
+.roomodes
+CONTEXT.md
